@@ -1,0 +1,101 @@
+############################
+#        FRONTEND         #
+#   React (Vite) Ignore   #
+############################
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Node modules
+node_modules/
+
+# Vite build output
+dist/
+dist-ssr/
+*.local
+
+# Editor directories and files (frontend)
+.vscode/*
+!.vscode/extensions.json
+.idea/
+.DS_Store
+
+# Local env (frontend)
+.env
+.env.*
+!.env.example
+
+############################
+#        BACKEND          #
+#     Django + DRF        #
+############################
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Django files
+*.log
+*.pot
+*.pyc
+db.sqlite3
+db.sqlite3-journal
+
+# Static & media
+staticfiles/
+static/
+media/
+
+# Virtual environment
+venv/
+env/
+ENV/
+
+# Editor directories and files (backend)
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+.DS_Store
+
+# Coverage / Test
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Build/System files
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# pip
+pip-log.txt
+pip-delete-this-directory.txt
+
+# MyPy / Pyright
+.mypy_cache/
+.pytype/
+pyrightconfig.json
+
+# Docker
+*.pid
+*.seed
+
+# History
+.history/
+
+############################
+# Optional: Django migrations (uncomment if you DO NOT want to track them)
+# */migrations/*
+# !*/migrations/__init__.py
+############################
