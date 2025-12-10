@@ -147,7 +147,7 @@ const EmployeeView = () => {
                   <MdFilterList className="w-5 h-5" />
                   Filters
                   {activeCount > 0 && (
-                    <span className="ml-2 bg-black text-white text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center">
+                    <span className="ml-2 bg-black text-white text-xs font-medium rounded-full w-6 h-6 flex items-center justify-center">
                       {activeCount}
                     </span>
                   )}
@@ -183,7 +183,7 @@ const EmployeeView = () => {
               >
                 <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
                   <div className="flex items-center justify-between mb-6">
-                    <h3 className="text-xl font-bold text-gray-900">Advanced Filters</h3>
+                    <h3 className="text-xl font-medium text-gray-900">Advanced Filters</h3>
                     <button onClick={() => setFiltersOpen(false)} className="p-2 hover:bg-gray-100 rounded-lg transition">
                       <MdClose className="w-6 h-6 text-gray-600" />
                     </button>
@@ -308,13 +308,13 @@ const EmployeeView = () => {
               <table className="w-full min-w-[1000px]">
                 <thead className="bg-gray-50 border-b border-gray-200">
                   <tr>
-                    <th className="px-6 py-5 text-left text-xs font-bold text-gray-700 uppercase tracking-wider whitespace-nowrap">ID</th>
-                    <th className="px-6 py-5 text-left text-xs font-bold text-gray-700 uppercase tracking-wider whitespace-nowrap">Employee</th>
-                    <th className="px-6 py-5 text-left text-xs font-bold text-gray-700 uppercase tracking-wider whitespace-nowrap">Email</th>
-                    <th className="px-6 py-5 text-left text-xs font-bold text-gray-700 uppercase tracking-wider whitespace-nowrap">Department</th>
-                    <th className="px-6 py-5 text-left text-xs font-bold text-gray-700 uppercase tracking-wider whitespace-nowrap">Role</th>
-                    <th className="px-6 py-5 text-left text-xs font-bold text-gray-700 uppercase tracking-wider whitespace-nowrap">Status</th>
-                    <th className="px-6 py-5 text-left text-xs font-bold text-gray-700 uppercase tracking-wider whitespace-nowrap">Actions</th>
+                    <th className="px-6 py-5 text-left text-xs font-medium text-gray-700 uppercase tracking-wider whitespace-nowrap">ID</th>
+                    <th className="px-6 py-5 text-left text-xs font-medium text-gray-700 uppercase tracking-wider whitespace-nowrap">Employee</th>
+                    <th className="px-6 py-5 text-left text-xs font-medium text-gray-700 uppercase tracking-wider whitespace-nowrap">Email</th>
+                    <th className="px-6 py-5 text-left text-xs font-medium text-gray-700 uppercase tracking-wider whitespace-nowrap">Department</th>
+                    <th className="px-6 py-5 text-left text-xs font-medium text-gray-700 uppercase tracking-wider whitespace-nowrap">Role</th>
+                    <th className="px-6 py-5 text-left text-xs font-medium text-gray-700 uppercase tracking-wider whitespace-nowrap">Status</th>
+                    <th className="px-6 py-5 text-left text-xs font-medium text-gray-700 uppercase tracking-wider whitespace-nowrap">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200">
@@ -344,7 +344,7 @@ const EmployeeView = () => {
                         transition={{ delay: i * 0.03 }}
                         className="hover:bg-gray-50 transition"
                       >
-                        <td className="px-6 py-5 text-sm font-bold text-blue-600 whitespace-nowrap">{emp.employee_id}</td>
+                        <td className="px-6 py-5 text-sm font-medium text-blue-600 whitespace-nowrap">{emp.employee_id}</td>
                         <td className="px-6 py-5 whitespace-nowrap">
                           <div className="flex items-center gap-4">
                             <img src={getImageUrl(emp)} alt={emp.name} className="w-12 h-12 rounded-full object-cover shadow-md" />

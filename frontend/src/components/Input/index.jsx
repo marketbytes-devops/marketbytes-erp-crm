@@ -76,7 +76,7 @@ const Select = forwardRef(({ options = [], value, onChange, placeholder = "Selec
         onClick={() => setIsOpen(!isOpen)}
         className={cn(
           "w-full px-4 py-3 border rounded-lg flex items-center justify-between text-left transition-all",
-          "focus:ring-2 focus:ring-black focus:border-black outline-none",
+          "focus:ring focus:ring-black focus:border-black outline-none",
           "border-gray-600 hover:border-gray-800",
           className
         )}
@@ -166,7 +166,7 @@ const Input = forwardRef(
             className={cn(
               "w-full px-4 py-3 border rounded-lg",
               isPassword ? "pr-12" : "pr-4",
-              "focus:ring-2 focus:ring-black focus:border-black outline-none transition-all",
+              "focus:ring focus:ring-black focus:border-black outline-none transition-all",
               hasError ? "border-red-500 focus:ring-red-500 focus:border-red-500" : "border-gray-600",
               isPassword && "font-mono tracking-wider",
               className

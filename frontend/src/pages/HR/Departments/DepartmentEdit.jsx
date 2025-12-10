@@ -1,11 +1,11 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate, useParams } from "react-router";
 import LayoutComponents from "../../../components/LayoutComponents";
-import Input from "../../../components/Input";
 import { MdArrowBack, MdAdd, MdDelete } from "react-icons/md";
 import toast from "react-hot-toast";
 import apiClient from "../../../helpers/apiClient";
 import Loading from "../../../components/Loading";
+import Input from "../../../components/Input";
 
 const DepartmentEdit = () => {
   const { id } = useParams();

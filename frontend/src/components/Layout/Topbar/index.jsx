@@ -5,7 +5,7 @@ import { useNavigate } from "react-router";
 import apiClient from "../../../helpers/apiClient";
 import placeholderImage from "../../../assets/images/placeholder-profile.webp";
 import Dropdown from "../../Dropdown";
-import AttendanceStatusButton from "../../Ui/AttendanceStatusButton";
+import WorkTimerController from "../../Ui/WorkTimerController";
 
 const Topbar = ({
   toggleSidebar,
@@ -190,7 +190,7 @@ const Topbar = ({
       >
         {isAuthenticated && (
           <div className="hidden md:flex items-center">
-            <AttendanceStatusButton />
+            <WorkTimerController />
           </div>
         )}
         {isAuthenticated && (
@@ -205,7 +205,7 @@ const Topbar = ({
               <motion.span
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
-                className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center shadow-lg"
+                className="absolute -top-1 -right-1 bg-black text-white text-xs font-medium rounded-full w-5 h-5 flex items-center justify-center shadow-lg"
               >
                 {notificationCount > 99 ? "99+" : notificationCount}
               </motion.span>

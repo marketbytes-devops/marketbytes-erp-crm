@@ -38,7 +38,7 @@ const AuthCard = ({ children, title, subtitle }) => {
       >
         <div className="bg-white bg-opacity-95 backdrop-blur-sm p-8 rounded-xl shadow-2xl w-full max-w-md">
           <div className="text-center mb-8">
-            <h3 className="text-3xl font-bold text-black mb-2">{title}</h3>
+            <h3 className="text-3xl font-medium text-black mb-2">{title}</h3>
             {subtitle && <p className="text-gray-600 text-sm">{subtitle}</p>}
           </div>
           {children}

@@ -205,7 +205,7 @@ const Permissions = () => {
       >
         <div className="bg-white rounded-xl shadow-inner overflow-hidden">
           <div className="p-6 border-b border-gray-200">
-            <h3 className="text-2xl font-bold text-black flex items-center gap-3">
+            <h3 className="text-2xl font-medium text-black flex items-center gap-3">
               <Shield className="w-8 h-8" />
               Existing Roles
             </h3>
@@ -215,10 +215,10 @@ const Permissions = () => {
             <table className="w-full">
               <thead className="bg-gray-100">
                 <tr>
-                  <th className="p-6 text-left text-sm font-bold text-black uppercase tracking-wider">
+                  <th className="p-6 text-left text-sm font-medium text-black uppercase tracking-wider">
                     Role Name
                   </th>
-                  <th className="p-6 text-left text-sm font-bold text-black uppercase tracking-wider">
+                  <th className="p-6 text-left text-sm font-medium text-black uppercase tracking-wider">
                     Actions
                   </th>
                 </tr>
@@ -271,7 +271,7 @@ const Permissions = () => {
                 onClick={(e) => e.stopPropagation()}
               >
                 <div className="bg-linear-to-r from-black to-gray-800 p-8 text-center">
-                  <h2 className="text-3xl font-bold text-white">
+                  <h2 className="text-3xl font-medium text-white">
                     Permissions for <span className="text-red-500">{selectedRole.name}</span>
                   </h2>
                 </div>
@@ -286,7 +286,7 @@ const Permissions = () => {
                         disabled={!hasPermission("permissions", "edit")}
                         className="w-6 h-6 rounded border-2 border-black checked:bg-black focus:ring-0"
                       />
-                      <span className="text-lg font-bold text-black">Select All Permissions</span>
+                      <span className="text-lg font-medium text-black">Select All Permissions</span>
                     </label>
                   </div>
 
@@ -294,11 +294,11 @@ const Permissions = () => {
                     <table className="w-full border-collapse">
                       <thead>
                         <tr className="bg-black text-white">
-                          <th className="text-left p-6 text-sm font-bold rounded-tl-2xl">Module</th>
-                          <th className="text-center p-6 text-sm font-bold">View</th>
-                          <th className="text-center p-6 text-sm font-bold">Add</th>
-                          <th className="text-center p-6 text-sm font-bold">Edit</th>
-                          <th className="text-center p-6 text-sm font-bold rounded-tr-2xl">Delete</th>
+                          <th className="text-left p-6 text-sm font-medium rounded-tl-2xl">Module</th>
+                          <th className="text-center p-6 text-sm font-medium">View</th>
+                          <th className="text-center p-6 text-sm font-medium">Add</th>
+                          <th className="text-center p-6 text-sm font-medium">Edit</th>
+                          <th className="text-center p-6 text-sm font-medium rounded-tr-2xl">Delete</th>
                         </tr>
                       </thead>
                       <tbody>

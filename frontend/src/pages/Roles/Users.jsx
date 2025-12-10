@@ -201,7 +201,7 @@ const Users = () => {
       transition={{ duration: 0.5 }}
     >
       <div className="max-w-full mx-auto">
-        <h1 className="text-2xl font-bold text-black mb-2">Users Management</h1>
+        <h1 className="text-2xl font-medium text-black mb-2">Users Management</h1>
         <p className="text-gray-600 mb-6">
           Create, edit, and manage user accounts and assign roles.
         </p>
@@ -210,7 +210,7 @@ const Users = () => {
         {hasPermission("users", "add") && (
           <div className="bg-white rounded-2xl shadow-xl overflow-hidden mb-8">
             <div className="p-6 border-b border-gray-200">
-              <h3 className="text-2xl font-bold text-black flex items-center gap-3">
+              <h3 className="text-2xl font-medium text-black flex items-center gap-3">
                 <UserPlus className="w-7 h-7 text-gray-600" />
                 Create New User
               </h3>
@@ -260,7 +260,7 @@ const Users = () => {
         {/* Users Table */}
         <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
           <div className="p-6 border-b border-gray-200 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <h3 className="text-2xl font-bold text-black">Existing Users</h3>
+            <h3 className="text-2xl font-medium text-black">Existing Users</h3>
             <div className="relative">
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
               <input
@@ -368,7 +368,7 @@ const Users = () => {
                 onClick={(e) => e.stopPropagation()}
               >
                 <div className="p-6 border-b border-gray-200">
-                  <h2 className="text-2xl font-bold">
+                  <h2 className="text-2xl font-medium">
                     Edit User: <span className="text-gray-600">{editUser.email}</span>
                   </h2>
                 </div>

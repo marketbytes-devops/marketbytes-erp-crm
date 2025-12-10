@@ -6,8 +6,8 @@ import { motion } from 'framer-motion';
 import { toast } from 'react-hot-toast';
 import { Camera, User } from 'lucide-react';
 import apiClient from '../../helpers/apiClient';
-import Input from '../../components/Input';
 import LayoutComponents from '../../components/LayoutComponents';
+import Input from '../../components/Input';
 
 const profileSchema = z.object({
   name: z.string().min(1, 'Full name is required'),
@@ -179,7 +179,7 @@ const Profile = () => {
               </label>
             </div>
 
-            <h2 className="mt-8 text-3xl font-bold text-black">{profile.name || 'Your Name'}</h2>
+            <h2 className="mt-8 text-3xl font-medium text-black">{profile.name || 'Your Name'}</h2>
             <p className="text-lg text-gray-600 mt-2">{profile.email}</p>
             <p className="text-sm text-gray-500 mt-1">@{profile.username || 'username'}</p>
           </motion.div>

@@ -90,7 +90,8 @@ const DesignationView = () => {
                 <thead className="bg-gray-50 border-b border-gray-200">
                   <tr>
                     <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">SL No</th>
-                    <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Designation</th>
+                    <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Designation Name</th>
+                    <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Designation Description</th>
                     <th className="px-6 py-4 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">Members</th>
                     <th className="px-6 py-4 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">Actions</th>
                   </tr>
@@ -117,6 +118,7 @@ const DesignationView = () => {
                       >
                         <td className="px-6 py-4 text-sm text-gray-900">{i + 1}</td>
                         <td className="px-6 py-4 font-medium text-gray-900">{des.name}</td>
+                        <td className="px-6 py-4 font-medium text-gray-900">{des.description}</td>
                         <td className="px-6 py-4 text-center">
                           <span className="inline-flex items-center gap-2 text-blue-600">
                             <MdPeople className="w-5 h-5" />

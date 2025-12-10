@@ -122,7 +122,7 @@ const Leaves = () => {
                   <div className="p-6">
                     <div className="flex items-start justify-between mb-4">
                       <div>
-                        <h4 className="text-lg font-bold text-gray-900">{leave.employee?.name || "Unknown"}</h4>
+                        <h4 className="text-lg font-medium text-gray-900">{leave.employee?.name || "Unknown"}</h4>
                         <p className="text-sm text-gray-600">{leave.leave_type_name || leave.leave_type?.name}</p>
                       </div>
                       <div className={`p-3 rounded-xl ${statusStyle}`}>

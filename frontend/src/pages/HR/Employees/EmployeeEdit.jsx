@@ -1,11 +1,11 @@
 import { useState, useEffect } from "react";
 import { Link, useParams, useNavigate } from "react-router";
-import Input from "../../../components/Input";
 import { MdArrowBack, MdAutoAwesome, MdBadge } from "react-icons/md";
 import toast from "react-hot-toast";
 import apiClient from "../../../helpers/apiClient";
 import Loading from "../../../components/Loading";
 import LayoutComponents from "../../../components/LayoutComponents";
+import Input from "../../../components/Input";
 
 const generateStrongPassword = () => {
   const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()_+-=[]{}|;:,.<>?";
@@ -165,11 +165,11 @@ const EmployeeEdit = () => {
           <div className="flex items-center gap-3">
             <div>
               <p className="text-sm text-gray-500">Employee ID</p>
-              <p className="text-xl font-bold text-gray-900">{employeeId}</p>
+              <p className="text-xl font-medium text-black">{employeeId}</p>
             </div>
             {employeeName && (
-              <span className="ml-4 text-sm font-medium text-gray-700">
-                — {employeeName}
+              <span className="ml-4 text-sm font-medium text-black">
+                {employeeName}
               </span>
             )}
           </div>

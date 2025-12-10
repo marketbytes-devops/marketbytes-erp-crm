@@ -54,7 +54,7 @@ const Performance = () => {
                 <MdTrendingUp className="w-8 h-8" />
               </div>
               <p className="text-gray-600 text-sm">{item.label}</p>
-              <p className="text-4xl font-bold mt-2 text-gray-900">{item.count}</p>
+              <p className="text-4xl font-medium mt-2 text-gray-900">{item.count}</p>
             </motion.div>
           ))}
         </div>
@@ -77,11 +77,11 @@ const Performance = () => {
               <table className="w-full min-w-max">
                 <thead className="bg-gray-50 border-b border-gray-200">
                   <tr>
-                    <th className="px-6 py-5 text-left text-sm font-bold text-gray-700">Employee</th>
-                    <th className="px-6 py-5 text-left text-sm font-bold text-gray-700">Department</th>
-                    <th className="px-6 py-5 text-left text-sm font-bold text-gray-700">Review Period</th>
-                    <th className="px-6 py-5 text-left text-sm font-bold text-gray-700">Rating</th>
-                    <th className="px-6 py-5 text-left text-sm font-bold text-gray-700">Reviewed By</th>
+                    <th className="px-6 py-5 text-left text-sm font-medium text-gray-700">Employee</th>
+                    <th className="px-6 py-5 text-left text-sm font-medium text-gray-700">Department</th>
+                    <th className="px-6 py-5 text-left text-sm font-medium text-gray-700">Review Period</th>
+                    <th className="px-6 py-5 text-left text-sm font-medium text-gray-700">Rating</th>
+                    <th className="px-6 py-5 text-left text-sm font-medium text-gray-700">Reviewed By</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200">
@@ -104,7 +104,7 @@ const Performance = () => {
                       </td>
                       <td className="px-6 py-5">
                         <div
-                          className={`inline-flex items-center gap-2 px-4 py-2 rounded-full font-bold text-sm ${
+                          className={`inline-flex items-center gap-2 px-4 py-2 rounded-full font-medium text-sm ${
                             getRatingColor(r.rating || 0)
                           }`}
                         >

@@ -1,14 +1,15 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router";
 import LayoutComponents from "../../../components/LayoutComponents";
-import Input from "../../../components/Input";
 import { MdArrowBack } from "react-icons/md";
 import toast from "react-hot-toast";
 import apiClient from "../../../helpers/apiClient";
+import Input from "../../../components/Input";
 
 const DesignationCreate = () => {
   const navigate = useNavigate();
   const [name, setName] = useState("");
+  const [description, setDescription] = useState("");
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e) => {
@@ -17,7 +18,7 @@ const DesignationCreate = () => {
 
     setLoading(true);
     try {
-      await apiClient.post("/auth/roles/", { name: name.trim() });
+      await apiClient.post("/auth/roles/", { name: name.trim(), description: description.trim() });
       toast.success("Designation created successfully!");
       navigate("/hr/designations");
     } catch (err) {
@@ -44,7 +45,14 @@ const DesignationCreate = () => {
               placeholder="e.g. Senior React Developer"
               autoFocus
             />
-
+            <Input
+              label="Designation Description"
+              required
+              value={name}
+              onChange={(e) => setDescription(e.target.value)}
+              placeholder="e.g. Anything can access"
+              autoFocus
+            />
             <div className="flex gap-4">
               <button
                 type="submit"

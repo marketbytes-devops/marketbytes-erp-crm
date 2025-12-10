@@ -61,7 +61,7 @@ const EmployeeProfile = () => {
   };
 
   const formatDate = (dateString) => {
-    if (!dateString) return "—";
+    if (!dateString) return "No date provided";
     return new Date(dateString).toLocaleDateString('en-US', {
       year: 'numeric',
       month: 'long',
@@ -73,14 +73,14 @@ const EmployeeProfile = () => {
     {
       icon: <MdWork className="w-6 h-6" />,
       label: "Department",
-      value: employee.department?.name || "—",
+      value: employee.department?.name || "No department assigned",
       color: "text-blue-600 bg-blue-50",
       iconColor: "text-blue-500"
     },
     {
       icon: <FaUserTie className="w-6 h-6" />,
       label: "Designation",
-      value: employee.designation?.name || employee.role?.name || "—",
+      value: employee.designation?.name || employee.role?.name || "No designation assigned",
       color: "text-purple-600 bg-purple-50",
       iconColor: "text-purple-500"
     },
@@ -89,14 +89,14 @@ const EmployeeProfile = () => {
       label: "Tenure",
       value: employee.joining_date ? 
         `${Math.floor((new Date() - new Date(employee.joining_date)) / (1000 * 60 * 60 * 24 * 30))} months` : 
-        "—",
+        "No joining date provided",
       color: "text-green-600 bg-green-50",
       iconColor: "text-green-500"
     },
     {
       icon: <FaChartLine className="w-6 h-6" />,
       label: "Hourly Rate",
-      value: employee.hourly_rate ? `$${parseFloat(employee.hourly_rate).toFixed(2)}` : "—",
+      value: employee.hourly_rate ? `$${parseFloat(employee.hourly_rate).toFixed(2)}` : "Not set",
       color: "text-amber-600 bg-amber-50",
       iconColor: "text-amber-500"
     }
@@ -144,7 +144,7 @@ const EmployeeProfile = () => {
             transition={{ duration: 0.3 }}
             className="lg:col-span-1 space-y-6"
           >
-            <div className="bg-linear-to-br from-gray-900 to-black rounded-2xl p-6 text-white shadow-2xl">
+            <div className="bg-black rounded-xl p-6 text-white shadow-2xl">
               <div className="relative">
                 <div className="w-32 h-32 mx-auto rounded-full border-4 border-white/20 p-1 shadow-2xl">
                   <img
@@ -161,20 +161,20 @@ const EmployeeProfile = () => {
               </div>
               
               <div className="text-center mt-6">
-                <h2 className="text-2xl font-bold">{employee.name || "Unknown"}</h2>
+                <h2 className="text-2xl font-medium">{employee.name || "Unknown"}</h2>
                 <p className="text-gray-300 mt-1 flex items-center justify-center gap-2">
                   <FaIdBadge className="w-4 h-4" />
                   {employee.employee_id}
                 </p>
                 <div className="mt-4">
-                  <span className={`px-4 py-1.5 rounded-full text-sm font-bold ${
+                  <span className={`px-4 py-1.5 rounded-full text-sm font-medium ${
                     employee.status === "active" 
                       ? "bg-green-500/20 text-green-300" 
                       : employee.status === "inactive"
                       ? "bg-yellow-500/20 text-yellow-300"
                       : "bg-red-500/20 text-red-300"
                   }`}>
-                    {employee.status?.toUpperCase() || "UNKNOWN"}
+                    {employee.status?.toUpperCase() || "Unknown Status"}
                   </span>
                 </div>
               </div>
@@ -244,10 +244,10 @@ const EmployeeProfile = () => {
                 Activity
               </button>
             </div>
-            <div className="bg-white rounded-2xl p-8 shadow-sm border border-gray-100">
+            <div className="bg-white rounded-xl p-8 shadow-sm border border-gray-100">
               <div className="flex items-center justify-between mb-8">
                 <div>
-                  <h3 className="text-xl font-bold text-gray-900 flex items-center gap-3">
+                  <h3 className="text-xl font-medium text-gray-900 flex items-center gap-3">
                     <div className="p-2 bg-blue-50 rounded-lg">
                       <MdPerson className="w-6 h-6 text-blue-600" />
                     </div>
@@ -333,10 +333,10 @@ const EmployeeProfile = () => {
                 </div>
               </div>
             </div>
-            <div className="bg-white rounded-2xl p-8 shadow-sm border border-gray-100">
+            <div className="bg-white rounded-xl p-8 shadow-sm border border-gray-100">
               <div className="flex items-center justify-between mb-8">
                 <div>
-                  <h3 className="text-xl font-bold text-gray-900 flex items-center gap-3">
+                  <h3 className="text-xl font-medium text-gray-900 flex items-center gap-3">
                     <div className="p-2 bg-green-50 rounded-lg">
                       <MdWork className="w-6 h-6 text-green-600" />
                     </div>
@@ -354,7 +354,7 @@ const EmployeeProfile = () => {
                     </div>
                     <div className="flex-1">
                       <p className="text-sm text-gray-500 mb-1">Joining Date</p>
-                      <p className="font-bold text-green-700">{formatDate(employee.joining_date)}</p>
+                      <p className="font-medium text-green-700">{formatDate(employee.joining_date)}</p>
                     </div>
                   </div>
 
@@ -388,7 +388,7 @@ const EmployeeProfile = () => {
                     </div>
                     <div className="flex-1">
                       <p className="text-sm text-gray-500 mb-1">System Role</p>
-                      <span className="px-4 py-2 bg-purple-100 text-purple-800 rounded-full text-sm font-bold">
+                      <span className="px-4 py-2 bg-purple-100 text-purple-800 rounded-full text-sm font-medium">
                         {employee.role?.name || "No Role Assigned"}
                       </span>
                     </div>
@@ -400,7 +400,7 @@ const EmployeeProfile = () => {
                     </div>
                     <div className="flex-1">
                       <p className="text-sm text-gray-500 mb-1">Hourly Rate</p>
-                      <p className="font-bold text-purple-700">
+                      <p className="font-medium text-purple-700">
                         {employee.hourly_rate ? `$${parseFloat(employee.hourly_rate).toFixed(2)}/hr` : "—"}
                       </p>
                     </div>
@@ -434,17 +434,17 @@ const EmployeeProfile = () => {
               <motion.div
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
-                className="bg-linear-to-r from-red-50 to-orange-50 border border-red-200 rounded-2xl p-8"
+                className="bg-linear-to-r from-red-50 to-orange-50 border border-red-200 rounded-xl p-8"
               >
                 <div className="flex items-center gap-4">
                   <div className="p-3 bg-red-100 rounded-full">
                     <MdCancel className="w-8 h-8 text-red-600" />
                   </div>
                   <div>
-                    <h3 className="text-xl font-bold text-red-800">Employment Ended</h3>
+                    <h3 className="text-xl font-medium text-red-800">Employment Ended</h3>
                     <p className="text-red-600 mt-1">
                       This employee's employment was terminated on{" "}
-                      <span className="font-bold">{formatDate(employee.exit_date)}</span>
+                      <span className="font-medium">{formatDate(employee.exit_date)}</span>
                     </p>
                   </div>
                 </div>

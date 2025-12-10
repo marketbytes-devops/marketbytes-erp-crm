@@ -140,11 +140,11 @@ const DepartmentView = () => {
                               Open Sheet
                             </a>
                           ) : (
-                            <span className="text-gray-400 italic">—</span>
+                            <span className="text-gray-400 italic">No sheets attached</span>
                           )}
                         </td>
                         <td className="px-6 py-4 text-gray-600 max-w-xs">
-                          <div className="truncate">{dept.services || <span className="text-gray-400 italic">—</span>}</div>
+                          <div className="truncate">{dept.services || <span className="text-gray-400 italic">No services added</span>}</div>
                         </td>
                         <td className="px-6 py-4">
                           <div className="flex items-center justify-center gap-3">

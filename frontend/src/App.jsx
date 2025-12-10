@@ -17,7 +17,7 @@ import Permissions from "./pages/Roles/Permissions";
 import Loading from "./components/Loading";
 import EmployeeView from "./pages/HR/Employees/EmployeeView";
 import Attendance from "./pages/HR/Attendance";
-import Holidays from "./pages/HR/Holidays";
+import HolidayView from "./pages/HR/Holidays/HolidayView";
 import Leaves from "./pages/HR/Leaves";
 import Overtime from "./pages/HR/Overtime";
 import Recruitment from "./pages/HR/Recruitment";
@@ -213,7 +213,7 @@ function App() {
           path: "/hr/holidays",
           element: (
             <ProtectedRoute isAuthenticated={isAuthenticated} requiredPage="holidays" requiredAction="view">
-              <Holidays />
+              <HolidayView />
             </ProtectedRoute>
           ),
         },

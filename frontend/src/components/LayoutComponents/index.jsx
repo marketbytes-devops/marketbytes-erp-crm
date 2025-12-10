@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion';
 import { Toaster } from 'react-hot-toast';
 import { MdClose } from 'react-icons/md';
+import { createPortal } from 'react-dom';
 
 const LayoutComponents = ({
   children,
@@ -10,7 +11,6 @@ const LayoutComponents = ({
   modal,
   onCloseModal,
 }) => {
-
   const toaster = (
     <Toaster
       position="top-right"
@@ -20,9 +20,6 @@ const LayoutComponents = ({
           background: '#000',
           color: '#fff',
           fontSize: '14px',
-          position: "relative",
-          top: "80px",
-          right: "8px"
         },
         success: { iconTheme: { primary: '#10b981', secondary: '#fff' } },
         error: { iconTheme: { primary: '#ef4444', secondary: '#fff' } },
@@ -34,20 +31,17 @@ const LayoutComponents = ({
     return (
       <>
         {toaster}
-        <div className="min-h-auto w-full">
+        <div className="w-full">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-            className="w-full"
+            className="bg-white rounded-xl shadow-inner overflow-hidden"
           >
-            <div className="bg-white rounded-xl shadow-inner overflow-hidden">
-              <div className="bg-black p-6 text-center lg:text-left">
-                <h2 className="text-2xl font-bold text-white mb-2">{title}</h2>
-                {subtitle && <p className="text-gray-300 text-sm">{subtitle}</p>}
-              </div>
-              <div className="p-6">{children}</div>
+            <div className="bg-black p-6 text-center lg:text-left">
+              <h2 className="text-2xl font-medium text-white mb-2">{title}</h2>
+              {subtitle && <p className="text-gray-300 text-sm">{subtitle}</p>}
             </div>
+            <div className="p-6">{children}</div>
           </motion.div>
         </div>
       </>
@@ -58,48 +52,45 @@ const LayoutComponents = ({
     return (
       <>
         {toaster}
-        <div className="min-h-auto">
-          <div className="max-w-full mx-auto">
-            <motion.div
-              initial={{ opacity: 0, y: -20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5 }}
-              className="mb-6 text-center lg:text-left"
-            >
-              <h2 className="text-2xl font-bold text-black mb-2">{title}</h2>
-              {subtitle && <p className="text-gray-600 text-sm">{subtitle}</p>}
-            </motion.div>
-
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1, duration: 0.6 }}
-              className=" rounded-xl overflow-hidden"
-            >
-              {children}
-            </motion.div>
-          </div>
+        <div className="max-w-full mx-auto">
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mb-6 text-center lg:text-left"
+          >
+            <h2 className="text-2xl font-medium text-black mb-2">{title}</h2>
+            {subtitle && <p className="text-gray-600 text-sm">{subtitle}</p>}
+          </motion.div>
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+          >
+            {children}
+          </motion.div>
         </div>
       </>
     );
   }
 
   if (variant === 'modal') {
-    return (
+    return createPortal(
       <>
         {toaster}
-        <div className="fixed inset-0 backdrop-brightness-50 z-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
           <motion.div
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.9, opacity: 0 }}
-            className="bg-white rounded-xl shadow-2xl max-w-2xl w-full max-h-screen overflow-y-auto"
+            transition={{ type: "spring", damping: 25, stiffness: 300 }}
+            className="bg-white rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto"
+            onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex justify-between items-center p-6 border-b border-gray-200">
-              <h3 className="text-2xl font-bold text-black">{title}</h3>
+            <div className="flex justify-between items-center p-6 border-b border-gray-200 sticky top-0 bg-white z-10 rounded-t-2xl">
+              <h3 className="text-2xl font-medium text-black">{title}</h3>
               <button
                 onClick={onCloseModal}
-                className="p-2 hover:bg-gray-100 rounded-xl transition-all"
+                className="p-3 hover:bg-gray-100 rounded-xl transition-all duration-200"
               >
                 <MdClose className="w-6 h-6 text-gray-600" />
               </button>
@@ -107,7 +98,8 @@ const LayoutComponents = ({
             <div className="p-8">{modal}</div>
           </motion.div>
         </div>
-      </>
+      </>,
+      document.body
     );
   }
 

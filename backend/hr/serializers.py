@@ -1,25 +1,142 @@
 from rest_framework import serializers
-from .models import (
-    Attendance, Holiday, LeaveType, Leave,
-    Overtime, Candidate, Performance
-)
+from .models import Attendance, Holiday, LeaveType, Leave, Overtime, Candidate, Performance, Project, Task, WorkSession, BreakSession
 from authapp.serializers import UserSerializer
 from authapp.models import CustomUser
+from django.utils import timezone
+from datetime import datetime
 
 class AttendanceSerializer(serializers.ModelSerializer):
     employee = UserSerializer(read_only=True)
-    employee_id = serializers.PrimaryKeyRelatedField(
-        queryset=CustomUser.objects.all(), source='employee', write_only=True
-    )
+    employee_id = serializers.PrimaryKeyRelatedField(queryset=CustomUser.objects.all(), source='employee', write_only=True)
     total_hours = serializers.SerializerMethodField()
-
+    productive_hours = serializers.SerializerMethodField()
+    break_hours = serializers.SerializerMethodField()
+    first_clock_in = serializers.SerializerMethodField()
+    last_clock_out = serializers.SerializerMethodField()
+    check_in_out_history = serializers.SerializerMethodField()
+    
     class Meta:
         model = Attendance
         fields = '__all__'
-        read_only_fields = ['total_hours', 'created_at', 'updated_at']
-
+        read_only_fields = ['total_hours', 'productive_hours', 'break_hours', 'first_clock_in', 'last_clock_out', 'check_in_out_history', 'created_at', 'updated_at']
+    
+    def _get_work_sessions_for_date(self, obj):
+        """Get work sessions for the attendance date in local timezone"""
+        local_tz = timezone.get_current_timezone()
+        start_of_day = datetime.combine(obj.date, datetime.min.time())
+        end_of_day = datetime.combine(obj.date, datetime.max.time())
+        
+        start_of_day = timezone.make_aware(start_of_day, local_tz)
+        end_of_day = timezone.make_aware(end_of_day, local_tz)
+        
+        return WorkSession.objects.filter(
+            employee=obj.employee,
+            start_time__gte=start_of_day,
+            start_time__lte=end_of_day
+        ).order_by('start_time')
+    
+    def _get_break_sessions_for_date(self, obj):
+        """Get break sessions for the attendance date in local timezone"""
+        local_tz = timezone.get_current_timezone()
+        start_of_day = datetime.combine(obj.date, datetime.min.time())
+        end_of_day = datetime.combine(obj.date, datetime.max.time())
+        
+        start_of_day = timezone.make_aware(start_of_day, local_tz)
+        end_of_day = timezone.make_aware(end_of_day, local_tz)
+        
+        return BreakSession.objects.filter(
+            employee=obj.employee,
+            start_time__gte=start_of_day,
+            start_time__lte=end_of_day
+        ).order_by('start_time')
+    
+    def get_first_clock_in(self, obj):
+        """Get the very first check-in time of the day"""
+        work_sessions = self._get_work_sessions_for_date(obj)
+        first_session = work_sessions.first()
+        
+        if first_session:
+            local_time = timezone.localtime(first_session.start_time)
+            return local_time.strftime("%I:%M:%S %p")
+        
+        return obj.clock_in.strftime("%I:%M:%S %p") if obj.clock_in else None
+    
+    def get_last_clock_out(self, obj):
+        """Get the very last check-out time - only if user has checked out"""
+        if not obj.clock_out:
+            return None
+        
+        work_sessions = self._get_work_sessions_for_date(obj)
+        completed_sessions = work_sessions.filter(end_time__isnull=False)
+        last_session = completed_sessions.last()
+        
+        if last_session and last_session.end_time:
+            local_time = timezone.localtime(last_session.end_time)
+            return local_time.strftime("%I:%M:%S %p")
+        
+        return obj.clock_out.strftime("%I:%M:%S %p") if obj.clock_out else None
+    
+    def get_check_in_out_history(self, obj):
+        """Get all check-in/out times for the day"""
+        work_sessions = self._get_work_sessions_for_date(obj)
+        
+        history = []
+        for session in work_sessions:
+            check_in_local = timezone.localtime(session.start_time)
+            
+            if session.end_time:
+                check_out_local = timezone.localtime(session.end_time)
+                check_out_str = check_out_local.strftime("%I:%M:%S %p")
+            else:
+                check_out_str = "Still Working"
+            
+            history.append({
+                'check_in': check_in_local.strftime("%I:%M:%S %p"),
+                'check_out': check_out_str,
+                'project': session.project.name if session.project else None,
+                'task': session.task.name if session.task else None,
+                'memo': session.memo
+            })
+        
+        return history
+    
     def get_total_hours(self, obj):
+        """Calculate total hours from first check-in to last check-out"""
+        work_sessions = self._get_work_sessions_for_date(obj)
+        first_session = work_sessions.first()
+        
+        completed_sessions = work_sessions.filter(end_time__isnull=False)
+        last_session = completed_sessions.last()
+        
+        if first_session and last_session and last_session.end_time:
+            total_seconds = (last_session.end_time - first_session.start_time).total_seconds()
+            return round(total_seconds / 3600, 2)
+        
         return obj.calculate_hours()
+    
+    def get_productive_hours(self, obj):
+        """Calculate productive hours from work sessions (excluding breaks)"""
+        work_sessions = self._get_work_sessions_for_date(obj)
+        completed_sessions = work_sessions.filter(end_time__isnull=False)
+        
+        total_seconds = sum(
+            (session.end_time - session.start_time).total_seconds() 
+            for session in completed_sessions
+        )
+        hours = total_seconds / 3600
+        return round(hours, 2)
+    
+    def get_break_hours(self, obj):
+        """Calculate break hours from break sessions"""
+        break_sessions = self._get_break_sessions_for_date(obj)
+        completed_breaks = break_sessions.filter(end_time__isnull=False)
+        
+        total_seconds = sum(
+            (session.end_time - session.start_time).total_seconds() 
+            for session in completed_breaks
+        )
+        hours = total_seconds / 3600
+        return round(hours, 2)
 
 class AttendanceCheckInOutSerializer(serializers.Serializer):
     action = serializers.ChoiceField(choices=['in', 'out'])
@@ -28,6 +145,9 @@ class AttendanceCheckInOutSerializer(serializers.Serializer):
 class AttendanceStatusSerializer(serializers.Serializer):
     checked_in = serializers.BooleanField()
     clock_in = serializers.CharField(allow_null=True)
+    clock_out = serializers.CharField(allow_null=True)
+    productive_hours = serializers.CharField()
+    status = serializers.CharField()
     message = serializers.CharField()
 
 class HolidaySerializer(serializers.ModelSerializer):
@@ -44,24 +164,29 @@ class LeaveSerializer(serializers.ModelSerializer):
     employee = UserSerializer(read_only=True)
     leave_type_name = serializers.CharField(source='leave_type.name', read_only=True)
     total_days = serializers.SerializerMethodField()
-
+    
     class Meta:
         model = Leave
         fields = '__all__'
-
+    
     def get_total_days(self, obj):
         return obj.total_days()
 
 class OvertimeSerializer(serializers.ModelSerializer):
     employee = UserSerializer(read_only=True)
-
+    employee_id = serializers.PrimaryKeyRelatedField(
+        queryset=CustomUser.objects.all(), 
+        source='employee', 
+        write_only=True
+    )
+    
     class Meta:
         model = Overtime
         fields = '__all__'
 
 class CandidateSerializer(serializers.ModelSerializer):
     department_name = serializers.CharField(source='department.name', read_only=True)
-
+    
     class Meta:
         model = Candidate
         fields = '__all__'
@@ -69,7 +194,39 @@ class CandidateSerializer(serializers.ModelSerializer):
 class PerformanceSerializer(serializers.ModelSerializer):
     employee = UserSerializer(read_only=True)
     department_name = serializers.CharField(source='department.name', read_only=True)
-
+    
     class Meta:
         model = Performance
+        fields = '__all__'
+
+class ProjectSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Project
+        fields = '__all__'
+
+class TaskSerializer(serializers.ModelSerializer):
+    project_name = serializers.CharField(source='project.name', read_only=True)
+    
+    class Meta:
+        model = Task
+        fields = '__all__'
+
+class WorkSessionSerializer(serializers.ModelSerializer):
+    employee = UserSerializer(read_only=True)
+    project_name = serializers.CharField(source='project.name', read_only=True)
+    task_name = serializers.CharField(source='task.name', read_only=True)
+    duration = serializers.SerializerMethodField()
+    
+    class Meta:
+        model = WorkSession
+        fields = '__all__'
+    
+    def get_duration(self, obj):
+        if obj.end_time and obj.start_time:
+            return str(obj.end_time - obj.start_time).split('.')[0]
+        return "Running..."
+
+class BreakSessionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = BreakSession
         fields = '__all__'

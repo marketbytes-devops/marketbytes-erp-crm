@@ -43,7 +43,7 @@ const Recruitment = () => {
     <div className="p-6">
       <LayoutComponents title="Recruitment" subtitle="Manage hiring pipeline" variant="card">
         <div className="bg-white rounded-2xl shadow-sm p-6 mb-6 flex justify-between items-center">
-          <h3 className="text-xl font-bold">Candidates</h3>
+          <h3 className="text-xl font-medium">Candidates</h3>
           <div className="flex gap-3">
             <button className="flex items-center gap-3 px-6 py-3.5 border border-gray-300 rounded-xl hover:bg-gray-50 transition">
               <MdDownload className="w-5 h-5" /> Export
@@ -89,13 +89,13 @@ const Recruitment = () => {
                       className="w-full h-full object-cover"
                     />
                   </div>
-                  <h4 className="text-xl font-bold text-center text-gray-900">{c.name || "Unnamed"}</h4>
+                  <h4 className="text-xl font-medium text-center text-gray-900">{c.name || "Unnamed"}</h4>
                   <p className="text-center text-gray-600 mt-1">
                     {c.designation || "—"} • {c.department?.name || "—"}
                   </p>
                   <div className="mt-5 flex justify-center">
                     <span
-                      className={`px-5 py-2 rounded-full text-sm font-bold ${
+                      className={`px-5 py-2 rounded-full text-sm font-medium ${
                         statusColor[c.status] || "bg-gray-100 text-gray-800"
                       }`}
                     >
@@ -104,7 +104,7 @@ const Recruitment = () => {
                   </div>
                   {c.offered && (
                     <div className="mt-4 text-center">
-                      <span className="px-4 py-1.5 bg-green-100 text-green-800 text-xs font-bold rounded-full">
+                      <span className="px-4 py-1.5 bg-green-100 text-green-800 text-xs font-medium rounded-full">
                         Offer Extended
                       </span>
                     </div>

@@ -7,8 +7,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import apiClient from "../../helpers/apiClient";
 import LayoutComponents from "../../components/LayoutComponents";
-import Input from "../../components/Input";
 import Loading from "../../components/Loading";
+import Input from "../../components/Input";
 
 const createRoleSchema = z.object({
   name: z.string().min(1, "Role name is required"),
@@ -171,7 +171,7 @@ const Roles = () => {
         {hasPermission("roles", "add") && (
           <div className="bg-white rounded-xl shadow-inner border border-gray-200 overflow-hidden mb-6">
             <div className="p-6 border-b border-gray-200">
-              <h3 className="text-2xl font-bold text-black flex items-center gap-3">
+              <h3 className="text-2xl font-medium text-black flex items-center gap-3">
                 <Shield className="w-8 h-8" />
                 Create New Role
               </h3>
@@ -208,7 +208,7 @@ const Roles = () => {
 
         <div className="bg-white rounded-xl shadow-inner border border-gray-200 overflow-hidden">
           <div className="p-6 border-b border-gray-200 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <h3 className="text-2xl font-bold text-black">Existing Roles</h3>
+            <h3 className="text-2xl font-medium text-black">Existing Roles</h3>
             <div className="relative">
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
               <input
@@ -233,9 +233,9 @@ const Roles = () => {
             <table className="w-full">
               <thead className="bg-gray-100">
                 <tr>
-                  <th className="px-6 py-5 text-left text-sm font-bold text-black uppercase tracking-wider">Role Name</th>
-                  <th className="px-6 py-5 text-left text-sm font-bold text-black uppercase tracking-wider">Description</th>
-                  <th className="px-6 py-5 text-left text-sm font-bold text-black uppercase tracking-wider">Actions</th>
+                  <th className="px-6 py-5 text-left text-sm font-medium text-black uppercase tracking-wider">Role Name</th>
+                  <th className="px-6 py-5 text-left text-sm font-medium text-black uppercase tracking-wider">Description</th>
+                  <th className="px-6 py-5 text-left text-sm font-medium text-black uppercase tracking-wider">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
@@ -254,7 +254,7 @@ const Roles = () => {
                     >
                       <td className="px-6 py-6">
                         <div className="flex items-center gap-4">
-                          <span className="text-lg font-bold text-black">{role.name}</span>
+                          <span className="text-lg font-medium text-black">{role.name}</span>
                         </div>
                       </td>
                       <td className="px-6 py-6 text-gray-700">{role.description || "—"}</td>
@@ -316,7 +316,7 @@ const Roles = () => {
                 onClick={(e) => e.stopPropagation()}
               >
                 <div className="bg-black text-white px-10 py-8 text-center">
-                  <h2 className="text-3xl font-bold">
+                  <h2 className="text-3xl font-medium">
                     Edit Role: <span className="text-gray-300">{editRole.name}</span>
                   </h2>
                 </div>
@@ -330,7 +330,7 @@ const Roles = () => {
                       required
                     />
                     <div>
-                      <label className="block text-sm font-bold text-black mb-3">Description (Optional)</label>
+                      <label className="block text-sm font-medium text-black mb-3">Description (Optional)</label>
                       <textarea
                         {...registerEdit("description")}
                         rows={4}
@@ -350,14 +350,14 @@ const Roles = () => {
                       <button
                         type="button"
                         onClick={() => setEditRole(null)}
-                        className="px-8 py-4 bg-gray-200 text-black font-bold rounded-xl hover:bg-gray-300 transition text-lg"
+                        className="px-8 py-4 bg-gray-200 text-black font-medium rounded-xl hover:bg-gray-300 transition text-lg"
                       >
                         Cancel
                       </button>
                       <button
                         type="submit"
                         disabled={isEditing}
-                        className="px-10 py-4 bg-black text-white font-bold rounded-xl hover:bg-white hover:text-black border transition text-lg shadow-xl disabled:opacity-70"
+                        className="px-10 py-4 bg-black text-white font-medium rounded-xl hover:bg-white hover:text-black border transition text-lg shadow-xl disabled:opacity-70"
                       >
                         {isEditing ? "Saving..." : "Save Changes"}
                       </button>
