@@ -4,11 +4,13 @@ import LayoutComponents from "../../../components/LayoutComponents";
 import apiClient from "../../../helpers/apiClient";
 import { MdAdd, MdDownload, MdCheckCircle, MdPending, MdCancel } from "react-icons/md";
 import { format } from "date-fns";
+import { useNavigate } from "react-router-dom";
 
 const Leaves = () => {
   const [leaves, setLeaves] = useState([]);
   const [filter, setFilter] = useState("all");
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
   useEffect(() => {
     setLoading(true);
@@ -86,8 +88,10 @@ const Leaves = () => {
               <button className="flex items-center gap-3 px-6 py-3.5 border border-gray-300 rounded-xl hover:bg-gray-50 transition">
                 <MdDownload className="w-5 h-5" /> Export
               </button>
-              <button className="flex items-center gap-3 px-6 py-3.5 bg-black text-white rounded-xl hover:bg-gray-900 transition font-medium">
-                <MdAdd className="w-5 h-5" /> Apply Leave
+              <button className="flex items-center gap-3 px-6 py-3.5 bg-black text-white rounded-xl
+                              hover:bg-gray-900 transition font-medium"
+                      onClick={() => navigate("/hr/leaves/assign")}>
+                <MdAdd className="w-5 h-5" /> Assign Leave
               </button>
             </div>
           </div>

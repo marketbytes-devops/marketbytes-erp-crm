@@ -41,6 +41,7 @@ class PermissionSerializer(serializers.ModelSerializer):
 
 class RoleSerializer(serializers.ModelSerializer):
     member_count = serializers.IntegerField(read_only=True)
+    permissions = PermissionSerializer(many=True, read_only=True)
 
     class Meta:
         model = Role

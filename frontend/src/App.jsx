@@ -1,9 +1,5 @@
 import { useState, useEffect } from "react";
-import {
-  createBrowserRouter,
-  RouterProvider,
-  Navigate,
-} from "react-router";
+import { createBrowserRouter, RouterProvider, Navigate } from "react-router";
 import "./index.css";
 import apiClient from "./helpers/apiClient";
 import Layout from "./components/Layout";
@@ -31,8 +27,14 @@ import DepartmentEdit from "./pages/HR/Departments/DepartmentEdit";
 import DesignationView from "./pages/HR/Designations/DesignationView";
 import DesignationEdit from "./pages/HR/Designations/DesignationEdit";
 import DesignationCreate from "./pages/HR/Designations/DesignationCreate";
+import AssignLeave from "./pages/HR/Leaves/AssignLeave";
 
-const ProtectedRoute = ({ children, isAuthenticated, requiredPage, requiredAction = "view" }) => {
+const ProtectedRoute = ({
+  children,
+  isAuthenticated,
+  requiredPage,
+  requiredAction = "view",
+}) => {
   const [isLoading, setIsLoading] = useState(true);
   const [hasPermission, setHasPermission] = useState(false);
 
@@ -85,9 +87,11 @@ const ProtectedRoute = ({ children, isAuthenticated, requiredPage, requiredActio
   }
 
   if (isLoading) {
-    return <div className="flex justify-center items-center min-h-screen">
-      <Loading />
-    </div>;
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        <Loading />
+      </div>
+    );
   }
 
   if (!hasPermission) {
@@ -115,16 +119,27 @@ function App() {
       path: "/",
       element: (
         <ProtectedRoute isAuthenticated={isAuthenticated} requiredPage="admin">
-          <Layout isAuthenticated={isAuthenticated} setIsAuthenticated={setIsAuthenticated} />
+          <Layout
+            isAuthenticated={isAuthenticated}
+            setIsAuthenticated={setIsAuthenticated}
+          />
         </ProtectedRoute>
       ),
-      errorElement: <div className="flex justify-center items-center min-h-screen text-black">Something went wrong. Please try again or contact support.</div>,
+      errorElement: (
+        <div className="flex justify-center items-center min-h-screen text-black">
+          Something went wrong. Please try again or contact support.
+        </div>
+      ),
       children: [
         { index: true, element: <Admin /> },
         {
           path: "/hr/employees",
           element: (
-            <ProtectedRoute isAuthenticated={isAuthenticated} requiredPage="employees" requiredAction="view">
+            <ProtectedRoute
+              isAuthenticated={isAuthenticated}
+              requiredPage="employees"
+              requiredAction="view"
+            >
               <EmployeeView />
             </ProtectedRoute>
           ),
@@ -132,7 +147,11 @@ function App() {
         {
           path: "/hr/employees/create",
           element: (
-            <ProtectedRoute isAuthenticated={isAuthenticated} requiredPage="employees" requiredAction="add">
+            <ProtectedRoute
+              isAuthenticated={isAuthenticated}
+              requiredPage="employees"
+              requiredAction="add"
+            >
               <EmployeeCreate />
             </ProtectedRoute>
           ),
@@ -140,7 +159,11 @@ function App() {
         {
           path: "/hr/employees/:id",
           element: (
-            <ProtectedRoute isAuthenticated={isAuthenticated} requiredPage="employees" requiredAction="view">
+            <ProtectedRoute
+              isAuthenticated={isAuthenticated}
+              requiredPage="employees"
+              requiredAction="view"
+            >
               <EmployeeProfile />
             </ProtectedRoute>
           ),
@@ -148,7 +171,11 @@ function App() {
         {
           path: "/hr/employees/:id/edit",
           element: (
-            <ProtectedRoute isAuthenticated={isAuthenticated} requiredPage="employees" requiredAction="edit">
+            <ProtectedRoute
+              isAuthenticated={isAuthenticated}
+              requiredPage="employees"
+              requiredAction="edit"
+            >
               <EmployeeEdit />
             </ProtectedRoute>
           ),
@@ -156,7 +183,11 @@ function App() {
         {
           path: "/hr/departments",
           element: (
-            <ProtectedRoute isAuthenticated={isAuthenticated} requiredPage="departments" requiredAction="view">
+            <ProtectedRoute
+              isAuthenticated={isAuthenticated}
+              requiredPage="departments"
+              requiredAction="view"
+            >
               <DepartmentView />
             </ProtectedRoute>
           ),
@@ -164,7 +195,11 @@ function App() {
         {
           path: "/hr/departments/create",
           element: (
-            <ProtectedRoute isAuthenticated={isAuthenticated} requiredPage="departments" requiredAction="add">
+            <ProtectedRoute
+              isAuthenticated={isAuthenticated}
+              requiredPage="departments"
+              requiredAction="add"
+            >
               <DepartmentCreate />
             </ProtectedRoute>
           ),
@@ -172,7 +207,11 @@ function App() {
         {
           path: "/hr/departments/:id/edit",
           element: (
-            <ProtectedRoute isAuthenticated={isAuthenticated} requiredPage="departments" requiredAction="edit">
+            <ProtectedRoute
+              isAuthenticated={isAuthenticated}
+              requiredPage="departments"
+              requiredAction="edit"
+            >
               <DepartmentEdit />
             </ProtectedRoute>
           ),
@@ -180,7 +219,11 @@ function App() {
         {
           path: "/hr/designations",
           element: (
-            <ProtectedRoute isAuthenticated={isAuthenticated} requiredPage="designations" requiredAction="view">
+            <ProtectedRoute
+              isAuthenticated={isAuthenticated}
+              requiredPage="designations"
+              requiredAction="view"
+            >
               <DesignationView />
             </ProtectedRoute>
           ),
@@ -188,7 +231,11 @@ function App() {
         {
           path: "/hr/designations/create",
           element: (
-            <ProtectedRoute isAuthenticated={isAuthenticated} requiredPage="designations" requiredAction="add">
+            <ProtectedRoute
+              isAuthenticated={isAuthenticated}
+              requiredPage="designations"
+              requiredAction="add"
+            >
               <DesignationCreate />
             </ProtectedRoute>
           ),
@@ -196,7 +243,11 @@ function App() {
         {
           path: "/hr/designations/:id/edit",
           element: (
-            <ProtectedRoute isAuthenticated={isAuthenticated} requiredPage="designations" requiredAction="edit">
+            <ProtectedRoute
+              isAuthenticated={isAuthenticated}
+              requiredPage="designations"
+              requiredAction="edit"
+            >
               <DesignationEdit />
             </ProtectedRoute>
           ),
@@ -204,7 +255,11 @@ function App() {
         {
           path: "/hr/attendance",
           element: (
-            <ProtectedRoute isAuthenticated={isAuthenticated} requiredPage="attendance" requiredAction="view">
+            <ProtectedRoute
+              isAuthenticated={isAuthenticated}
+              requiredPage="attendance"
+              requiredAction="view"
+            >
               <Attendance />
             </ProtectedRoute>
           ),
@@ -212,7 +267,11 @@ function App() {
         {
           path: "/hr/holidays",
           element: (
-            <ProtectedRoute isAuthenticated={isAuthenticated} requiredPage="holidays" requiredAction="view">
+            <ProtectedRoute
+              isAuthenticated={isAuthenticated}
+              requiredPage="holidays"
+              requiredAction="view"
+            >
               <HolidayView />
             </ProtectedRoute>
           ),
@@ -220,15 +279,35 @@ function App() {
         {
           path: "/hr/leaves",
           element: (
-            <ProtectedRoute isAuthenticated={isAuthenticated} requiredPage="leaves" requiredAction="view">
+            <ProtectedRoute
+              isAuthenticated={isAuthenticated}
+              requiredPage="leaves"
+              requiredAction="view"
+            >
               <Leaves />
+            </ProtectedRoute>
+          ),
+        },
+        {
+          path: "/hr/leaves/assign",
+          element: (
+            <ProtectedRoute
+              isAuthenticated={isAuthenticated}
+              requiredPage="leaves"
+              requiredAction="add"
+            >
+              <AssignLeave />
             </ProtectedRoute>
           ),
         },
         {
           path: "/hr/overtime",
           element: (
-            <ProtectedRoute isAuthenticated={isAuthenticated} requiredPage="overtime" requiredAction="view">
+            <ProtectedRoute
+              isAuthenticated={isAuthenticated}
+              requiredPage="overtime"
+              requiredAction="view"
+            >
               <Overtime />
             </ProtectedRoute>
           ),
@@ -236,7 +315,11 @@ function App() {
         {
           path: "/hr/recruitment",
           element: (
-            <ProtectedRoute isAuthenticated={isAuthenticated} requiredPage="recruitment" requiredAction="view">
+            <ProtectedRoute
+              isAuthenticated={isAuthenticated}
+              requiredPage="recruitment"
+              requiredAction="view"
+            >
               <Recruitment />
             </ProtectedRoute>
           ),
@@ -244,7 +327,11 @@ function App() {
         {
           path: "/hr/performance",
           element: (
-            <ProtectedRoute isAuthenticated={isAuthenticated} requiredPage="performance" requiredAction="view">
+            <ProtectedRoute
+              isAuthenticated={isAuthenticated}
+              requiredPage="performance"
+              requiredAction="view"
+            >
               <Performance />
             </ProtectedRoute>
           ),
@@ -252,7 +339,11 @@ function App() {
         {
           path: "/profile",
           element: (
-            <ProtectedRoute isAuthenticated={isAuthenticated} requiredPage="profile" requiredAction="view">
+            <ProtectedRoute
+              isAuthenticated={isAuthenticated}
+              requiredPage="profile"
+              requiredAction="view"
+            >
               <Profile />
             </ProtectedRoute>
           ),
@@ -260,7 +351,11 @@ function App() {
         {
           path: "/user-roles/users",
           element: (
-            <ProtectedRoute isAuthenticated={isAuthenticated} requiredPage="users" requiredAction="view">
+            <ProtectedRoute
+              isAuthenticated={isAuthenticated}
+              requiredPage="users"
+              requiredAction="view"
+            >
               <Users />
             </ProtectedRoute>
           ),
@@ -268,7 +363,11 @@ function App() {
         {
           path: "/user-roles/roles",
           element: (
-            <ProtectedRoute isAuthenticated={isAuthenticated} requiredPage="roles" requiredAction="view">
+            <ProtectedRoute
+              isAuthenticated={isAuthenticated}
+              requiredPage="roles"
+              requiredAction="view"
+            >
               <Roles />
             </ProtectedRoute>
           ),
@@ -276,7 +375,11 @@ function App() {
         {
           path: "/user-roles/permissions",
           element: (
-            <ProtectedRoute isAuthenticated={isAuthenticated} requiredPage="permissions" requiredAction="view">
+            <ProtectedRoute
+              isAuthenticated={isAuthenticated}
+              requiredPage="permissions"
+              requiredAction="view"
+            >
               <Permissions />
             </ProtectedRoute>
           ),
