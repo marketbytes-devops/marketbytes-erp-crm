@@ -162,16 +162,28 @@ class LeaveTypeSerializer(serializers.ModelSerializer):
 
 class LeaveSerializer(serializers.ModelSerializer):
     employee = UserSerializer(read_only=True)
+    employee_id = serializers.PrimaryKeyRelatedField(
+        queryset=CustomUser.objects.all(),
+        source='employee',
+        write_only=True,
+        required=True,        # important
+        allow_null=False
+    )
     leave_type_name = serializers.CharField(source='leave_type.name', read_only=True)
     total_days = serializers.SerializerMethodField()
-    
+
     class Meta:
         model = Leave
-        fields = '__all__'
-    
+        fields = [
+            'id', 'employee', 'employee_id', 'leave_type', 'leave_type_name',
+            'start_date', 'end_date', 'duration', 'reason', 'status',
+            'approved_by', 'rejection_reason', 'created_at', 'updated_at', 'total_days'
+        ]
+        read_only_fields = ['approved_by', 'created_at', 'updated_at', 'total_days', 'leave_type_name']
+
     def get_total_days(self, obj):
         return obj.total_days()
-
+    
 class OvertimeSerializer(serializers.ModelSerializer):
     employee = UserSerializer(read_only=True)
     employee_id = serializers.PrimaryKeyRelatedField(
