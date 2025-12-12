@@ -14,16 +14,24 @@ class YearFilter(admin.SimpleListFilter):
     def lookups(self, request, model_admin):
         years = set()
         for obj in model_admin.model.objects.all():
-            if obj.date:
+            if hasattr(obj, 'date') and obj.date:
                 years.add(obj.date.year)
             elif hasattr(obj, 'start_time') and obj.start_time:
                 years.add(obj.start_time.year)
+            elif hasattr(obj, 'start_date') and obj.start_date:  
+                years.add(obj.start_date.year)
         return sorted([(y, y) for y in years], reverse=True)
 
     def queryset(self, request, queryset):
         if self.value():
             year = self.value()
-            return queryset.filter(date__year=year) if hasattr(queryset[0], 'date') else queryset.filter(start_time__year=year)
+            if hasattr(queryset.model, 'date'):
+                return queryset.filter(date__year=year)
+            elif hasattr(queryset.model, 'start_time'):
+                return queryset.filter(start_time__year=year)
+            elif hasattr(queryset.model, 'start_date'): 
+                return queryset.filter(start_date__year=year)
+        return queryset
 
 
 def mark_as_approved(modeladmin, request, queryset):

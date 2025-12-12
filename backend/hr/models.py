@@ -85,7 +85,10 @@ class Leave(models.Model):
         verbose_name_plural = "Leaves"
 
     def __str__(self):
-        return f"{self.employee.name} - {self.leave_type.name} ({self.start_date})"
+        employee_name = self.employee.name if self.employee else "No Employee"
+        leave_type_name = self.leave_type.name if self.leave_type else "No Leave Type"
+        date_str = self.start_date.strftime("%Y-%m-%d") if self.start_date else "No Date"
+        return f"{employee_name} - {leave_type_name} ({date_str})"
 
     def total_days(self):
         if self.duration == 'half_day':
