@@ -1,6 +1,9 @@
 from django.db import models
 from django.utils import timezone
 from authapp.models import CustomUser, Department
+from operation.models import Project
+from operation.models import Task
+
 
 class Attendance(models.Model):
     employee = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='attendances', null=True, blank=True)
@@ -151,26 +154,6 @@ class Performance(models.Model):
     def __str__(self):
         return f"{self.employee.name} - {self.review_period} ({self.rating})"
 
-class Project(models.Model):
-    name = models.CharField(max_length=200, unique=True, null=True, blank=True)
-    description = models.TextField(blank=True, null=True)
-    is_active = models.BooleanField(default=True, null=True, blank=True)
-    created_at = models.DateTimeField(auto_now_add=True, null=True, blank=True)
-
-    def __str__(self):
-        return self.name
-
-class Task(models.Model):
-    project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='tasks', null=True, blank=True)
-    name = models.CharField(max_length=200, null=True, blank=True)
-    description = models.TextField(blank=True, null=True)
-    is_active = models.BooleanField(default=True, null=True, blank=True)
-
-    class Meta:
-        unique_together = ('project', 'name')
-
-    def __str__(self):
-        return f"{self.project.name} - {self.name}"
 
 class WorkSession(models.Model):
     employee = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='work_sessions', null=True, blank=True)
