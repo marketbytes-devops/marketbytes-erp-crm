@@ -3,22 +3,22 @@ import { motion } from "framer-motion";
 import LayoutComponents from "../../../components/LayoutComponents";
 import apiClient from "../../../helpers/apiClient";
 import { MdAdd, MdDownload } from "react-icons/md";
-
+ 
 const Recruitment = () => {
   const [candidates, setCandidates] = useState([]);
   const [loading, setLoading] = useState(true);
-
+ 
   useEffect(() => {
     setLoading(true);
     apiClient
       .get("/hr/candidates/")
       .then((res) => {
         let data = res.data;
-
+ 
         if (data && data.results) {
           data = data.results;
         }
-
+ 
         const candidatesArray = Array.isArray(data) ? data : [];
         setCandidates(candidatesArray);
       })
@@ -28,7 +28,7 @@ const Recruitment = () => {
       })
       .finally(() => setLoading(false));
   }, []);
-
+ 
   const statusColor = {
     screening: "bg-gray-100 text-gray-800",
     interview: "bg-blue-100 text-blue-800",
@@ -38,7 +38,7 @@ const Recruitment = () => {
     rejected: "bg-red-100 text-red-800",
     on_hold: "bg-yellow-100 text-yellow-800",
   };
-
+ 
   return (
     <div className="p-6">
       <LayoutComponents title="Recruitment" subtitle="Manage hiring pipeline" variant="card">
@@ -53,7 +53,7 @@ const Recruitment = () => {
             </button>
           </div>
         </div>
-
+ 
         {loading ? (
           <div className="bg-white rounded-2xl shadow-sm p-16 text-center">
             <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-black border-t-transparent"></div>
@@ -118,5 +118,6 @@ const Recruitment = () => {
     </div>
   );
 };
-
+ 
 export default Recruitment;
+ 

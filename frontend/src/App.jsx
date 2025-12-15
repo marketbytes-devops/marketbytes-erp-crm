@@ -28,7 +28,9 @@ import DesignationView from "./pages/HR/Designations/DesignationView";
 import DesignationEdit from "./pages/HR/Designations/DesignationEdit";
 import DesignationCreate from "./pages/HR/Designations/DesignationCreate";
 import AssignLeave from "./pages/HR/Leaves/AssignLeave";
-
+import Projects from "./pages/Operations/Projects/ProjectView"
+import ProjectCreate from "./pages/Operations/Projects/ProjectCreate";
+import ProjectTemplate from "./pages/Operations/Projects/ProjectTemplate";
 const ProtectedRoute = ({
   children,
   isAuthenticated,
@@ -348,6 +350,46 @@ function App() {
             </ProtectedRoute>
           ),
         },
+
+         {
+          path:"/hr/projects",
+          element: (
+            <ProtectedRoute
+              isAuthenticated={isAuthenticated}
+              requiredPage="permissions"
+              requiredAction="view"
+            >
+             <Projects/>
+            </ProtectedRoute>
+          ),
+        },
+         
+         {
+          path:"/hr/projects/projectcreate",
+          element: (
+            <ProtectedRoute
+              isAuthenticated={isAuthenticated}
+              requiredPage="permissions"
+              requiredAction="view"
+            >
+             <ProjectCreate/>
+            </ProtectedRoute>
+          ),
+        },
+
+         {
+          path:"/hr/projects/projecttemplate",
+          element: (
+            <ProtectedRoute
+              isAuthenticated={isAuthenticated}
+              requiredPage="permissions"
+              requiredAction="view"
+            >
+             <ProjectTemplate/>
+            </ProtectedRoute>
+          ),
+        },
+
         {
           path: "/user-roles/users",
           element: (

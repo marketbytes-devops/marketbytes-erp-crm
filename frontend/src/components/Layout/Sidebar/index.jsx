@@ -15,7 +15,9 @@ import {
   MdAssignmentLate,    
   MdTimer,              
   MdPersonSearch,       
-  MdTrendingUp,         
+  MdTrendingUp,     
+  MdDashboard,
+  MdSettings    
 } from "react-icons/md";
 import { SiDraugiemdotlv } from "react-icons/si";
 
@@ -27,6 +29,7 @@ const Sidebar = ({ toggleSidebar }) => {
   const location = useLocation();
 
   const [isHROpen, setIsHROpen] = useState(false);
+  const [isOperationOpen,setOperationOpen] = useState(false);
   const [isUserRolesOpen, setIsUserRolesOpen] = useState(false);
   const [permissions, setPermissions] = useState([]);
   const [isSuperadmin, setIsSuperadmin] = useState(false);
@@ -142,6 +145,22 @@ const Sidebar = ({ toggleSidebar }) => {
         },
       ].filter((item) => hasPermission(item.page, item.action)),
     },
+    {
+      label: "Operations",
+      icon: <MdSettings className="w-6 h-6" />, 
+      isOpen: isOperationOpen,
+      toggle: () => setOperationOpen((prev) => !prev),
+      subItems: [
+        {
+          to: "/hr/projects",
+          label: "Projects",
+          icon: <MdDashboard className="w-6 h-6" />,
+          page: "Projects",
+          action: "view",
+        },
+          ].filter((item) => hasPermission(item.page, item.action)),
+    },
+
     {
       label: "User Roles",
       icon: <MdShield className="w-6 h-6" />,
