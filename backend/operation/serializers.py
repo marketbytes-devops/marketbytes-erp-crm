@@ -4,7 +4,8 @@ from .models import (
     ProjectCategory,
     ProjectStatus,
     ProjectStage,
-    Client
+    Client,
+    ProjectFile,
 )
 from authapp.serializers import ProfileSerializer
 from authapp.models import CustomUser, Department
@@ -53,6 +54,11 @@ class ClientSerializer(serializers.ModelSerializer):
             instance.save()
         return instance
 
+class ProjectFileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ProjectFile
+        fields = ['id', 'file', 'original_name', 'file_size', 'uploaded_at', 'uploaded_by']
+        read_only_fields = ['original_name', 'file_size', 'uploaded_at', 'uploaded_by']
 
 class ProjectSerializer(serializers.ModelSerializer):
     # Readable nested outputs
@@ -62,6 +68,7 @@ class ProjectSerializer(serializers.ModelSerializer):
     stage = ProjectStageSerializer(read_only=True)
     client = ClientSerializer(read_only=True)
     members = ProfileSerializer(many=True, read_only=True)
+    project_files = ProjectFileSerializer(many=True, read_only=True)
 
     # Write-only ID fields
     category_id = serializers.PrimaryKeyRelatedField(
@@ -110,6 +117,17 @@ class ProjectSerializer(serializers.ModelSerializer):
         write_only=True,
         required=False
     )
+ 
+    files = serializers.ListField(
+        child=serializers.FileField(max_length=100000, allow_empty_file=False),
+        write_only=True,
+        required=False
+    )
+
+    category_name = serializers.CharField(write_only=True, required=False, allow_blank=True)
+    status_name = serializers.CharField(write_only=True, required=False, allow_blank=True)
+    stage_name = serializers.CharField(write_only=True, required=False, allow_blank=True)
+    client_name = serializers.CharField(write_only=True, required=False, allow_blank=True)
 
     class Meta:
         model = Project
@@ -120,8 +138,11 @@ class ProjectSerializer(serializers.ModelSerializer):
             'category', 'category_id',
             'department', 'department_id',
 
-            'start_date', 'deadline', 'no_deadline', 'amc_date',
-            'allow_manual_timelogs', 'allocated_hours',
+            'start_date', 'deadline', 'no_deadline', 
+            'amc', 'amc_date',
+
+            'renewal_only', 'dm', 
+            'allow_manual_timelogs', 'hours_allocated',
 
             'members', 'members_ids',
             'summary', 'notes',
@@ -131,27 +152,142 @@ class ProjectSerializer(serializers.ModelSerializer):
 
             'budget', 'currency',
 
-            'status', 'status_id',
-            'stage', 'stage_id',
+            'status', 'status_id', 'status_name',
+            'stage', 'stage_id', 'stage_name',
 
-            'files',
+            'files', 'project_files',
 
             'is_active',
             'created_at',
             'updated_at',
         ]
-        read_only_fields = ['id', 'created_at', 'updated_at']
+        read_only_fields = ['id', 'created_at', 'updated_at', 'project_files']
 
     def create(self, validated_data):
+        # Handle files upload
+        files = validated_data.pop('files', [])
+        
+        # Handle name-based lookups
+        category_name = validated_data.pop('category_name', None)
+        status_name = validated_data.pop('status_name', None)
+        stage_name = validated_data.pop('stage_name', None)
+        client_name = validated_data.pop('client_name', None)
+        
+        # Get or create category by name
+        if category_name:
+            category, created = ProjectCategory.objects.get_or_create(
+                name=category_name,
+                defaults={'description': f'Category: {category_name}'}
+            )
+            validated_data['category'] = category
+        
+        # Get or create status by name
+        if status_name:
+            status, created = ProjectStatus.objects.get_or_create(
+                name=status_name,
+                defaults={'description': f'Status: {status_name}'}
+            )
+            validated_data['status'] = status
+        
+        # Get or create stage by name
+        if stage_name:
+            stage, created = ProjectStage.objects.get_or_create(
+                name=stage_name,
+                defaults={'description': f'Stage: {stage_name}'}
+            )
+            validated_data['stage'] = stage
+        
+        # Get or create client by name (if needed)
+        if client_name:
+            client, created = Client.objects.get_or_create(
+                name=client_name,
+                defaults={'email': f'{client_name.lower().replace(" ", "")}@client.com'}
+            )
+            validated_data['client'] = client
+        
+        # Handle members
         members_ids = validated_data.pop('members_ids', [])
+        
+        # Create project
         project = super().create(validated_data)
+        
+        # Add members
         if members_ids:
             project.members.set(members_ids)
+        
+        # Handle file uploads
+        if files and self.context.get('request'):
+            user = self.context['request'].user
+            for file in files:
+                ProjectFile.objects.create(
+                    project=project,
+                    file=file,
+                    original_name=file.name,
+                    file_size=file.size,
+                    uploaded_by=user
+                )
+        
         return project
 
     def update(self, instance, validated_data):
+        # Handle files upload
+        files = validated_data.pop('files', [])
+        
+        # Handle name-based lookups
+        category_name = validated_data.pop('category_name', None)
+        status_name = validated_data.pop('status_name', None)
+        stage_name = validated_data.pop('stage_name', None)
+        client_name = validated_data.pop('client_name', None)
+        
+        # Update related objects by name if provided
+        if category_name:
+            category, created = ProjectCategory.objects.get_or_create(
+                name=category_name,
+                defaults={'description': f'Category: {category_name}'}
+            )
+            validated_data['category'] = category
+        
+        if status_name:
+            status, created = ProjectStatus.objects.get_or_create(
+                name=status_name,
+                defaults={'description': f'Status: {status_name}'}
+            )
+            validated_data['status'] = status
+        
+        if stage_name:
+            stage, created = ProjectStage.objects.get_or_create(
+                name=stage_name,
+                defaults={'description': f'Stage: {stage_name}'}
+            )
+            validated_data['stage'] = stage
+        
+        if client_name:
+            client, created = Client.objects.get_or_create(
+                name=client_name,
+                defaults={'email': f'{client_name.lower().replace(" ", "")}@client.com'}
+            )
+            validated_data['client'] = client
+        
+        # Handle members
         members_ids = validated_data.pop('members_ids', None)
+        
+        # Update project
         project = super().update(instance, validated_data)
+        
+        # Update members if provided
         if members_ids is not None:
             project.members.set(members_ids)
+        
+        # Handle file uploads
+        if files and self.context.get('request'):
+            user = self.context['request'].user
+            for file in files:
+                ProjectFile.objects.create(
+                    project=project,
+                    file=file,
+                    original_name=file.name,
+                    file_size=file.size,
+                    uploaded_by=user
+                )
+        
         return project
