@@ -1,145 +1,142 @@
-import { useState } from "react";
-import { FiSearch } from "react-icons/fi";
-import { MdEdit, MdVisibility, MdDelete } from "react-icons/md";
+import React, { useState } from "react";
 import LayoutComponents from "../../../components/LayoutComponents";
+import { useNavigate } from "react-router";
 
-const ProjectTemplatesView = () => {
-  const [entries, setEntries] = useState(10);
-  const [search, setSearch] = useState("");
+const AddNewTemplatePage = () => {
 
-  // Mock data exactly as in screenshot
-  const templates = [
-    {
-      id: 1,
-      name: "Cms",
-      membersMessage: "No member added to this project.",
-      category: "-",
-    },
-  ];
+  const navigate = useNavigate();
+  const handleClick = () => {
+    navigate("/operations/projects/projecttemplateadd"); 
+  };
 
   return (
-     <div classname="p-6">
-      <LayoutComponents title="Project Template" variant="table">
-        <div className="bg-white rounded-xl shadow-sm overflow-hidden">
-       
-    
-            <button className="px-6 py-3 bg-teal-500 text-white rounded-lg hover:bg-teal-600 transition font-medium flex items-center gap-2">
-              Add New Template
-              <span className="text-xl font-bold">+</span>
-            </button>
-          
-          {/* Show Entries + Search */}
-          <div className="px-8 py-5 bg-gray-100 border-b border-gray-200 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <div className="flex items-center gap-3 text-sm text-gray-700">
-              <span>Show</span>
-              <select
-                value={entries}
-                onChange={(e) => setEntries(e.target.value)}
-                className="border border-gray-300 rounded px-3 py-1.5 text-sm focus:outline-none"
-              >
-                <option>10</option>
-                <option>25</option>
-                <option>50</option>
-                <option>100</option>
-              </select>
-              <span>entries</span>
-            </div>
+    <div className="p-6">
+      <LayoutComponents
+        title="Add New Template"
+        subtitle="Fill in the details to create a new template"
+        variant="card"
+      >
+        
+      <div className="w-full flex justify-end py-2">
+  <button className="bg-black text-white rounded-xl px-6 py-3" onClick={handleClick}>
 
-            <div className="flex items-center gap-3">
-              <span className="text-sm text-gray-700">Search:</span>
-              <div className="relative">
+    Add New Template
+  </button>
+</div>
+        <div className=" mx-auto">
+          <div className="bg-white rounded-xl  shadow-sm">
+            <div className="grid grid-cols-1 md:grid-cols-5 gap-5 mb-12 ">
+              {/* Column 1: Template Name */}
+              <div>
+                <div className="text-sm font-medium text-gray-600 mb-3 mt-3  ml-5 ">
+                  ID
+                </div>
+              </div>
+
+              <div>
+                <div className="text-sm font-medium text-gray-600 mt-3 mb-3">
+                  TEMPLATE NAME
+                </div>
                 <input
                   type="text"
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  className="pl-4 pr-10 py-2 border border-gray-300 rounded-lg w-72 focus:outline-none focus:ring-2 focus:ring-teal-500"
-                  placeholder=""
+                  placeholder="Enter template name"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
                 />
-                <FiSearch className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
+              </div>
+
+              {/* Column 2: Template Members */}
+              <div>
+                <div className="text-sm font-medium text-gray-600 mt-3 mb-3">
+                  TEMPLATE MEMBERS
+                </div>
+                <div className="text-gray-700">
+                  No member added to this template.
+                </div>
+                <button className="mt-3 text-black font-medium hover:underline flex items-center gap-1">
+                  <span className="text-xl">+</span> Add Template Members
+                </button>
+              </div>
+
+              {/* Column 3: Category */}
+              <div>
+                <div className="text-sm font-medium text-gray-600 mb-3 mt-3">
+                  CATEGORY
+                </div>
+                <div className="flex items-center gap-4">
+                  <span className="text-black text-2xl font-bold cursor-pointer select-none">
+                    +{" "}
+                  </span>
+                </div>
+              </div>
+
+              <div>
+                <div className="text-sm font-medium text-gray-600 mb-3 mt-3">
+                  ACTION
+                </div>
+                <div className="flex gap-3">
+                  <button className="text-blue-600 hover:text-blue-800">
+                    <svg
+                      className="w-6 h-6"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
+                      />
+                    </svg>
+                  </button>
+                  <button className="text-teal-600 hover:text-teal-800">
+                    <svg
+                      className="w-6 h-6"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M15 12a3 3 0 11-6 0 3 3 0 016 0z M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                      />
+                    </svg>
+                  </button>
+                  <button className="text-red-600 hover:text-red-800">
+                    <svg
+                      className="w-6 h-6"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                      />
+                    </svg>
+                  </button>
+                </div>
               </div>
             </div>
-          </div>
 
-          {/* Table */}
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead className="bg-gray-100">
-                <tr>
-                  <th className="px-8 py-4 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">
-                    ID
-                  </th>
-                  <th className="px-8 py-4 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">
-                    Template Name
-                  </th>
-                  <th className="px-8 py-4 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">
-                    Template Members
-                  </th>
-                  <th className="px-8 py-4 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">
-                    Category
-                  </th>
-                  <th className="px-8 py-4 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">
-                    Action
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {templates.map((template) => (
-                  <tr key={template.id} className="hover:bg-gray-50">
-                    <td className="px-8 py-6 text-sm text-gray-900">{template.id}</td>
-                    <td className="px-8 py-6 text-sm text-blue-600 font-medium">
-                      {template.name}
-                    </td>
-                    <td className="px-8 py-6 text-sm text-gray-700">
-                      {template.membersMessage}
-                      <div className="mt-4">
-                        <button className="text-teal-600 text-sm font-medium hover:underline flex items-center gap-1">
-                          <span className="text-xl">+</span> Add Template Members
-                        </button>
-                      </div>
-                    </td>
-                    <td className="px-8 py-6 text-sm text-gray-700 text-center">
-                      {template.category}
-                    </td>
-                    <td className="px-8 py-6">
-                      <div className="flex items-center gap-3">
-                        <button className="p-2.5 bg-blue-100 text-blue-600 rounded-lg hover:bg-blue-200 transition">
-                          <MdEdit className="w-4 h-4" />
-                        </button>
-                        <button className="p-2.5 bg-green-100 text-green-600 rounded-lg hover:bg-green-200 transition">
-                          <MdVisibility className="w-4 h-4" />
-                        </button>
-                        <button className="p-2.5 bg-red-100 text-red-600 rounded-lg hover:bg-red-200 transition">
-                          <MdDelete className="w-4 h-4" />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-
-          {/* Footer: Showing entries + Pagination */}
-          <div className="px-8 py-5 bg-gray-50 border-t border-gray-200 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <div className="text-sm text-gray-600">
-              Showing 1 to 1 of 1 entries
-            </div>
-            <div className="flex items-center gap-2">
-              <button className="px-5 py-2.5 border border-gray-300 rounded-lg text-sm text-gray-700 hover:bg-gray-100 disabled:opacity-50">
-                Previous
+            {/* Save / Cancel Buttons */}
+            <div className="flex justify-end gap-5 mt-12 pt-8 border-t border-gray-200">
+              <button className="px-8 py-3 border border-gray-300 rounded-xl text-gray-700 hover:bg-gray-50 transition">
+                Cancel
               </button>
-              <button className="px-5 py-2.5 bg-gray-200 text-gray-800 rounded-lg text-sm font-medium">
-                1
-              </button>
-              <button className="px-5 py-2.5 border border-gray-300 rounded-lg text-sm text-gray-700 hover:bg-gray-100">
-                Next
+              <button className="px-8 py-3 bg-black text-white rounded-xl hover:bg-black transition">
+                Save Template
               </button>
             </div>
           </div>
         </div>
       </LayoutComponents>
-   </div>
+    </div>
   );
 };
 
-export default ProjectTemplatesView;
+export default AddNewTemplatePage;

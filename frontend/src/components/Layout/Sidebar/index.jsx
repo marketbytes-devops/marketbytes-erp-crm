@@ -7,17 +7,18 @@ import {
   MdVerifiedUser,
   MdLock,
   MdExpandMore,
-  MdWork,               
-  MdGroup,             
-  MdAccountTree,                    
-  MdAccessTime,         
-  MdCalendarToday,      
-  MdAssignmentLate,    
-  MdTimer,              
-  MdPersonSearch,       
-  MdTrendingUp,     
+  MdWork,
+  MdGroup,
+  MdAccountTree,
+  MdAccessTime,
+  MdCalendarToday,
+  MdAssignmentLate,
+  MdTimer,
+  MdPersonSearch,
+  MdTrendingUp,
   MdDashboard,
-  MdSettings    
+  MdSettings,
+  MdAssignment,
 } from "react-icons/md";
 import { SiDraugiemdotlv } from "react-icons/si";
 
@@ -29,7 +30,8 @@ const Sidebar = ({ toggleSidebar }) => {
   const location = useLocation();
 
   const [isHROpen, setIsHROpen] = useState(false);
-  const [isOperationOpen,setOperationOpen] = useState(false);
+  const [isOperationOpen, setOperationOpen] = useState(false);
+  const [isTasksOpen, setTasksOpen] = useState(false);
   const [isUserRolesOpen, setIsUserRolesOpen] = useState(false);
   const [permissions, setPermissions] = useState([]);
   const [isSuperadmin, setIsSuperadmin] = useState(false);
@@ -76,7 +78,7 @@ const Sidebar = ({ toggleSidebar }) => {
     },
     {
       label: "HR Management",
-      icon: <MdWork className="w-6 h-6" />, 
+      icon: <MdWork className="w-6 h-6" />,
       isOpen: isHROpen,
       toggle: () => setIsHROpen((prev) => !prev),
       subItems: [
@@ -147,18 +149,25 @@ const Sidebar = ({ toggleSidebar }) => {
     },
     {
       label: "Operations",
-      icon: <MdSettings className="w-6 h-6" />, 
+      icon: <MdSettings className="w-6 h-6" />,
       isOpen: isOperationOpen,
       toggle: () => setOperationOpen((prev) => !prev),
       subItems: [
         {
-          to: "/hr/projects",
+          to: "/Operations/projects",
           label: "Projects",
           icon: <MdDashboard className="w-6 h-6" />,
           page: "Projects",
           action: "view",
         },
-          ].filter((item) => hasPermission(item.page, item.action)),
+        {
+          to: "/Operations/tasks",
+          label: "Tasks",
+          icon: <MdAssignment className="w-5 h-5" />,
+          page: "Tasks",
+          action: "view",
+        },
+      ].filter((item) => hasPermission(item.page, item.action)),
     },
 
     {
@@ -214,7 +223,10 @@ const Sidebar = ({ toggleSidebar }) => {
         </div>
         <div className="flex-1 p-6 space-y-4">
           {[...Array(6)].map((_, i) => (
-            <div key={i} className="h-12 bg-gray-100 rounded-xl animate-pulse" />
+            <div
+              key={i}
+              className="h-12 bg-gray-100 rounded-xl animate-pulse"
+            />
           ))}
         </div>
       </motion.div>
@@ -296,13 +308,21 @@ const Sidebar = ({ toggleSidebar }) => {
                                   }`
                                 }
                               >
-                                <span className="relative z-10">{subItem.icon}</span>
-                                <span className="relative z-10">{subItem.label}</span>
+                                <span className="relative z-10">
+                                  {subItem.icon}
+                                </span>
+                                <span className="relative z-10">
+                                  {subItem.label}
+                                </span>
                                 {location.pathname === subItem.to && (
                                   <motion.div
                                     layoutId="activeSidebarIndicator"
                                     className="absolute inset-0 bg-black rounded-xl"
-                                    transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                                    transition={{
+                                      type: "spring",
+                                      stiffness: 300,
+                                      damping: 30,
+                                    }}
                                   />
                                 )}
                               </NavLink>
@@ -331,7 +351,11 @@ const Sidebar = ({ toggleSidebar }) => {
                       <motion.div
                         layoutId="activeSidebarIndicator"
                         className="absolute inset-0 bg-black rounded-xl"
-                        transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                        transition={{
+                          type: "spring",
+                          stiffness: 300,
+                          damping: 30,
+                        }}
                       />
                     )}
                   </NavLink>

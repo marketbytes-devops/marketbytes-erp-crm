@@ -6,6 +6,9 @@ import LayoutComponents from "../../../components/LayoutComponents";
 import { useNavigate } from "react-router";
 const ProjectsView = () => {
   const navigate =useNavigate();
+  const handleClick =()=>{
+    navigate("/operations/projects/projectarchive")
+  }
   const [isPinnedModalOpen, setIsPinnedModalOpen] = useState(false);
   const [search, setSearch] = useState("");
   const [filtersOpen, setFiltersOpen] = useState(false);
@@ -34,9 +37,9 @@ const ProjectsView = () => {
     setSearch("");
   };
 const handleProjectCreate =() =>{
-  navigate("/hr/projects/projectcreate");}
+  navigate("/operations/projects/projectcreate");}
 const handleProjectTemplate =() =>{
-  navigate("/hr/projects/projecttemplate");
+  navigate("/operations/projects/projecttemplate");
 }  
 
   return (
@@ -109,17 +112,17 @@ const handleProjectTemplate =() =>{
               {/* Action Buttons  */}
               <div className="flex flex-wrap items-center gap-3">
                 
-                <button onClick={() => setIsPinnedModalOpen(true)} className="flex items-center gap-2 px-4 py-3 border border-teal-500 text-teal-600 rounded-lg hover:bg-teal-50 transition text-sm font-medium">
+                <button onClick={() => setIsPinnedModalOpen(true)} className="flex items-center gap-2 px-4 py-3 border border-black hover:bg-gray-100  text-black rounded-lg transition text-sm font-medium">
                   <MdPushPin className="w-5 h-5" />
                   Pinned Project
                 </button>
-                <button className="px-4 py-3 border border-orange-300 text-orange-700 rounded-lg hover:bg-orange-50 transition text-sm font-medium">
+                <button onClick={ handleClick} className="px-4 py-3 border border-black text-black hover:bg-gray-100  rounded-lg transition text-sm font-medium">
                   View Archive
                 </button>
-                <button onClick={handleProjectTemplate } className="px-4 py-3 border border-purple-300 text-purple-700 rounded-lg hover:bg-purple-50 transition text-sm font-medium">
+                <button onClick={handleProjectTemplate } className="px-4 py-3 border border-black text-black rounded-lg hover:bg-gray-100  transition text-sm font-medium">
                   Project Templates
                 </button>
-                 <button className="flex items-center gap-2 px-5 py-4 border border-gray-300 rounded-xl hover:bg-gray-50 transition text-sm font-semibold">
+                 <button className="flex items-center gap-2 px-5 py-4 border border-gray-300 rounded-xl hover:bg-gray-100  transition text-sm font-semibold">
                   <MdDownload className="w-5 h-5" /> Export
                 </button>
                

@@ -31,6 +31,12 @@ import AssignLeave from "./pages/HR/Leaves/AssignLeave";
 import Projects from "./pages/Operations/Projects/ProjectView"
 import ProjectCreate from "./pages/Operations/Projects/ProjectCreate";
 import ProjectTemplate from "./pages/Operations/Projects/ProjectTemplate";
+import ProjectTemplateAdd from "./pages/Operations/Projects/ProjectTemplateAdd";
+import ProjectArchive from "./pages/Operations/Projects/ProjectArchive";
+import TaskView from "./pages/Operations/Tasks/TaskView";
+import TaskLabel from"./pages/Operations/Tasks/TaskLabel";
+import CreateTaskLabel from "./pages/Operations/Tasks/CreateTaskLabel";
+import NewTask from "./pages/Operations/Tasks/NewTask";
 const ProtectedRoute = ({
   children,
   isAuthenticated,
@@ -352,7 +358,7 @@ function App() {
         },
 
          {
-          path:"/hr/projects",
+          path:"/operations/projects",
           element: (
             <ProtectedRoute
               isAuthenticated={isAuthenticated}
@@ -365,7 +371,7 @@ function App() {
         },
          
          {
-          path:"/hr/projects/projectcreate",
+          path:"/operations/projects/projectcreate",
           element: (
             <ProtectedRoute
               isAuthenticated={isAuthenticated}
@@ -378,7 +384,7 @@ function App() {
         },
 
          {
-          path:"/hr/projects/projecttemplate",
+          path:"/operations/projects/projecttemplate",
           element: (
             <ProtectedRoute
               isAuthenticated={isAuthenticated}
@@ -389,6 +395,81 @@ function App() {
             </ProtectedRoute>
           ),
         },
+
+          {
+          path:"/operations/projects/projecttemplateadd",
+          element: (
+            <ProtectedRoute
+              isAuthenticated={isAuthenticated}
+              requiredPage="permissions"
+              requiredAction="view"
+            >
+             <ProjectTemplateAdd/>
+            </ProtectedRoute>
+          ),
+        },
+
+          {
+          path:"/operations/projects/projectarchive",
+          element: (
+            <ProtectedRoute
+              isAuthenticated={isAuthenticated}
+              requiredPage="permissions"
+              requiredAction="view"
+            >
+             <ProjectArchive/>
+            </ProtectedRoute>
+          ),
+        },
+         {
+          path:"/operations/tasks",
+          element: (
+            <ProtectedRoute
+              isAuthenticated={isAuthenticated}
+              requiredPage="permissions"
+              requiredAction="view"
+            >
+             <TaskView/>
+            </ProtectedRoute>
+          ),
+        },
+             {
+          path:"/operations/tasks/tasklabel",
+          element: (
+            <ProtectedRoute
+              isAuthenticated={isAuthenticated}
+              requiredPage="permissions"
+              requiredAction="view"
+            >
+             <TaskLabel/>
+            </ProtectedRoute>
+          ),
+        },
+            {
+          path:"/operations/tasks/createtasklabel",
+          element: (
+            <ProtectedRoute
+              isAuthenticated={isAuthenticated}
+              requiredPage="permissions"
+              requiredAction="view"
+            >
+             <CreateTaskLabel/>
+            </ProtectedRoute>
+          ),
+        },
+          {
+          path:"/operations/tasks/newtask",
+          element: (
+            <ProtectedRoute
+              isAuthenticated={isAuthenticated}
+              requiredPage="permissions"
+              requiredAction="view"
+            >
+             <NewTask/>
+            </ProtectedRoute>
+          ),
+        },
+
 
         {
           path: "/user-roles/users",
