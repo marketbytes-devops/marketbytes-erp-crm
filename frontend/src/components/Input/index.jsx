@@ -1,118 +1,191 @@
-import { forwardRef, useState, useRef, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { cn } from '../../lib/utils';
-import { MdKeyboardArrowDown, MdVisibility, MdVisibilityOff } from 'react-icons/md';
-import { createPortal } from 'react-dom';
+import { forwardRef, useState, useRef, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { cn } from "../../lib/utils";
+import {
+  MdKeyboardArrowDown,
+  MdVisibility,
+  MdVisibilityOff,
+} from "react-icons/md";
+import { createPortal } from "react-dom";
 
-const Select = forwardRef(({ options = [], value, onChange, placeholder = "Select an option", className }, ref) => {
-  const [isOpen, setIsOpen] = useState(false);
-  const [selectedLabel, setSelectedLabel] = useState("");
-  const triggerRef = useRef(null);
-  const [triggerRect, setTriggerRect] = useState(null);
+const Select = forwardRef(
+  (
+    {
+      options = [],
+      value,
+      onChange,
+      placeholder = "Select an option",
+      className,
+      multiple = false, 
+    },
+    ref
+  ) => {
+    const [isOpen, setIsOpen] = useState(false);
+    const [selectedLabel, setSelectedLabel] = useState("");
+    const triggerRef = useRef(null);
+    const ulRef = useRef(null);
+    const [triggerRect, setTriggerRect] = useState(null);
 
-  useEffect(() => {
-    const selected = options.find(opt => String(opt.value) === String(value));
-    setSelectedLabel(selected ? selected.label : "");
-  }, [value, options]);
+    useEffect(() => {
+  if (multiple) return;
 
-  useEffect(() => {
-    if (isOpen && triggerRef.current) {
-      setTriggerRect(triggerRef.current.getBoundingClientRect());
-    }
-  }, [isOpen]);
+  const selected = options.find(
+    (opt) => String(opt.value) === String(value)
+  );
+  setSelectedLabel(selected ? selected.label : "");
+}, [value, options, multiple]);
 
-  useEffect(() => {
-    const handleClickOutside = (e) => {
-      if (triggerRef.current && !triggerRef.current.contains(e.target)) {
-        setIsOpen(false);
+    useEffect(() => {
+      if (isOpen && triggerRef.current) {
+        setTriggerRect(triggerRef.current.getBoundingClientRect());
       }
-    };
-    if (isOpen) {
-      document.addEventListener("mousedown", handleClickOutside);
+    }, [isOpen]);
+
+    useEffect(() => {
+      const handleClickOutside = (e) => {
+        if (
+          triggerRef.current &&
+          !triggerRef.current.contains(e.target) &&
+          (!ulRef.current || !ulRef.current.contains(e.target))
+        ) {
+          setIsOpen(false);
+        }
+      };
+      if (isOpen) {
+        document.addEventListener("mousedown", handleClickOutside);
+      }
+      return () =>
+        document.removeEventListener("mousedown", handleClickOutside);
+    }, [isOpen]);
+
+   const handleSelect = (option) => {
+  if (multiple) {
+    const current = Array.isArray(value) ? value : [];
+    if (!current.includes(option.value)) {
+      onChange([...current, option.value]);
     }
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [isOpen]);
-
-  const handleSelect = (option) => {
-    onChange?.(option.value);
+  } else {
+    onChange(option.value);
     setIsOpen(false);
-  };
+  }
+};
 
-  const dropdownContent = isOpen && (
-    <motion.ul
-      initial={{ opacity: 0, y: -8, scale: 0.95 }}
-      animate={{ opacity: 1, y: 0, scale: 1 }}
-      exit={{ opacity: 0, y: -8, scale: 0.95 }}
-      transition={{ duration: 0.15 }}
-      className="fixed bg-white border border-gray-300 rounded-lg shadow-2xl max-h-60 overflow-y-auto py-1 z-50"
-      style={{
-        top: triggerRect ? triggerRect.bottom + 8 : 0,
-        left: triggerRect ? triggerRect.left : 0,
-        minWidth: triggerRect ? triggerRect.width : "100%",
-      }}
-    >
-      {options.length === 0 ? (
-        <li className="px-4 py-3 text-gray-500 text-center text-sm">No options available</li>
-      ) : (
-        options.map((option) => (
-          <motion.li
-            key={option.value}
-            whileHover={{ backgroundColor: "#f3f4f6" }}
-            onClick={() => handleSelect(option)}
-            className="px-4 py-2.5 cursor-pointer text-sm text-gray-900 hover:bg-gray-100"
-          >
-            {option.label}
-          </motion.li>
-        ))
-      )}
-    </motion.ul>
-  );
+const handleRemove = (val) => {
+  onChange(value.filter((v) => v !== val));
+};
 
-  return (
-    <>
-      <button
-        ref={triggerRef}
-        type="button"
-        onClick={() => setIsOpen(!isOpen)}
-        className={cn(
-          "w-full px-4 py-3 border rounded-lg flex items-center justify-between text-left transition-all",
-          "focus:ring focus:ring-black focus:border-black outline-none",
-          "border-gray-600 hover:border-gray-800",
-          className
-        )}
+
+    const dropdownContent = isOpen && (
+      <motion.ul
+        ref={ulRef}
+        initial={{ opacity: 0, y: -8, scale: 0.95 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        exit={{ opacity: 0, y: -8, scale: 0.95 }}
+        transition={{ duration: 0.15 }}
+        className="absolute bg-white border border-gray-300 rounded-lg shadow-2xl max-h-60 overflow-y-auto py-1 z-50"
+        style={{
+          top: triggerRect ? triggerRect.bottom + window.pageYOffset + 8 : 0,
+          left: triggerRect ? triggerRect.left + window.pageXOffset : 0,
+          minWidth: triggerRect ? triggerRect.width : "100%",
+        }}
       >
-        <span className={value ? "text-black" : "text-gray-500"}>
-          {selectedLabel || placeholder}
-        </span>
-        <MdKeyboardArrowDown
-          className={cn("w-5 h-5 transition-transform duration-200", isOpen && "rotate-180")}
-        />
-      </button>
+        {options.length === 0 ? (
+          <li className="px-4 py-3 text-gray-500 text-center text-sm">
+            No options available
+          </li>
+        ) : (
+          options.map((option) => (
+            <motion.li
+              key={option.value}
+              onClick={() => handleSelect(option)}
+              className="px-4 py-2.5 cursor-pointer text-sm text-gray-900 hover:bg-gray-100 transition-colors duration-100" // Optional: add smooth transition
+            >
+              {option.label}
+            </motion.li>
+          ))
+        )}
+      </motion.ul>
+    );
 
-      {createPortal(
-        <AnimatePresence>{dropdownContent}</AnimatePresence>,
-        document.body
-      )}
-    </>
-  );
-});
+    return (
+      <>
+        <button
+          ref={triggerRef}
+          type="button"
+          onClick={() => setIsOpen(!isOpen)}
+          className={cn(
+            "w-full px-4 py-3 border rounded-lg flex items-center justify-between text-left transition-all",
+            "focus:ring focus:ring-black focus:border-black outline-none",
+            "border-gray-600 hover:border-gray-800",
+            className
+          )}
+        >
+         <span className="flex flex-wrap gap-2">
+  {multiple && Array.isArray(value) && value.length > 0 ? (
+    value.map((val) => {
+      const opt = options.find(o => String(o.value) === String(val));
+      return (
+        <span
+          key={val}
+          className="flex items-center gap-1 bg-gray-200 px-2 py-1 rounded text-sm"
+        >
+          {opt?.label}
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              handleRemove(val);
+            }}
+            className="text-gray-600 hover:text-black"
+          >
+            ✕
+          </button>
+        </span>
+      );
+    })
+  ) : (
+    <span className={value ? "text-black" : "text-gray-500"}>
+      {selectedLabel || placeholder}
+    </span>
+  )}
+</span>
+
+          <MdKeyboardArrowDown
+            className={cn(
+              "w-5 h-5 transition-transform duration-200",
+              isOpen && "rotate-180"
+            )}
+          />
+        </button>
+
+        {createPortal(
+          <AnimatePresence>{dropdownContent}</AnimatePresence>,
+          document.body
+        )}
+      </>
+    );
+  }
+);
 Select.displayName = "Select";
 
 const Input = forwardRef(
-  ({
-    label,
-    id,
-    type = "text",
-    placeholder,
-    className,
-    error,
-    helperText,
-    options,
-    value,
-    onChange,
-    required,
-    ...props
-  }, ref) => {
+  (
+    {
+      label,
+      id,
+      type = "text",
+      placeholder,
+      className,
+      error,
+      helperText,
+      options,
+      value,
+      onChange,
+      required,
+      ...props
+    },
+    ref
+  ) => {
     const hasError = !!error;
     const [showPassword, setShowPassword] = useState(false);
 
@@ -123,7 +196,10 @@ const Input = forwardRef(
       return (
         <div className="space-y-2">
           {label && (
-            <label htmlFor={id} className="block text-sm font-semibold text-black">
+            <label
+              htmlFor={id}
+              className="block text-sm font-semibold text-black"
+            >
               {label}
               {required && <span className="text-red-500 ml-1">*</span>}
             </label>
@@ -134,11 +210,21 @@ const Input = forwardRef(
             value={value}
             onChange={onChange}
             placeholder={placeholder}
-            className={cn(hasError && "border-red-500 focus:ring-red-500 focus:border-red-500")}
+            multiple={props.multiple}
+            className={cn(
+              hasError &&
+                "border-red-500 focus:ring-red-500 focus:border-red-500"
+            )}
+            
           />
 
           {(hasError || helperText) && (
-            <p className={cn("text-sm mt-1", hasError ? "text-red-600" : "text-gray-600")}>
+            <p
+              className={cn(
+                "text-sm mt-1",
+                hasError ? "text-red-600" : "text-gray-600"
+              )}
+            >
               {error || helperText}
             </p>
           )}
@@ -149,7 +235,10 @@ const Input = forwardRef(
     return (
       <div className="space-y-2">
         {label && (
-          <label htmlFor={id} className="block text-sm font-semibold text-black">
+          <label
+            htmlFor={id}
+            className="block text-sm font-semibold text-black"
+          >
             {label}
             {required && <span className="text-red-500 ml-1">*</span>}
           </label>
@@ -167,13 +256,18 @@ const Input = forwardRef(
               "w-full px-4 py-3 border rounded-lg",
               isPassword ? "pr-12" : "pr-4",
               "focus:ring focus:ring-black focus:border-black outline-none transition-all",
-              hasError ? "border-red-500 focus:ring-red-500 focus:border-red-500" : "border-gray-600",
+              hasError
+                ? "border-red-500 focus:ring-red-500 focus:border-red-500"
+                : "border-gray-600",
               isPassword && "font-mono tracking-wider",
               className
             )}
             autoComplete={
-              type === "password" ? "current-password" :
-              type === "email" ? "username" : undefined
+              type === "password"
+                ? "current-password"
+                : type === "email"
+                ? "username"
+                : undefined
             }
             {...props}
           />
@@ -195,7 +289,12 @@ const Input = forwardRef(
         </div>
 
         {(hasError || helperText) && (
-          <p className={cn("text-sm mt-1", hasError ? "text-red-600" : "text-gray-600")}>
+          <p
+            className={cn(
+              "text-sm mt-1",
+              hasError ? "text-red-600" : "text-gray-600"
+            )}
+          >
             {error || helperText}
           </p>
         )}

@@ -68,10 +68,14 @@ class Project(models.Model):
     start_date = models.DateField(null=True, blank=True)
     deadline = models.DateField(null=True, blank=True)
     no_deadline = models.BooleanField(default=False)
+    amc = models.BooleanField(default=False)  
     amc_date = models.DateField(null=True, blank=True)
+    
+    renewal_only = models.BooleanField(default=False)
+    dm = models.BooleanField(default=False)
 
     allow_manual_timelogs = models.BooleanField(default=False)
-    allocated_hours = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    hours_allocated = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
 
     members = models.ManyToManyField(CustomUser, blank=True, related_name='projects')
 
@@ -88,7 +92,7 @@ class Project(models.Model):
     status = models.ForeignKey(ProjectStatus, on_delete=models.SET_NULL, null=True, blank=True)
     stage = models.ForeignKey(ProjectStage, on_delete=models.SET_NULL, null=True, blank=True)
 
-    files = models.FileField(upload_to='project_files/', blank=True, null=True)
+    
 
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -100,6 +104,16 @@ class Project(models.Model):
     class Meta:
         ordering = ['-created_at']
 
+class ProjectFile(models.Model):
+    project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='project_files')
+    file = models.FileField(upload_to='project_files/%Y/%m/%d/')
+    original_name = models.CharField(max_length=255)
+    file_size = models.IntegerField()
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+    uploaded_by = models.ForeignKey(CustomUser, on_delete=models.SET_NULL, null=True)
+    
+    def __str__(self):
+        return f"{self.original_name} - {self.project.name}"
 
 class Task(models.Model):
     project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='tasks')
