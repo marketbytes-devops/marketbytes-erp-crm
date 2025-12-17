@@ -36,10 +36,20 @@ class ProjectStage(models.Model):
     class Meta:
         verbose_name_plural = "Project Stages"
 
-class Currency(models.TextChoices):
-    USD = 'USD', 'US Dollar'
-    EUR = 'EUR', 'Euro'
-    INR = 'INR', 'Indian Rupee'
+class Currency(models.Model):
+    code = models.CharField(max_length=3, unique=True, help_text="e.g., USD, INR, EUR")
+    name = models.CharField(max_length=100, help_text="Full name, e.g., US Dollar")
+    symbol = models.CharField(max_length=10, blank=True, null=True, help_text="e.g., $, €, ₹")
+
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name_plural = "Currencies"
+        ordering = ['code']
+
+    def __str__(self):
+        return f"{self.code} - {self.name}"
    
 
 class Client(models.Model):
@@ -87,7 +97,7 @@ class Project(models.Model):
     send_task_notifications_to_client = models.BooleanField(default=False)
 
     budget = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
-    currency = models.CharField(max_length=3, choices=Currency.choices, default=Currency.USD)
+    currency = models.ForeignKey(Currency,on_delete=models.SET_NULL,null=True,blank=True,related_name='projects',help_text="Select the currency for budget")
 
     status = models.ForeignKey(ProjectStatus, on_delete=models.SET_NULL, null=True, blank=True)
     stage = models.ForeignKey(ProjectStage, on_delete=models.SET_NULL, null=True, blank=True)

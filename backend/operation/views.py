@@ -11,14 +11,16 @@ from .models import (
     ProjectCategory,
     ProjectStatus,
     ProjectStage,
-    Client
+    Client,
+    Currency,
 )
 from .serializers import (
     ProjectSerializer,
     ProjectCategorySerializer,
     ProjectStatusSerializer,
     ProjectStageSerializer,
-    ClientSerializer
+    ClientSerializer,
+    CurrencySerializer
 )
 
 
@@ -85,6 +87,15 @@ class ClientViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         return Client.objects.all()
 
+class CurrencyViewSet(viewsets.ReadOnlyModelViewSet):
+    """
+    List all active currencies (used in project creation)
+    """
+    queryset = Currency.objects.filter(is_active=True).order_by('code')
+    serializer_class = CurrencySerializer
+    permission_classes = [IsAuthenticated]  
+    filter_backends = [filters.SearchFilter]
+    search_fields = ['code', 'name']
 
 class ProjectViewSet(viewsets.ModelViewSet):
     """

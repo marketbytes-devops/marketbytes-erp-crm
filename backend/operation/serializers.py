@@ -6,6 +6,7 @@ from .models import (
     ProjectStage,
     Client,
     ProjectFile,
+    Currency,
 )
 from authapp.serializers import ProfileSerializer
 from authapp.models import CustomUser, Department
@@ -60,6 +61,12 @@ class ProjectFileSerializer(serializers.ModelSerializer):
         fields = ['id', 'file', 'original_name', 'file_size', 'uploaded_at', 'uploaded_by']
         read_only_fields = ['original_name', 'file_size', 'uploaded_at', 'uploaded_by']
 
+class CurrencySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Currency
+        fields = ['id', 'code', 'name', 'symbol']
+
+
 class ProjectSerializer(serializers.ModelSerializer):
     # Readable nested outputs
     category = ProjectCategorySerializer(read_only=True)
@@ -69,6 +76,7 @@ class ProjectSerializer(serializers.ModelSerializer):
     client = ClientSerializer(read_only=True)
     members = ProfileSerializer(many=True, read_only=True)
     project_files = ProjectFileSerializer(many=True, read_only=True)
+    currency = CurrencySerializer(read_only=True)
 
     # Write-only ID fields
     category_id = serializers.PrimaryKeyRelatedField(
@@ -113,11 +121,22 @@ class ProjectSerializer(serializers.ModelSerializer):
 
     members_ids = serializers.PrimaryKeyRelatedField(
         queryset=CustomUser.objects.all(),
+        source='members',
         many=True,
         write_only=True,
-        required=False
+        required=False,
+        allow_empty=True,
+        
     )
  
+    currency_id = serializers.PrimaryKeyRelatedField(
+        queryset=Currency.objects.all(),
+        source='currency',
+        write_only=True,
+        required=False,
+        allow_null=True
+    )
+
     files = serializers.ListField(
         child=serializers.FileField(max_length=100000, allow_empty_file=False),
         write_only=True,
@@ -150,7 +169,7 @@ class ProjectSerializer(serializers.ModelSerializer):
             'client', 'client_id',
             'client_can_manage_tasks', 'send_task_notifications_to_client',
 
-            'budget', 'currency',
+            'budget', 'currency', 'currency_id',
 
             'status', 'status_id', 'status_name',
             'stage', 'stage_id', 'stage_name',
