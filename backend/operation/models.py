@@ -2,8 +2,6 @@ from django.db import models
 from django.contrib.auth.hashers import make_password
 from authapp.models import CustomUser, Department
 
-
-
 class ProjectCategory(models.Model):
     name = models.CharField(max_length=100, unique=True)
     description = models.TextField(blank=True, null=True)
@@ -40,7 +38,6 @@ class Currency(models.Model):
     code = models.CharField(max_length=3, unique=True, help_text="e.g., USD, INR, EUR")
     name = models.CharField(max_length=100, help_text="Full name, e.g., US Dollar")
     symbol = models.CharField(max_length=10, blank=True, null=True, help_text="e.g., $, €, ₹")
-
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -55,7 +52,7 @@ class Currency(models.Model):
 class Client(models.Model):
     name = models.CharField(max_length=255)
     email = models.EmailField(unique=True)
-    password = models.CharField(max_length=128)  # Hashed
+    password = models.CharField(max_length=128)  
     phone = models.CharField(max_length=15, blank=True, null=True)
     address = models.TextField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -71,39 +68,27 @@ class Client(models.Model):
 
 class Project(models.Model):
     name = models.CharField(max_length=255)
-
     category = models.ForeignKey(ProjectCategory, on_delete=models.SET_NULL, null=True, blank=True)
     department = models.ForeignKey(Department, on_delete=models.SET_NULL, null=True, blank=True)
-
     start_date = models.DateField(null=True, blank=True)
     deadline = models.DateField(null=True, blank=True)
     no_deadline = models.BooleanField(default=False)
     amc = models.BooleanField(default=False)  
     amc_date = models.DateField(null=True, blank=True)
-    
     renewal_only = models.BooleanField(default=False)
     dm = models.BooleanField(default=False)
-
     allow_manual_timelogs = models.BooleanField(default=False)
     hours_allocated = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
-
     members = models.ManyToManyField(CustomUser, blank=True, related_name='projects')
-
     summary = models.TextField(blank=True, null=True)
     notes = models.TextField(blank=True, null=True)
-
     client = models.ForeignKey(Client, on_delete=models.SET_NULL, null=True, blank=True)
     client_can_manage_tasks = models.BooleanField(default=False)
     send_task_notifications_to_client = models.BooleanField(default=False)
-
     budget = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     currency = models.ForeignKey(Currency,on_delete=models.SET_NULL,null=True,blank=True,related_name='projects',help_text="Select the currency for budget")
-
     status = models.ForeignKey(ProjectStatus, on_delete=models.SET_NULL, null=True, blank=True)
     stage = models.ForeignKey(ProjectStage, on_delete=models.SET_NULL, null=True, blank=True)
-
-    
-
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
