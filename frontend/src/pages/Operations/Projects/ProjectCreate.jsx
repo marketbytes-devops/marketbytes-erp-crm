@@ -31,7 +31,7 @@ const CreateProjectPage = () => {
     clientCanManageTasks: false,
     sendTaskNotification: false,
     budget: "",
-    currency: "INR",
+    currency: "",
     hoursAllocated: "",
     status: "Not Started",
     stage: "",
@@ -43,26 +43,22 @@ const CreateProjectPage = () => {
   const [loading, setLoading] = useState(true);
   const [files, setFiles] = useState([]);
 
+  // Dynamic states for dropdowns
+  const [categories, setCategories] = useState([]);
+  const [statuses, setStatuses] = useState([]);
+  const [stages, setStages] = useState([]);
+  const [clients, setClients] = useState([]);
+  const [currencies, setCurrencies] = useState([]);
+
   // Category Modal States
   const [showCategoryModal, setShowCategoryModal] = useState(false);
   const [newCategoryName, setNewCategoryName] = useState("");
-  const [categories, setCategories] = useState([
-    { id: 1, name: "Development" },
-    { id: 2, name: "Digital Marketing" },
-    { id: 3, name: "Graphic Designing" },
-    { id: 4, name: "Nil" },
-    { id: 5, name: "Other" },
-  ]);
 
   // Department Modal States
   const [showDepartmentModal, setShowDepartmentModal] = useState(false);
+
   const [newDepartmentName, setNewDepartmentName] = useState("");
-  const [departments, setDepartments] = useState([
-    { id: 1, name: "IT" },
-    { id: 2, name: "HR" },
-    { id: 3, name: "Sales" },
-    { id: 4, name: "Operations" },
-  ]);
+  const [departments, setDepartments] = useState([]);
 
   // Client Modal States
   const [showClientModal, setShowClientModal] = useState(false);
@@ -72,10 +68,6 @@ const CreateProjectPage = () => {
     password: "",
   });
   const [showPassword, setShowPassword] = useState(false);
-  const [clients, setClients] = useState([
-    { id: 1, name: "ABC Corp", email: "contact@abccorp.com" },
-    { id: 2, name: "XYZ Ltd", email: "info@xyzltd.com" },
-  ]);
 
   // Project Members Modal States
   const [showMembersModal, setShowMembersModal] = useState(false);
@@ -110,11 +102,108 @@ const CreateProjectPage = () => {
     }));
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    console.log("New Project:", formData);
-    // Add your API call here
-  };
+ const handleSubmit = async (e) => {
+  e.preventDefault();
+
+  // Basic required validation
+  if (!formData.projectName || !formData.department || !formData.startDate || (!formData.deadline && !formData.noDeadline)) {
+    toast.error("Please fill required fields");
+    return;
+  }
+
+  try {
+    const formDataToSend = new FormData();
+
+    // CORRECTED FIELD MAPPINGS:
+    formDataToSend.append('name', formData.projectName); // Changed from 'projectName'
+    
+    // Department (already correct - sending ID)
+    formDataToSend.append('department_id', formData.department || '');
+    
+    formDataToSend.append('start_date', formData.startDate);
+    
+    if (!formData.noDeadline && formData.deadline) {
+      formDataToSend.append('deadline', formData.deadline);
+    }
+    formDataToSend.append('no_deadline', formData.noDeadline);
+
+    // Category
+    if (formData.projectCategory)
+      formDataToSend.append('category_id', formData.projectCategory);
+
+    // Status
+    if (formData.status)
+      formDataToSend.append('status_id', formData.status);
+
+    // Stage
+    if (formData.stage)
+      formDataToSend.append('stage_id', formData.stage);
+
+    // Client
+    if (formData.client)
+      formDataToSend.append('client_id', formData.client);
+
+    // Currency
+    if (formData.currency)
+      formDataToSend.append('currency_id', formData.currency);
+
+    // Booleans - FIXED NAMES
+    formDataToSend.append('amc', formData.amc);
+    if (formData.amc && formData.amcDate) 
+      formDataToSend.append('amc_date', formData.amcDate);
+    
+    formDataToSend.append('renewal_only', formData.renewalOnly);
+    formDataToSend.append('dm', formData.dm);
+    formDataToSend.append('allow_manual_timelogs', formData.allowManualTimeLogs);
+    
+    // FIXED: hours_allocated (not allocatedHours)
+    if (formData.allowManualTimeLogs && formData.allocatedHours) {
+      formDataToSend.append('hours_allocated', formData.allocatedHours);
+    }
+
+    formDataToSend.append('client_can_manage_tasks', formData.clientCanManageTasks);
+    formDataToSend.append('send_task_notifications_to_client', formData.sendTaskNotification);
+
+    if (formData.budget) 
+      formDataToSend.append('budget', formData.budget);
+    if (formData.summary) 
+      formDataToSend.append('summary', formData.summary);
+    if (formData.note) 
+      formDataToSend.append('notes', formData.note); // Changed from 'note'
+
+    // Members - FIXED: use correct field name 'members_ids'
+    formData.projectMembers.forEach(id => {
+      formDataToSend.append('members_ids', id);
+    });
+
+    // Files
+    files.forEach(file => {
+      formDataToSend.append('files', file);
+    });
+
+    // DEBUG: Log what we're sending
+    console.log("Sending form data:");
+    for (let [key, value] of formDataToSend.entries()) {
+      console.log(key, value);
+    }
+
+    // Check if apiClient is properly configured
+    const response = await apiClient.post("/operation/projects/", formDataToSend, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      }
+    });
+
+    toast.success("Project created successfully!");
+    handleReset();
+    console.log("Created Project:", response.data);
+    
+  } catch (error) {
+    console.error("Error creating project:", error);
+    console.error("Error response:", error.response?.data);
+    toast.error("Failed to create project: " + (error.response?.data?.detail || "Check console"));
+  }
+};
 
   const handleReset = () => {
     setFormData({
@@ -135,38 +224,173 @@ const CreateProjectPage = () => {
       clientCanManageTasks: false,
       sendTaskNotification: false,
       budget: "",
-      currency: "INR",
+      currency: "",
       hoursAllocated: "",
-      status: "Not Started",
+      status: "",
       stage: "",
       summary: "",
       note: "",
     });
+    setFiles([]);
   };
 
+  // Fetch users
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const response = await apiClient.get("/auth/users/");
+
+        const userData = Array.isArray(response.data)
+          ? response.data
+          : response.data.results || [];
+
+        setUsers(userData);
+        console.log("Fetched users:", userData);
+      } catch (error) {
+        console.error("Error fetching users:", error);
+        toast.error("Failed to load users");
+      }
+    };
+
+    fetchUsers();
+  }, []);
+
+  // Fetch designations and departments for dropdowns
+  useEffect(() => {
+    const fetchDropdownData = async () => {
+      try {
+        // Fetch designations (roles)
+        const desigResponse = await apiClient.get("/auth/roles/");
+        const designationsData = Array.isArray(desigResponse.data)
+          ? desigResponse.data
+          : desigResponse.data.results || [];
+
+        setDesignations(
+          designationsData.map((d) => ({
+            value: d.id,
+            label: d.name,
+          }))
+        );
+
+        // Note: Departments are already hardcoded as per instructions
+      } catch (error) {
+        console.error("Error fetching dropdown data:", error);
+      }
+    };
+
+    fetchDropdownData();
+  }, []);
+
+  // Fetch dynamic data for dropdowns
+  useEffect(() => {
+    const fetchDynamicData = async () => {
+      try {
+        setLoading(true);
+
+        // Fetch Categories
+        const catRes = await apiClient.get("/operation/categories/");
+        setCategories(
+          Array.isArray(catRes.data) ? catRes.data : catRes.data?.results || []
+        );
+
+        // Fetch Clients
+        const clientRes = await apiClient.get("/operation/clients/");
+        setClients(
+          Array.isArray(clientRes.data)
+            ? clientRes.data
+            : clientRes.data?.results || []
+        );
+
+        // Fetch Statuses
+        const statusRes = await apiClient.get("/operation/statuses/");
+        setStatuses(
+          Array.isArray(statusRes.data)
+            ? statusRes.data
+            : statusRes.data?.results || []
+        );
+
+        // Fetch Stages
+        const stageRes = await apiClient.get("/operation/stages/");
+        setStages(
+          Array.isArray(stageRes.data)
+            ? stageRes.data
+            : stageRes.data?.results || []
+        );
+
+        // Fetch Currencies
+        const currencyRes = await apiClient.get("/operation/currencies/");
+        setCurrencies(
+          Array.isArray(currencyRes.data)
+            ? currencyRes.data
+            : currencyRes.data?.results || []
+        );
+
+        // Fetch Departments
+        const deptRes = await apiClient.get("/auth/departments/");
+        setDepartments(
+          Array.isArray(deptRes.data)
+            ? deptRes.data
+            : deptRes.data?.results || []
+        );
+      } catch (error) {
+        console.error("Error fetching dynamic data:", error);
+        toast.error("Failed to load dropdown options");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchDynamicData();
+  }, []);
+
+  // Generate next employee ID
+  useEffect(() => {
+    if (users.length > 0) {
+      const usedIds = users
+        .map((u) => u.employee_id || u.employeeId)
+        .filter((id) => id && id.startsWith("EMP"))
+        .map((id) => parseInt(id.replace("EMP", "")) || 0);
+
+      const maxId = usedIds.length > 0 ? Math.max(...usedIds) : 0;
+      const nextId = `EMP${String(maxId + 1).padStart(4, "0")}`;
+      setNewMemberData((prev) => ({ ...prev, employeeId: nextId }));
+    }
+  }, [users]);
+
   // Category Modal Functions
-  const handleAddCategory = () => {
+  const handleAddCategory = async () => {
     if (newCategoryName.trim() === "") {
       toast.error("Please enter a category name");
       return;
     }
 
-    const newCategory = {
-      id: categories.length + 1,
-      name: newCategoryName.trim(),
-    };
+    try {
+      // POST to backend
+      await apiClient.post("/operation/categories/", {
+        name: newCategoryName.trim(),
+        description: `Category: ${newCategoryName.trim()}`,
+      });
 
-    setCategories([...categories, newCategory]);
-    setFormData((prev) => ({
-      ...prev,
-      projectCategory: newCategoryName.trim(),
-    }));
-    setNewCategoryName("");
-    setShowCategoryModal(false);
-    toast.success("Category added successfully");
+      // Refetch categories to update state
+      const res = await apiClient.get("/operation/categories/");
+      setCategories(res.data || []);
+
+      // Set in formData
+      setFormData((prev) => ({
+        ...prev,
+        projectCategory: newCategoryName.trim(),
+      }));
+      setNewCategoryName("");
+      setShowCategoryModal(false);
+      toast.success("Category added successfully");
+    } catch (error) {
+      console.error("Error adding category:", error);
+      toast.error("Failed to add category");
+    }
   };
 
   const handleRemoveCategory = (id) => {
+    // Note: Removal not implemented via API; keep local if needed
     setCategories(categories.filter((category) => category.id !== id));
     toast.success("Category removed");
   };
@@ -207,21 +431,11 @@ const CreateProjectPage = () => {
     }));
   };
 
-  const handleAddClient = () => {
+  const handleAddClient = async () => {
     const { name, email, password } = newClientData;
 
-    if (!name.trim()) {
-      toast.error("Please enter client name");
-      return;
-    }
-
-    if (!email.trim()) {
-      toast.error("Please enter client email");
-      return;
-    }
-
-    if (!password.trim()) {
-      toast.error("Please enter password");
+    if (!name.trim() || !email.trim() || !password.trim()) {
+      toast.error("Please fill all fields");
       return;
     }
 
@@ -232,30 +446,41 @@ const CreateProjectPage = () => {
       return;
     }
 
-    const newClient = {
-      id: clients.length + 1,
-      name: name.trim(),
-      email: email.trim(),
-    };
+    try {
+      // POST to backend
+      await apiClient.post("/operation/clients/", {
+        name,
+        email,
+        password,
+      });
 
-    setClients([...clients, newClient]);
-    setFormData((prev) => ({
-      ...prev,
-      client: name.trim(),
-    }));
+      // Refetch clients to update state
+      const res = await apiClient.get("/operation/clients/");
+      setClients(res.data || []);
 
-    // Reset form
-    setNewClientData({
-      name: "",
-      email: "",
-      password: "",
-    });
+      // Set in formData
+      setFormData((prev) => ({
+        ...prev,
+        client: name.trim(),
+      }));
 
-    setShowClientModal(false);
-    toast.success("Client added successfully");
+      // Reset form
+      setNewClientData({
+        name: "",
+        email: "",
+        password: "",
+      });
+
+      setShowClientModal(false);
+      toast.success("Client added successfully");
+    } catch (error) {
+      console.error("Error adding client:", error);
+      toast.error("Failed to add client");
+    }
   };
 
   const handleRemoveClient = (id) => {
+    // Note: Removal not implemented via API; keep local if needed
     setClients(clients.filter((client) => client.id !== id));
     toast.success("Client removed");
   };
@@ -386,70 +611,6 @@ const CreateProjectPage = () => {
     toast.success("Employee removed");
   };
 
-  useEffect(() => {
-    const fetchUsers = async () => {
-      try {
-        setLoading(true);
-        const response = await apiClient.get("/auth/users/");
-
-        const userData = Array.isArray(response.data)
-          ? response.data
-          : response.data.results || [];
-
-        setUsers(userData);
-        console.log("Fetched users:", userData);
-      } catch (error) {
-        console.error("Error fetching users:", error);
-        toast.error("Failed to load users");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchUsers();
-  }, []);
-
-  // Fetch designations and departments for dropdowns
-  useEffect(() => {
-    const fetchDropdownData = async () => {
-      try {
-        // Fetch designations (roles)
-        const desigResponse = await apiClient.get("/auth/roles/");
-        const designationsData = Array.isArray(desigResponse.data)
-          ? desigResponse.data
-          : desigResponse.data.results || [];
-
-        setDesignations(
-          designationsData.map((d) => ({
-            value: d.id,
-            label: d.name,
-          }))
-        );
-
-        // Note: Departments are already fetched in the main useEffect
-        // You might want to fetch them from API if needed
-      } catch (error) {
-        console.error("Error fetching dropdown data:", error);
-      }
-    };
-
-    fetchDropdownData();
-  }, []);
-
-  // Generate next employee ID
-  useEffect(() => {
-    if (users.length > 0) {
-      const usedIds = users
-        .map((u) => u.employee_id || u.employeeId)
-        .filter((id) => id && id.startsWith("EMP"))
-        .map((id) => parseInt(id.replace("EMP", "")) || 0);
-
-      const maxId = usedIds.length > 0 ? Math.max(...usedIds) : 0;
-      const nextId = `EMP${String(maxId + 1).padStart(4, "0")}`;
-      setNewMemberData((prev) => ({ ...prev, employeeId: nextId }));
-    }
-  }, [users]);
-
   return (
     <div className="p-6">
       <LayoutComponents
@@ -497,10 +658,13 @@ const CreateProjectPage = () => {
                   </label>
                   <Input
                     type="select"
-                    options={categories.map((cat) => ({
-                      value: cat.name,
-                      label: cat.name,
-                    }))}
+                    options={[
+                      { value: "", label: "Select a category" },
+                      ...categories.map((cat) => ({
+                        value: cat.id,
+                        label: cat.name,
+                      })),
+                    ]}
                     value={formData.projectCategory}
                     onChange={(newValue) =>
                       setFormData((prev) => ({
@@ -509,6 +673,7 @@ const CreateProjectPage = () => {
                       }))
                     }
                     placeholder="Select a category"
+                    disabled={loading}
                     className="border-gray-300 hover:border-gray-300 rounded-xl focus:ring-2 focus:border-black"
                   />
                 </div>
@@ -529,15 +694,19 @@ const CreateProjectPage = () => {
                   </label>
                   <Input
                     type="select"
-                    options={departments.map((dept) => ({
-                      value: dept.name,
-                      label: dept.name,
-                    }))}
+                    options={[
+                      { value: "", label: "Select department" },
+                      ...departments.map((dept) => ({
+                        value: dept.id, // ← Now send ID, not name
+                        label: dept.name,
+                      })),
+                    ]}
                     value={formData.department}
                     onChange={(newValue) =>
                       setFormData((prev) => ({ ...prev, department: newValue }))
                     }
-                    placeholder="Choose Departments"
+                    placeholder="Select department"
+                    disabled={loading}
                     className="border-gray-300 hover:border-gray-300 rounded-xl focus:ring-2 focus:border-black"
                   />
                 </div>
@@ -732,15 +901,19 @@ const CreateProjectPage = () => {
                 </label>
                 <Input
                   type="select"
-                  options={clients.map((client) => ({
-                    value: client.name,
-                    label: client.name,
-                  }))}
+                  options={[
+                    { value: "", label: "Select a client" },
+                    ...clients.map((client) => ({
+                      value: client.id,
+                      label: `${client.name} (${client.email})`,
+                    })),
+                  ]}
                   value={formData.client}
                   onChange={(newValue) =>
                     setFormData((prev) => ({ ...prev, client: newValue }))
                   }
-                  placeholder="--"
+                  placeholder="Select a client"
+                  disabled={loading}
                   className="border-gray-300 hover:border-gray-300 rounded-xl focus:ring-2 focus:border-black"
                 />
 
@@ -800,15 +973,18 @@ const CreateProjectPage = () => {
                   <Input
                     type="select"
                     options={[
-                      { value: "INR", label: "Rupee (INR)" },
-                      { value: "USD", label: "USD" },
-                      { value: "EUR", label: "EUR" },
+                      { value: "", label: "Select currency" },
+                      ...currencies.map((curr) => ({
+                        value: curr.id, // ← Send ID to backend
+                        label: `${curr.name} (${curr.code})`,
+                      })),
                     ]}
                     value={formData.currency}
                     onChange={(newValue) =>
                       setFormData((prev) => ({ ...prev, currency: newValue }))
                     }
-                    placeholder="Rupee (INR)"
+                    placeholder="Select currency"
+                    disabled={loading}
                     className="border-gray-300 hover:border-gray-300 rounded-xl focus:ring-2 focus:border-black"
                   />
                 </div>
@@ -823,17 +999,18 @@ const CreateProjectPage = () => {
                   <Input
                     type="select"
                     options={[
-                      { value: "Not Started", label: "Not Started" },
-                      { value: "In Progress", label: "In Progress" },
-                      { value: "Completed", label: "Completed" },
-                      { value: "On Hold", label: "On Hold" },
-                      { value: "Cancelled", label: "Cancelled" },
+                      { value: "", label: "Select status" },
+                      ...statuses.map((status) => ({
+                        value: status.id,
+                        label: status.name,
+                      })),
                     ]}
                     value={formData.status}
                     onChange={(newValue) =>
                       setFormData((prev) => ({ ...prev, status: newValue }))
                     }
-                    placeholder="Not Started"
+                    placeholder="Select status"
+                    disabled={loading}
                     className="border-gray-300 hover:border-gray-300 rounded-xl focus:ring-2 focus:border-black"
                   />
                 </section>
@@ -845,15 +1022,18 @@ const CreateProjectPage = () => {
                   <Input
                     type="select"
                     options={[
-                      { value: "Planning", label: "Planning" },
-                      { value: "Execution", label: "Execution" },
-                      { value: "Review", label: "Review" },
+                      { value: "", label: "Select stage" },
+                      ...stages.map((stage) => ({
+                        value: stage.id,
+                        label: stage.name,
+                      })),
                     ]}
                     value={formData.stage}
                     onChange={(newValue) =>
                       setFormData((prev) => ({ ...prev, stage: newValue }))
                     }
-                    placeholder="Project Stage"
+                    placeholder="Select stage"
+                    disabled={loading}
                     className="border-gray-300 hover:border-gray-300 rounded-xl focus:ring-2 focus:border-black"
                   />
                 </section>
@@ -1151,7 +1331,6 @@ const CreateProjectPage = () => {
             </div>
 
             <div className="p-6">
-
               <div className="mt-8 space-y-6">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-3">

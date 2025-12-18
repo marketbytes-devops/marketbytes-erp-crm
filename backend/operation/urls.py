@@ -5,7 +5,8 @@ from .views import (
     ProjectCategoryViewSet,
     ProjectStatusViewSet,
     ProjectStageViewSet,
-    ClientViewSet
+    ClientViewSet,
+    CurrencyViewSet,
 )
 
 router = DefaultRouter()
@@ -14,6 +15,7 @@ router.register(r'categories', ProjectCategoryViewSet, basename='category')
 router.register(r'statuses', ProjectStatusViewSet, basename='status')
 router.register(r'stages', ProjectStageViewSet, basename='stage')
 router.register(r'clients', ClientViewSet, basename='client')
+router.register(r'currencies', CurrencyViewSet, basename='currency')
 
 urlpatterns = [
     path('', include(router.urls)),
