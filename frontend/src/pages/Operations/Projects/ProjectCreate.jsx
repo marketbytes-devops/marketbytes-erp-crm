@@ -69,31 +69,6 @@ const CreateProjectPage = () => {
   });
   const [showPassword, setShowPassword] = useState(false);
 
-  // Project Members Modal States
-  const [showMembersModal, setShowMembersModal] = useState(false);
-  const [newMemberData, setNewMemberData] = useState({
-    employeeId: "",
-    name: "",
-    email: "",
-    password: "",
-    designation: "",
-    department: "",
-    joiningDate: "",
-    gender: "",
-  });
-  const [showMemberPassword, setShowMemberPassword] = useState(false);
-  const [generateMemberPassword, setGenerateMemberPassword] = useState(true);
-  const [customMemberPassword, setCustomMemberPassword] = useState("");
-
-  // Designation options for dropdown
-  const [designations, setDesignations] = useState([]);
-  const [genderOptions] = useState([
-    { value: "", label: "Select Gender" },
-    { value: "male", label: "Male" },
-    { value: "female", label: "Female" },
-    { value: "other", label: "Other" },
-  ]);
-
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
     setFormData((prev) => ({
@@ -115,9 +90,9 @@ const CreateProjectPage = () => {
     const formDataToSend = new FormData();
 
     // CORRECTED FIELD MAPPINGS:
-    formDataToSend.append('name', formData.projectName); // Changed from 'projectName'
+    formDataToSend.append('name', formData.projectName); 
     
-    // Department (already correct - sending ID)
+    // Department
     formDataToSend.append('department_id', formData.department || '');
     
     formDataToSend.append('start_date', formData.startDate);
@@ -156,7 +131,7 @@ const CreateProjectPage = () => {
     formDataToSend.append('dm', formData.dm);
     formDataToSend.append('allow_manual_timelogs', formData.allowManualTimeLogs);
     
-    // FIXED: hours_allocated (not allocatedHours)
+    // hours_allocated 
     if (formData.allowManualTimeLogs && formData.allocatedHours) {
       formDataToSend.append('hours_allocated', formData.allocatedHours);
     }
@@ -169,9 +144,9 @@ const CreateProjectPage = () => {
     if (formData.summary) 
       formDataToSend.append('summary', formData.summary);
     if (formData.note) 
-      formDataToSend.append('notes', formData.note); // Changed from 'note'
+      formDataToSend.append('notes', formData.note); 
 
-    // Members - FIXED: use correct field name 'members_ids'
+    // Members'
     formData.projectMembers.forEach(id => {
       formDataToSend.append('members_ids', id);
     });
@@ -255,32 +230,6 @@ const CreateProjectPage = () => {
     fetchUsers();
   }, []);
 
-  // Fetch designations and departments for dropdowns
-  useEffect(() => {
-    const fetchDropdownData = async () => {
-      try {
-        // Fetch designations (roles)
-        const desigResponse = await apiClient.get("/auth/roles/");
-        const designationsData = Array.isArray(desigResponse.data)
-          ? desigResponse.data
-          : desigResponse.data.results || [];
-
-        setDesignations(
-          designationsData.map((d) => ({
-            value: d.id,
-            label: d.name,
-          }))
-        );
-
-        // Note: Departments are already hardcoded as per instructions
-      } catch (error) {
-        console.error("Error fetching dropdown data:", error);
-      }
-    };
-
-    fetchDropdownData();
-  }, []);
-
   // Fetch dynamic data for dropdowns
   useEffect(() => {
     const fetchDynamicData = async () => {
@@ -342,20 +291,6 @@ const CreateProjectPage = () => {
 
     fetchDynamicData();
   }, []);
-
-  // Generate next employee ID
-  useEffect(() => {
-    if (users.length > 0) {
-      const usedIds = users
-        .map((u) => u.employee_id || u.employeeId)
-        .filter((id) => id && id.startsWith("EMP"))
-        .map((id) => parseInt(id.replace("EMP", "")) || 0);
-
-      const maxId = usedIds.length > 0 ? Math.max(...usedIds) : 0;
-      const nextId = `EMP${String(maxId + 1).padStart(4, "0")}`;
-      setNewMemberData((prev) => ({ ...prev, employeeId: nextId }));
-    }
-  }, [users]);
 
   // Category Modal Functions
   const handleAddCategory = async () => {
@@ -483,132 +418,6 @@ const CreateProjectPage = () => {
     // Note: Removal not implemented via API; keep local if needed
     setClients(clients.filter((client) => client.id !== id));
     toast.success("Client removed");
-  };
-
-  // Project Members Modal Functions
-  const handleMemberChange = (e) => {
-    const { name, value } = e.target;
-    setNewMemberData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
-  };
-
-  const handleSelectChange = (name, value) => {
-    setNewMemberData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
-  };
-
-  // Generate strong password function
-  const generateStrongPassword = () => {
-    const charset =
-      "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()_+-=[]{}|;:,.<>?";
-    let password = "";
-    const array = new Uint32Array(16);
-    crypto.getRandomValues(array);
-    for (let i = 0; i < 16; i++) {
-      password += charset[array[i] % charset.length];
-    }
-    return password;
-  };
-
-  const handleGenerateMemberPassword = () => {
-    const newPass = generateStrongPassword();
-    setCustomMemberPassword(newPass);
-    navigator.clipboard.writeText(newPass);
-    toast.success("Strong password generated & copied!");
-  };
-
-  const handleAddMember = () => {
-    const {
-      name,
-      email,
-      password,
-      designation,
-      department,
-      joiningDate,
-      gender,
-      employeeId,
-    } = newMemberData;
-
-    if (!name.trim()) {
-      toast.error("Please enter employee name");
-      return;
-    }
-
-    if (!email.trim()) {
-      toast.error("Please enter employee email");
-      return;
-    }
-
-    if (!generateMemberPassword && !customMemberPassword.trim()) {
-      toast.error("Please enter or generate password");
-      return;
-    }
-
-    // Basic email validation
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      toast.error("Please enter a valid email address");
-      return;
-    }
-
-    // Generate employee ID if not provided
-    const empId =
-      employeeId.trim() || `EMP${String(users.length + 1).padStart(4, "0")}`;
-
-    const newMember = {
-      id: users.length + 1,
-      employeeId: empId,
-      name: name.trim(),
-      email: email.trim(),
-      designation: designation,
-      department: department,
-      joiningDate: joiningDate,
-      gender: gender,
-    };
-
-    // Add to users list (project members)
-    setUsers([...users, newMember]);
-
-    // Also add to project members selection
-    setFormData((prev) => ({
-      ...prev,
-      projectMembers: [...prev.projectMembers, newMember.id.toString()],
-    }));
-
-    // Reset form
-    setNewMemberData({
-      employeeId: "",
-      name: "",
-      email: "",
-      password: "",
-      designation: "",
-      department: "",
-      joiningDate: "",
-      gender: "",
-    });
-    setCustomMemberPassword("");
-    setGenerateMemberPassword(true);
-
-    setShowMembersModal(false);
-    toast.success("Employee added successfully");
-  };
-
-  const handleRemoveMember = (id) => {
-    setUsers(users.filter((user) => user.id !== id));
-
-    // Remove from project members if selected
-    setFormData((prev) => ({
-      ...prev,
-      projectMembers: prev.projectMembers.filter(
-        (memberId) => memberId !== id.toString()
-      ),
-    }));
-
-    toast.success("Employee removed");
   };
 
   return (
@@ -777,7 +586,7 @@ const CreateProjectPage = () => {
                     className="mr-3 w-4 h-4 accent-blue-600"
                   />
                   <span className="text-sm font-medium">
-                    Allow manual time logs?
+                    Allow manual time for project
                   </span>
                 </label>
 
@@ -842,17 +651,8 @@ const CreateProjectPage = () => {
 
               {/* Project Members */}
               <div className="mt-8">
-                <label className="text-sm font-medium text-gray-700 mb-2 flex items-center">
-                  Add Project Members <span className="text-red-500">*</span>{" "}
-                  <button
-                    type="button"
-                    onClick={() => setShowMembersModal(true)}
-                    className="text-green-500 hover:text-white hover:bg-green-500
-                               border border-green-500 rounded-full ml-2 p-1
-                               cursor-pointer transition-all duration-200"
-                  >
-                    <MdAdd className="w-4 h-4" />
-                  </button>
+                <label className="text-sm font-medium text-gray-700 mb-2">
+                  Add Project Members
                 </label>
                 {loading ? (
                   <div className="text-gray-500 py-3">Loading users...</div>
@@ -1394,266 +1194,6 @@ const CreateProjectPage = () => {
                     className="px-6 py-3 bg-black text-white rounded-xl font-semibold hover:bg-gray-800 transition-colors flex-1"
                   >
                     Save Client
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* ==================== PROJECT MEMBERS MODAL ==================== */}
-      {showMembersModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden">
-            <div className="flex justify-between items-center p-6 border-b sticky top-0 bg-white z-10">
-              <h2 className="text-xl font-semibold text-gray-900">
-                Add Project Member (Employee)
-              </h2>
-              <button
-                onClick={() => {
-                  setShowMembersModal(false);
-                  setNewMemberData({
-                    employeeId: "",
-                    name: "",
-                    email: "",
-                    password: "",
-                    designation: "",
-                    department: "",
-                    joiningDate: "",
-                    gender: "",
-                  });
-                  setCustomMemberPassword("");
-                  setGenerateMemberPassword(true);
-                }}
-                className="p-2 hover:bg-gray-100 rounded-full"
-              >
-                <MdClose className="w-5 h-5" />
-              </button>
-            </div>
-
-            <div className="p-6 overflow-y-auto max-h-[calc(90vh-80px)]">
-              {/* Form Section */}
-              <div className="space-y-6">
-                <h3 className="text-md font-medium text-gray-700 mb-2">
-                  Add New Employee
-                </h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {/* Employee ID */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Employee ID <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      type="text"
-                      name="employeeId"
-                      value={newMemberData.employeeId}
-                      onChange={handleMemberChange}
-                      placeholder="EMP0001"
-                      className="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:outline-none bg-gray-50 text-sm"
-                      readOnly
-                    />
-                    <p className="text-xs text-gray-500 mt-1">Auto-generated</p>
-                  </div>
-
-                  {/* Employee Name */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Employee Name <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      type="text"
-                      name="name"
-                      value={newMemberData.name}
-                      onChange={handleMemberChange}
-                      placeholder="Enter employee name"
-                      className="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:outline-none text-sm"
-                    />
-                  </div>
-
-                  {/* Email */}
-                  <div className="md:col-span-2">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Email <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      type="email"
-                      name="email"
-                      value={newMemberData.email}
-                      onChange={handleMemberChange}
-                      placeholder="employee@company.com"
-                      className="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:outline-none text-sm"
-                    />
-                  </div>
-
-                  {/* Designation Dropdown */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Designation
-                    </label>
-                    <Input
-                      type="select"
-                      options={[
-                        { value: "", label: "Select Designation" },
-                        ...designations,
-                      ]}
-                      value={newMemberData.designation}
-                      onChange={(value) =>
-                        handleSelectChange("designation", value)
-                      }
-                      placeholder="Select designation"
-                      className="border-gray-300 hover:border-gray-300 rounded-lg focus:ring-2 focus:border-black text-sm py-2"
-                    />
-                  </div>
-
-                  {/* Department Dropdown */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Department
-                    </label>
-                    <Input
-                      type="select"
-                      options={[
-                        { value: "", label: "Select Department" },
-                        ...departments.map((dept) => ({
-                          value: dept.name,
-                          label: dept.name,
-                        })),
-                      ]}
-                      value={newMemberData.department}
-                      onChange={(value) =>
-                        handleSelectChange("department", value)
-                      }
-                      placeholder="Select department"
-                      className="border-gray-300 hover:border-gray-300 rounded-lg focus:ring-2 focus:border-black text-sm py-2"
-                    />
-                  </div>
-
-                  {/* Joining Date */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Joining Date
-                    </label>
-                    <input
-                      type="date"
-                      name="joiningDate"
-                      value={newMemberData.joiningDate}
-                      onChange={handleMemberChange}
-                      className="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:outline-none text-sm"
-                    />
-                  </div>
-
-                  {/* Gender Dropdown */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Gender
-                    </label>
-                    <Input
-                      type="select"
-                      options={genderOptions}
-                      value={newMemberData.gender}
-                      onChange={(value) => handleSelectChange("gender", value)}
-                      placeholder="Select gender"
-                      className="border-gray-300 hover:border-gray-300 rounded-lg focus:ring-2 focus:border-black text-sm py-2"
-                    />
-                  </div>
-                </div>
-
-                {/* Password Section */}
-                <div className="pt-4 border-t">
-                  <div className="flex items-center gap-3 mb-4">
-                    <input
-                      type="checkbox"
-                      checked={generateMemberPassword}
-                      onChange={(e) => {
-                        setGenerateMemberPassword(e.target.checked);
-                        if (e.target.checked) setCustomMemberPassword("");
-                      }}
-                      className="w-4 h-4 rounded border-gray-400 text-black"
-                    />
-                    <label className="font-medium text-gray-800 text-sm">
-                      Generate Random Password & Send via Email (Recommended)
-                    </label>
-                  </div>
-
-                  {!generateMemberPassword && (
-                    <div className="space-y-3">
-                      <div className="flex flex-col sm:flex-row gap-3">
-                        <div className="flex-1">
-                          <div className="relative">
-                            <input
-                              type={showMemberPassword ? "text" : "password"}
-                              value={customMemberPassword}
-                              onChange={(e) =>
-                                setCustomMemberPassword(e.target.value)
-                              }
-                              placeholder="Enter strong password"
-                              className="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:outline-none text-sm pr-10"
-                              required
-                            />
-                            <button
-                              type="button"
-                              onClick={() =>
-                                setShowMemberPassword(!showMemberPassword)
-                              }
-                              className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
-                            >
-                              {showMemberPassword ? (
-                                <MdVisibilityOff className="w-4 h-4" />
-                              ) : (
-                                <MdVisibility className="w-4 h-4" />
-                              )}
-                            </button>
-                          </div>
-                          <p className="text-xs text-gray-600 mt-1">
-                            Password will be emailed to the employee
-                          </p>
-                        </div>
-                        <button
-                          type="button"
-                          onClick={handleGenerateMemberPassword}
-                          className="px-4 py-2.5 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg hover:from-purple-700 hover:to-pink-700 transition text-sm font-medium flex items-center justify-center gap-2 shadow-sm whitespace-nowrap"
-                        >
-                          <MdAutoAwesome className="w-4 h-4" />
-                          Generate
-                        </button>
-                      </div>
-                    </div>
-                  )}
-                </div>
-
-                {/* Save Button */}
-                <div className="flex gap-3 pt-4">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setShowMembersModal(false);
-                      setNewMemberData({
-                        employeeId: "",
-                        name: "",
-                        email: "",
-                        password: "",
-                        designation: "",
-                        department: "",
-                        joiningDate: "",
-                        gender: "",
-                      });
-                      setCustomMemberPassword("");
-                      setGenerateMemberPassword(true);
-                    }}
-                    className="px-4 py-2.5 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition font-medium text-sm flex-1"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="button"
-                    onClick={handleAddMember}
-                    disabled={
-                      !generateMemberPassword && !customMemberPassword.trim()
-                    }
-                    className="px-4 py-2.5 bg-black text-white rounded-lg font-semibold hover:bg-gray-800 transition text-sm flex-1 disabled:opacity-50"
-                  >
-                    Save Employee
                   </button>
                 </div>
               </div>
