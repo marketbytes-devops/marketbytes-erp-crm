@@ -35,7 +35,8 @@ class ProjectStageSerializer(serializers.ModelSerializer):
 class ClientSerializer(serializers.ModelSerializer):
     class Meta:
         model = Client
-        fields = ["id", "name", "email", "phone", "address", "created_at", "password"]
+        fields = ["id", "name", "email", "phone",
+                  "address", "created_at", "password"]
         read_only_fields = ["created_at"]
         extra_kwargs = {"password": {"write_only": True}}
 
@@ -67,7 +68,8 @@ class ProjectFileSerializer(serializers.ModelSerializer):
             "uploaded_at",
             "uploaded_by",
         ]
-        read_only_fields = ["original_name", "file_size", "uploaded_at", "uploaded_by"]
+        read_only_fields = ["original_name",
+                            "file_size", "uploaded_at", "uploaded_by"]
 
 
 class CurrencySerializer(serializers.ModelSerializer):
@@ -222,13 +224,15 @@ class ProjectSerializer(serializers.ModelSerializer):
 
         if status_name:
             status, created = ProjectStatus.objects.get_or_create(
-                name=status_name, defaults={"description": f"Status: {status_name}"}
+                name=status_name, defaults={
+                    "description": f"Status: {status_name}"}
             )
             validated_data["status"] = status
 
         if stage_name:
             stage, created = ProjectStage.objects.get_or_create(
-                name=stage_name, defaults={"description": f"Stage: {stage_name}"}
+                name=stage_name, defaults={
+                    "description": f"Stage: {stage_name}"}
             )
             validated_data["stage"] = stage
 
@@ -243,7 +247,7 @@ class ProjectSerializer(serializers.ModelSerializer):
 
         members_ids = validated_data.pop("members_ids", [])
         project = super().create(validated_data)
-        
+
         if members_ids:
             project.members.set(members_ids)
 
@@ -276,13 +280,15 @@ class ProjectSerializer(serializers.ModelSerializer):
 
         if status_name:
             status, created = ProjectStatus.objects.get_or_create(
-                name=status_name, defaults={"description": f"Status: {status_name}"}
+                name=status_name, defaults={
+                    "description": f"Status: {status_name}"}
             )
             validated_data["status"] = status
 
         if stage_name:
             stage, created = ProjectStage.objects.get_or_create(
-                name=stage_name, defaults={"description": f"Stage: {stage_name}"}
+                name=stage_name, defaults={
+                    "description": f"Stage: {stage_name}"}
             )
             validated_data["stage"] = stage
 
@@ -314,6 +320,7 @@ class ProjectSerializer(serializers.ModelSerializer):
 
         return project
 
+
 class TaskSerializer(serializers.ModelSerializer):
     project_name = serializers.CharField(source='project.name', read_only=True)
     assignees = ProfileSerializer(many=True, read_only=True)
@@ -323,7 +330,7 @@ class TaskSerializer(serializers.ModelSerializer):
         write_only=True,
         required=False
     )
- 
+
     class Meta:
         model = Task
         fields = [
@@ -338,21 +345,21 @@ class TaskSerializer(serializers.ModelSerializer):
             'created_at', 'updated_at'
         ]
         read_only_fields = ['created_at', 'updated_at']
- 
+
     def create(self, validated_data):
         assignee_ids = validated_data.pop('assignee_ids', [])
         task = Task.objects.create(**validated_data)
         if assignee_ids:
             task.assignees.set(assignee_ids)
         return task
- 
+
     def update(self, instance, validated_data):
         assignee_ids = validated_data.pop('assignee_ids', None)
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
         instance.save()
- 
+
         if assignee_ids is not None:
             instance.assignees.set(assignee_ids)
- 
+
         return instance
