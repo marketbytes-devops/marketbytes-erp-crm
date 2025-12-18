@@ -25,6 +25,7 @@ from .serializers import (
     TaskSerializer
 )
 
+
 class ProjectCategoryViewSet(viewsets.ModelViewSet):
     """
     ViewSet for Project Category CRUD operations
@@ -46,6 +47,7 @@ class ProjectCategoryViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         return ProjectCategory.objects.all()
 
+
 class ProjectStatusViewSet(viewsets.ModelViewSet):
     """
     ViewSet for Project Status CRUD operations
@@ -61,6 +63,7 @@ class ProjectStatusViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         return ProjectStatus.objects.all()
 
+
 class ProjectStageViewSet(viewsets.ModelViewSet):
     """
     ViewSet for Project Stage CRUD operations
@@ -75,6 +78,7 @@ class ProjectStageViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         return ProjectStage.objects.all()
+
 
 class ClientViewSet(viewsets.ModelViewSet):
     """
@@ -97,6 +101,7 @@ class ClientViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         return Client.objects.all()
 
+
 class CurrencyViewSet(viewsets.ReadOnlyModelViewSet):
     """
     List all active currencies (used in project creation)
@@ -107,6 +112,7 @@ class CurrencyViewSet(viewsets.ReadOnlyModelViewSet):
     permission_classes = [IsAuthenticated]
     filter_backends = [filters.SearchFilter]
     search_fields = ["code", "name"]
+
 
 class ProjectViewSet(viewsets.ModelViewSet):
     """
@@ -182,7 +188,8 @@ class ProjectViewSet(viewsets.ModelViewSet):
         if stage_name:
             queryset = queryset.filter(stage__name__icontains=stage_name)
 
-        start_date_from = self.request.query_params.get("start_date_from", None)
+        start_date_from = self.request.query_params.get(
+            "start_date_from", None)
         start_date_to = self.request.query_params.get("start_date_to", None)
         if start_date_from:
             queryset = queryset.filter(start_date__gte=start_date_from)
@@ -418,7 +425,8 @@ class ProjectViewSet(viewsets.ModelViewSet):
 
         status_name = request.query_params.get("status_name", None)
         if status_name:
-            my_projects = my_projects.filter(status__name__icontains=status_name)
+            my_projects = my_projects.filter(
+                status__name__icontains=status_name)
 
         stage_name = request.query_params.get("stage_name", None)
         if stage_name:
@@ -427,14 +435,17 @@ class ProjectViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(my_projects, many=True)
         return Response(serializer.data)
 
+
 class TaskViewSet(viewsets.ModelViewSet):
     """
     ViewSet for Task CRUD operations
     """
-    queryset = Task.objects.all().select_related('project').prefetch_related('assignees')
+    queryset = Task.objects.all().select_related(
+        'project').prefetch_related('assignees')
     serializer_class = TaskSerializer
     permission_classes = [IsAuthenticated]
-    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
+    filter_backends = [DjangoFilterBackend,
+                       filters.SearchFilter, filters.OrderingFilter]
     search_fields = ['title', 'description', 'project__name']
     filterset_fields = {
         'project': ['exact'],
@@ -446,16 +457,17 @@ class TaskViewSet(viewsets.ModelViewSet):
         'due_date': ['exact', 'gte', 'lte'],
         'start_date': ['exact', 'gte', 'lte'],
     }
-    ordering_fields = ['title', 'due_date', 'priority', 'created_at', 'start_date']
+    ordering_fields = ['title', 'due_date',
+                       'priority', 'created_at', 'start_date']
     ordering = ['-priority', 'due_date']
- 
+
     def get_queryset(self):
         """
         Restrict tasks to projects the user is part of or assigned to
         """
         queryset = super().get_queryset()
         user = self.request.user
- 
+
         if not user.is_superuser and not user.is_staff:
             queryset = queryset.filter(
                 Q(project__members=user) |
@@ -466,5 +478,5 @@ class TaskViewSet(viewsets.ModelViewSet):
         project_id = self.request.query_params.get('project_id')
         if project_id:
             queryset = queryset.filter(project_id=project_id)
- 
-        return queryset  
+
+        return queryset
