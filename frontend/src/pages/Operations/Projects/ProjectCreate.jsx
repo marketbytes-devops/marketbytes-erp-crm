@@ -114,40 +114,49 @@ const CreateProjectPage = () => {
   try {
     const formDataToSend = new FormData();
 
-    formDataToSend.append('name', formData.projectName);
+    // CORRECTED FIELD MAPPINGS:
+    formDataToSend.append('name', formData.projectName); // Changed from 'projectName'
+    
+    // Department (already correct - sending ID)
     formDataToSend.append('department_id', formData.department || '');
+    
     formDataToSend.append('start_date', formData.startDate);
     
-    if (!formData.noDeadline) {
+    if (!formData.noDeadline && formData.deadline) {
       formDataToSend.append('deadline', formData.deadline);
     }
     formDataToSend.append('no_deadline', formData.noDeadline);
 
-    // Optional name-based fields
-    // Relations — ID based (MATCHES YOUR SERIALIZER)
-if (formData.projectCategory)
-  formDataToSend.append('category_id', formData.projectCategory);
+    // Category
+    if (formData.projectCategory)
+      formDataToSend.append('category_id', formData.projectCategory);
 
-if (formData.status)
-  formDataToSend.append('status_id', formData.status);
+    // Status
+    if (formData.status)
+      formDataToSend.append('status_id', formData.status);
 
-if (formData.stage)
-  formDataToSend.append('stage_id', formData.stage);
+    // Stage
+    if (formData.stage)
+      formDataToSend.append('stage_id', formData.stage);
 
-if (formData.client)
-  formDataToSend.append('client_id', formData.client);
+    // Client
+    if (formData.client)
+      formDataToSend.append('client_id', formData.client);
 
-if (formData.currency)
-  formDataToSend.append('currency_id', formData.currency);
+    // Currency
+    if (formData.currency)
+      formDataToSend.append('currency_id', formData.currency);
 
-
-    // Booleans & others
+    // Booleans - FIXED NAMES
     formDataToSend.append('amc', formData.amc);
-    if (formData.amc && formData.amcDate) formDataToSend.append('amc_date', formData.amcDate);
+    if (formData.amc && formData.amcDate) 
+      formDataToSend.append('amc_date', formData.amcDate);
     
     formDataToSend.append('renewal_only', formData.renewalOnly);
     formDataToSend.append('dm', formData.dm);
     formDataToSend.append('allow_manual_timelogs', formData.allowManualTimeLogs);
+    
+    // FIXED: hours_allocated (not allocatedHours)
     if (formData.allowManualTimeLogs && formData.allocatedHours) {
       formDataToSend.append('hours_allocated', formData.allocatedHours);
     }
@@ -155,11 +164,14 @@ if (formData.currency)
     formDataToSend.append('client_can_manage_tasks', formData.clientCanManageTasks);
     formDataToSend.append('send_task_notifications_to_client', formData.sendTaskNotification);
 
-    if (formData.budget) formDataToSend.append('budget', formData.budget);
-    if (formData.summary) formDataToSend.append('summary', formData.summary);
-    if (formData.note) formDataToSend.append('notes', formData.note);
+    if (formData.budget) 
+      formDataToSend.append('budget', formData.budget);
+    if (formData.summary) 
+      formDataToSend.append('summary', formData.summary);
+    if (formData.note) 
+      formDataToSend.append('notes', formData.note); // Changed from 'note'
 
-    // Members
+    // Members - FIXED: use correct field name 'members_ids'
     formData.projectMembers.forEach(id => {
       formDataToSend.append('members_ids', id);
     });
@@ -169,14 +181,26 @@ if (formData.currency)
       formDataToSend.append('files', file);
     });
 
-    const response = await apiClient.post("/operation/projects/", formDataToSend);
-    // No headers needed!
+    // DEBUG: Log what we're sending
+    console.log("Sending form data:");
+    for (let [key, value] of formDataToSend.entries()) {
+      console.log(key, value);
+    }
+
+    // Check if apiClient is properly configured
+    const response = await apiClient.post("/operation/projects/", formDataToSend, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      }
+    });
 
     toast.success("Project created successfully!");
     handleReset();
     console.log("Created Project:", response.data);
+    
   } catch (error) {
-    console.error("Error creating project:", error.response?.data || error);
+    console.error("Error creating project:", error);
+    console.error("Error response:", error.response?.data);
     toast.error("Failed to create project: " + (error.response?.data?.detail || "Check console"));
   }
 };

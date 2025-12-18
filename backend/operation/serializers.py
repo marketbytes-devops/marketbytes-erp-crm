@@ -153,8 +153,9 @@ class ProjectSerializer(serializers.ModelSerializer):
         fields = [
             'id',
             'name',
-
-            'category', 'category_id',
+'client_name',
+            'category',
+             'category_name', 'category_id',
             'department', 'department_id',
 
             'start_date', 'deadline', 'no_deadline', 
