@@ -1,99 +1,83 @@
 import { useState, useEffect } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
+import { Link, useNavigate } from "react-router";
 import LayoutComponents from "../../../components/LayoutComponents";
 import apiClient from "../../../helpers/apiClient";
+import Input from "../../../components/Input";
 import {
   MdAdd,
   MdDownload,
   MdCheckCircle,
   MdPending,
   MdCancel,
+  MdKeyboardArrowDown,
+  MdKeyboardArrowUp,
 } from "react-icons/md";
 import { format } from "date-fns";
-import { useNavigate } from "react-router";
 
 const Leaves = () => {
   const [leaves, setLeaves] = useState([]);
   const [filter, setFilter] = useState("all");
   const [loading, setLoading] = useState(true);
-  const navigate = useNavigate();
-
   const [searchTerm, setSearchTerm] = useState("");
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
+  const [expandedId, setExpandedId] = useState(null); 
+
+  const navigate = useNavigate();
 
   useEffect(() => {
-    setLoading(true);
-    apiClient
-      .get("/hr/leaves/")
-      .then((res) => {
-        let data = res.data;
-
-        if (data && data.results) {
-          data = data.results;
-        }
-
-        const leavesArray = Array.isArray(data) ? data : [];
-        setLeaves(leavesArray);
-      })
-      .catch((err) => {
-        console.error("Failed to load leaves:", err);
-        setLeaves([]);
-      })
-      .finally(() => setLoading(false));
+    fetchLeaves();
   }, []);
 
+  const fetchLeaves = async () => {
+    setLoading(true);
+    try {
+      const res = await apiClient.get("/hr/leaves/");
+      let data = res.data.results || res.data || [];
+      setLeaves(Array.isArray(data) ? data : []);
+    } catch (err) {
+      console.error("Failed to load leaves:", err);
+      setLeaves([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const filteredLeaves = leaves.filter((leave) => {
-    // Status filter (All/Pending/etc.)
     if (filter !== "all" && leave.status !== filter) return false;
 
-    // Search by employee name
     if (searchTerm) {
       const name = (leave.employee?.name || "").toLowerCase();
       if (!name.includes(searchTerm.toLowerCase())) return false;
     }
 
-    // Date range filter
-    if (dateFrom && leave.start_date) {
-      if (new Date(leave.start_date) < new Date(dateFrom)) return false;
-    }
-    if (dateTo && leave.end_date) {
-      if (new Date(leave.end_date) > new Date(dateTo)) return false;
-    }
+    if (dateFrom && leave.start_date && new Date(leave.start_date) < new Date(dateFrom))
+      return false;
+    if (dateTo && leave.end_date && new Date(leave.end_date) > new Date(dateTo))
+      return false;
 
     return true;
   });
 
   const statusConfig = {
-    pending: { color: "bg-yellow-100 text-yellow-800", icon: MdPending },
-    approved: { color: "bg-green-100 text-green-800", icon: MdCheckCircle },
-    rejected: { color: "bg-red-100 text-red-800", icon: MdCancel },
+    pending: { color: "bg-yellow-100 text-yellow-800", icon: MdPending, label: "Pending" },
+    approved: { color: "bg-green-100 text-green-800", icon: MdCheckCircle, label: "Approved" },
+    rejected: { color: "bg-red-100 text-red-800", icon: MdCancel, label: "Rejected" },
   };
 
   const handleStatusUpdate = async (leaveId, newStatus) => {
-    if (
-      !confirm(
-        `Are you sure you want to ${
-          newStatus === "approved" ? "approve" : "reject"
-        } this leave?`
-      )
-    ) {
+    if (!window.confirm(`Are you sure you want to ${newStatus === "approved" ? "approve" : "reject"} this leave?`))
       return;
-    }
 
     try {
       await apiClient.patch(`/hr/leaves/${leaveId}/`, { status: newStatus });
-
-      setLeaves((prev) =>
-        prev.map((leave) =>
-          leave.id === leaveId ? { ...leave, status: newStatus } : leave
-        )
+      setLeaves(prev =>
+        prev.map(leave => (leave.id === leaveId ? { ...leave, status: newStatus } : leave))
       );
-
-      alert(`Leave ${newStatus === "approved" ? "approved" : "rejected"}!`);
     } catch (err) {
-      console.error("Update failed:", err);
-      alert("Failed to update leave status");
+      alert("Failed to update status");
+      console.error(err);
     }
   };
 
@@ -103,243 +87,173 @@ const Leaves = () => {
       return;
     }
 
-    const headers =
-      "Employee,Leave Type,From,To,Duration,Status,Applied On,Reason\n";
-
+    const headers = "Employee,Leave Type,From,To,Duration,Status,Applied On,Reason\n";
     const rows = filteredLeaves
       .map((leave) => {
-        const employee = (leave.employee?.name || "Unknown").replace(
-          /"/g,
-          '""'
-        );
-        const leaveType = (
-          leave.leave_type_name ||
-          leave.leave_type?.name ||
-          "N/A"
-        ).replace(/"/g, '""');
-        const from = leave.start_date
-          ? format(new Date(leave.start_date), "dd/MM/yyyy")
-          : "-";
-        const to = leave.end_date
-          ? format(new Date(leave.end_date), "dd/MM/yyyy")
-          : "-";
+        const employee = (leave.employee?.name || "Unknown").replace(/"/g, '""');
+        const leaveType = (leave.leave_type_name || leave.leave_type?.name || "N/A").replace(/"/g, '""');
+        const from = leave.start_date ? format(new Date(leave.start_date), "dd/MM/yyyy") : "-";
+        const to = leave.end_date ? format(new Date(leave.end_date), "dd/MM/yyyy") : "-";
         const duration =
           leave.duration === "half_day"
             ? "Half Day"
             : leave.total_days
             ? `${leave.total_days} Day${leave.total_days > 1 ? "s" : ""}`
             : "Full Day";
-        const status = leave.status?.toUpperCase() || "UNKNOWN";
-        const appliedOn = leave.created_at
-          ? format(new Date(leave.created_at), "dd/MM/yyyy")
-          : "-";
+        const status = (leave.status || "pending").toUpperCase();
+        const appliedOn = leave.created_at ? format(new Date(leave.created_at), "dd/MM/yyyy") : "-";
         const reason = (leave.reason || "").replace(/"/g, '""');
 
         return `"${employee}","${leaveType}","${from}","${to}","${duration}","${status}","${appliedOn}","${reason}"`;
       })
       .join("\n");
 
-    const csvContent =
-      "data:text/csv;charset=utf-8," + encodeURIComponent(headers + rows);
-
+    const csvContent = "data:text/csv;charset=utf-8," + encodeURIComponent(headers + rows);
     const link = document.createElement("a");
     link.setAttribute("href", csvContent);
-    link.setAttribute(
-      "download",
-      `Leaves_${filter}_${format(new Date(), "yyyy-MM-dd")}.csv`
-    );
-    link.style.visibility = "hidden";
+    link.setAttribute("download", `Leaves_${format(new Date(), "yyyy-MM-dd")}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
   };
 
+  const toggleExpand = (id) => {
+    setExpandedId(expandedId === id ? null : id);
+  };
+
   return (
     <div className="p-6">
-      <LayoutComponents
-        title="Leaves"
-        subtitle="Manage employee leave requests"
-        variant="card"
-      >
-        <div className="flex flex-col gap-6 mb-5">
-          {/* Filter Tabs */}
-          <div className="flex flex-wrap gap-3 justify-between items-center">
-            <div className="flex gap-3">
-              <button
-                onClick={() => setFilter("all")}
-                className={`px-6 py-3.5 rounded-xl font-medium transition ${
-                  filter === "all"
-                    ? "bg-black text-white"
-                    : "bg-gray-100 hover:bg-gray-200"
-                }`}
-              >
-                All
-              </button>
-              <button
-                onClick={() => setFilter("pending")}
-                className={`px-6 py-3.5 rounded-xl font-medium transition ${
-                  filter === "pending"
-                    ? "bg-yellow-500 text-white"
-                    : "bg-gray-100 hover:bg-gray-200"
-                }`}
-              >
-                Pending
-              </button>
-              <button
-                onClick={() => setFilter("approved")}
-                className={`px-6 py-3.5 rounded-xl font-medium transition ${
-                  filter === "approved"
-                    ? "bg-green-500 text-white"
-                    : "bg-gray-100 hover:bg-gray-200"
-                }`}
-              >
-                Approved
-              </button>
-              <button
-                onClick={() => setFilter("rejected")}
-                className={`px-6 py-3.5 rounded-xl font-medium transition ${
-                  filter === "rejected"
-                    ? "bg-red-500 text-white"
-                    : "bg-gray-100 hover:bg-gray-200"
-                }`}
-              >
-                Rejected
-              </button>
+      <LayoutComponents title="Leaves" subtitle="Manage employee leave requests" variant="table">
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 mb-6">
+          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 mb-6">
+            <div className="flex flex-wrap gap-3">
+              {["all", "pending", "approved", "rejected"].map((status) => (
+                <button
+                  key={status}
+                  onClick={() => setFilter(status)}
+                  className={`px-6 py-3 rounded-xl font-medium transition ${
+                    filter === status
+                      ? status === "all"
+                        ? "bg-black text-white"
+                        : status === "pending"
+                        ? "bg-yellow-500 text-white"
+                        : status === "approved"
+                        ? "bg-green-600 text-white"
+                        : "bg-red-600 text-white"
+                      : "bg-gray-100 hover:bg-gray-200 text-gray-700"
+                  }`}
+                >
+                  {status.charAt(0).toUpperCase() + status.slice(1)}
+                </button>
+              ))}
             </div>
-
             <div className="flex gap-3">
               <button
                 onClick={handleExportCSV}
-                className="flex items-center gap-3 px-6 py-3.5 border border-gray-300 rounded-xl hover:bg-gray-50 transition font-medium"
+                className="flex items-center gap-2 px-5 py-4 border border-gray-300 rounded-xl hover:bg-gray-50 transition font-medium"
               >
-                <MdDownload className="w-5 h-5" /> Export CSV
+                <MdDownload className="w-5 h-5" />
+                Export
               </button>
-              <button
-                onClick={() => navigate("/hr/leaves/assign")}
-                className="flex items-center gap-3 px-6 py-3.5 bg-black text-white rounded-xl hover:bg-gray-900 transition font-medium"
+              <Link
+                to="/hr/leaves/assign"
+                className="flex items-center gap-3 px-6 py-3 bg-black text-white rounded-xl hover:bg-gray-900 transition font-semibold"
               >
-                <MdAdd className="w-5 h-5" /> Assign Leave
-              </button>
+                <MdAdd className="w-5 h-5" />
+                Assign Leave
+              </Link>
             </div>
           </div>
-
-          {/* Search + Date Filter Row */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <input
+            <Input
               type="text"
-              placeholder="Search employee name..."
+              placeholder="Search by employee name..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-black focus:border-transparent outline-none"
             />
 
-            {/* From Date */}
-            <div className="relative">
-              <input
-                type="date"
-                value={dateFrom}
-                onChange={(e) => setDateFrom(e.target.value)}
-                className="peer w-full px-4 py-3 pt-6 border border-gray-300 rounded-xl outline-none focus:ring-2 focus:ring-black transition"
-              />
-              <label className="absolute left-4 top-3 text-xs text-gray-500 pointer-events-none transition-all peer-focus:top-1 peer-focus:text-xs peer-[:not(:placeholder-shown)]:top-1 peer-[:not(:placeholder-shown)]:text-xs">
-                From Date
-              </label>
-              <label className="absolute left-4 top-6 text-gray-400 pointer-events-none transition-all peer-focus:top-1 peer-focus:text-xs peer-[:not(:placeholder-shown)]:hidden">
-                From Date
-              </label>
-            </div>
+            <Input
+              type="date"
+              label="From Date"
+              value={dateFrom}
+              onChange={(e) => setDateFrom(e.target.value)}
+            />
 
-            {/* To Date */}
-            <div className="relative">
-              <input
-                type="date"
-                value={dateTo}
-                onChange={(e) => setDateTo(e.target.value)}
-                className="peer w-full px-4 py-3 pt-6 border border-gray-300 rounded-xl outline-none focus:ring-2 focus:ring-black transition"
-              />
-              <label className="absolute left-4 top-3 text-xs text-gray-500 pointer-events-none transition-all peer-focus:top-1 peer-focus:text-xs peer-[:not(:placeholder-shown)]:top-1 peer-[:not(:placeholder-shown)]:text-xs">
-                To Date
-              </label>
-              <label className="absolute left-4 top-6 text-gray-400 pointer-events-none transition-all peer-focus:top-1 peer-focus:text-xs peer-[:not(:placeholder-shown)]:hidden">
-                To Date
-              </label>
-            </div>
+            <Input
+              type="date"
+              label="To Date"
+              value={dateTo}
+              onChange={(e) => setDateTo(e.target.value)}
+            />
+          </div>
 
-            {(searchTerm || dateFrom || dateTo) && (
+          {(searchTerm || dateFrom || dateTo) && (
+            <div className="mt-4 text-right">
               <button
                 onClick={() => {
                   setSearchTerm("");
                   setDateFrom("");
                   setDateTo("");
                 }}
-                className="px-4 py-3 bg-gray-200 rounded-xl hover:bg-gray-300 transition"
+                className="text-sm font-medium text-gray-600 hover:text-black underline"
               >
-                Clear Filters
+                Clear filters
               </button>
-            )}
-          </div>
+            </div>
+          )}
         </div>
-
         {loading ? (
-          <div className="text-center py-16 ">
-            <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-black border-t-transparent"></div>
+          <div className="flex items-center justify-center py-20">
+            <div className="animate-spin rounded-full h-12 w-12 border-4 border-black border-t-transparent"></div>
           </div>
         ) : filteredLeaves.length === 0 ? (
-          <div className="text-center py-16 text-gray-500">
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-16 text-center">
             <MdPending className="w-16 h-16 mx-auto mb-4 text-gray-300" />
-            <p className="text-xl font-medium">
-              {filter === "all"
-                ? "No leave requests found"
-                : `No ${filter} leave requests`}
+            <p className="text-xl font-medium text-gray-700">
+              {filter === "all" ? "No leave requests found" : `No ${filter} leaves`}
             </p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredLeaves.map((leave, i) => {
-              const StatusIcon = statusConfig[leave.status]?.icon || MdPending;
-              const statusStyle =
-                statusConfig[leave.status]?.color ||
-                "bg-gray-100 text-gray-800";
+            {filteredLeaves.map((leave) => {
+              const config = statusConfig[leave.status] || statusConfig.pending;
+              const StatusIcon = config.icon;
+              const isExpanded = expandedId === leave.id;
 
               return (
                 <motion.div
-                  key={leave.id || i}
+                  key={leave.id}
+                  layout
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: i * 0.05 }}
-                  whileHover={{ y: -4 }}
-                  className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden"
+                  className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden"
                 >
                   <div className="p-6">
                     <div className="flex items-start justify-between mb-4">
                       <div>
-                        <h4 className="text-lg font-medium text-gray-900">
-                          {leave.employee?.name || "Unknown"}
+                        <h4 className="text-lg font-semibold text-gray-900">
+                          {leave.employee?.name || "Unknown Employee"}
                         </h4>
-                        <p className="text-sm text-gray-600">
-                          {leave.leave_type_name || leave.leave_type?.name}
+                        <p className="text-sm text-gray-600 mt-1">
+                          {leave.leave_type_name || leave.leave_type?.name || "N/A"}
                         </p>
                       </div>
-                      <div className={`p-3 rounded-xl ${statusStyle}`}>
-                        <StatusIcon className="w-6 h-6" />
+                      <div className={`px-4 py-2 rounded-full ${config.color} flex items-center gap-2`}>
+                        <StatusIcon className="w-5 h-5" />
+                        <span className="font-medium">{config.label}</span>
                       </div>
                     </div>
-
                     <div className="space-y-3 text-sm">
                       <div className="flex justify-between">
                         <span className="text-gray-500">From</span>
                         <span className="font-medium">
-                          {leave.start_date
-                            ? format(new Date(leave.start_date), "dd MMM yyyy")
-                            : "—"}
+                          {leave.start_date ? format(new Date(leave.start_date), "dd MMM yyyy") : "—"}
                         </span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-gray-500">To</span>
                         <span className="font-medium">
-                          {leave.end_date
-                            ? format(new Date(leave.end_date), "dd MMM yyyy")
-                            : "—"}
+                          {leave.end_date ? format(new Date(leave.end_date), "dd MMM yyyy") : "—"}
                         </span>
                       </div>
                       <div className="flex justify-between">
@@ -347,73 +261,72 @@ const Leaves = () => {
                         <span className="font-medium">
                           {leave.duration === "half_day"
                             ? "Half Day"
-                            : leave.duration === "full_day"
-                            ? "Full Day"
                             : leave.total_days
-                            ? `${leave.total_days} Days`
-                            : "—"}
+                            ? `${leave.total_days} Day${leave.total_days > 1 ? "s" : ""}`
+                            : "Full Day"}
                         </span>
                       </div>
                     </div>
 
                     {leave.reason && (
-                      <div className="mt-5 pt-5 border-t border-gray-200">
-                        <p className="text-sm text-gray-600 line-clamp-2">
-                          {leave.reason}
-                        </p>
+                      <div className="mt-4 pt-4 border-t border-gray-200">
+                        <p className="text-sm text-gray-700 line-clamp-3">{leave.reason}</p>
                       </div>
                     )}
 
-                    <div className="mt-5 flex items-center justify-between text-xs text-gray-500">
+                    <div className="mt-4 text-xs text-gray-500 flex justify-between">
                       <span>
-                        Applied on{" "}
-                        {leave.created_at
-                          ? format(new Date(leave.created_at), "dd MMM yyyy")
-                          : "—"}
+                        Applied: {leave.created_at ? format(new Date(leave.created_at), "dd MMM yyyy") : "—"}
                       </span>
-                      {leave.approved_by && (
-                        <span className="font-medium">
-                          by {leave.approved_by.name}
-                        </span>
-                      )}
+                      {leave.approved_by && <span>by {leave.approved_by.name}</span>}
                     </div>
-                    <div className="mt-6">
-                      {leave.status === "pending" ? (
-                        <div className="space-y-4">
-                          <div className="text-center py-3 bg-yellow-100 text-yellow-800 font-bold rounded-xl text-lg">
-                            PENDING
-                          </div>
-                          <div className="flex gap-3">
-                            <button
-                              onClick={() =>
-                                handleStatusUpdate(leave.id, "approved")
-                              }
-                              className="flex-1 bg-green-600 text-white py-3 rounded-xl font-semibold hover:bg-green-700 transition"
-                            >
-                              Accept
-                            </button>
-                            <button
-                              onClick={() =>
-                                handleStatusUpdate(leave.id, "rejected")
-                              }
-                              className="flex-1 bg-red-600 text-white py-3 rounded-xl font-semibold hover:bg-red-700 transition"
-                            >
-                              Reject
-                            </button>
-                          </div>
-                        </div>
-                      ) : (
-                        <div
-                          className={`py-5 text-center font-bold text-xl rounded-xl ${
-                            leave.status === "approved"
-                              ? "bg-green-100 text-green-800"
-                              : "bg-red-100 text-red-800"
-                          }`}
+                    {leave.status === "pending" && (
+                      <div className="mt-6">
+                        <button
+                          onClick={() => toggleExpand(leave.id)}
+                          className="w-full flex items-center justify-center gap-2 py-3 text-sm font-medium text-gray-700 hover:text-black transition"
                         >
-                          {leave.status?.toUpperCase()}
-                        </div>
-                      )}
-                    </div>
+                          {isExpanded ? "Hide Actions" : "Show Actions"}
+                          {isExpanded ? (
+                            <MdKeyboardArrowUp className="w-5 h-5" />
+                          ) : (
+                            <MdKeyboardArrowDown className="w-5 h-5" />
+                          )}
+                        </button>
+
+                        <AnimatePresence>
+                          {isExpanded && (
+                            <motion.div
+                              initial={{ height: 0, opacity: 0 }}
+                              animate={{ height: "auto", opacity: 1 }}
+                              exit={{ height: 0, opacity: 0 }}
+                              transition={{ duration: 0.3 }}
+                              className="overflow-hidden"
+                            >
+                              <div className="mt-4 flex gap-3">
+                                <button
+                                  onClick={() => handleStatusUpdate(leave.id, "approved")}
+                                  className="flex-1 bg-green-600 text-white py-3 rounded-xl font-semibold hover:bg-green-700 transition"
+                                >
+                                  Approve
+                                </button>
+                                <button
+                                  onClick={() => handleStatusUpdate(leave.id, "rejected")}
+                                  className="flex-1 bg-red-600 text-white py-3 rounded-xl font-semibold hover:bg-red-700 transition"
+                                >
+                                  Reject
+                                </button>
+                              </div>
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
+                      </div>
+                    )}
+                    {leave.status !== "pending" && (
+                      <div className={`mt-6 py-4 text-center font-bold text-lg rounded-xl ${config.color}`}>
+                        {config.label.toUpperCase()}
+                      </div>
+                    )}
                   </div>
                 </motion.div>
               );

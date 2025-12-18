@@ -16,7 +16,7 @@ const Select = forwardRef(
       onChange,
       placeholder = "Select an option",
       className,
-      multiple = false, 
+      multiple = false,
     },
     ref
   ) => {
@@ -27,13 +27,13 @@ const Select = forwardRef(
     const [triggerRect, setTriggerRect] = useState(null);
 
     useEffect(() => {
-  if (multiple) return;
+      if (multiple) return;
 
-  const selected = options.find(
-    (opt) => String(opt.value) === String(value)
-  );
-  setSelectedLabel(selected ? selected.label : "");
-}, [value, options, multiple]);
+      const selected = options.find(
+        (opt) => String(opt.value) === String(value)
+      );
+      setSelectedLabel(selected ? selected.label : "");
+    }, [value, options, multiple]);
 
     useEffect(() => {
       if (isOpen && triggerRef.current) {
@@ -58,21 +58,21 @@ const Select = forwardRef(
         document.removeEventListener("mousedown", handleClickOutside);
     }, [isOpen]);
 
-   const handleSelect = (option) => {
-  if (multiple) {
-    const current = Array.isArray(value) ? value : [];
-    if (!current.includes(option.value)) {
-      onChange([...current, option.value]);
-    }
-  } else {
-    onChange(option.value);
-    setIsOpen(false);
-  }
-};
+    const handleSelect = (option) => {
+      if (multiple) {
+        const current = Array.isArray(value) ? value : [];
+        if (!current.includes(option.value)) {
+          onChange([...current, option.value]);
+        }
+      } else {
+        onChange(option.value);
+        setIsOpen(false);
+      }
+    };
 
-const handleRemove = (val) => {
-  onChange(value.filter((v) => v !== val));
-};
+    const handleRemove = (val) => {
+      onChange(value.filter((v) => v !== val));
+    };
 
 
     const dropdownContent = isOpen && (
@@ -82,7 +82,7 @@ const handleRemove = (val) => {
         animate={{ opacity: 1, y: 0, scale: 1 }}
         exit={{ opacity: 0, y: -8, scale: 0.95 }}
         transition={{ duration: 0.15 }}
-        className="absolute bg-white border border-gray-300 rounded-lg shadow-2xl max-h-60 overflow-y-auto py-1 z-50"
+        className="absolute bg-white border border-gray-300 rounded-lg shadow-2xl max-h-60 overflow-y-auto py-1 z-10"
         style={{
           top: triggerRect ? triggerRect.bottom + window.pageYOffset + 8 : 0,
           left: triggerRect ? triggerRect.left + window.pageXOffset : 0,
@@ -120,35 +120,35 @@ const handleRemove = (val) => {
             className
           )}
         >
-         <span className="flex flex-wrap gap-2">
-  {multiple && Array.isArray(value) && value.length > 0 ? (
-    value.map((val) => {
-      const opt = options.find(o => String(o.value) === String(val));
-      return (
-        <span
-          key={val}
-          className="flex items-center gap-1 bg-gray-200 px-2 py-1 rounded text-sm"
-        >
-          {opt?.label}
-          <button
-            type="button"
-            onClick={(e) => {
-              e.stopPropagation();
-              handleRemove(val);
-            }}
-            className="text-gray-600 hover:text-black"
-          >
-            ✕
-          </button>
-        </span>
-      );
-    })
-  ) : (
-    <span className={value ? "text-black" : "text-gray-500"}>
-      {selectedLabel || placeholder}
-    </span>
-  )}
-</span>
+          <span className="flex flex-wrap gap-2">
+            {multiple && Array.isArray(value) && value.length > 0 ? (
+              value.map((val) => {
+                const opt = options.find(o => String(o.value) === String(val));
+                return (
+                  <span
+                    key={val}
+                    className="flex items-center gap-1 bg-gray-200 px-2 py-1 rounded text-sm"
+                  >
+                    {opt?.label}
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleRemove(val);
+                      }}
+                      className="text-gray-600 hover:text-black"
+                    >
+                      ✕
+                    </button>
+                  </span>
+                );
+              })
+            ) : (
+              <span className={value ? "text-black" : "text-gray-500"}>
+                {selectedLabel || placeholder}
+              </span>
+            )}
+          </span>
 
           <MdKeyboardArrowDown
             className={cn(
@@ -213,9 +213,9 @@ const Input = forwardRef(
             multiple={props.multiple}
             className={cn(
               hasError &&
-                "border-red-500 focus:ring-red-500 focus:border-red-500"
+              "border-red-500 focus:ring-red-500 focus:border-red-500"
             )}
-            
+
           />
 
           {(hasError || helperText) && (
@@ -266,8 +266,8 @@ const Input = forwardRef(
               type === "password"
                 ? "current-password"
                 : type === "email"
-                ? "username"
-                : undefined
+                  ? "username"
+                  : undefined
             }
             {...props}
           />

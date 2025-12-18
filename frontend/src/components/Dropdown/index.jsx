@@ -18,7 +18,7 @@ const Dropdown = ({
   align = 'right',
   className = '',
   dropdownId,
-  width = 'w-64', 
+  width = 'w-64',
 }) => {
   const dropdownRef = useRef(null);
   const { openDropdownId } = useDropdownStore();
