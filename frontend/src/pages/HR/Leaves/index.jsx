@@ -22,7 +22,7 @@ const Leaves = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
-  const [expandedId, setExpandedId] = useState(null); 
+  const [expandedId, setExpandedId] = useState(null);
 
   const navigate = useNavigate();
 
@@ -98,8 +98,8 @@ const Leaves = () => {
           leave.duration === "half_day"
             ? "Half Day"
             : leave.total_days
-            ? `${leave.total_days} Day${leave.total_days > 1 ? "s" : ""}`
-            : "Full Day";
+              ? `${leave.total_days} Day${leave.total_days > 1 ? "s" : ""}`
+              : "Full Day";
         const status = (leave.status || "pending").toUpperCase();
         const appliedOn = leave.created_at ? format(new Date(leave.created_at), "dd/MM/yyyy") : "-";
         const reason = (leave.reason || "").replace(/"/g, '""');
@@ -131,17 +131,16 @@ const Leaves = () => {
                 <button
                   key={status}
                   onClick={() => setFilter(status)}
-                  className={`px-6 py-3 rounded-xl font-medium transition ${
-                    filter === status
+                  className={`px-6 py-3 rounded-xl font-medium transition ${filter === status
                       ? status === "all"
                         ? "bg-black text-white"
                         : status === "pending"
-                        ? "bg-yellow-500 text-white"
-                        : status === "approved"
-                        ? "bg-green-600 text-white"
-                        : "bg-red-600 text-white"
+                          ? "bg-yellow-500 text-white"
+                          : status === "approved"
+                            ? "bg-green-600 text-white"
+                            : "bg-red-600 text-white"
                       : "bg-gray-100 hover:bg-gray-200 text-gray-700"
-                  }`}
+                    }`}
                 >
                   {status.charAt(0).toUpperCase() + status.slice(1)}
                 </button>
@@ -165,13 +164,14 @@ const Leaves = () => {
             </div>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <Input
-              type="text"
-              placeholder="Search by employee name..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
-
+            <div className="relative top-7">
+              <Input
+                type="text"
+                placeholder="Search by employee name..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+            </div>
             <Input
               type="date"
               label="From Date"
@@ -262,8 +262,8 @@ const Leaves = () => {
                           {leave.duration === "half_day"
                             ? "Half Day"
                             : leave.total_days
-                            ? `${leave.total_days} Day${leave.total_days > 1 ? "s" : ""}`
-                            : "Full Day"}
+                              ? `${leave.total_days} Day${leave.total_days > 1 ? "s" : ""}`
+                              : "Full Day"}
                         </span>
                       </div>
                     </div>
