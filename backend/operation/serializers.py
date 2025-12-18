@@ -7,6 +7,7 @@ from .models import (
     Client,
     ProjectFile,
     Currency,
+    Task
 )
 from authapp.serializers import ProfileSerializer
 from authapp.models import CustomUser, Department
@@ -312,3 +313,46 @@ class ProjectSerializer(serializers.ModelSerializer):
                 )
 
         return project
+
+class TaskSerializer(serializers.ModelSerializer):
+    project_name = serializers.CharField(source='project.name', read_only=True)
+    assignees = ProfileSerializer(many=True, read_only=True)
+    assignee_ids = serializers.PrimaryKeyRelatedField(
+        queryset=CustomUser.objects.all(),
+        many=True,
+        write_only=True,
+        required=False
+    )
+ 
+    class Meta:
+        model = Task
+        fields = [
+            'id',
+            'project', 'project_name',
+            'name', 'description',
+            'status', 'priority', 'label',
+            'start_date', 'due_date',
+            'allocated_hours',
+            'assignees', 'assignee_ids',
+            'is_active',
+            'created_at', 'updated_at'
+        ]
+        read_only_fields = ['created_at', 'updated_at']
+ 
+    def create(self, validated_data):
+        assignee_ids = validated_data.pop('assignee_ids', [])
+        task = Task.objects.create(**validated_data)
+        if assignee_ids:
+            task.assignees.set(assignee_ids)
+        return task
+ 
+    def update(self, instance, validated_data):
+        assignee_ids = validated_data.pop('assignee_ids', None)
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        instance.save()
+ 
+        if assignee_ids is not None:
+            instance.assignees.set(assignee_ids)
+ 
+        return instance

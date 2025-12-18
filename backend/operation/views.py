@@ -13,6 +13,7 @@ from .models import (
     ProjectStage,
     Client,
     Currency,
+    Task
 )
 from .serializers import (
     ProjectSerializer,
@@ -21,6 +22,7 @@ from .serializers import (
     ProjectStageSerializer,
     ClientSerializer,
     CurrencySerializer,
+    TaskSerializer
 )
 
 class ProjectCategoryViewSet(viewsets.ModelViewSet):
@@ -424,3 +426,45 @@ class ProjectViewSet(viewsets.ModelViewSet):
 
         serializer = self.get_serializer(my_projects, many=True)
         return Response(serializer.data)
+
+class TaskViewSet(viewsets.ModelViewSet):
+    """
+    ViewSet for Task CRUD operations
+    """
+    queryset = Task.objects.all().select_related('project').prefetch_related('assignees')
+    serializer_class = TaskSerializer
+    permission_classes = [IsAuthenticated]
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
+    search_fields = ['title', 'description', 'project__name']
+    filterset_fields = {
+        'project': ['exact'],
+        'status': ['exact', 'in'],
+        'priority': ['exact', 'in'],
+        'label': ['exact', 'isnull'],
+        'assignees': ['exact'],
+        'is_active': ['exact'],
+        'due_date': ['exact', 'gte', 'lte'],
+        'start_date': ['exact', 'gte', 'lte'],
+    }
+    ordering_fields = ['title', 'due_date', 'priority', 'created_at', 'start_date']
+    ordering = ['-priority', 'due_date']
+ 
+    def get_queryset(self):
+        """
+        Restrict tasks to projects the user is part of or assigned to
+        """
+        queryset = super().get_queryset()
+        user = self.request.user
+ 
+        if not user.is_superuser and not user.is_staff:
+            queryset = queryset.filter(
+                Q(project__members=user) |
+                Q(project__department=user.department) |
+                Q(assignees=user)
+            ).distinct()
+
+        project_id = self.request.query_params.get('project_id')
+        if project_id:
+            queryset = queryset.filter(project_id=project_id)
+ 
+        return queryset  

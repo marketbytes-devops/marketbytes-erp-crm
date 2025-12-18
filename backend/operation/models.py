@@ -110,17 +110,60 @@ class ProjectFile(models.Model):
     def __str__(self):
         return f"{self.original_name} - {self.project.name}"
 
+class TaskStatus(models.TextChoices):
+    TODO = 'todo', 'To Do'
+    IN_PROGRESS = 'in_progress', 'In Progress'
+    REVIEW = 'review', 'Review'
+    DONE = 'done', 'Done'
+ 
+class TaskPriority(models.TextChoices):
+    LOW = 'low', 'Low'
+    MEDIUM = 'medium', 'Medium'
+    HIGH = 'high', 'High'
+    URGENT = 'urgent', 'Urgent'
+ 
+class TaskLabel(models.TextChoices):
+    BUG = 'bug', 'Bug'
+    FEATURE = 'feature', 'Feature'
+    IMPROVEMENT = 'improvement', 'Improvement'
+    DOCUMENTATION = 'documentation', 'Documentation'
+    DESIGN = 'design', 'Design'
+    TESTING = 'testing', 'Testing'
+ 
 class Task(models.Model):
     project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='tasks')
-    name = models.CharField(max_length=200)
+    name = models.CharField(max_length=255)
     description = models.TextField(blank=True, null=True)
+    status = models.CharField(
+        max_length=20,
+        choices=TaskStatus.choices,
+        default=TaskStatus.TODO
+    )
+    priority = models.CharField(
+        max_length=20,
+        choices=TaskPriority.choices,
+        default=TaskPriority.MEDIUM
+    )
+    start_date = models.DateField(null=True, blank=True)
+    due_date = models.DateField(null=True, blank=True)
+    allocated_hours = models.DecimalField(
+        max_digits=6, decimal_places=2, null=True, blank=True,
+        help_text="Estimated hours for this task"
+    )
+    label = models.CharField(
+        max_length=20,
+        choices=TaskLabel.choices,
+        blank=True, null=True
+    )
+    assignees = models.ManyToManyField(CustomUser, blank=True, related_name='assigned_tasks')
     is_active = models.BooleanField(default=True)
-
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+ 
     class Meta:
         unique_together = ('project', 'name')
-        ordering = ['project', 'name']
+        ordering = ['-priority', 'due_date', 'name']
         verbose_name_plural = "Tasks"
-
+ 
     def __str__(self):
         return f"{self.project.name} - {self.name}"
-
