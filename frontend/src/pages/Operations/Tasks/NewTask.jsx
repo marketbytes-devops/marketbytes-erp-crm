@@ -173,7 +173,7 @@ const NewTaskPage = () => {
       <LayoutComponents title="New Task" subtitle="Create a new task for a project" variant="card">
         <div className="mb-8">
           <Link
-            to="/tasks"
+            to="Operations/tasks"
             className="inline-flex items-center gap-2 px-5 py-3 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 transition"
           >
             <MdArrowBack className="w-5 h-5" />

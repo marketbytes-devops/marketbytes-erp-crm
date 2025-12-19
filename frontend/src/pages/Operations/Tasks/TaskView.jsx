@@ -4,21 +4,26 @@ import { useNavigate, useLocation } from "react-router";
 import apiClient from "../../../helpers/apiClient";
 import Loading from "../../../components/Loading";
 import toast from "react-hot-toast";
-import Input from "../../../components/Input"; // Adjust path if needed
+import Input from "../../../components/Input";
 
 const TasksPage = () => {
-  const [showEntries, setShowEntries] = useState(50);
   const [search, setSearch] = useState("");
   const [isPinnedModalOpen, setIsPinnedModalOpen] = useState(false);
   const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [selectedTask, setSelectedTask] = useState(null); 
+  const [isTaskDetailOpen, setIsTaskDetailOpen] = useState(false);
+
+  // Advanced Filters State
+  const [isFiltersOpen, setIsFiltersOpen] = useState(false);
+  const [filterStatus, setFilterStatus] = useState("All Statuses");
+  const [filterProject, setFilterProject] = useState("All Projects");
+  const [filterAssignee, setFilterAssignee] = useState("All Members");
+  const [filterDueDateFrom, setFilterDueDateFrom] = useState("");
+  const [filterDueDateTo, setFilterDueDateTo] = useState("");
 
   const navigate = useNavigate();
   const location = useLocation();
-
-  const handleClick = () => {
-    navigate("/operations/tasks/tasklabel");
-  };
 
   const handleNewtaskClick = () => {
     navigate("/operations/tasks/newtask");
@@ -45,11 +50,10 @@ const TasksPage = () => {
 
   const handleStatusChange = async (taskId, newStatusValue) => {
     try {
-   
       const statusMap = {
         "To Do": "todo",
         "In progress": "in_progress",
-        "Review":"review",
+        "Review": "review",
         "Done": "done",
       };
 
@@ -60,10 +64,28 @@ const TasksPage = () => {
       });
 
       toast.success("Status updated successfully");
-      fetchTasks(); // Refetch to reflect changes immediately
+      fetchTasks();
     } catch (err) {
       console.error("Failed to update status:", err);
       toast.error("Failed to update status");
+    }
+  };
+
+  const handleMarkAsComplete = async () => {
+    if (!selectedTask) return;
+
+    try {
+      await apiClient.patch(`/operation/tasks/${selectedTask.id}/`, {
+        status: "done",
+      });
+
+      toast.success("Task marked as complete!");
+      fetchTasks();
+      setIsTaskDetailOpen(false); 
+      setSelectedTask(null);
+    } catch (err) {
+      console.error("Failed to mark task as complete:", err);
+      toast.error("Failed to complete task");
     }
   };
 
@@ -79,7 +101,7 @@ const TasksPage = () => {
       todo: "To Do",
       in_progress: "In progress",
       done: "Done",
-      review:"Review",
+      review: "Review",
     };
     return map[status] || "To Do";
   };
@@ -118,36 +140,64 @@ const TasksPage = () => {
     );
   };
 
+  // Filtering logic
   const filteredTasks = tasks.filter((task) => {
-    const searchLower = search.toLowerCase();
-    return (
-      task.name?.toLowerCase().includes(searchLower) ||
-      task.project_name?.toLowerCase().includes(searchLower)
-    );
+    const matchesSearch = 
+      task.name?.toLowerCase().includes(search.toLowerCase()) ||
+      task.project_name?.toLowerCase().includes(search.toLowerCase());
+
+    const matchesStatus = filterStatus === "All Statuses" || getCurrentStatusLabel(task.status) === filterStatus;
+    const matchesProject = filterProject === "All Projects" || task.project_name === filterProject;
+    const matchesAssignee = filterAssignee === "All Members" || 
+      (task.assignees || []).some(a => (a.name || a.username) === filterAssignee);
+
+    const taskDueDate = task.due_date ? new Date(task.due_date) : null;
+    const fromDate = filterDueDateFrom ? new Date(filterDueDateFrom) : null;
+    const toDate = filterDueDateTo ? new Date(filterDueDateTo) : null;
+
+    const matchesDueDate = (!fromDate || !taskDueDate || taskDueDate >= fromDate) &&
+                           (!toDate || !taskDueDate || taskDueDate <= toDate);
+
+    return matchesSearch && matchesStatus && matchesProject && matchesAssignee && matchesDueDate;
   });
 
-  const pinnedModalContent = (
-    <div className="p-6">
-      <div className="overflow-x-auto">
-        <table className="w-full text-sm">
-          <thead className="bg-gray-50 border-b border-gray-200">
-            <tr>
-              <th className="px-6 py-4 text-left text-xs font-medium text-gray-600 uppercase">#</th>
-              <th className="px-6 py-4 text-left text-xs font-medium text-gray-600 uppercase">Task</th>
-              <th className="px-6 py-4 text-left text-xs font-medium text-gray-600 uppercase">Action</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td colSpan={3} className="text-center py-12 text-gray-500">
-                No pinned item found
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-  );
+  const openTaskDetail = (task) => {
+    setSelectedTask(task);
+    setIsTaskDetailOpen(true);
+  };
+
+  const resetFilters = () => {
+    setFilterStatus("All Statuses");
+    setFilterProject("All Projects");
+    setFilterAssignee("All Members");
+    setFilterDueDateFrom("");
+    setFilterDueDateTo("");
+  };
+
+  // Prepare options for custom Input selects
+  const statusFilterOptions = [
+    { value: "All Statuses", label: "All Statuses" },
+    { value: "To Do", label: "To Do" },
+    { value: "In progress", label: "In progress" },
+    { value: "Review", label: "Review" },
+    { value: "Done", label: "Done" },
+  ];
+
+  const projectFilterOptions = [
+    { value: "All Projects", label: "All Projects" },
+    ...[...new Set(tasks.map(t => t.project_name).filter(Boolean))].map(proj => ({
+      value: proj,
+      label: proj,
+    })),
+  ];
+
+  const assigneeFilterOptions = [
+    { value: "All Members", label: "All Members" },
+    ...[...new Set(tasks.flatMap(t => (t.assignees || []).map(a => a.name || a.username)).filter(Boolean))].map(member => ({
+      value: member,
+      label: member,
+    })),
+  ];
 
   if (loading) {
     return (
@@ -173,49 +223,111 @@ const TasksPage = () => {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                 </svg>
               </button>
-              <button onClick={handleClick} className="border border-black text-black px-4 py-2 rounded-lg hover:bg-purple-50">
-                Task Labels
-              </button>
+             
               <button onClick={handleNewtaskClick} className="bg-black text-white px-4 py-2 rounded-lg flex items-center gap-2">
                 <span className="text-lg">+</span> New Task
               </button>
             </div>
-            <button className="bg-black text-white px-4 py-2 rounded-lg flex items-center gap-2">
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-              </svg>
-              Export
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-              </svg>
-            </button>
+           
           </div>
 
-          <div className="px-6 py-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-gray-50">
-            <div className="flex items-center gap-3 text-gray-700">
-              <span>Show</span>
-              <select
-                value={showEntries}
-                onChange={(e) => setShowEntries(Number(e.target.value))}
-                className="border border-gray-300 rounded px-3 py-1 focus:outline-none focus:ring-2 focus:ring-teal-500"
-              >
-                <option>10</option>
-                <option>25</option>
-                <option>50</option>
-                <option>100</option>
-              </select>
-              <span>entries</span>
+          <div className="px-6 py-4 border-b border-gray-200">
+            <div className="flex flex-col lg:flex-row gap-4 items-center justify-between mb-4">
+              <div className="relative flex-1 max-w-2xl">
+                <svg className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+                <input
+                  type="text"
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  placeholder="Search tasks..."
+                  className="w-full pl-12 pr-6 py-4 bg-white border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm"
+                />
+              </div>
+
+              <div className="flex items-center gap-4">
+                <button
+                  onClick={() => setIsFiltersOpen(!isFiltersOpen)}
+                  className="flex items-center gap-2 px-6 py-4 bg-white border border-gray-300 rounded-xl hover:bg-gray-50 shadow-sm"
+                >
+                  <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+                  </svg>
+                  Filters
+                  <svg className={`w-4 h-4 transition-transform ${isFiltersOpen ? "rotate-180" : ""}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
+
+                <span className="text-gray-700 font-medium">{filteredTasks.length} tasks</span>
+
+                <button className="flex items-center gap-2 px-6 py-4 bg-white border border-gray-300 rounded-xl hover:bg-gray-50 shadow-sm">
+                  <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                  </svg>
+                  Export
+                </button>
+              </div>
             </div>
-            <div className="flex items-center gap-3 w-full sm:w-auto">
-              <span className="text-gray-700">Search:</span>
-              <input
-                type="text"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
-                placeholder=""
-              />
-            </div>
+
+            {isFiltersOpen && (
+              <div className="mt-6 p-6 bg-white rounded-xl border border-gray-200">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                  <Input
+                    label="Status"
+                    type="select"
+                    value={filterStatus}
+                    onChange={setFilterStatus}
+                    options={statusFilterOptions}
+                    placeholder="All Statuses"
+                  />
+
+                  <Input
+                    label="Project"
+                    type="select"
+                    value={filterProject}
+                    onChange={setFilterProject}
+                    options={projectFilterOptions}
+                    placeholder="All Projects"
+                  />
+
+                  <Input
+                    label="Assigned To"
+                    type="select"
+                    value={filterAssignee}
+                    onChange={setFilterAssignee}
+                    options={assigneeFilterOptions}
+                    placeholder="All Members"
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                  <Input
+                    label="Due Date From"
+                    type="date"
+                    value={filterDueDateFrom}
+                    onChange={setFilterDueDateFrom}
+                  />
+
+                  <Input
+                    label="Due Date To"
+                    type="date"
+                    value={filterDueDateTo}
+                    onChange={setFilterDueDateTo}
+                  />
+                </div>
+
+                <div className="flex justify-end">
+                  <button
+                    onClick={resetFilters}
+                    className="px-6 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition"
+                  >
+                    Reset All Filters
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Table */}
@@ -247,7 +359,12 @@ const TasksPage = () => {
                         </div>
                       </td>
                       <td className="px-6 py-5 font-medium text-gray-900">
-                        {task.name}
+                        <button
+                          onClick={() => openTaskDetail(task)}
+                          className="text-blue-600 hover:underline"
+                        >
+                          {task.name}
+                        </button>
                       </td>
                       <td className="px-6 py-5 text-gray-700">
                         {task.project_name || "-"}
@@ -293,6 +410,16 @@ const TasksPage = () => {
           variant="modal"
           modal={pinnedModalContent}
           onCloseModal={() => setIsPinnedModalOpen(false)}
+        />
+      )}
+
+      {/* Task Detail Modal */}
+      {isTaskDetailOpen && selectedTask && (
+        <LayoutComponents
+          title={`TASK #${selectedTask.id}`}
+          variant="modal"
+          modal={taskDetailModalContent}
+          onCloseModal={() => setIsTaskDetailOpen(false)}
         />
       )}
     </div>
