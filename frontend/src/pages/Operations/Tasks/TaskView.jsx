@@ -1,53 +1,131 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import LayoutComponents from "../../../components/LayoutComponents";
-import { useNavigate } from "react-router";
+import { useNavigate, useLocation } from "react-router";
+import apiClient from "../../../helpers/apiClient";
+import Loading from "../../../components/Loading";
+import toast from "react-hot-toast";
+import Input from "../../../components/Input"; // Adjust path if needed
 
 const TasksPage = () => {
   const [showEntries, setShowEntries] = useState(50);
   const [search, setSearch] = useState("");
-  const [isPinnedModalOpen, setIsPinnedModalOpen] = useState(false); // Added state
-  const navigate =useNavigate();
-const handleClick=()=>
-  {
-    navigate("/operations/tasks/tasklabel")
+  const [isPinnedModalOpen, setIsPinnedModalOpen] = useState(false);
+  const [tasks, setTasks] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  const handleClick = () => {
+    navigate("/operations/tasks/tasklabel");
   };
- const handleNewtaskClick=()=>
-  {
-    navigate("/operations/tasks/newtask")
+
+  const handleNewtaskClick = () => {
+    navigate("/operations/tasks/newtask");
   };
-  const tasks = [
-    {
-      id: 539,
-      task: "Content Calendar",
-      project: "Lanware Solution",
-      assignedTo: 2,
-      dueDate: "04-12-2025",
-      status: "In progress",
-    },
-    {
-      id: 538,
-      task: "Content Planning",
-      project: "Seed and Scale",
-      assignedTo: 2,
-      dueDate: "01-12-2025",
-      status: "In progress",
-    },
+
+  const fetchTasks = async () => {
+    try {
+      setLoading(true);
+      const response = await apiClient.get("/operation/tasks/");
+      const tasksData = response.data?.results || response.data || [];
+      setTasks(tasksData);
+    } catch (err) {
+      console.error("Failed to fetch tasks:", err);
+      toast.error("Failed to load tasks");
+      setTasks([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchTasks();
+  }, [location.state?.refetch]);
+
+  const handleStatusChange = async (taskId, newStatusValue) => {
+    try {
+   
+      const statusMap = {
+        "To Do": "todo",
+        "In progress": "in_progress",
+        "Review":"review",
+        "Done": "done",
+      };
+
+      const backendStatus = statusMap[newStatusValue];
+
+      await apiClient.patch(`/operation/tasks/${taskId}/`, {
+        status: backendStatus,
+      });
+
+      toast.success("Status updated successfully");
+      fetchTasks(); // Refetch to reflect changes immediately
+    } catch (err) {
+      console.error("Failed to update status:", err);
+      toast.error("Failed to update status");
+    }
+  };
+
+  const statusOptions = [
+    { value: "To Do", label: "To Do" },
+    { value: "In progress", label: "In progress" },
+    { value: "Done", label: "Done" },
+    { value: "Review", label: "Review" },
   ];
 
-  const getStatusColor = (status) => {
-    return status === "To Do" ? "text-white border-black bg-black" : "text-teal-600 border-teal-300 bg-teal-50";
+  const getCurrentStatusLabel = (status) => {
+    const map = {
+      todo: "To Do",
+      in_progress: "In progress",
+      done: "Done",
+      review:"Review",
+    };
+    return map[status] || "To Do";
   };
 
-  const renderAvatars = (count) => {
-    return Array.from({ length: count }, (_, i) => (
-      <div
-        key={i}
-        className="w-8 h-8 rounded-full bg-gray-400 border-2 border-white -ml-2"
-      />
-    ));
+  const renderAvatars = (assignees = []) => {
+    const assigneeCount = assignees.length;
+
+    if (assigneeCount === 0) {
+      return <div className="w-8 h-8 rounded-full bg-gray-300 border-2 border-white" />;
+    }
+
+    return (
+      <div className="flex -space-x-2">
+        {assignees.slice(0, 3).map((assignee, i) => {
+          const name = assignee.name || assignee.username || "Unknown";
+          const initial = name[0]?.toUpperCase() || "?";
+
+          return (
+            <div key={assignee.id || i} className="relative group">
+              <div className="w-8 h-8 rounded-full bg-gray-400 border-2 border-white flex items-center justify-center text-white text-xs font-bold cursor-pointer">
+                {initial}
+              </div>
+              <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-black text-white text-sm rounded-lg whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
+                {name}
+                <div className="absolute top-full left-1/2 -translate-x-1/2 border-8 border-transparent border-t-black"></div>
+              </div>
+            </div>
+          );
+        })}
+        {assigneeCount > 3 && (
+          <div className="w-8 h-8 rounded-full bg-gray-500 border-2 border-white flex items-center justify-center text-white text-xs font-bold">
+            +{assigneeCount - 3}
+          </div>
+        )}
+      </div>
+    );
   };
 
-  // Pinned Task Modal Content
+  const filteredTasks = tasks.filter((task) => {
+    const searchLower = search.toLowerCase();
+    return (
+      task.name?.toLowerCase().includes(searchLower) ||
+      task.project_name?.toLowerCase().includes(searchLower)
+    );
+  });
+
   const pinnedModalContent = (
     <div className="p-6">
       <div className="overflow-x-auto">
@@ -71,18 +149,23 @@ const handleClick=()=>
     </div>
   );
 
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <Loading />
+      </div>
+    );
+  }
+
   return (
     <div className="p-6">
-      <LayoutComponents
-        title="Tasks"
-        variant="card"
-      >
+      <LayoutComponents title="Tasks" variant="card">
         <div className="bg-white rounded-xl shadow-sm overflow-hidden">
           {/* Top Buttons Bar */}
           <div className="px-6 py-4 flex flex-wrap items-center justify-between gap-4 border-b border-gray-200">
             <div className="flex items-center gap-3">
-              <button 
-                onClick={() => setIsPinnedModalOpen(true)} // Open modal
+              <button
+                onClick={() => setIsPinnedModalOpen(true)}
                 className="border border-black text-black px-4 py-2 rounded-lg hover:bg-blue-50 flex items-center gap-2"
               >
                 Pinned Task
@@ -93,7 +176,7 @@ const handleClick=()=>
               <button onClick={handleClick} className="border border-black text-black px-4 py-2 rounded-lg hover:bg-purple-50">
                 Task Labels
               </button>
-              <button onClick={ handleNewtaskClick} className ="bg-black text-white px-4 py-2 rounded-lg flex items-center gap-2">
+              <button onClick={handleNewtaskClick} className="bg-black text-white px-4 py-2 rounded-lg flex items-center gap-2">
                 <span className="text-lg">+</span> New Task
               </button>
             </div>
@@ -108,7 +191,6 @@ const handleClick=()=>
             </button>
           </div>
 
-          {/* Controls: Show entries + Search */}
           <div className="px-6 py-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-gray-50">
             <div className="flex items-center gap-3 text-gray-700">
               <span>Show</span>
@@ -150,42 +232,54 @@ const handleClick=()=>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
-                {tasks.map((task) => (
-                  <tr key={task.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-5">
-                      <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 bg-black text-white rounded-full flex items-center justify-center text-sm font-medium">
-                          +
-                        </div>
-                        <span className="font-medium">{task.id}</span>
-                      </div>
-                    </td>
-                    <td className="px-6 py-5 font-medium text-gray-900">
-                      {task.task}
-                    </td>
-                    <td className="px-6 py-5 text-gray-700">
-                      {task.project}
-                    </td>
-                    <td className="px-6 py-5">
-                      <div className="flex -space-x-2">
-                        {renderAvatars(task.assignedTo)}
-                      </div>
-                    </td>
-                    <td className="px-6 py-5 text-gray-700">
-                      {task.dueDate}
-                    </td>
-                    <td className="px-6 py-5">
-                      <select
-                        defaultValue={task.status}
-                        className={`px-4 py-2 rounded-lg border font-medium ${getStatusColor(task.status)} focus:outline-none`}
-                      >
-                        <option value="To Do">To Do</option>
-                        <option value="In progress">In progress</option>
-                        <option value="Done">Done</option>
-                      </select>
+                {filteredTasks.length === 0 ? (
+                  <tr>
+                    <td colSpan={6} className="text-center py-12 text-gray-500">
+                      No tasks found
                     </td>
                   </tr>
-                ))}
+                ) : (
+                  filteredTasks.map((task, index) => (
+                    <tr key={task.id} className="hover:bg-gray-50">
+                      <td className="px-6 py-5">
+                        <div className="flex items-center gap-3">
+                          <span className="font-medium">{index + 1}</span>
+                        </div>
+                      </td>
+                      <td className="px-6 py-5 font-medium text-gray-900">
+                        {task.name}
+                      </td>
+                      <td className="px-6 py-5 text-gray-700">
+                        {task.project_name || "-"}
+                      </td>
+                      <td className="px-6 py-5">
+                        {renderAvatars(task.assignees || [])}
+                      </td>
+                      <td className="px-6 py-5 text-gray-700">
+                        {task.due_date
+                          ? new Date(task.due_date).toLocaleDateString("en-GB", {
+                              day: "2-digit",
+                              month: "2-digit",
+                              year: "numeric",
+                            }).replace(/\//g, "-")
+                          : "-"}
+                      </td>
+                      <td className="px-6 py-5">
+                        <div className="w-48">
+                          <Input
+                            type="select"
+                            options={statusOptions}
+                            value={getCurrentStatusLabel(task.status)}
+                            onChange={(newValue) =>
+                              handleStatusChange(task.id, newValue)
+                            }
+                            className="text-sm"
+                          />
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
           </div>
