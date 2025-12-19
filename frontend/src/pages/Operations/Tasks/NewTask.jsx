@@ -5,8 +5,8 @@ import { MdArrowBack } from "react-icons/md";
 import toast from "react-hot-toast";
 import apiClient from "../../../helpers/apiClient";
 import Loading from "../../../components/Loading";
-import Dropdown from "../../../components/Dropdown"; 
-import { MdPerson, MdClose } from "react-icons/md";
+import Input from "../../../components/Input";
+import { MdPerson } from "react-icons/md";
 
 const NewTaskPage = () => {
   const navigate = useNavigate();
@@ -27,7 +27,7 @@ const NewTaskPage = () => {
     due_date: "",
     allocated_hours: "",
     category: "",
-    assignees: [],
+    assignees: [], 
   });
 
   useEffect(() => {
@@ -69,22 +69,6 @@ const NewTaskPage = () => {
     fetchData();
   }, []);
 
-  const handleAssigneeToggle = (userId) => {
-    setFormData((prev) => {
-      const assignees = prev.assignees.includes(userId)
-        ? prev.assignees.filter((id) => id !== userId)
-        : [...prev.assignees, userId];
-      return { ...prev, assignees };
-    });
-  };
-
-  const removeAssignee = (userId) => {
-    setFormData((prev) => ({
-      ...prev,
-      assignees: prev.assignees.filter((id) => id !== userId),
-    }));
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -94,7 +78,7 @@ const NewTaskPage = () => {
         project: formData.project ? Number(formData.project) : null,
         name: formData.name ? formData.name.trim() : null,
         description: formData.description?.trim() || null,
-        status: formData.status, 
+        status: formData.status,
         priority: formData.priority,
         start_date: formData.start_date || null,
         due_date: formData.due_date || null,
@@ -103,7 +87,6 @@ const NewTaskPage = () => {
         assignee_ids: formData.assignees || [],
       };
 
-     
       Object.keys(payload).forEach((key) => {
         if (payload[key] === null || payload[key] === "" || (Array.isArray(payload[key]) && payload[key].length === 0)) {
           delete payload[key];
@@ -115,13 +98,12 @@ const NewTaskPage = () => {
       await apiClient.post("/operation/tasks/", payload);
 
       toast.success("Task created successfully!");
-      navigate("/tasks");
+      navigate("/Operations/tasks");
     } catch (err) {
       console.error("Full error response:", err.response);
       console.error("Error data from backend:", err.response?.data);
 
       const errorData = err.response?.data || {};
-
       let errorMessages = [];
 
       if (typeof errorData === "object" && errorData !== null && Object.keys(errorData).length > 0) {
@@ -163,6 +145,29 @@ const NewTaskPage = () => {
     year: "numeric",
   }).replace(/\//g, "-");
 
+
+  const projectOptions = projects.map((proj) => ({
+    value: proj.id,
+    label: proj.name,
+  }));
+
+  const categoryOptions = categories.map((cat) => ({
+    value: cat.id,
+    label: cat.name || "Unnamed Category",
+  }));
+
+  const statusOptions = [
+    { value: "todo", label: "To Do" },
+    { value: "in_progress", label: "In Progress" },
+    { value: "review", label: "Review" },
+    { value: "done", label: "Done" },
+  ];
+
+  const assigneeOptions = users.map((user) => ({
+    value: user.id,
+    label: user.name || user.username || user.email,
+  }));
+
   return (
     <div className="p-4 md:p-6 max-w-7xl mx-auto">
       <LayoutComponents title="New Task" subtitle="Create a new task for a project" variant="card">
@@ -180,36 +185,26 @@ const NewTaskPage = () => {
           <div className="bg-white rounded-xl shadow-sm overflow-hidden p-8">
             {/* Project */}
             <div className="mb-8">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Project <span className="text-red-500">*</span>
-              </label>
-              <select
+              <Input
+                label="Project"
+                type="select"
                 required
+                placeholder="Select Project"
+                options={[{ value: "", label: "Select Project" }, ...projectOptions]}
                 value={formData.project}
-                onChange={(e) => setFormData({ ...formData, project: e.target.value ? Number(e.target.value) : "" })}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
-              >
-                <option value="">Select Project</option>
-                {projects.map((proj) => (
-                  <option key={proj.id} value={proj.id}>
-                    {proj.name}
-                  </option>
-                ))}
-              </select>
+                onChange={(val) => setFormData({ ...formData, project: val })}
+              />
             </div>
 
             {/* Title */}
             <div className="mb-8">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Title <span className="text-red-500">*</span>
-              </label>
-              <input
+              <Input
+                label="Title"
                 type="text"
                 required
                 placeholder="Enter task title"
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
               />
             </div>
 
@@ -230,20 +225,14 @@ const NewTaskPage = () => {
             {/* Status & Priority */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Status <span className="text-red-500">*</span>
-                </label>
-                <select
+                <Input
+                  label="Status"
+                  type="select"
                   required
+                  options={statusOptions}
                   value={formData.status}
-                  onChange={(e) => setFormData({ ...formData, status: e.target.value })}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
-                >
-                  <option value="todo">To Do</option>
-                  <option value="in_progress">In Progress</option>
-                  <option value="review">Review</option>
-                  <option value="done">Done</option>
-                </select>
+                  onChange={(val) => setFormData({ ...formData, status: val })}
+                />
               </div>
 
               <div>
@@ -273,139 +262,59 @@ const NewTaskPage = () => {
             {/* Dates & Hours */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Start Date
-                </label>
-                <input
+                <Input
+                  label="Start Date"
                   type="date"
                   value={formData.start_date}
                   onChange={(e) => setFormData({ ...formData, start_date: e.target.value })}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
+                  helperText={`Default: Today (${todayFormatted})`}
                 />
-                <p className="text-sm text-gray-500 mt-1">Default: Today ({todayFormatted})</p>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Due Date
-                </label>
-                <input
+                <Input
+                  label="Due Date"
                   type="date"
                   value={formData.due_date}
                   onChange={(e) => setFormData({ ...formData, due_date: e.target.value })}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Allocated Hours
-                </label>
-                <input
+                <Input
+                  label="Allocated Hours"
                   type="number"
                   step="0.5"
                   placeholder="e.g., 8.5"
                   value={formData.allocated_hours}
                   onChange={(e) => setFormData({ ...formData, allocated_hours: e.target.value })}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
                 />
               </div>
             </div>
 
             {/* Category / Label */}
             <div className="mb-8">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Category / Label
-              </label>
-              <select
+              <Input
+                label="Category "
+                type="select"
+                placeholder="None"
+                options={[{ value: "", label: "None" }, ...categoryOptions]}
                 value={formData.category}
-                onChange={(e) => setFormData({ ...formData, category: e.target.value ? Number(e.target.value) : "" })}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
-              >
-                <option value="">None</option>
-                {categories.map((cat) => (
-                  <option key={cat.id} value={cat.id}>
-                    {cat.name}
-                  </option>
-                ))}
-              </select>
+                onChange={(val) => setFormData({ ...formData, category: val })}
+              />
             </div>
 
-            {/* Assigned To - Only Name Shown */}
+            {/* Assigned To */}
             <div className="mb-8">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Assigned To
-              </label>
-
-              <Dropdown
-                dropdownId="assignees-dropdown"
-                align="left"
-                width="w-full"
-                trigger={
-                  <div className="w-full px-4 py-3 border border-gray-300 rounded-lg flex items-center justify-between hover:border-gray-400 transition cursor-pointer">
-                    <div className="flex flex-wrap gap-2">
-                      {formData.assignees.length === 0 ? (
-                        <span className="text-gray-500">
-                          {users.length === 0 ? "No users available" : "Choose Assignee(s)"}
-                        </span>
-                      ) : (
-                        formData.assignees.map((assigneeId) => {
-                          const user = users.find((u) => u.id === assigneeId);
-                          if (!user) return null;
-                          return (
-                            <span
-                              key={assigneeId}
-                              className="inline-flex items-center gap-1.5 bg-teal-100 text-teal-800 px-3 py-1.5 rounded-lg text-sm"
-                            >
-                              <MdPerson className="w-4 h-4" />
-                              {user.name || user.username}
-                              <button
-                                type="button"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  removeAssignee(assigneeId);
-                                }}
-                                className="ml-1 hover:text-teal-900"
-                              >
-                                <MdClose className="w-4 h-4" />
-                              </button>
-                            </span>
-                          );
-                        })
-                      )}
-                    </div>
-                    <span className="text-gray-500">▼</span>
-                  </div>
-                }
-              >
-                {users.length === 0 ? (
-                  <div className="px-4 py-8 text-center text-gray-500 text-sm">
-                    {formLoading ? "Loading users..." : "No users available"}
-                  </div>
-                ) : (
-                  users.map((user) => {
-                    const isSelected = formData.assignees.includes(user.id);
-                    const displayName = user.name || user.username;
-
-                    return (
-                      <Dropdown.Item
-                        key={user.id}
-                        onClick={() => handleAssigneeToggle(user.id)}
-                        icon={MdPerson}
-                      >
-                        <div className="flex items-center justify-between w-full">
-                          <div className="font-medium">{displayName}</div>
-                          {isSelected && (
-                            <div className="w-5 h-5 rounded-full bg-teal-500 flex items-center justify-center">
-                              <span className="text-white text-xs">✓</span>
-                            </div>
-                          )}
-                        </div>
-                      </Dropdown.Item>
-                    );
-                  })
-                )}
-              </Dropdown>
+              <Input
+                label="Assigned To"
+                type="select"
+                multiple
+                placeholder={users.length === 0 ? "No users available" : "Choose Assignee(s)"}
+                options={assigneeOptions}
+                value={formData.assignees}
+                onChange={(val) => setFormData({ ...formData, assignees: val })}
+              />
             </div>
 
             {/* Submit Buttons */}

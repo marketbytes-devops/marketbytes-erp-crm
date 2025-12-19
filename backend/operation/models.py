@@ -192,4 +192,6 @@ class Task(models.Model):
         verbose_name_plural = "Tasks"
 
     def __str__(self):
-        return f"{self.project.name} - {self.name}"
+     project_name = self.project.name if self.project else "No Project"
+     task_name = self.name if self.name else f"Task #{self.pk}"
+     return f"{project_name} - {task_name}"
