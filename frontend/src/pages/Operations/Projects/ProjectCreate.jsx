@@ -294,35 +294,36 @@ const CreateProjectPage = () => {
 
   // Category Modal Functions
   const handleAddCategory = async () => {
-    if (newCategoryName.trim() === "") {
-      toast.error("Please enter a category name");
-      return;
-    }
+  if (newCategoryName.trim() === "") {
+    toast.error("Please enter a category name");
+    return;
+  }
 
-    try {
-      // POST to backend
-      await apiClient.post("/operation/categories/", {
-        name: newCategoryName.trim(),
-        description: `Category: ${newCategoryName.trim()}`,
-      });
+  try {
+    // POST to backend and capture response (with ID)
+    const postRes = await apiClient.post("/operation/categories/", {
+      name: newCategoryName.trim(),
+      description: `Category: ${newCategoryName.trim()}`,
+    });
+    const newCategoryId = postRes.data.id; // Assume backend returns {id, name, ...}
 
-      // Refetch categories to update state
-      const res = await apiClient.get("/operation/categories/");
-      setCategories(res.data || []);
+    // Refetch to update modal list and state
+    const res = await apiClient.get("/operation/categories/");
+    setCategories(Array.isArray(res.data) ? res.data : res.data?.results || []);
 
-      // Set in formData
-      setFormData((prev) => ({
-        ...prev,
-        projectCategory: newCategoryName.trim(),
-      }));
-      setNewCategoryName("");
-      setShowCategoryModal(false);
-      toast.success("Category added successfully");
-    } catch (error) {
-      console.error("Error adding category:", error);
-      toast.error("Failed to add category");
-    }
-  };
+    // Set in formData using ID (not name)
+    setFormData((prev) => ({
+      ...prev,
+      projectCategory: newCategoryId.toString(), // String for select value
+    }));
+    setNewCategoryName("");
+    setShowCategoryModal(false);
+    toast.success("Category added successfully");
+  } catch (error) {
+    console.error("Error adding category:", error);
+    toast.error("Failed to add category");
+  }
+};
 
   const handleRemoveCategory = (id) => {
     // Note: Removal not implemented via API; keep local if needed
@@ -331,26 +332,36 @@ const CreateProjectPage = () => {
   };
 
   // Department Modal Functions
-  const handleAddDepartment = () => {
-    if (newDepartmentName.trim() === "") {
-      toast.error("Please enter a department name");
-      return;
-    }
+  const handleAddDepartment = async () => { // Make async for POST
+  if (newDepartmentName.trim() === "") {
+    toast.error("Please enter a department name");
+    return;
+  }
 
-    const newDepartment = {
-      id: departments.length + 1,
+  try {
+    // POST to backend (assume /auth/departments/ supports POST {name: "..."})
+    const postRes = await apiClient.post("/auth/departments/", {
       name: newDepartmentName.trim(),
-    };
+    });
+    const newDepartmentId = postRes.data.id; // Assume backend returns {id, name, ...}
 
-    setDepartments([...departments, newDepartment]);
+    // Refetch to update modal list and state
+    const res = await apiClient.get("/auth/departments/");
+    setDepartments(Array.isArray(res.data) ? res.data : res.data?.results || []);
+
+    // Set in formData using ID (not name)
     setFormData((prev) => ({
       ...prev,
-      department: newDepartmentName.trim(),
+      department: newDepartmentId.toString(), // String for select value
     }));
     setNewDepartmentName("");
     setShowDepartmentModal(false);
     toast.success("Department added successfully");
-  };
+  } catch (error) {
+    console.error("Error adding department:", error);
+    toast.error("Failed to add department");
+  }
+};
 
   const handleRemoveDepartment = (id) => {
     setDepartments(departments.filter((dept) => dept.id !== id));
@@ -367,52 +378,53 @@ const CreateProjectPage = () => {
   };
 
   const handleAddClient = async () => {
-    const { name, email, password } = newClientData;
+  const { name, email, password } = newClientData;
 
-    if (!name.trim() || !email.trim() || !password.trim()) {
-      toast.error("Please fill all fields");
-      return;
-    }
+  if (!name.trim() || !email.trim() || !password.trim()) {
+    toast.error("Please fill all fields");
+    return;
+  }
 
-    // Basic email validation
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      toast.error("Please enter a valid email address");
-      return;
-    }
+  // Basic email validation
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(email)) {
+    toast.error("Please enter a valid email address");
+    return;
+  }
 
-    try {
-      // POST to backend
-      await apiClient.post("/operation/clients/", {
-        name,
-        email,
-        password,
-      });
+  try {
+    // POST to backend and capture response (with ID)
+    const postRes = await apiClient.post("/operation/clients/", {
+      name,
+      email,
+      password,
+    });
+    const newClientId = postRes.data.id; // Assume backend returns {id, name, email, ...}
 
-      // Refetch clients to update state
-      const res = await apiClient.get("/operation/clients/");
-      setClients(res.data || []);
+    // Refetch clients to update state/modal list
+    const res = await apiClient.get("/operation/clients/");
+    setClients(Array.isArray(res.data) ? res.data : res.data?.results || []);
 
-      // Set in formData
-      setFormData((prev) => ({
-        ...prev,
-        client: name.trim(),
-      }));
+    // Set in formData using ID (not name)
+    setFormData((prev) => ({
+      ...prev,
+      client: newClientId.toString(), // String for select value
+    }));
 
-      // Reset form
-      setNewClientData({
-        name: "",
-        email: "",
-        password: "",
-      });
+    // Reset form
+    setNewClientData({
+      name: "",
+      email: "",
+      password: "",
+    });
 
-      setShowClientModal(false);
-      toast.success("Client added successfully");
-    } catch (error) {
-      console.error("Error adding client:", error);
-      toast.error("Failed to add client");
-    }
-  };
+    setShowClientModal(false);
+    toast.success("Client added successfully");
+  } catch (error) {
+    console.error("Error adding client:", error);
+    toast.error("Failed to add client");
+  }
+};
 
   const handleRemoveClient = (id) => {
     // Note: Removal not implemented via API; keep local if needed
@@ -1108,99 +1120,124 @@ const CreateProjectPage = () => {
       )}
 
       {/* ==================== CLIENT MODAL ==================== */}
-      {showClientModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl">
-            <div className="flex justify-between items-center p-6 border-b">
-              <h2 className="text-xl font-semibold text-gray-900">
-                Add Client
-              </h2>
+      {/* ==================== CLIENT MODAL ==================== */}
+{showClientModal && (
+  <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+    <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[80vh] overflow-y-auto">
+      <div className="flex justify-between items-center p-6 border-b">
+        <h2 className="text-xl font-semibold text-gray-900">
+          Add Client
+        </h2>
+        <button
+          onClick={() => {
+            setShowClientModal(false);
+            setNewClientData({
+              name: "",
+              email: "",
+              password: "",
+            });
+          }}
+          className="p-2 hover:bg-gray-100 rounded-full"
+        >
+          <MdClose className="w-5 h-5" />
+        </button>
+      </div>
+
+      <div className="p-6">
+        {/* Existing Clients List (new: fetch/display like categories) */}
+        <div className="space-y-3 mb-6">
+          {clients.map((client) => (
+            <div
+              key={client.id}
+              className="flex justify-between items-center p-4 border border-gray-200 rounded-lg"
+            >
+              <div className="flex items-center gap-4">
+                <span className="text-gray-700">{client.id}</span>
+                <span className="font-medium">{client.name}</span>
+                <span className="text-gray-500 text-sm">({client.email})</span>
+              </div>
               <button
-                onClick={() => {
-                  setShowClientModal(false);
-                  setNewClientData({
-                    name: "",
-                    email: "",
-                    password: "",
-                  });
-                }}
-                className="p-2 hover:bg-gray-100 rounded-full"
+                type="button"
+                onClick={() => handleRemoveClient(client.id)}
+                className="text-red-500 hover:text-red-700 text-sm font-medium px-3 py-1 border border-red-200 rounded-lg hover:bg-red-50 transition-colors"
               >
-                <MdClose className="w-5 h-5" />
+                Remove
               </button>
             </div>
+          ))}
+        </div>
 
-            <div className="p-6">
-              <div className="mt-8 space-y-6">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-3">
-                    Client Name *
-                  </label>
-                  <input
-                    type="text"
-                    name="name"
-                    value={newClientData.name}
-                    onChange={handleClientChange}
-                    placeholder="Enter client name"
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-black focus:outline-none"
-                  />
-                </div>
+        {/* Add New Form (existing, unchanged) */}
+        <div className="mt-8 space-y-6">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-3">
+              Client Name *
+            </label>
+            <input
+              type="text"
+              name="name"
+              value={newClientData.name}
+              onChange={handleClientChange}
+              placeholder="Enter client name"
+              className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-black focus:outline-none"
+            />
+          </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-3">
-                    Client Email *
-                  </label>
-                  <input
-                    type="email"
-                    name="email"
-                    value={newClientData.email}
-                    onChange={handleClientChange}
-                    placeholder="Enter client email"
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-black focus:outline-none"
-                  />
-                </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-3">
+              Client Email *
+            </label>
+            <input
+              type="email"
+              name="email"
+              value={newClientData.email}
+              onChange={handleClientChange}
+              placeholder="Enter client email"
+              className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-black focus:outline-none"
+            />
+          </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-3">
-                    Password *
-                  </label>
-                  <div className="relative">
-                    <input
-                      type={showPassword ? "text" : "password"}
-                      name="password"
-                      value={newClientData.password}
-                      onChange={handleClientChange}
-                      placeholder="Enter password"
-                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-black focus:outline-none pr-12"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
-                    >
-                      {showPassword ? (
-                        <MdVisibilityOff className="w-5 h-5" />
-                      ) : (
-                        <MdVisibility className="w-5 h-5" />
-                      )}
-                    </button>
-                  </div>
-                </div>
-
-                <div className="flex gap-3 mt-6">
-                  <button
-                    type="button"
-                    onClick={handleAddClient}
-                    className="px-6 py-3 bg-black text-white rounded-xl font-semibold hover:bg-gray-800 transition-colors flex-1"
-                  >
-                    Save Client
-                  </button>
-                </div>
-              </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-3">
+              Password *
+            </label>
+            <div className="relative">
+              <input
+                type={showPassword ? "text" : "password"}
+                name="password"
+                value={newClientData.password}
+                onChange={handleClientChange}
+                placeholder="Enter password"
+                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-black focus:outline-none pr-12"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
+              >
+                {showPassword ? (
+                  <MdVisibilityOff className="w-5 h-5" />
+                ) : (
+                  <MdVisibility className="w-5 h-5" />
+                )}
+              </button>
             </div>
           </div>
+
+          <div className="flex gap-3 mt-6">
+            <button
+              type="button"
+              onClick={handleAddClient}
+              className="px-6 py-3 bg-black text-white rounded-xl font-semibold hover:bg-gray-800 transition-colors flex-1"
+            >
+              Save Client
+            </button>
+          </div>
         </div>
-      )}
+      </div>
+    </div>
+  </div>
+)}
     </div>
   );
 };

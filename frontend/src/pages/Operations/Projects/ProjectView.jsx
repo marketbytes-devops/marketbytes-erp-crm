@@ -9,6 +9,7 @@ import {
   MdPushPin,
   MdEdit,
   MdDelete,
+  MdArchive,
 } from "react-icons/md";
 import { FiSearch } from "react-icons/fi";
 import LayoutComponents from "../../../components/LayoutComponents";
@@ -46,6 +47,8 @@ const ProjectsView = () => {
   const [loading, setLoading] = useState(true);
 
   const [statuses, setStatuses] = useState([]);
+  const [openDropdownId, setOpenDropdownId] = useState(null);
+  const [pinnedProjects, setPinnedProjects] = useState([]);
 
   const activeFilterCount = Object.values(filters).filter(
     (v) => v !== ""
@@ -139,25 +142,41 @@ const ProjectsView = () => {
     }
   };
 
- const handleDeleteProject = async (projectId) => {
-  if (!window.confirm("Are you sure? This project will be moved to archive.")) {
-    return;
-  }
+  const handleDeleteProject = async (projectId) => {
+    if (
+      !window.confirm("Are you sure? This project will be moved to archive.")
+    ) {
+      return;
+    }
 
-  try {
-    // Instead of DELETE, use PATCH to set is_archived = true
-    await apiClient.patch(`/operation/projects/${projectId}/`, {
-      is_archived: true,
-    });
+    try {
+      // This triggers the soft delete in backend (sets is_active = false)
+      await apiClient.delete(`/operation/projects/${projectId}/`);
 
-    // Remove from active projects list
-    setProjects((prev) => prev.filter((p) => p.id !== projectId));
+      // Remove from the list in frontend
+      setProjects((prev) => prev.filter((p) => p.id !== projectId));
 
-    toast.success("Project moved to archive!");
-  } catch (error) {
-    console.error("Failed to archive project:", error);
-    toast.error("Failed to move project to archive");
-  }
+      toast.success("Project moved to archive!");
+    } catch (error) {
+      console.error("Failed to archive project:", error);
+      toast.error("Failed to move project to archive");
+    }
+  };
+
+ const handlePinProject = (project) => {
+  setPinnedProjects((prev) => {
+    const isAlreadyPinned = prev.some((p) => p.id === project.id);
+
+    if (isAlreadyPinned) {
+      // Unpin: remove from pinned list
+      toast.success("Project unpinned");
+      return prev.filter((p) => p.id !== project.id);
+    } else {
+      // Pin: add to list
+      toast.success("Project pinned successfully!");
+      return [...prev, { ...project }];
+    }
+  });
 };
 
   const stats = useMemo(() => {
@@ -204,6 +223,94 @@ const ProjectsView = () => {
       !filters.projectStatus || project.status === filters.projectStatus;
     return matchesSearch && matchesStatus;
   });
+
+  const ActionsDropdown = ({ project, onEdit, onArchive, onPin }) => {
+  const [isOpen, setIsOpen] = useState(false);
+
+  useEffect(() => {
+    const handleClickOutside = () => setIsOpen(false);
+    if (isOpen) {
+      document.addEventListener("click", handleClickOutside);
+    }
+    return () => document.removeEventListener("click", handleClickOutside);
+  }, [isOpen]);
+
+  return (
+    <div className="relative inline-block text-left">
+      <button
+        onClick={(e) => {
+          e.stopPropagation();
+          setIsOpen(!isOpen);
+        }}
+        className="p-2 rounded-lg hover:bg-gray-100 transition"
+      >
+        <svg
+          className="w-5 h-5 text-gray-600"
+          fill="currentColor"
+          viewBox="0 0 20 20"
+        >
+          <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" />
+        </svg>
+      </button>
+
+      {isOpen && (
+        <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-gray-200 z-20">
+          <div className="py-1">
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onEdit();
+                setIsOpen(false);
+              }}
+              className="w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
+            >
+              <MdEdit className="w-4 h-4" /> Edit
+            </button>
+
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onPin();
+                setIsOpen(false);
+              }}
+              className="w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
+            >
+              <MdPushPin className="w-4 h-4" /> Pin Project
+            </button>
+
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onArchive();
+                setIsOpen(false);
+              }}
+              className="w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
+            >
+              <MdArchive className="w-4 h-4" /> Archive
+            </button>
+
+            <hr className="my-1 border-gray-200" />
+
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                if (window.confirm("Permanently delete this project? This cannot be undone.")) {
+                  // You can use same handleDeleteProject or make a hard delete
+                  // For now using archive logic
+                  onArchive();
+                }
+                setIsOpen(false);
+              }}
+              className="w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center gap-2"
+            >
+              <MdDelete className="w-4 h-4" /> Delete Permanently
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
 
   if (loading) {
     return (
@@ -477,16 +584,34 @@ const ProjectsView = () => {
                             </th>
                           </tr>
                         </thead>
-                        <tbody>
-                          <tr>
-                            <td
-                              colSpan="3"
-                              className="text-center py-12 text-gray-500"
-                            >
-                              No pinned item found
-                            </td>
-                          </tr>
-                        </tbody>
+                       <tbody>
+  {pinnedProjects.length > 0 ? (
+    pinnedProjects.map((project, index) => (
+      <tr key={project.id}>
+        <td className="text-left text-sm font-medium text-gray-600 py-3">
+          {index + 1}
+        </td>
+        <td className="text-left text-sm text-gray-900 py-3">
+          {project.name}
+        </td>
+        <td className="text-right py-3">
+          <button
+            onClick={() => handlePinProject(project)} // optional: unpin logic later
+            className="text-gray-500 hover:text-red-600"
+          >
+            <MdPushPin className="w-5 h-5 rotate-45" /> {/* rotated to indicate unpin */}
+          </button>
+        </td>
+      </tr>
+    ))
+  ) : (
+    <tr>
+      <td colSpan="3" className="text-center py-12 text-gray-500">
+        No pinned projects yet
+      </td>
+    </tr>
+  )}
+</tbody>
                       </table>
                     </div>
                   </div>
@@ -651,15 +776,12 @@ const ProjectsView = () => {
                         </td>
 
                         <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                          <button className="text-indigo-600 hover:text-indigo-900 mr-4">
-                            <MdEdit className="w-5 h-5 inline" />
-                          </button>
-                          <button
-                            onClick={() => handleDeleteProject(project.id)}
-                            className="text-red-600 hover:text-red-900"
-                          >
-                            <MdDelete className="w-5 h-5 inline" />
-                          </button>
+                         <ActionsDropdown
+  project={project}
+  onEdit={() => navigate(`/operations/projects/projectedit/${project.id}`)}
+  onArchive={() => handleDeleteProject(project.id)}
+  onPin={() => handlePinProject(project)}
+/>
                         </td>
                       </tr>
                     ))

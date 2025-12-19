@@ -119,7 +119,7 @@ class ProjectViewSet(viewsets.ModelViewSet):
     ViewSet for Project CRUD operations with advanced filtering
     """
 
-    queryset = Project.objects.all()
+    queryset = Project.objects.filter(is_active=True)
     serializer_class = ProjectSerializer
     permission_classes = [IsAuthenticated]
     filter_backends = [
@@ -274,7 +274,7 @@ class ProjectViewSet(viewsets.ModelViewSet):
         """
         Get all inactive projects
         """
-        inactive_projects = self.get_queryset().filter(is_active=False)
+        inactive_projects = Project.objects.filter(is_active=False)
         serializer = self.get_serializer(inactive_projects, many=True)
         return Response(serializer.data)
 
