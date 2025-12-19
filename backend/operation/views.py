@@ -118,7 +118,8 @@ class ProjectViewSet(viewsets.ModelViewSet):
     """
     ViewSet for Project CRUD operations with advanced filtering
     """
-
+   
+    serializer_class = ProjectSerializer
     queryset = Project.objects.all()
     serializer_class = ProjectSerializer
     permission_classes = [IsAuthenticated]
@@ -137,17 +138,17 @@ class ProjectViewSet(viewsets.ModelViewSet):
         "stage__name",
         "client__name",
     ]
-    filterset_fields = [
-        "category",
-        "department",
-        "status",
-        "stage",
-        "client",
-        "is_active",
-        "currency",
-        "no_deadline",
-        "allow_manual_timelogs",
-    ]
+    filterset_fields = {
+        "category": ["exact"],
+        "department": ["exact"],
+        "status": ["exact"],
+        "stage": ["exact"],
+        "client": ["exact"],
+        "is_active": ["exact"],
+        "currency__code": ["exact"], 
+        "no_deadline": ["exact"],
+        "allow_manual_timelogs": ["exact"],
+    }
     ordering_fields = [
         "name",
         "start_date",
@@ -459,7 +460,7 @@ class TaskViewSet(viewsets.ModelViewSet):
     }
     ordering_fields = ['title', 'due_date',
                        'priority', 'created_at', 'start_date']
-    ordering = ['-priority', 'due_date']
+    ordering = [ 'due_date','priority']
 
     def get_queryset(self):
         """
