@@ -275,7 +275,7 @@ class ProjectViewSet(viewsets.ModelViewSet):
         """
         Get all inactive projects
         """
-        inactive_projects = self.get_queryset().filter(is_active=False)
+        inactive_projects = Project.objects.filter(is_active=False)
         serializer = self.get_serializer(inactive_projects, many=True)
         return Response(serializer.data)
 

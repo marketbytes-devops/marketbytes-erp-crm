@@ -8,6 +8,7 @@ import {
   MdAdd,
   MdEdit,
   MdDelete,
+  MdArchive,
 } from "react-icons/md";
 import { FiSearch } from "react-icons/fi";
 import LayoutComponents from "../../../components/LayoutComponents";
@@ -181,6 +182,94 @@ const ProjectsView = () => {
       toast.error("Failed to archive project");
     }
   };
+
+  const ActionsDropdown = ({ project, onEdit, onArchive, onPin }) => {
+  const [isOpen, setIsOpen] = useState(false);
+
+  useEffect(() => {
+    const handleClickOutside = () => setIsOpen(false);
+    if (isOpen) {
+      document.addEventListener("click", handleClickOutside);
+    }
+    return () => document.removeEventListener("click", handleClickOutside);
+  }, [isOpen]);
+
+  return (
+    <div className="relative inline-block text-left">
+      <button
+        onClick={(e) => {
+          e.stopPropagation();
+          setIsOpen(!isOpen);
+        }}
+        className="p-2 rounded-lg hover:bg-gray-100 transition"
+      >
+        <svg
+          className="w-5 h-5 text-gray-600"
+          fill="currentColor"
+          viewBox="0 0 20 20"
+        >
+          <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" />
+        </svg>
+      </button>
+
+      {isOpen && (
+        <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-gray-200 z-20">
+          <div className="py-1">
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onEdit();
+                setIsOpen(false);
+              }}
+              className="w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
+            >
+              <MdEdit className="w-4 h-4" /> Edit
+            </button>
+
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onPin();
+                setIsOpen(false);
+              }}
+              className="w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
+            >
+              <MdPushPin className="w-4 h-4" /> Pin Project
+            </button>
+
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onArchive();
+                setIsOpen(false);
+              }}
+              className="w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
+            >
+              <MdArchive className="w-4 h-4" /> Archive
+            </button>
+
+            <hr className="my-1 border-gray-200" />
+
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                if (window.confirm("Permanently delete this project? This cannot be undone.")) {
+                  // You can use same handleDeleteProject or make a hard delete
+                  // For now using archive logic
+                  onArchive();
+                }
+                setIsOpen(false);
+              }}
+              className="w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center gap-2"
+            >
+              <MdDelete className="w-4 h-4" /> Delete Permanently
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
 
   if (loading) {
     return (

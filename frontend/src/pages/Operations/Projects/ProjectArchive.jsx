@@ -1,9 +1,35 @@
-import React, { useState } from "react";
-import LayoutComponents from "../../../components/LayoutComponents"; // Adjust path if needed
+import { useEffect, useState } from "react";
+import LayoutComponents from "../../../components/LayoutComponents"; 
+import apiClient from "../../../helpers/apiClient";
+import toast from "react-hot-toast";
 
 const ProjectsPage = () => {
-  const [showEntries, setShowEntries] = useState(10);
-  const [search, setSearch] = useState("");
+  const [projects, setProjects] = useState([]);
+const [loading, setLoading] = useState(true);
+const [showEntries, setShowEntries] = useState(10);
+const [search, setSearch] = useState("");
+
+useEffect(() => {
+  const fetchArchivedProjects = async () => {
+    try {
+      setLoading(true);
+      // This endpoint returns only inactive (archived) projects
+      const response = await apiClient.get("/operation/projects/inactive/");
+      setProjects(response.data);
+    } catch (error) {
+      console.error("Error fetching archived projects:", error);
+      toast.error("Failed to load archived projects");
+      setProjects([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  fetchArchivedProjects();
+}, []);
+
+
+
     return (
       <div className="p-6">
       <LayoutComponents
@@ -15,10 +41,10 @@ const ProjectsPage = () => {
     <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
       {/* Archived Projects Badge */}
       <div className="bg-gray-100 px-6 py-4 flex items-center gap-3">
-        <div className="w-12 h-12 bg-gray-600 text-white rounded-full flex items-center justify-center text-lg font-semibold">
-          0
-        </div>
-        <span className="text-gray-700 font-medium">Total Archived Projects</span>
+       <div className="w-12 h-12 bg-gray-600 text-white rounded-full flex items-center justify-center text-lg font-semibold">
+  {projects.length}
+</div>
+<span className="text-gray-700 font-medium">Total Archived Projects</span>
       </div>
 
       {/* Controls: Show entries + Search */}
@@ -64,13 +90,53 @@ const ProjectsPage = () => {
               <th className="px-6 py-4 text-left">Action</th>
             </tr>
           </thead>
-          <tbody>
-            <tr>
-              <td colSpan={7} className="text-center py-12 text-gray-500">
-                No data available in table
-              </td>
-            </tr>
-          </tbody>
+         <tbody>
+  {loading ? (
+    <tr>
+      <td colSpan={7} className="text-center py-12 text-gray-500">
+        Loading archived projects...
+      </td>
+    </tr>
+  ) : projects.length > 0 ? (
+    projects
+      .filter((project) =>
+        project.name?.toLowerCase().includes(search.toLowerCase())
+      )
+      .slice(0, showEntries)
+      .map((project, index) => (
+        <tr key={project.id}>
+          <td className="px-6 py-4">{project.id}</td>
+          <td className="px-6 py-4">{project.name}</td>
+          <td className="px-6 py-4">
+            {project.members?.length > 0
+              ? project.members.map((m) => m.name || m.username).join(", ")
+              : "No members"}
+          </td>
+          <td className="px-6 py-4">
+            {project.deadline
+              ? new Date(project.deadline).toLocaleDateString("en-GB")
+              : "No deadline"}
+          </td>
+          <td className="px-6 py-4">{project.client?.name || "-"}</td>
+          <td className="px-6 py-4">0%</td>
+          <td className="px-6 py-4">
+            <button
+              onClick={() => handleRestore(project.id)}
+              className="text-green-600 hover:text-green-800 font-medium"
+            >
+              Restore
+            </button>
+          </td>
+        </tr>
+      ))
+  ) : (
+    <tr>
+      <td colSpan={7} className="text-center py-12 text-gray-500">
+        No archived projects found
+      </td>
+    </tr>
+  )}
+</tbody>
         </table>
       </div>
 
