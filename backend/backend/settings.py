@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'authapp',
     'hr',
     'operation',
+    'sales',
 ]
 
 MIDDLEWARE = [
