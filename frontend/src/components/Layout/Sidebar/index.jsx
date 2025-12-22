@@ -170,6 +170,13 @@ const Sidebar = ({ toggleSidebar }) => {
           page: "Tasks",
           action: "view",
         },
+          {
+          to: "/operations/timelogs",
+          label: "Time Logs",
+          icon: <MdTimer className="w-5 h-5" />,
+          page: "Timelogs",
+          action: "view",
+        },
       ].filter((item) => hasPermission(item.page, item.action)),
     },
 

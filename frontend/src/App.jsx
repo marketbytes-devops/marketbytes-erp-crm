@@ -42,6 +42,7 @@ import Invoice from "./pages/Sales/Invoice"
 import Reports from "./pages/Sales/Reports";
 import Communication from "./pages/Sales/Communication";
 import Pipeline from "./pages/Sales/SalesPipeline";
+import TimeLogs from "./pages/Operations/TimeLogs/TimeLogsView";
 
 const ProtectedRoute = ({
   children,
@@ -528,6 +529,18 @@ function App() {
               requiredAction="view"
             >
               <NewTask />
+            </ProtectedRoute>
+          ),
+        },
+        {
+          path: "/operations/timelogs",
+          element: (
+            <ProtectedRoute
+              isAuthenticated={isAuthenticated}
+              requiredPage="permissions"
+              requiredAction="view"
+            >
+              <TimeLogs/>
             </ProtectedRoute>
           ),
         },
