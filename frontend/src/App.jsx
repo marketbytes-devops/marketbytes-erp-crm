@@ -36,6 +36,7 @@ import ProjectArchive from "./pages/Operations/Projects/ProjectArchive";
 import TaskView from "./pages/Operations/Tasks/TaskView";
 import TaskLabel from "./pages/Operations/Tasks/TaskLabel";
 import CreateTaskLabel from "./pages/Operations/Tasks/CreateTaskLabel";
+import TaskBoard from "./pages/Operations/Tasks/TaskBoard";
 import NewTask from "./pages/Operations/Tasks/NewTask";
 import Leads from "./pages/Sales/Leads";
 import Invoice from "./pages/Sales/Invoice"
@@ -532,15 +533,15 @@ function App() {
             </ProtectedRoute>
           ),
         },
-        {
-          path: "/operations/timelogs",
+ {
+          path: "/operations/taskboard",
           element: (
             <ProtectedRoute
               isAuthenticated={isAuthenticated}
               requiredPage="permissions"
               requiredAction="view"
             >
-              <TimeLogs/>
+              <TaskBoard />
             </ProtectedRoute>
           ),
         },

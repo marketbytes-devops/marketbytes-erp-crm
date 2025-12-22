@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'hr',
     'operation',
     'sales',
+    'gmail',
 ]
 
 MIDDLEWARE = [
@@ -189,3 +190,18 @@ if not DEBUG:
     SECURE_HSTS_SECONDS = 31536000
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
+    
+    
+GMAIL_CLIENT_ID = os.getenv('GMAIL_CLIENT_ID')
+GMAIL_CLIENT_SECRET = os.getenv('GMAIL_CLIENT_SECRET')
+GMAIL_REDIRECT_URI = 'http://localhost:8000/auth/gmail/callback/'
+FERNET_KEY = os.getenv('FERNET_KEY')
+
+# settings.py
+from cryptography.fernet import Fernet
+
+# Generate once and store in .env
+FERNET_KEY = os.getenv('FERNET_KEY')  # 32-byte base64 key
+if not FERNET_KEY:
+    FERNET_KEY = Fernet.generate_key().decode()
+    print("Generated FERNET_KEY:", FERNET_KEY)  # Save this to .env

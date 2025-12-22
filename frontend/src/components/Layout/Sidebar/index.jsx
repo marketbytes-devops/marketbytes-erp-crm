@@ -19,8 +19,9 @@ import {
   MdDashboard,
   MdSettings,
   MdAssignment,
-  MdReceipt, // ← Add this for Invoices
+  MdReceipt, 
   MdAttachMoney,
+  MdViewKanban,
 } from "react-icons/md";
 import { SiDraugiemdotlv } from "react-icons/si";
 
@@ -170,11 +171,11 @@ const Sidebar = ({ toggleSidebar }) => {
           page: "Tasks",
           action: "view",
         },
-          {
-          to: "/operations/timelogs",
-          label: "Time Logs",
-          icon: <MdTimer className="w-5 h-5" />,
-          page: "Timelogs",
+         {
+          to: "/Operations/taskboard",
+          label: "Task Board",
+          icon: <MdViewKanban className="w-5 h-5" />,
+          page: "Task Board",
           action: "view",
         },
       ].filter((item) => hasPermission(item.page, item.action)),
