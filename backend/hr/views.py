@@ -6,6 +6,8 @@ from django.utils import timezone
 from datetime import timedelta, datetime, time
 from .models import Attendance, Holiday, LeaveType, Leave, Overtime, Candidate, Performance, Project, WorkSession, BreakSession
 from .serializers import *
+from rest_framework import viewsets, filters
+from django_filters.rest_framework import DjangoFilterBackend
 
 class AttendanceViewSet(viewsets.ModelViewSet):
     queryset = Attendance.objects.all().select_related('employee')
@@ -289,11 +291,40 @@ class OvertimeViewSet(viewsets.ModelViewSet):
                 "productive_hours": round(productive_hours, 2)
             })
 
+
+from rest_framework import viewsets, filters
+from django_filters.rest_framework import DjangoFilterBackend
+from .models import Candidate
+from .serializers import CandidateSerializer
+
 class CandidateViewSet(viewsets.ModelViewSet):
     queryset = Candidate.objects.all().select_related('department')
     serializer_class = CandidateSerializer
     permission_classes = [IsAuthenticated]
 
+    # Add search and filter capabilities
+    filter_backends = [
+        DjangoFilterBackend,
+        filters.SearchFilter,
+        filters.OrderingFilter,
+    ]
+
+    # Search by name, email, mobile
+    search_fields = ['name', 'email', 'mobile', 'designation']
+
+    # Filter by exact fields
+    filterset_fields = {
+        'status': ['exact'],
+        'round': ['exact', 'gte', 'lte'],
+        'department': ['exact'],
+        'offered': ['exact'],
+        'gender': ['exact'],
+        'created_at': ['gte', 'lte', 'date'],
+    }
+
+    # Default ordering
+    ordering_fields = ['created_at', 'name', 'round']
+    ordering = ['-created_at']
 class PerformanceViewSet(viewsets.ModelViewSet):
     queryset = Performance.objects.all().select_related('employee', 'department', 'reviewed_by')
     serializer_class = PerformanceSerializer

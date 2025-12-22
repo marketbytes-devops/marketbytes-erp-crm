@@ -19,6 +19,8 @@ import {
   MdDashboard,
   MdSettings,
   MdAssignment,
+  MdReceipt, // ← Add this for Invoices
+  MdAttachMoney,
 } from "react-icons/md";
 import { SiDraugiemdotlv } from "react-icons/si";
 
@@ -36,6 +38,7 @@ const Sidebar = ({ toggleSidebar }) => {
   const [permissions, setPermissions] = useState([]);
   const [isSuperadmin, setIsSuperadmin] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [isSalesOpen, setSalesOpen] = useState(false);
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -165,6 +168,57 @@ const Sidebar = ({ toggleSidebar }) => {
           label: "Tasks",
           icon: <MdAssignment className="w-5 h-5" />,
           page: "Tasks",
+          action: "view",
+        },
+      ].filter((item) => hasPermission(item.page, item.action)),
+    },
+
+    {
+      label: "Sales",
+      icon: <MdAttachMoney className="w-6 h-6" />,
+      isOpen: isSalesOpen,
+      toggle: () => setSalesOpen((prev) => !prev),
+      subItems: [
+        {
+          to: "/sales/leads",
+          label: "Leads",
+          icon: <MdPersonSearch className="w-6 h-6" />,
+          page: "leads",
+          action: "view",
+        },
+        {
+          to: "/sales/pipeline",
+          label: "Pipeline",
+          icon: <MdDashboard className="w-6 h-6" />,
+          page: "pipeline",
+          action: "view",
+        },
+        {
+          to: "/sales/communication-tools",
+          label: "Communication Tools",
+          icon: <MdAssignment className="w-6 h-6" />,
+          page: "communication_tools",
+          action: "view",
+        },
+        {
+          to: "/sales/invoices",
+          label: "Invoices",
+          icon: <MdReceipt className="w-6 h-6" />,
+          page: "invoices",
+          action: "view",
+        },
+        {
+          to: "/sales/reports",
+          label: "Reports",
+          icon: <MdTrendingUp className="w-6 h-6" />,
+          page: "reports",
+          action: "view",
+        },
+        {
+          to: "/sales/deals",
+          label: "Deals",
+          icon: <MdAssignment className="w-6 h-6" />,
+          page: "deals",
           action: "view",
         },
       ].filter((item) => hasPermission(item.page, item.action)),

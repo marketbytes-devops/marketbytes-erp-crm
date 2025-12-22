@@ -28,15 +28,21 @@ import DesignationView from "./pages/HR/Designations/DesignationView";
 import DesignationEdit from "./pages/HR/Designations/DesignationEdit";
 import DesignationCreate from "./pages/HR/Designations/DesignationCreate";
 import AssignLeave from "./pages/HR/Leaves/AssignLeave";
-import Projects from "./pages/Operations/Projects/ProjectView"
+import Projects from "./pages/Operations/Projects/ProjectView";
 import ProjectCreate from "./pages/Operations/Projects/ProjectCreate";
 import ProjectTemplate from "./pages/Operations/Projects/ProjectTemplate";
 import ProjectTemplateAdd from "./pages/Operations/Projects/ProjectTemplateAdd";
 import ProjectArchive from "./pages/Operations/Projects/ProjectArchive";
 import TaskView from "./pages/Operations/Tasks/TaskView";
-import TaskLabel from"./pages/Operations/Tasks/TaskLabel";
+import TaskLabel from "./pages/Operations/Tasks/TaskLabel";
 import CreateTaskLabel from "./pages/Operations/Tasks/CreateTaskLabel";
 import NewTask from "./pages/Operations/Tasks/NewTask";
+import Leads from "./pages/Sales/Leads";
+import Communication from "./pages/Sales/Leads/Communication";
+import Pipeline from "./pages/Sales/Leads/SalesPipeline";
+import Invoice from "./pages/Sales/Invoice"
+import Reports from "./pages/Sales/Reports";
+
 const ProtectedRoute = ({
   children,
   isAuthenticated,
@@ -345,6 +351,62 @@ function App() {
           ),
         },
         {
+          path: "/sales/leads",
+          element: (
+            <ProtectedRoute
+              isAuthenticated={isAuthenticated}
+              requiredPage="leads"
+              requiredAction="view"
+            >
+              <Leads />
+            </ProtectedRoute>
+          ),
+        },
+        {
+          path: "/sales/communication-tools",
+          element: (
+            <ProtectedRoute
+              isAuthenticated={isAuthenticated}
+              requiredPage="communication_tools"
+            >
+              <Communication />
+            </ProtectedRoute>
+          ),
+        },
+        {
+          path: "/sales/pipeline",
+          element: (
+            <ProtectedRoute
+              isAuthenticated={isAuthenticated}
+              requiredPage="pipeline"
+            >
+              <Pipeline />
+            </ProtectedRoute>
+          ),
+        },
+        {
+          path: "/sales/invoices",
+          element: (
+            <ProtectedRoute
+              isAuthenticated={isAuthenticated}
+              requiredPage="invoices"
+            >
+              <Invoice />
+            </ProtectedRoute>
+          ),
+        },
+        {
+          path: "/sales/reports",
+          element: (
+            <ProtectedRoute
+              isAuthenticated={isAuthenticated}
+              requiredPage="reports"
+            >
+              <Reports />
+            </ProtectedRoute>
+          ),
+        },
+        {
           path: "/profile",
           element: (
             <ProtectedRoute
@@ -357,119 +419,118 @@ function App() {
           ),
         },
 
-         {
-          path:"/operations/projects",
+        {
+          path: "/operations/projects",
           element: (
             <ProtectedRoute
               isAuthenticated={isAuthenticated}
               requiredPage="permissions"
               requiredAction="view"
             >
-             <Projects/>
-            </ProtectedRoute>
-          ),
-        },
-         
-         {
-          path:"/operations/projects/projectcreate",
-          element: (
-            <ProtectedRoute
-              isAuthenticated={isAuthenticated}
-              requiredPage="permissions"
-              requiredAction="view"
-            >
-             <ProjectCreate/>
+              <Projects />
             </ProtectedRoute>
           ),
         },
 
-         {
-          path:"/operations/projects/projecttemplate",
+        {
+          path: "/operations/projects/projectcreate",
           element: (
             <ProtectedRoute
               isAuthenticated={isAuthenticated}
               requiredPage="permissions"
               requiredAction="view"
             >
-             <ProjectTemplate/>
+              <ProjectCreate />
             </ProtectedRoute>
           ),
         },
 
-          {
-          path:"/operations/projects/projecttemplateadd",
+        {
+          path: "/operations/projects/projecttemplate",
           element: (
             <ProtectedRoute
               isAuthenticated={isAuthenticated}
               requiredPage="permissions"
               requiredAction="view"
             >
-             <ProjectTemplateAdd/>
+              <ProjectTemplate />
             </ProtectedRoute>
           ),
         },
 
-          {
-          path:"/operations/projects/projectarchive",
+        {
+          path: "/operations/projects/projecttemplateadd",
           element: (
             <ProtectedRoute
               isAuthenticated={isAuthenticated}
               requiredPage="permissions"
               requiredAction="view"
             >
-             <ProjectArchive/>
-            </ProtectedRoute>
-          ),
-        },
-         {
-          path:"/operations/tasks",
-          element: (
-            <ProtectedRoute
-              isAuthenticated={isAuthenticated}
-              requiredPage="permissions"
-              requiredAction="view"
-            >
-             <TaskView/>
-            </ProtectedRoute>
-          ),
-        },
-             {
-          path:"/operations/tasks/tasklabel",
-          element: (
-            <ProtectedRoute
-              isAuthenticated={isAuthenticated}
-              requiredPage="permissions"
-              requiredAction="view"
-            >
-             <TaskLabel/>
-            </ProtectedRoute>
-          ),
-        },
-            {
-          path:"/operations/tasks/createtasklabel",
-          element: (
-            <ProtectedRoute
-              isAuthenticated={isAuthenticated}
-              requiredPage="permissions"
-              requiredAction="view"
-            >
-             <CreateTaskLabel/>
-            </ProtectedRoute>
-          ),
-        },
-          {
-          path:"/operations/tasks/newtask",
-          element: (
-            <ProtectedRoute
-              isAuthenticated={isAuthenticated}
-              requiredPage="permissions"
-              requiredAction="view"
-            >
-             <NewTask/>
+              <ProjectTemplateAdd />
             </ProtectedRoute>
           ),
         },
 
+        {
+          path: "/operations/projects/projectarchive",
+          element: (
+            <ProtectedRoute
+              isAuthenticated={isAuthenticated}
+              requiredPage="permissions"
+              requiredAction="view"
+            >
+              <ProjectArchive />
+            </ProtectedRoute>
+          ),
+        },
+        {
+          path: "/operations/tasks",
+          element: (
+            <ProtectedRoute
+              isAuthenticated={isAuthenticated}
+              requiredPage="permissions"
+              requiredAction="view"
+            >
+              <TaskView />
+            </ProtectedRoute>
+          ),
+        },
+        {
+          path: "/operations/tasks/tasklabel",
+          element: (
+            <ProtectedRoute
+              isAuthenticated={isAuthenticated}
+              requiredPage="permissions"
+              requiredAction="view"
+            >
+              <TaskLabel />
+            </ProtectedRoute>
+          ),
+        },
+        {
+          path: "/operations/tasks/createtasklabel",
+          element: (
+            <ProtectedRoute
+              isAuthenticated={isAuthenticated}
+              requiredPage="permissions"
+              requiredAction="view"
+            >
+              <CreateTaskLabel />
+            </ProtectedRoute>
+          ),
+        },
+        {
+          path: "/operations/tasks/newtask",
+          element: (
+            <ProtectedRoute
+              isAuthenticated={isAuthenticated}
+              requiredPage="permissions"
+              requiredAction="view"
+            >
+              <NewTask />
+            </ProtectedRoute>
+          ),
+        },
 
         {
           path: "/user-roles/users",
