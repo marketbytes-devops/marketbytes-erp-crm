@@ -39,11 +39,12 @@ import CreateTaskLabel from "./pages/Operations/Tasks/CreateTaskLabel";
 import TaskBoard from "./pages/Operations/Tasks/TaskBoard";
 import NewTask from "./pages/Operations/Tasks/NewTask";
 import Leads from "./pages/Sales/Leads";
-import Invoice from "./pages/Sales/Invoice"
+import Invoice from "./pages/Sales/Invoice";
 import Reports from "./pages/Sales/Reports";
 import Communication from "./pages/Sales/Communication";
 import Pipeline from "./pages/Sales/SalesPipeline";
 import TimeLogs from "./pages/Operations/TimeLogs/TimeLogsView";
+import Customers from "./pages/Sales/Customer";
 
 const ProtectedRoute = ({
   children,
@@ -409,6 +410,17 @@ function App() {
           ),
         },
         {
+          path: "/sales/customer",
+          element: (
+            <ProtectedRoute
+              isAuthenticated={isAuthenticated}
+              requiredPage="reports"
+            >
+              <Customers />
+            </ProtectedRoute>
+          ),
+        },
+        {
           path: "/profile",
           element: (
             <ProtectedRoute
@@ -533,7 +545,7 @@ function App() {
             </ProtectedRoute>
           ),
         },
- {
+        {
           path: "/operations/taskboard",
           element: (
             <ProtectedRoute
