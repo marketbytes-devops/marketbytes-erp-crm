@@ -105,6 +105,22 @@ const TasksPage = () => {
     };
     return map[status] || "To Do";
   };
+  const [pinnedTasks, setPinnedTasks] = useState([]);
+
+const togglePinTask = (task) => {
+  setPinnedTasks((prev) => {
+    const isPinned = prev.some((t) => t.id === task.id);
+    if (isPinned) {
+      toast.success("Task unpinned");
+      return prev.filter((t) => t.id !== task.id);
+    } else {
+      toast.success("Task pinned!");
+      return [...prev, task];
+    }
+  });
+};
+
+const isTaskPinned = (task) => pinnedTasks.some((t) => t.id === task.id);
 
   const renderAvatars = (assignees = []) => {
     const assigneeCount = assignees.length;
@@ -174,7 +190,7 @@ const TasksPage = () => {
     setFilterDueDateTo("");
   };
 
-  // Prepare options for custom Input selects
+ 
   const statusFilterOptions = [
     { value: "All Statuses", label: "All Statuses" },
     { value: "To Do", label: "To Do" },
@@ -206,6 +222,172 @@ const TasksPage = () => {
       </div>
     );
   }
+
+  // === MODAL CONTENTS ===
+const pinnedModalContent = (
+  <div className="p-6 min-w-96">
+    <h3 className="text-lg font-semibold mb-4">Pinned Tasks ({pinnedTasks.length})</h3>
+    {pinnedTasks.length === 0 ? (
+      <div className="text-center text-gray-500 py-8">
+        No pinned tasks yet.
+      </div>
+    ) : (
+      <div className="space-y-4">
+        {pinnedTasks.map((task) => (
+          <div
+            key={task.id}
+            className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 cursor-pointer transition"
+            onClick={() => {
+              setSelectedTask(task);
+              setIsTaskDetailOpen(true);
+              setIsPinnedModalOpen(false);
+            }}
+          >
+            <div className="flex justify-between items-start">
+              <div>
+                <h4 className="font-medium text-gray-900">{task.name}</h4>
+                <p className="text-sm text-gray-600 mt-1">{task.project_name || "No project"}</p>
+              </div>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  togglePinTask(task);
+                }}
+                className="text-yellow-600 hover:text-yellow-800"
+              >
+               <svg
+  className="w-6 h-6"
+  viewBox="0 0 24 24"
+  fill="currentColor"
+>
+  <path d="M16 9V4h1c.55 0 1-.45 1-1s-.45-1-1-1H7c-.55 0-1 .45-1 1s.45 1 1 1h1v5c0 1.66-1.34 3-3 3v2h5.97v7l1 1 1-1v-7H19v-2c-1.66 0-3-1.34-3-3z" />
+</svg>
+              </button>
+            </div>
+          </div>
+        ))}
+      </div>
+    )}
+  </div>
+);
+
+const taskDetailModalContent = selectedTask && (
+  <div className="p-6 max-w-4xl mx-auto">
+    <div className="mb-6 flex justify-between items-start">
+      <div>
+        <h2 className="text-2xl font-bold text-gray-900">{selectedTask.name}</h2>
+        <p className="text-sm text-gray-500 mt-1">TASK #{selectedTask.id}</p>
+      </div>
+      {/* Pin/Unpin Button */}
+      <button
+        onClick={() => togglePinTask(selectedTask)}
+        className={`p-2 rounded-lg transition ${
+          isTaskPinned(selectedTask)
+            ? "text-blue-600 bg-blue-50"
+            : "text-gray-400 hover:text-blue-600 hover:bg-blue-50"
+        }`}
+        title={isTaskPinned(selectedTask) ? "Unpin task" : "Pin task"}
+      >
+        {isTaskPinned(selectedTask) ? (
+          /* Pinned state: normal pushpin */
+          <svg className="w-6 h-6" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M16 9V4h1c.55 0 1-.45 1-1s-.45-1-1-1H7c-.55 0-1 .45-1 1s.45 1 1 1h1v5c0 1.66-1.34 3-3 3v2h5.97v7l1 1 1-1v-7H19v-2c-1.66 0-3-1.34-3-3z" />
+          </svg>
+        ) : (
+          /* Unpinned state: pushpin with slash */
+          <svg className="w-6 h-6" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M16 9V4h1c.55 0 1-.45 1-1s-.45-1-1-1H7c-.55 0-1 .45-1 1s.45 1 1 1h1v5c0 1.66-1.34 3-3 3v2h5.97v7l1 1 1-1v-7H19v-2c-1.66 0-3-1.34-3-3z" />
+            <path
+              d="M18.36 18.36L5.64 5.64"
+              stroke="currentColor"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+            />
+          </svg>
+        )}
+      </button>
+    </div>
+
+    <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+      <div>
+        <p className="text-sm font-medium text-gray-600">Project</p>
+        <p className="text-gray-900">{selectedTask.project_name || "No project"}</p>
+      </div>
+      <div>
+        <p className="text-sm font-medium text-gray-600">Status</p>
+        <p className="text-gray-900">{getCurrentStatusLabel(selectedTask.status)}</p>
+      </div>
+      <div>
+        <p className="text-sm font-medium text-gray-600">Priority</p>
+        <p className="text-gray-900">{selectedTask.priority || "Not set"}</p>
+      </div>
+      <div>
+        <p className="text-sm font-medium text-gray-600">Category</p>
+        <p className="text-gray-900">{selectedTask.category || "Not set"}</p>
+      </div>
+      <div>
+        <p className="text-sm font-medium text-gray-600">Start Date</p>
+        <p className="text-gray-900">
+          {selectedTask.start_date
+            ? new Date(selectedTask.start_date).toLocaleDateString("en-GB", {
+                day: "2-digit",
+                month: "2-digit",
+                year: "numeric",
+              }).replace(/\//g, "-")
+            : "Not set"}
+        </p>
+      </div>
+      <div>
+        <p className="text-sm font-medium text-gray-600">Due Date</p>
+        <p className="text-gray-900">
+          {selectedTask.due_date
+            ? new Date(selectedTask.due_date).toLocaleDateString("en-GB", {
+                day: "2-digit",
+                month: "2-digit",
+                year: "numeric",
+              }).replace(/\//g, "-")
+            : "No due date"}
+        </p>
+      </div>
+      <div>
+        <p className="text-sm font-medium text-gray-600">Allocated Hours</p>
+        <p className="text-gray-900">{selectedTask.allocated_hours || "Not set"}</p>
+      </div>
+    </div>
+
+    <div className="mb-8">
+      <p className="text-sm font-medium text-gray-600 mb-2">Assigned To</p>
+      <div className="flex items-center gap-3">
+        {renderAvatars(selectedTask.assignees || [])}
+      </div>
+    </div>
+
+    {selectedTask.description && (
+      <div className="mb-8">
+        <p className="text-sm font-medium text-gray-600 mb-2">Description</p>
+        <p className="text-gray-700 whitespace-pre-wrap">{selectedTask.description}</p>
+      </div>
+    )}
+
+    <div className="flex justify-end gap-4 mt-8">
+      <button
+        onClick={() => setIsTaskDetailOpen(false)}
+        className="px-6 py-3 border border-gray-300 rounded-lg hover:bg-gray-50"
+      >
+        Close
+      </button>
+      {getCurrentStatusLabel(selectedTask.status) !== "Done" && (
+        <button
+          onClick={handleMarkAsComplete}
+          className="px-6 py-3 bg-black text-white rounded-lg hover:bg-gray-800"
+        >
+          Mark as Complete
+        </button>
+      )}
+    </div>
+  </div>
+);
+  // === END OF MODAL CONTENTS ===
 
   return (
     <div className="p-6">
@@ -425,5 +607,4 @@ const TasksPage = () => {
     </div>
   );
 };
-
 export default TasksPage;
