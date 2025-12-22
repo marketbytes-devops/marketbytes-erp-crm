@@ -38,10 +38,10 @@ import TaskLabel from "./pages/Operations/Tasks/TaskLabel";
 import CreateTaskLabel from "./pages/Operations/Tasks/CreateTaskLabel";
 import NewTask from "./pages/Operations/Tasks/NewTask";
 import Leads from "./pages/Sales/Leads";
-import Communication from "./pages/Sales/Leads/Communication";
-import Pipeline from "./pages/Sales/Leads/SalesPipeline";
 import Invoice from "./pages/Sales/Invoice"
 import Reports from "./pages/Sales/Reports";
+import Communication from "./pages/Sales/Communication";
+import Pipeline from "./pages/Sales/SalesPipeline";
 
 const ProtectedRoute = ({
   children,

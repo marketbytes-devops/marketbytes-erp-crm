@@ -187,36 +187,3 @@ class BreakSession(models.Model):
 
     def __str__(self):
         return f"{self.employee.name} - {self.get_type_display()} ({self.duration_seconds or 0}s)"
-    
-    
-class Employee(models.Model):
-    user = models.OneToOneField(CustomUser, on_delete=models.CASCADE, related_name='employee_profile')
-    employee_id = models.CharField(max_length=20, unique=True, blank=True)
-    department = models.ForeignKey(Department, on_delete=models.SET_NULL, null=True, blank=True)
-    designation = models.CharField(max_length=100, blank=True, null=True)
-    reports_to = models.ForeignKey('self', on_delete=models.SET_NULL, null=True, blank=True, related_name='subordinates')
-    joining_date = models.DateField(null=True, blank=True)
-    probation_period = models.IntegerField(null=True, blank=True, help_text="In months")
-    hourly_rate = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
-    skills = models.TextField(blank=True, null=True)
-    status = models.CharField(max_length=20, choices=[('active', 'Active'), ('inactive', 'Inactive'), ('terminated', 'Terminated')], default='active')
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-
-    class Meta:
-        ordering = ['-joining_date']
-        verbose_name_plural = "Employees"
-
-    def __str__(self):
-        return f"{self.user.name} ({self.employee_id or 'No ID'})"
-
-    def save(self, *args, **kwargs):
-        if not self.employee_id:
-            # Auto-generate employee ID like EMP0001, EMP0002...
-            last = Employee.objects.order_by('-id').first()
-            if last and last.employee_id and last.employee_id.startswith('EMP'):
-                num = int(last.employee_id[3:]) + 1
-            else:
-                num = 1
-            self.employee_id = f"EMP{str(num).zfill(4)}"
-        super().save(*args, **kwargs)

@@ -1,32 +1,33 @@
+// src/pages/hr/recruitment/Recruitment.jsx
 import { useState, useEffect } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
+import { Link } from "react-router-dom";
+import { MdAdd, MdDownload, MdEdit, MdDelete, MdClose, MdKeyboardArrowDown, MdVisibility } from "react-icons/md";
+import { FiSearch, FiCheck } from "react-icons/fi";
 import LayoutComponents from "../../../components/LayoutComponents";
+import Input from "../../../components/Input";
 import apiClient from "../../../helpers/apiClient";
+import toast from "react-hot-toast";
+import Loading from "../../../components/Loading";
 import jsPDF from "jspdf";
 import "jspdf-autotable";
 import * as XLSX from "xlsx";
-import { 
-  MdAdd, 
-  MdDownload, 
-  MdEdit, 
-  MdDelete, 
-  MdClose, 
-  MdKeyboardArrowDown   // ← Add this
-} from "react-icons/md";
 
 const Recruitment = () => {
   const [candidates, setCandidates] = useState([]);
-  const [departments, setDepartments] = useState([]);
+  const [filtered, setFiltered] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [formLoading, setFormLoading] = useState(false);
+  const [search, setSearch] = useState("");
+  const [filters, setFilters] = useState({
+    status: "",
+    department: "",
+  });
+
+  const [departments, setDepartments] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [editingCandidate, setEditingCandidate] = useState(null);
 
-  // Filters
-  const [searchQuery, setSearchQuery] = useState("");
-  const [statusFilter, setStatusFilter] = useState("");
-  const [deptFilter, setDeptFilter] = useState("");
-
-  // Form state
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -41,135 +42,113 @@ const Recruitment = () => {
     offered: false,
   });
 
-  // Fetch departments (used multiple times)
-  const fetchDepartments = async () => {
-    try {
-      const res = await apiClient.get("/auth/departments/");
-      const data = res.data.results || res.data;
-      setDepartments(Array.isArray(data) ? data : []);
-    } catch (err) {
-      console.error("Failed to load departments:", err);
-      setDepartments([]);
-    }
-  };
-
-  // Initial load
   useEffect(() => {
-    fetchDepartments();
-  }, []);
-
-  // Fetch candidates with filters
-  useEffect(() => {
-    const fetchCandidates = async () => {
-      setLoading(true);
+    const fetchData = async () => {
       try {
-        let url = "/hr/candidates/";
-        const params = new URLSearchParams();
+        setLoading(true);
+        const [candRes, deptRes] = await Promise.all([
+          apiClient.get("/hr/candidates/"),
+          apiClient.get("/auth/departments/"),
+        ]);
 
-        if (searchQuery) params.append("search", searchQuery);
-        if (statusFilter) params.append("status", statusFilter);
-        if (deptFilter) params.append("department", deptFilter);
-
-        if (params.toString()) url += `?${params.toString()}`;
-
-        const res = await apiClient.get(url);
-        const data = res.data.results || res.data;
-        setCandidates(Array.isArray(data) ? data : []);
+        const extract = (data) => (Array.isArray(data) ? data : data.results || []);
+        setCandidates(extract(candRes.data));
+        setFiltered(extract(candRes.data));
+        setDepartments(extract(deptRes.data));
       } catch (err) {
-        console.error("Failed to load candidates:", err);
-        setCandidates([]);
+        toast.error("Failed to load recruitment data");
       } finally {
         setLoading(false);
       }
     };
+    fetchData();
+  }, []);
 
-    fetchCandidates();
-  }, [searchQuery, statusFilter, deptFilter]);
+  useEffect(() => {
+    let result = candidates;
 
-  // Open modal (for add or edit)
-  const openModal = async (candidate = null) => {
-    // Always fetch fresh departments when opening modal
-    await fetchDepartments();
-
-    if (candidate) {
-      setEditingCandidate(candidate);
-      setFormData({
-        name: candidate.name || "",
-        email: candidate.email || "",
-        mobile: candidate.mobile || "",
-        gender: candidate.gender || "male",
-        designation: candidate.designation || "",
-        department: candidate.department || "", // ID from backend
-        dob: candidate.dob || "",
-        comments: candidate.comments || "",
-        round: candidate.round || 1,
-        status: candidate.status || "screening",
-        offered: candidate.offered || false,
-      });
-    } else {
-      setEditingCandidate(null);
-      setFormData({
-        name: "",
-        email: "",
-        mobile: "",
-        gender: "male",
-        designation: "",
-        department: "",
-        dob: "",
-        comments: "",
-        round: 1,
-        status: "screening",
-        offered: false,
-      });
+    if (search) {
+      const term = search.toLowerCase();
+      result = result.filter(c =>
+        c.name?.toLowerCase().includes(term) ||
+        c.email?.toLowerCase().includes(term) ||
+        c.mobile?.toLowerCase().includes(term) ||
+        c.designation?.toLowerCase().includes(term)
+      );
     }
+
+    if (filters.status) result = result.filter(c => c.status === filters.status);
+    if (filters.department) result = result.filter(c => c.department === parseInt(filters.department));
+
+    setFiltered(result);
+  }, [search, filters, candidates]);
+
+  const openModal = (candidate = null) => {
+    setEditingCandidate(candidate);
+    setFormData(candidate ? {
+      name: candidate.name || "",
+      email: candidate.email || "",
+      mobile: candidate.mobile || "",
+      gender: candidate.gender || "male",
+      designation: candidate.designation || "",
+      department: candidate.department || "",
+      dob: candidate.dob || "",
+      comments: candidate.comments || "",
+      round: candidate.round || 1,
+      status: candidate.status || "screening",
+      offered: candidate.offered || false,
+    } : {
+      name: "",
+      email: "",
+      mobile: "",
+      gender: "male",
+      designation: "",
+      department: "",
+      dob: "",
+      comments: "",
+      round: 1,
+      status: "screening",
+      offered: false,
+    });
     setShowModal(true);
   };
 
-  // Save (Add or Update)
-  const handleSave = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setFormLoading(true);
 
+    const data = { ...formData };
     const request = editingCandidate
-      ? apiClient.put(`/hr/candidates/${editingCandidate.id}/`, formData)
-      : apiClient.post("/hr/candidates/", formData);
+      ? apiClient.put(`/hr/candidates/${editingCandidate.id}/`, data)
+      : apiClient.post("/hr/candidates/", data);
 
-    request
-      .then((res) => {
-        if (editingCandidate) {
-          // Update existing
-          setCandidates(candidates.map((c) => (c.id === editingCandidate.id ? res.data : c)));
-        } else {
-          // Add new
-          setCandidates([res.data, ...candidates]);
-        }
-        setShowModal(false);
-        alert(`Candidate ${editingCandidate ? "updated" : "added"} successfully!`);
-      })
-      .catch((err) => {
-        console.error("Save error:", err.response?.data || err);
-        alert("Error saving candidate. Check required fields.");
-      });
-  };
-
-  // Delete
-  const handleDelete = (id) => {
-    if (!window.confirm("Are you sure you want to delete this candidate? This action cannot be undone.")) {
-      return;
+    try {
+      const res = await request;
+      if (editingCandidate) {
+        setCandidates(prev => prev.map(c => c.id === editingCandidate.id ? res.data : c));
+      } else {
+        setCandidates([res.data, ...candidates]);
+      }
+      toast.success(`Candidate ${editingCandidate ? "updated" : "added"} successfully!`);
+      setShowModal(false);
+    } catch (err) {
+      toast.error(err.response?.data?.detail || "Failed to save candidate");
+    } finally {
+      setFormLoading(false);
     }
-
-    apiClient
-      .delete(`/hr/candidates/${id}/`)
-      .then(() => {
-        setCandidates(candidates.filter((c) => c.id !== id));
-        alert("Candidate deleted successfully.");
-      })
-      .catch((err) => {
-        console.error("Delete error:", err);
-        alert("Error deleting candidate.");
-      });
   };
 
-  // Status badge
+  const handleDelete = async (id) => {
+    if (!window.confirm("Delete this candidate permanently?")) return;
+    try {
+      await apiClient.delete(`/hr/candidates/${id}/`);
+      setCandidates(prev => prev.filter(c => c.id !== id));
+      toast.success("Candidate deleted");
+    } catch (err) {
+      toast.error("Failed to delete candidate");
+    }
+  };
+
   const getStatusBadge = (status) => {
     const colors = {
       screening: "bg-gray-100 text-gray-800",
@@ -182,7 +161,7 @@ const Recruitment = () => {
     };
     return (
       <span className={`px-3 py-1 rounded-full text-xs font-medium ${colors[status] || "bg-gray-100 text-gray-800"}`}>
-        {(status || "").replace("_", " ").toUpperCase()}
+        {status?.replace("_", " ").toUpperCase() || "SCREENING"}
       </span>
     );
   };
@@ -190,14 +169,14 @@ const Recruitment = () => {
   // Export Functions
   const exportToCSV = () => {
     const headers = ["Name", "Email", "Mobile", "Designation", "Department", "Status", "Round"];
-    const rows = candidates.map(c => [
+    const rows = filtered.map(c => [
       c.name || "",
       c.email || "",
       c.mobile || "",
       c.designation || "",
-      c.department_name || "",
-      (c.status || "").replace("_", " ").toUpperCase(),
-      c.round || 1
+      departments.find(d => d.id === c.department)?.name || "",
+      c.status?.replace("_", " ").toUpperCase() || "",
+      c.round || 1,
     ]);
 
     const data = [headers, ...rows];
@@ -208,14 +187,14 @@ const Recruitment = () => {
   };
 
   const exportToExcel = () => {
-    const rows = candidates.map(c => ({
+    const rows = filtered.map(c => ({
       Name: c.name || "",
       Email: c.email || "",
       Mobile: c.mobile || "",
       Designation: c.designation || "",
-      Department: c.department_name || "",
-      Status: (c.status || "").replace("_", " ").toUpperCase(),
-      Round: c.round || 1
+      Department: departments.find(d => d.id === c.department)?.name || "",
+      Status: c.status?.replace("_", " ").toUpperCase() || "",
+      Round: c.round || 1,
     }));
 
     const ws = XLSX.utils.json_to_sheet(rows);
@@ -226,22 +205,20 @@ const Recruitment = () => {
 
   const exportToPDF = () => {
     const doc = new jsPDF({ orientation: "landscape" });
-
     doc.setFontSize(18);
     doc.text("Candidates Report", 14, 15);
-
     doc.setFontSize(11);
     doc.text(`Generated on: ${new Date().toLocaleDateString()}`, 14, 25);
 
     const tableColumns = ["Name", "Email", "Mobile", "Designation", "Department", "Status", "Round"];
-    const tableRows = candidates.map(c => [
+    const tableRows = filtered.map(c => [
       c.name || "—",
       c.email || "—",
       c.mobile || "—",
       c.designation || "—",
-      c.department_name || "—",
-      (c.status || "").replace("_", " ").toUpperCase(),
-      c.round || 1
+      departments.find(d => d.id === c.department)?.name || "—",
+      c.status?.replace("_", " ").toUpperCase() || "—",
+      c.round || 1,
     ]);
 
     doc.autoTable({
@@ -250,44 +227,75 @@ const Recruitment = () => {
       startY: 35,
       theme: "grid",
       styles: { fontSize: 10 },
-      headStyles: { fillColor: [30, 30, 30] },
+      headStyles: { fillColor: [0, 0, 0] },
     });
 
-    doc.save("candidates.pdf");
+    doc.save("candidates_report.pdf");
   };
 
+  const departmentOptions = departments.map(d => ({ value: d.id, label: d.name }));
+  const statusOptions = [
+    { value: "", label: "All Status" },
+    { value: "screening", label: "Screening" },
+    { value: "interview", label: "Interview" },
+    { value: "technical", label: "Technical Round" },
+    { value: "hr_round", label: "HR Round" },
+    { value: "selected", label: "Selected" },
+    { value: "rejected", label: "Rejected" },
+    { value: "on_hold", label: "On Hold" },
+  ];
+
+  if (loading) return <Loading />;
+
   return (
-    <div className="p-6">
-      <LayoutComponents title="Recruitment" subtitle="Manage hiring pipeline" variant="card">
-        <div className="bg-white rounded-2xl shadow-sm p-6">
-          {/* Header */}
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
-            <h3 className="text-xl font-medium">Candidates</h3>
-            <div className="flex gap-3 w-full md:w-auto">
-              {/* Export Dropdown */}
+    <div className="p-6 min-h-screen">
+      <LayoutComponents title="Recruitment" subtitle="Manage your hiring pipeline" variant="table">
+        <div className="bg-white rounded-2xl shadow-sm p-6 mb-6">
+          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+            <div className="flex items-center gap-4 flex-1">
+              <div className="relative flex-1 max-w-2xl">
+                <FiSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 w-5 h-5" />
+                <input
+                  type="text"
+                  placeholder="Search candidates..."
+                  value={search}
+                  onChange={e => setSearch(e.target.value)}
+                  className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-black outline-none transition"
+                />
+              </div>
+
+              <div className="flex items-center gap-4">
+                <Input
+                  type="select"
+                  value={filters.status}
+                  onChange={v => setFilters({ ...filters, status: v })}
+                  options={statusOptions}
+                  placeholder="All Status"
+                />
+                <Input
+                  type="select"
+                  value={filters.department}
+                  onChange={v => setFilters({ ...filters, department: v })}
+                  options={[{ value: "", label: "All Departments" }, ...departmentOptions]}
+                  placeholder="All Departments"
+                />
+              </div>
+            </div>
+
+            <div className="flex gap-3">
               <div className="relative group">
                 <button className="flex items-center gap-3 px-6 py-3.5 border border-gray-300 rounded-xl hover:bg-gray-50 transition font-medium">
                   <MdDownload className="w-5 h-5" /> Export
                   <MdKeyboardArrowDown className="w-5 h-5 transition-transform group-hover:rotate-180" />
                 </button>
-
                 <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg border border-gray-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-10">
-                  <button
-                    onClick={exportToCSV}
-                    className="w-full text-left px-5 py-3 hover:bg-gray-50 transition flex items-center gap-3"
-                  >
+                  <button onClick={exportToCSV} className="w-full text-left px-5 py-3 hover:bg-gray-50 transition flex items-center gap-3">
                     <span className="text-green-600 font-medium">CSV</span> Download as .csv
                   </button>
-                  <button
-                    onClick={exportToExcel}
-                    className="w-full text-left px-5 py-3 hover:bg-gray-50 transition flex items-center gap-3"
-                  >
+                  <button onClick={exportToExcel} className="w-full text-left px-5 py-3 hover:bg-gray-50 transition flex items-center gap-3">
                     <span className="text-green-700 font-medium">Excel</span> Download as .xlsx
                   </button>
-                  <button
-                    onClick={exportToPDF}
-                    className="w-full text-left px-5 py-3 hover:bg-gray-50 transition flex items-center gap-3 border-t"
-                  >
+                  <button onClick={exportToPDF} className="w-full text-left px-5 py-3 hover:bg-gray-50 transition flex items-center gap-3">
                     <span className="text-red-600 font-medium">PDF</span> Download as .pdf
                   </button>
                 </div>
@@ -295,249 +303,196 @@ const Recruitment = () => {
 
               <button
                 onClick={() => openModal()}
-                className="flex items-center gap-3 px-6 py-3.5 bg-black text-white rounded-xl hover:bg-gray-900 transition font-medium w-full md:w-auto"
+                className="flex items-center gap-3 px-6 py-3.5 bg-black text-white rounded-xl hover:bg-gray-900 transition font-medium"
               >
                 <MdAdd className="w-5 h-5" /> Add Candidate
               </button>
             </div>
           </div>
+        </div>
 
-          {/* Filters */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-            <input
-              type="text"
-              placeholder="Search by name, email, mobile..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="px-5 py-3.5 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-black"
-            />
-            <select
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-              className="px-5 py-3.5 border border-gray-300 rounded-xl"
-            >
-              <option value="">All Status</option>
-              <option value="screening">Screening</option>
-              <option value="interview">Interview</option>
-              <option value="technical">Technical Round</option>
-              <option value="hr_round">HR Round</option>
-              <option value="selected">Selected</option>
-              <option value="rejected">Rejected</option>
-              <option value="on_hold">On Hold</option>
-            </select>
-            <select
-              value={deptFilter}
-              onChange={(e) => setDeptFilter(e.target.value)}
-              className="px-5 py-3.5 border border-gray-300 rounded-xl"
-            >
-              <option value="">All Departments</option>
-              {departments.map((dept) => (
-                <option key={dept.id} value={dept.id}>
-                  {dept.name}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          {/* Table */}
-          {loading ? (
-            <div className="text-center py-16">
-              <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-black border-t-transparent"></div>
-            </div>
-          ) : candidates.length === 0 ? (
-            <div className="text-center py-16 text-gray-500">
-              <div className="w-20 h-20 mx-auto mb-6 bg-gray-100 rounded-full flex items-center justify-center">
-                <MdAdd className="w-10 h-10 text-gray-400" />
-              </div>
-              <p className="text-xl font-medium">No candidates found</p>
-              <p className="mt-2">Add your first candidate to get started</p>
-            </div>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full table-auto border-collapse">
-                <thead>
-                  <tr className="border-b bg-gray-50 text-left text-sm font-medium text-gray-700">
-                    <th className="px-6 py-4">Name</th>
-                    <th className="px-6 py-4">Email</th>
-                    <th className="px-6 py-4">Mobile</th>
-                    <th className="px-6 py-4">Designation</th>
-                    <th className="px-6 py-4">Department</th>
-                    <th className="px-6 py-4">Status</th>
-                    <th className="px-6 py-4 text-center">Round</th>
-                    <th className="px-6 py-4 text-center">Actions</th>
+        <div className="bg-white rounded-2xl shadow-sm overflow-hidden border border-gray-200">
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[1000px]">
+              <thead className="bg-gray-50 border-b border-gray-200">
+                <tr>
+                  <th className="px-6 py-5 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">Name</th>
+                  <th className="px-6 py-5 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">Email</th>
+                  <th className="px-6 py-5 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">Mobile</th>
+                  <th className="px-6 py-5 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">Designation</th>
+                  <th className="px-6 py-5 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">Department</th>
+                  <th className="px-6 py-5 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">Status</th>
+                  <th className="px-6 py-5 text-center text-xs font-medium text-gray-700 uppercase tracking-wider">Round</th>
+                  <th className="px-6 py-5 text-center text-xs font-medium text-gray-700 uppercase tracking-wider">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-200">
+                {filtered.length === 0 ? (
+                  <tr>
+                    <td colSpan="8" className="text-center py-24">
+                      <div className="flex flex-col items-center">
+                        <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mb-5">
+                          <MdVisibility className="w-10 h-10 text-gray-400" />
+                        </div>
+                        <p className="text-xl font-semibold text-gray-700">No candidates found</p>
+                        <p className="text-gray-500 mt-2">Try adjusting your search or filters</p>
+                      </div>
+                    </td>
                   </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-200">
-                  {candidates.map((c) => (
+                ) : (
+                  filtered.map((c, i) => (
                     <motion.tr
                       key={c.id}
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
+                      initial={{ opacity: 0, y: 15 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: i * 0.03 }}
                       className="hover:bg-gray-50 transition"
                     >
-                      <td className="px-6 py-4 font-medium">{c.name || "—"}</td>
-                      <td className="px-6 py-4">{c.email || "—"}</td>
-                      <td className="px-6 py-4">{c.mobile || "—"}</td>
-                      <td className="px-6 py-4">{c.designation || "—"}</td>
-                      <td className="px-6 py-4">{c.department_name || "—"}</td>
-                      <td className="px-6 py-4">{getStatusBadge(c.status)}</td>
-                      <td className="px-6 py-4 text-center">{c.round || 1}</td>
-                      <td className="px-6 py-4">
-                        <div className="flex items-center justify-center gap-4">
+                      <td className="px-6 py-5 font-medium text-gray-900">{c.name || "—"}</td>
+                      <td className="px-6 py-5 text-gray-700">{c.email || "—"}</td>
+                      <td className="px-6 py-5 text-gray-700">{c.mobile || "—"}</td>
+                      <td className="px-6 py-5 text-gray-700">{c.designation || "—"}</td>
+                      <td className="px-6 py-5">
+                        <span className="px-3 py-1.5 bg-gray-100 text-gray-800 rounded-full text-xs font-medium">
+                          {departments.find(d => d.id === c.department)?.name || "—"}
+                        </span>
+                      </td>
+                      <td className="px-6 py-5">{getStatusBadge(c.status)}</td>
+                      <td className="px-6 py-5 text-center font-medium">{c.round || 1}</td>
+                      <td className="px-6 py-5">
+                        <div className="flex items-center justify-center gap-3">
                           <button
                             onClick={() => openModal(c)}
-                            className="p-2 hover:bg-indigo-100 rounded-lg text-indigo-600 transition"
+                            className="p-2 hover:bg-amber-50 rounded-lg transition group"
                             title="Edit"
                           >
-                            <MdEdit className="w-5 h-5" />
+                            <MdEdit className="w-5 h-5 text-gray-600 group-hover:text-amber-600" />
                           </button>
                           <button
                             onClick={() => handleDelete(c.id)}
-                            className="p-2 hover:bg-red-100 rounded-lg text-red-600 transition"
+                            className="p-2 hover:bg-red-50 rounded-lg transition group"
                             title="Delete"
                           >
-                            <MdDelete className="w-5 h-5" />
+                            <MdDelete className="w-5 h-5 text-gray-600 group-hover:text-red-600" />
                           </button>
                         </div>
                       </td>
                     </motion.tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
         </div>
       </LayoutComponents>
 
-      {/* Add / Edit Modal */}
+      {/* Modal */}
       {showModal && (
-        <div className="fixed inset-0 bg-white bg-opacity-60 flex items-center justify-center z-50 p-4">
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto"
-          >
-            <div className="p-6 border-b flex justify-between items-center">
-              <h2 className="text-2xl font-bold">
-                {editingCandidate ? "Edit Candidate" : "Add New Candidate"}
-              </h2>
-              <button
-                onClick={() => setShowModal(false)}
-                className="p-2 hover:bg-gray-100 rounded-xl transition"
-              >
-                <MdClose className="w-6 h-6" />
-              </button>
-            </div>
-
-            <form onSubmit={handleSave} className="p-8 space-y-6">
+        <LayoutComponents
+          variant="modal"
+          title={editingCandidate ? "Edit Candidate" : "Add New Candidate"}
+          onCloseModal={() => setShowModal(false)}
+          modal={
+            <form onSubmit={handleSubmit} className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <input
-                  type="text"
-                  placeholder="Full Name *"
+                <Input
+                  label="Full Name"
                   required
                   value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  className="px-5 py-3.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-black outline-none"
+                  onChange={e => setFormData({ ...formData, name: e.target.value })}
+                  placeholder="John Doe"
                 />
-                <input
+                <Input
+                  label="Email"
                   type="email"
-                  placeholder="Email *"
                   required
                   value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  className="px-5 py-3.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-black outline-none"
+                  onChange={e => setFormData({ ...formData, email: e.target.value })}
+                  placeholder="john@example.com"
                 />
-                <input
-                  type="text"
-                  placeholder="Mobile"
+                <Input
+                  label="Mobile Number"
                   value={formData.mobile}
-                  onChange={(e) => setFormData({ ...formData, mobile: e.target.value })}
-                  className="px-5 py-3.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-black outline-none"
+                  onChange={e => setFormData({ ...formData, mobile: e.target.value })}
+                  placeholder="9876543210"
                 />
-                <select
+                <Input
+                  label="Gender"
+                  type="select"
                   value={formData.gender}
-                  onChange={(e) => setFormData({ ...formData, gender: e.target.value })}
-                  className="px-5 py-3.5 border border-gray-300 rounded-xl"
-                >
-                  <option value="male">Male</option>
-                  <option value="female">Female</option>
-                  <option value="other">Other</option>
-                </select>
-                <input
-                  type="text"
-                  placeholder="Designation Applied For *"
+                  onChange={v => setFormData({ ...formData, gender: v })}
+                  options={[
+                    { value: "male", label: "Male" },
+                    { value: "female", label: "Female" },
+                    { value: "other", label: "Other" },
+                  ]}
+                />
+                <Input
+                  label="Designation"
                   required
                   value={formData.designation}
-                  onChange={(e) => setFormData({ ...formData, designation: e.target.value })}
-                  className="px-5 py-3.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-black outline-none"
+                  onChange={e => setFormData({ ...formData, designation: e.target.value })}
+                  placeholder="Software Engineer"
                 />
-                <select
+                <Input
+                  label="Department"
+                  type="select"
                   value={formData.department}
-                  onChange={(e) => setFormData({ ...formData, department: e.target.value })}
-                  className="px-5 py-3.5 border border-gray-300 rounded-xl"
-                >
-                  <option value="">Select Department</option>
-                  {departments.map((dept) => (
-                    <option key={dept.id} value={dept.id}>
-                      {dept.name}
-                    </option>
-                  ))}
-                </select>
-                <input
+                  onChange={v => setFormData({ ...formData, department: v })}
+                  options={departmentOptions}
+                  placeholder="Select Department"
+                />
+                <Input
+                  label="Date of Birth"
                   type="date"
                   value={formData.dob}
-                  onChange={(e) => setFormData({ ...formData, dob: e.target.value })}
-                  className="px-5 py-3.5 border border-gray-300 rounded-xl"
+                  onChange={e => setFormData({ ...formData, dob: e.target.value })}
                 />
-                <input
+                <Input
+                  label="Current Round"
                   type="number"
                   min="1"
-                  placeholder="Round"
                   value={formData.round}
-                  onChange={(e) => setFormData({ ...formData, round: parseInt(e.target.value) || 1 })}
-                  className="px-5 py-3.5 border border-gray-300 rounded-xl"
+                  onChange={e => setFormData({ ...formData, round: parseInt(e.target.value) || 1 })}
                 />
-                <select
-                  value={formData.status}
-                  onChange={(e) => setFormData({ ...formData, status: e.target.value })}
-                  className="px-5 py-3.5 border border-gray-300 rounded-xl md:col-span-2"
-                >
-                  <option value="screening">Screening</option>
-                  <option value="interview">Interview</option>
-                  <option value="technical">Technical Round</option>
-                  <option value="hr_round">HR Round</option>
-                  <option value="selected">Selected</option>
-                  <option value="rejected">Rejected</option>
-                  <option value="on_hold">On Hold</option>
-                </select>
               </div>
 
-              <textarea
-                placeholder="Comments / Notes"
+              <Input
+                label="Status"
+                type="select"
+                value={formData.status}
+                onChange={v => setFormData({ ...formData, status: v })}
+                options={statusOptions.slice(1)}
+              />
+
+              <Input
+                label="Comments / Notes"
+                type="textarea"
+                rows={4}
                 value={formData.comments}
-                onChange={(e) => setFormData({ ...formData, comments: e.target.value })}
-                rows="4"
-                className="w-full px-5 py-3.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-black outline-none"
+                onChange={e => setFormData({ ...formData, comments: e.target.value })}
+                placeholder="Any additional notes..."
               />
 
               <div className="flex justify-end gap-4 pt-6">
                 <button
                   type="button"
                   onClick={() => setShowModal(false)}
-                  className="px-8 py-3.5 border border-gray-300 rounded-xl hover:bg-gray-50 transition"
+                  className="px-6 py-3 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-8 py-3.5 bg-black text-white rounded-xl hover:bg-gray-900 transition font-medium"
+                  disabled={formLoading}
+                  className="px-6 py-3 bg-black text-white rounded-xl hover:bg-gray-900 transition disabled:opacity-50"
                 >
-                  {editingCandidate ? "Update" : "Save"} Candidate
+                  {formLoading ? "Saving..." : editingCandidate ? "Update Candidate" : "Add Candidate"}
                 </button>
               </div>
             </form>
-          </motion.div>
-        </div>
+          }
+        />
       )}
     </div>
   );
