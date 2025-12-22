@@ -43,6 +43,7 @@ import Invoice from "./pages/Sales/Invoice"
 import Reports from "./pages/Sales/Reports";
 import Communication from "./pages/Sales/Communication";
 import Pipeline from "./pages/Sales/SalesPipeline";
+import TimeLogs from "./pages/Operations/TimeLogs/TimeLogsView";
 
 const ProtectedRoute = ({
   children,

@@ -9,6 +9,7 @@ import {
   MdEdit,
   MdDelete,
   MdArchive,
+  MdPushPin
 } from "react-icons/md";
 import { FiSearch } from "react-icons/fi";
 import LayoutComponents from "../../../components/LayoutComponents";
@@ -20,25 +21,31 @@ import Loading from "../../../components/Loading";
 
 const ProjectsView = () => {
   const navigate = useNavigate();
+  const handleClick = () => {
+    navigate("/operations/projects/projectarchive");
+  };
 
   const [projects, setProjects] = useState([]);
   const [filtered, setFiltered] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [isPinnedModalOpen, setIsPinnedModalOpen] = useState(false);
+
+  // New: Track pinned projects
+  const [pinnedProjects, setPinnedProjects] = useState([]);
 
   const [search, setSearch] = useState("");
   const [filtersOpen, setFiltersOpen] = useState(false);
+
   const [filters, setFilters] = useState({
     status: "",
     client: "",
     category: "",
-    department: "",
     member: "",
   });
 
   const [statuses, setStatuses] = useState([]);
   const [clients, setClients] = useState([]);
   const [categories, setCategories] = useState([]);
-  const [departments, setDepartments] = useState([]);
   const [members, setMembers] = useState([]);
 
   const activeFilterCount = Object.values(filters).filter((v) => v !== "").length;
@@ -52,7 +59,6 @@ const ProjectsView = () => {
       status: "",
       client: "",
       category: "",
-      department: "",
       member: "",
     });
     setSearch("");
@@ -77,19 +83,15 @@ const ProjectsView = () => {
         setFiltered(projData);
         setStatuses(statusData);
 
-        // Extract unique values for filters (you can expand with dedicated endpoints if available)
         const clientSet = new Set(projData.map((p) => p.client?.name).filter(Boolean));
         const catSet = new Set(projData.map((p) => p.category?.name).filter(Boolean));
-        const deptSet = new Set(projData.map((p) => p.department?.name).filter(Boolean));
 
         setClients(Array.from(clientSet).sort());
         setCategories(Array.from(catSet).sort());
-        setDepartments(Array.from(deptSet).sort());
 
-        // Members – assuming project.members is array of user objects
         const memberSet = new Set();
         projData.forEach((p) =>
-          p.members?.forEach((m) => memberSet.add(m.name || m.email))
+          p.members?.forEach((m) => memberSet.add(m.name || m.email || "Unknown"))
         );
         setMembers(Array.from(memberSet).sort());
       } catch (err) {
@@ -102,12 +104,12 @@ const ProjectsView = () => {
     fetchData();
   }, []);
 
-  // Client-side filtering & search
+  // Apply search + filters
   useEffect(() => {
     let result = projects;
 
-    if (search) {
-      const term = search.toLowerCase();
+    if (search.trim()) {
+      const term = search.toLowerCase().trim();
       result = result.filter(
         (p) =>
           p.name?.toLowerCase().includes(term) ||
@@ -116,19 +118,36 @@ const ProjectsView = () => {
       );
     }
 
-    if (filters.status) result = result.filter((p) => p.status_id === parseInt(filters.status));
-    if (filters.client) result = result.filter((p) => p.client?.name === filters.client);
-    if (filters.category) result = result.filter((p) => p.category?.name === filters.category);
-    if (filters.department) result = result.filter((p) => p.department?.name === filters.department);
-    if (filters.member)
+    if (filters.status !== "") {
+      const selectedStatusId = parseInt(filters.status, 10);
+      if (!isNaN(selectedStatusId)) {
+        const selectedStatus = statuses.find((s) => s.id === selectedStatusId);
+        if (selectedStatus?.name.toLowerCase() === "not started") {
+          result = result.filter((p) => p.status_id === selectedStatusId || p.status_id == null);
+        } else {
+          result = result.filter((p) => p.status_id === selectedStatusId);
+        }
+      }
+    }
+
+    if (filters.client) {
+      result = result.filter((p) => p.client?.name === filters.client);
+    }
+
+    if (filters.category) {
+      result = result.filter((p) => p.category?.name === filters.category);
+    }
+
+    if (filters.member) {
       result = result.filter((p) =>
         p.members?.some((m) => (m.name || m.email) === filters.member)
       );
+    }
 
     setFiltered(result);
-  }, [search, filters, projects]);
+  }, [search, filters, projects, statuses]);
 
-  // Stats calculation
+  // Stats
   const stats = useMemo(() => {
     const total = projects.length;
 
@@ -163,7 +182,9 @@ const ProjectsView = () => {
       const newStatus = statuses.find((s) => s.id === parseInt(newStatusId));
       setProjects((prev) =>
         prev.map((p) =>
-          p.id === projectId ? { ...p, status: newStatus, status_id: parseInt(newStatusId) } : p
+          p.id === projectId
+            ? { ...p, status: newStatus, status_id: parseInt(newStatusId) }
+            : p
         )
       );
       toast.success("Status updated");
@@ -183,93 +204,135 @@ const ProjectsView = () => {
     }
   };
 
-  const ActionsDropdown = ({ project, onEdit, onArchive, onPin }) => {
-  const [isOpen, setIsOpen] = useState(false);
+  // Pin / Unpin logic
+  const togglePin = (project) => {
+    setPinnedProjects((prev) => {
+      const exists = prev.find((p) => p.id === project.id);
+      if (exists) {
+        toast.success("Project unpinned");
+        return prev.filter((p) => p.id !== project.id);
+      } else {
+        toast.success("Project pinned");
+        return [...prev, project];
+      }
+    });
+  };
 
-  useEffect(() => {
-    const handleClickOutside = () => setIsOpen(false);
-    if (isOpen) {
-      document.addEventListener("click", handleClickOutside);
+  const renderAvatars = (members = []) => {
+    const memberCount = members.length;
+    if (memberCount === 0) {
+      return <div className="w-8 h-8 rounded-full bg-gray-300 border-2 border-white" />;
     }
-    return () => document.removeEventListener("click", handleClickOutside);
-  }, [isOpen]);
 
-  return (
-    <div className="relative inline-block text-left">
-      <button
-        onClick={(e) => {
-          e.stopPropagation();
-          setIsOpen(!isOpen);
-        }}
-        className="p-2 rounded-lg hover:bg-gray-100 transition"
-      >
-        <svg
-          className="w-5 h-5 text-gray-600"
-          fill="currentColor"
-          viewBox="0 0 20 20"
-        >
-          <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" />
-        </svg>
-      </button>
-
-      {isOpen && (
-        <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-gray-200 z-20">
-          <div className="py-1">
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                onEdit();
-                setIsOpen(false);
-              }}
-              className="w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
-            >
-              <MdEdit className="w-4 h-4" /> Edit
-            </button>
-
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                onPin();
-                setIsOpen(false);
-              }}
-              className="w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
-            >
-              <MdPushPin className="w-4 h-4" /> Pin Project
-            </button>
-
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                onArchive();
-                setIsOpen(false);
-              }}
-              className="w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
-            >
-              <MdArchive className="w-4 h-4" /> Archive
-            </button>
-
-            <hr className="my-1 border-gray-200" />
-
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                if (window.confirm("Permanently delete this project? This cannot be undone.")) {
-                  // You can use same handleDeleteProject or make a hard delete
-                  // For now using archive logic
-                  onArchive();
-                }
-                setIsOpen(false);
-              }}
-              className="w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center gap-2"
-            >
-              <MdDelete className="w-4 h-4" /> Delete Permanently
-            </button>
+    return (
+      <div className="flex -space-x-2">
+        {members.slice(0, 3).map((member, i) => {
+          const name = member.name || member.email || "Unknown";
+          const initial = name[0]?.toUpperCase() || "?";
+          return (
+            <div key={member.id || i} className="relative group">
+              <div className="w-8 h-8 rounded-full bg-gray-400 border-2 border-white flex items-center justify-center text-white text-xs font-bold cursor-pointer">
+                {initial}
+              </div>
+              <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-black text-white text-sm rounded-lg whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
+                {name}
+                <div className="absolute top-full left-1/2 -translate-x-1/2 border-8 border-transparent border-t-black"></div>
+              </div>
+            </div>
+          );
+        })}
+        {memberCount > 3 && (
+          <div className="w-8 h-8 rounded-full bg-gray-500 border-2 border-white flex items-center justify-center text-white text-xs font-bold">
+            +{memberCount - 3}
           </div>
-        </div>
-      )}
-    </div>
-  );
-};
+        )}
+      </div>
+    );
+  };
+
+  // Actions Dropdown Component
+  const ActionsDropdown = ({ project }) => {
+    const [isOpen, setIsOpen] = useState(false);
+    const isPinned = pinnedProjects.some((p) => p.id === project.id);
+
+    useEffect(() => {
+      const handleClickOutside = () => setIsOpen(false);
+      if (isOpen) document.addEventListener("click", handleClickOutside);
+      return () => document.removeEventListener("click", handleClickOutside);
+    }, [isOpen]);
+
+    return (
+      <div className="relative inline-block text-left">
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            setIsOpen(!isOpen);
+          }}
+          className="p-2 rounded-lg hover:bg-gray-100 transition"
+        >
+          <svg className="w-5 h-5 text-gray-600" fill="currentColor" viewBox="0 0 20 20">
+            <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" />
+          </svg>
+        </button>
+
+        {isOpen && (
+          <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-gray-200 z-20">
+            <div className="py-1">
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  navigate(`/operations/projects/edit/${project.id}`); // Adjust route as needed
+                  setIsOpen(false);
+                }}
+                className="w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
+              >
+                <MdEdit className="w-4 h-4" /> Edit
+              </button>
+
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  togglePin(project);
+                  setIsOpen(false);
+                }}
+                className="w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
+              >
+                <MdPushPin className="w-4 h-4" />
+                {isPinned ? "Unpin Project" : "Pin Project"}
+              </button>
+
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleArchive(project.id);
+                  setIsOpen(false);
+                }}
+                className="w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
+              >
+                <MdArchive className="w-4 h-4" /> Archive
+              </button>
+
+              <hr className="my-1 border-gray-200" />
+
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (window.confirm("Permanently delete this project? This cannot be undone.")) {
+                    // Add hard delete API call here if needed
+                    handleArchive(project.id); // fallback to archive
+                  }
+                  setIsOpen(false);
+                }}
+                className="w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center gap-2"
+              >
+                <MdDelete className="w-4 h-4" /> Delete Permanently
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  };
 
   if (loading) {
     return (
@@ -354,8 +417,21 @@ const ProjectsView = () => {
               </span>
             </div>
 
-            <div className="flex gap-3">
-              <button className="flex items-center gap-2 px-5 py-4 border border-gray-300 rounded-xl hover:bg-gray-50 transition text-sm font-semibold">
+            <div className="flex flex-wrap items-center gap-3">
+              <button
+                onClick={() => setIsPinnedModalOpen(true)}
+                className="flex items-center gap-2 px-4 py-3 border border-black hover:bg-gray-100 text-black rounded-lg transition text-sm font-medium"
+              >
+                <MdPushPin className="w-5 h-5" />
+                Pinned Project ({pinnedProjects.length})
+              </button>
+              <button
+                onClick={handleClick}
+                className="px-4 py-3 border border-black text-black hover:bg-gray-100 rounded-lg transition text-sm font-medium"
+              >
+                View Archive
+              </button>
+              <button className="flex items-center gap-2 px-5 py-4 border border-gray-300 rounded-xl hover:bg-gray-100 transition text-sm font-semibold">
                 <MdDownload className="w-5 h-5" /> Export
               </button>
             </div>
@@ -383,7 +459,7 @@ const ProjectsView = () => {
                   </button>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
                   <Input
                     label="Status"
                     type="select"
@@ -391,7 +467,7 @@ const ProjectsView = () => {
                     onChange={(v) => handleFilterChange("status", v)}
                     options={[
                       { label: "All Statuses", value: "" },
-                      ...statuses.map((s) => ({ label: s.name, value: s.id })),
+                      ...statuses.map((s) => ({ label: s.name, value: s.id.toString() })),
                     ]}
                   />
                   <Input
@@ -412,16 +488,6 @@ const ProjectsView = () => {
                     options={[
                       { label: "All Categories", value: "" },
                       ...categories.map((c) => ({ label: c, value: c })),
-                    ]}
-                  />
-                  <Input
-                    label="Department"
-                    type="select"
-                    value={filters.department}
-                    onChange={(v) => handleFilterChange("department", v)}
-                    options={[
-                      { label: "All Departments", value: "" },
-                      ...departments.map((d) => ({ label: d, value: d })),
                     ]}
                   />
                   <Input
@@ -449,36 +515,89 @@ const ProjectsView = () => {
           )}
         </AnimatePresence>
 
+        {/* Pinned Project Modal - Now shows real pinned projects */}
+        <AnimatePresence>
+          {isPinnedModalOpen && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsPinnedModalOpen(false)}
+              className="fixed inset-0 bg-black/30 backdrop-blur-md z-50 flex items-start justify-center p-4 pt-20"
+            >
+              <motion.div
+                initial={{ x: 300, opacity: 0 }}
+                animate={{ x: 0, opacity: 1 }}
+                exit={{ x: 300, opacity: 0 }}
+                transition={{ type: "spring", damping: 25, stiffness: 300 }}
+                onClick={(e) => e.stopPropagation()}
+                className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden"
+              >
+                <div className="bg-black text-white px-6 py-4 flex items-center justify-between">
+                  <h3 className="text-lg font-semibold">Pinned Projects ({pinnedProjects.length})</h3>
+                  <button
+                    onClick={() => setIsPinnedModalOpen(false)}
+                    className="text-white hover:bg-white/20 rounded-lg p-2 transition"
+                  >
+                    <MdClose className="w-5 h-5" />
+                  </button>
+                </div>
+
+                <div className="p-6 max-h-96 overflow-y-auto">
+                  {pinnedProjects.length === 0 ? (
+                    <p className="text-center text-gray-500 py-8">No pinned projects yet</p>
+                  ) : (
+                    <table className="w-full">
+                      <thead className="border-b border-gray-200">
+                        <tr>
+                          <th className="text-left text-sm font-medium text-gray-600 pb-3">#</th>
+                          <th className="text-left text-sm font-medium text-gray-600 pb-3">PROJECT</th>
+                          <th className="text-right text-sm font-medium text-gray-600 pb-3">ACTION</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {pinnedProjects.map((project, index) => (
+                          <tr key={project.id} className="border-b border-gray-100">
+                            <td className="py-3 text-sm">{index + 1}</td>
+                            <td className="py-3 text-sm font-medium">{project.name}</td>
+                            <td className="py-3 text-right">
+                              <button
+                                onClick={() => togglePin(project)}
+                                className="text-red-600 hover:text-red-800 text-sm font-medium"
+                              >
+                                Unpin
+                              </button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  )}
+                </div>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
         {/* Projects Table */}
         <div className="bg-white rounded-2xl shadow-sm overflow-hidden border border-gray-200">
           <div className="overflow-x-auto">
             <table className="w-full min-w-[1000px]">
               <thead className="bg-gray-50 border-b border-gray-200">
                 <tr>
-                  <th className="px-6 py-5 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
-                    Project
-                  </th>
-                  <th className="px-6 py-5 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
-                    Client
-                  </th>
-                  <th className="px-6 py-5 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
-                    Deadline
-                  </th>
-                  <th className="px-6 py-5 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
-                    Progress
-                  </th>
-                  <th className="px-6 py-5 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
-                    Status
-                  </th>
-                  <th className="px-6 py-5 text-right text-xs font-medium text-gray-700 uppercase tracking-wider">
-                    Actions
-                  </th>
+                  <th className="px-6 py-5 text-left text-xs font-medium text-gray-700 uppercase tracking-wider w-12">#</th>
+                  <th className="px-6 py-5 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">Project</th>
+                  <th className="px-6 py-5 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">Members</th>
+                  <th className="px-6 py-5 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">Deadline</th>
+                  <th className="px-6 py-5 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">Progress</th>
+                  <th className="px-6 py-5 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">Status</th>
+                  <th className="px-6 py-5 text-right text-xs font-medium text-gray-700 uppercase tracking-wider">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
                 {filtered.length === 0 ? (
                   <tr>
-                    <td colSpan="6" className="text-center py-24">
+                    <td colSpan="7" className="text-center py-24">
                       <div className="flex flex-col items-center">
                         <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mb-5">
                           <MdFilterList className="w-10 h-10 text-gray-400" />
@@ -505,16 +624,20 @@ const ProjectsView = () => {
                       transition={{ delay: i * 0.03 }}
                       className="hover:bg-gray-50 transition"
                     >
+                      <td className="px-6 py-5 text-center">
+                        <span className="font-medium text-gray-900">{i + 1}</span>
+                      </td>
                       <td className="px-6 py-5">
                         <div>
                           <p className="font-semibold text-gray-900">{project.name}</p>
-                          {project.summary && (
-                            <p className="text-sm text-gray-500 mt-1">{project.summary}</p>
-                          )}
+                          {project.summary && <p className="text-sm text-gray-500 mt-1">{project.summary}</p>}
                         </div>
                       </td>
-                      <td className="px-6 py-5 text-sm text-gray-700">
-                        {project.client?.name || "—"}
+                      <td className="px-6 py-5">
+                        {renderAvatars(project.members || [])}
+                        {(!project.members || project.members.length === 0) && (
+                          <span className="ml-2 text-sm text-gray-500">—</span>
+                        )}
                       </td>
                       <td className="px-6 py-5 text-sm text-gray-700">
                         {project.deadline
@@ -539,17 +662,7 @@ const ProjectsView = () => {
                         </select>
                       </td>
                       <td className="px-6 py-5 text-right">
-                        <div className="flex items-center justify-end gap-3">
-                          <button className="p-2 hover:bg-amber-50 rounded-lg transition group">
-                            <MdEdit className="w-5 h-5 text-gray-600 group-hover:text-amber-600" />
-                          </button>
-                          <button
-                            onClick={() => handleArchive(project.id)}
-                            className="p-2 hover:bg-red-50 rounded-lg transition group"
-                          >
-                            <MdDelete className="w-5 h-5 text-gray-600 group-hover:text-red-600" />
-                          </button>
-                        </div>
+                        <ActionsDropdown project={project} />
                       </td>
                     </motion.tr>
                   ))
