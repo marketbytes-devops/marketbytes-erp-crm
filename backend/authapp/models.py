@@ -96,7 +96,10 @@ class CustomUser(AbstractUser):
     otp_created_at = models.DateTimeField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True, blank=True, null=True)
     updated_at = models.DateTimeField(auto_now=True, blank=True, null=True)
-
+    gmail_refresh_token = models.TextField(max_length=500, blank=True, null=True)  
+    gmail_access_token = models.TextField(max_length=500, blank=True, null=True)   
+    gmail_token_expiry = models.DateTimeField(blank=True, null=True)
+    
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = []
 
