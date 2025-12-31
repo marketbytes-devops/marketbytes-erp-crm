@@ -318,7 +318,7 @@ const NewTaskPage = () => {
             </div>
 
             {/* Submit Buttons */}
-            <div className="flex justify-end gap-4 pt-6">
+            <div className="flex justify-end gap-4">
               <Link
                 to="/tasks"
                 className="px-6 py-3 border border-gray-300 text-gray-700 font-medium rounded-xl hover:bg-gray-50 transition"
@@ -328,7 +328,7 @@ const NewTaskPage = () => {
               <button
                 type="submit"
                 disabled={loading}
-                className="px-6 py-3 bg-teal-500 hover:bg-teal-600 text-white rounded-lg font-medium disabled:opacity-50"
+                className="px-6 py-3 bg-black text-white rounded-xl hover:bg-gray-900 transition font-medium"
               >
                 {loading ? "Creating Task..." : "Create Task"}
               </button>
