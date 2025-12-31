@@ -19,7 +19,7 @@ import {
   MdDashboard,
   MdSettings,
   MdAssignment,
-  MdReceipt, 
+  MdReceipt,
   MdAttachMoney,
   MdViewKanban,
 } from "react-icons/md";
@@ -171,7 +171,7 @@ const Sidebar = ({ toggleSidebar }) => {
           page: "Tasks",
           action: "view",
         },
-         {
+        {
           to: "/Operations/taskboard",
           label: "Task Board",
           icon: <MdViewKanban className="w-5 h-5" />,
@@ -223,10 +223,10 @@ const Sidebar = ({ toggleSidebar }) => {
           action: "view",
         },
         {
-          to: "/sales/deals",
-          label: "Deals",
-          icon: <MdAssignment className="w-6 h-6" />,
-          page: "deals",
+          to: "/sales/customer",
+          label: "Customer",
+          icon: <MdGroup className="w-6 h-6" />,
+          page: "customer",
           action: "view",
         },
       ].filter((item) => hasPermission(item.page, item.action)),

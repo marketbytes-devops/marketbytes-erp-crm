@@ -38,12 +38,7 @@ class ClientViewSet(viewsets.ModelViewSet):
 
 class LeadViewSet(viewsets.ModelViewSet):
     queryset = Lead.objects.select_related(
-        "company",
-        "client",
-        "lead_agent__user",
-        "lead_source",
-        "lead_category",
-        "lead_team",
+        "company", "client", "lead_agent", "lead_source", "lead_category", "lead_team"
     ).all()
     serializer_class = LeadSerializer
     filter_backends = [

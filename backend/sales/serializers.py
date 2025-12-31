@@ -47,9 +47,8 @@ class LeadSerializer(serializers.ModelSerializer):
     company_name = serializers.CharField(source="company.name", read_only=True)
     client_name = serializers.CharField(source="client.name", read_only=True)
     client_email = serializers.EmailField(source="client.email", read_only=True)
-    lead_agent_name = serializers.CharField(
-        source="lead_agent.user.name", read_only=True
-    )
+    lead_agent_name = serializers.CharField(source='lead_agent.name', read_only=True)
+    
 
     class Meta:
         model = Lead

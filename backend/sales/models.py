@@ -139,13 +139,8 @@ class Lead(models.Model):
     client = models.ForeignKey(
         Client, on_delete=models.SET_NULL, null=True, blank=True, related_name="leads"
     )
-    lead_agent = models.ForeignKey(
-        CustomUser,
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name="leads",
-    )
+    lead_agent = models.ForeignKey('authapp.CustomUser', on_delete=models.SET_NULL, null=True, blank=True, related_name='leads')
+
     lead_source = models.ForeignKey(
         LeadSource, on_delete=models.SET_NULL, null=True, blank=True
     )
