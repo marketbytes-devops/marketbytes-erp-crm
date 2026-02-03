@@ -4,6 +4,8 @@ import { MdFilterList, MdClose, MdKeyboardArrowDown, MdDownload, MdAdd, MdTimer,
 import { FiSearch } from 'react-icons/fi';
 import { motion, AnimatePresence } from 'framer-motion';
 import Input from '../../../components/Input';
+import { Link } from "react-router-dom";
+
 
 const TimeLogs = () => {
   const [search, setSearch] = useState("");
@@ -53,15 +55,21 @@ const TimeLogs = () => {
         {/* Top Action Buttons (like Add New Project) */}
         <div className="bg-white rounded-2xl shadow-sm p-8 mb-8 flex flex-wrap justify-between items-center gap-6">
           <div className="flex gap-6">
-            <button className="flex items-center gap-3 px-6 py-3 cursor-pointer bg-black text-white rounded-xl hover:bg-gray-900 transition font-semibold">
+            <Link to="/operations/timelogs/active-timers" >
+              <button className="flex items-center gap-3 px-6 py-3 cursor-pointer bg-black text-white rounded-xl hover:bg-gray-900 transition font-semibold">
               <MdTimer className="w-5 h-5" />Active Timers
-            </button>
+              </button>
+            </Link>
+            <Link to="/operations/timelogs/calendar-view">
             <button className="flex items-center gap-3 px-6 py-3 cursor-pointer bg-black text-white rounded-xl hover:bg-gray-900 transition font-semibold">
               < MdCalendarToday className="w-5 h-5" />Calendar View
             </button>
+            </Link>
+            <Link to='/operations/timelogs/emplyees-time'>
             <button className="flex items-center gap-3 px-6 py-3 cursor-pointer bg-black text-white rounded-xl hover:bg-gray-900 transition font-semibold">
               <MdPerson className="w-5 h-5" />Employee Time Logs
             </button>
+            </Link>
              <button className="flex items-center gap-2 px-6 py-3 cursor-pointer bg-black text-white rounded-xl hover:bg-gray-900 transition font-semibold">
               <MdAdd className="w-5 h-5" />Create Invoice
             </button>

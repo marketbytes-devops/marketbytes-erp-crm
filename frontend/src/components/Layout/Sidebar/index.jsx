@@ -176,6 +176,13 @@ const Sidebar = ({ toggleSidebar }) => {
           page: "Task Board",
           action: "view",
         },
+        {
+          to: "/operations/timelogs",
+          label: "Timelogs",
+          icon: <MdAssignment className="w-5 h-5" />,
+          page: "TimeLogsView",
+          action: "view",
+        },
       ].filter((item) => hasPermission(item.page, item.action)),
     },
 
