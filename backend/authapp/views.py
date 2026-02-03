@@ -12,35 +12,36 @@ import string
 from django.core.mail import send_mail
 from django.conf import settings
 from django.db.models import Count
-from .models import CustomUser, Role, Permission, Department
+from .models import CustomUser, Role, Permission, Department, UserPermission, PermissionOverride, has_user_permission, get_user_effective_permissions
 from .serializers import (
     LoginSerializer, RequestOTPSerializer, ResetPasswordSerializer,
     ProfileSerializer, ChangePasswordSerializer, RoleSerializer,
     RoleCreateSerializer, PermissionSerializer, UserUpdateSerializer,
-    UserCreateSerializer, CustomTokenObtainPairSerializer, DepartmentSerializer
+    UserCreateSerializer, CustomTokenObtainPairSerializer, DepartmentSerializer,
+    UserPermissionSerializer, PermissionOverrideSerializer
 )
 
 class HasPermission(BasePermission):
+    """Updated permission checker using new permission system"""
     def has_permission(self, request, view):
         if not request.user.is_authenticated:
             return False
         if request.user.role and request.user.role.name == "Superadmin":
             return True
         page = getattr(view, 'page_name', view.__class__.__name__.lower().replace('view', '').replace('set', ''))
-        action = ('can_view' if request.method == 'GET' else
-                  'can_add' if request.method == 'POST' else
-                  'can_edit' if request.method in ['PUT', 'PATCH'] else
-                  'can_delete' if request.method == 'DELETE' else None)
+        action = ('view' if request.method == 'GET' else
+                  'add' if request.method == 'POST' else
+                  'edit' if request.method in ['PUT', 'PATCH'] else
+                  'delete' if request.method == 'DELETE' else None)
         if not action:
             return False
-        return Permission.objects.filter(role=request.user.role, page=page, **{action: True}).exists()
+        return has_user_permission(request.user, page, action)
 
 def has_permission(user, page, action):
+    """Updated to use new effective permissions"""
     if user.role and user.role.name == "Superadmin":
         return True
-    if not user.role:
-        return False
-    return Permission.objects.filter(role=user.role, page=page, **{f"can_{action}": True}).exists()
+    return has_user_permission(user, page, action)
 
 class CustomTokenObtainPairView(TokenObtainPairView):
     serializer_class = CustomTokenObtainPairSerializer

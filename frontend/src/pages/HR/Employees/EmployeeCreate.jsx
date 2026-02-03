@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Link, useNavigate } from "react-router";
 import LayoutComponents from "../../../components/LayoutComponents";
 import { MdArrowBack, MdAutoAwesome } from "react-icons/md";
@@ -6,6 +6,7 @@ import toast from "react-hot-toast";
 import apiClient from "../../../helpers/apiClient";
 import Loading from "../../../components/Loading";
 import Input from "../../../components/Input";
+import PermissionMatrix from "../../../components/PermissionMatrix";
 
 const generateStrongPassword = () => {
   const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()_+-=[]{}|;:,.<>?";
@@ -16,6 +17,28 @@ const generateStrongPassword = () => {
     password += charset[array[i] % charset.length];
   }
   return password;
+};
+
+const pageNameMap = {
+  admin: { apiName: "admin", displayName: "Dashboard", route: "/Dashboard" },
+  enquiries: { apiName: "enquiries", displayName: "Enquiries", route: "/enquiries" },
+  new_enquiries: { apiName: "new_enquiries", displayName: "New Assigned Enquiries", route: "/new_enquiries" },
+  follow_ups: { apiName: "follow_ups", displayName: "Follow Ups", route: "/follow_ups" },
+  processing_enquiries: { apiName: "processing_enquiries", displayName: "Processing Enquiries", route: "/processing_enquiries" },
+  survey: { apiName: "survey", displayName: "Survey", route: "/survey" },
+  quotation: { apiName: "quotation", displayName: "Quotation", route: "/quotation" },
+  booking: { apiName: "booking", displayName: "Booking", route: "/booking" },
+  operations: { apiName: "operations", displayName: "Operations", route: "/operations" },
+  accounts: { apiName: "accounts", displayName: "Accounts", route: "/accounts" },
+  hr: { apiName: "hr", displayName: "HR", route: "/hr" },
+  employees: { apiName: "employees", displayName: "Employees", route: "/hr/employees" },
+  departments: { apiName: "departments", displayName: "Departments", route: "/hr/departments" },
+  reports: { apiName: "reports", displayName: "Reports", route: "/reports" },
+  users: { apiName: "users", displayName: "Users", route: "/roles/users" },
+  roles: { apiName: "roles", displayName: "Roles", route: "/roles/roles" },
+  permissions: { apiName: "permissions", displayName: "Permissions", route: "/roles/permissions" },
+  settings: { apiName: "settings", displayName: "Settings", route: "/settings" },
+  profile: { apiName: "profile", displayName: "Profile", route: "/profile" }
 };
 
 const EmployeeCreate = () => {
@@ -30,6 +53,17 @@ const EmployeeCreate = () => {
   const [departments, setDepartments] = useState([]);
   const [designations, setDesignations] = useState([]);
   const [employees, setEmployees] = useState([]);
+
+  // Default permissions state
+  const initialPermissions = useMemo(() => {
+    const perms = {};
+    Object.keys(pageNameMap).forEach(key => {
+      perms[key] = { view: false, add: false, edit: false, delete: false };
+    });
+    return perms;
+  }, []);
+
+  const [directPermissions, setDirectPermissions] = useState(initialPermissions);
 
   const [formData, setFormData] = useState({
     name: "",
@@ -112,6 +146,16 @@ const EmployeeCreate = () => {
     }
   }, [formData.designation_id, designations]);
 
+  const handlePermissionChange = (pageKey, action, value) => {
+    setDirectPermissions(prev => ({
+      ...prev,
+      [pageKey]: {
+        ...prev[pageKey],
+        [action]: value
+      }
+    }));
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -154,7 +198,36 @@ const EmployeeCreate = () => {
       formDataToSend.append('send_password_email', 'true');
     }
 
+    // Process and add direct permissions
+    const directPermsArray = Object.keys(directPermissions)
+      .map(key => {
+        const p = directPermissions[key];
+        if (p.view || p.add || p.edit || p.delete) {
+          return {
+            page: pageNameMap[key].apiName,
+            can_view: p.view,
+            can_add: p.add,
+            can_edit: p.edit,
+            can_delete: p.delete
+          };
+        }
+        return null;
+      })
+      .filter(Boolean);
+
+    // Append as JSON string if sending as FormData, but the backend expects individual fields or JSON.
+    // If using FormData, we might need a workaround for arrays of objects.
+    // Let's use a standard JSON post instead of FormData if no image is present,
+    // or handle how DRF expects nested lists in FormData.
+    // Actually, common way is append multiple 'user_permissions' fields or a single JSON string.
+    if (directPermsArray.length > 0) {
+      formDataToSend.append('user_permissions', JSON.stringify(directPermsArray));
+    }
+
     try {
+      // NOTE: Using multipart/form-data because of image.
+      // We might need to handle JSON stringification on backend or adjust how we send list of dicts.
+      // Backend expects 'user_permissions' as ListField.
       await apiClient.post("/auth/users/", formDataToSend);
       toast.success("Employee created successfully!");
       navigate("/hr/employees");
@@ -252,10 +325,9 @@ const EmployeeCreate = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               <div>
                 <Input
-                  label="Designation"
-                  required
+                  label="Designation / Role (Optional)"
                   type="select"
-                  options={[{ value: "", label: "Select Designation" }, ...designationOptions]}
+                  options={[{ value: "", label: "None (Direct Permissions Only)" }, ...designationOptions]}
                   value={formData.designation_id}
                   onChange={v => setFormData({ ...formData, designation_id: v })}
                 />
@@ -275,6 +347,23 @@ const EmployeeCreate = () => {
               <Input label="Skills (comma separated)" placeholder="React, Node.js, Leadership" value={formData.skills} onChange={e => setFormData({ ...formData, skills: e.target.value })} />
             </div>
           </div>
+
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
+            <h3 className="text-lg font-semibold text-gray-900 mb-6 flex items-center gap-2">
+              <Shield className="w-6 h-6" />
+              Direct User Permissions
+            </h3>
+            <p className="text-sm text-gray-600 mb-6">
+              Assigned directly to this user. Combined with role permissions if a role is selected.
+            </p>
+            <PermissionMatrix
+              permissions={directPermissions}
+              onChange={handlePermissionChange}
+              pageNameMap={pageNameMap}
+              type="direct"
+            />
+          </div>
+
           <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
             <h3 className="text-lg font-semibold text-gray-900 mb-6">Account Settings</h3>
             <div className="space-y-6">
@@ -336,7 +425,7 @@ const EmployeeCreate = () => {
                       <button
                         type="button"
                         onClick={handleGeneratePassword}
-                        className="px-6 py-3 bg-linear-to-r from-purple-600 to-pink-600 text-white rounded-xl hover:from-purple-700 hover:to-pink-700 transition text-sm font-medium flex items-center shadow-md"
+                        className="px-6 py-3 bg-linear-to-r from-purple-600 to-pink-600 text-white rounded-xl hover:from-purple-700 hover:to-pink-700 transition text-sm font-medium flex items-center"
                       >
                         <MdAutoAwesome className="w-5 h-5" />
                         Generate
