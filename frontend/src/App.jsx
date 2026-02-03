@@ -48,6 +48,9 @@ import Communication from "./pages/Sales/Communication";
 import Pipeline from "./pages/Sales/SalesPipeline";
 import TimeLogs from "./pages/Operations/TimeLogs/TimeLogsView";
 import Customers from "./pages/Sales/Customer";
+import EmployeeTimeLogs from "./pages/Operations/TimeLogs/EmployeeTimeLogs";
+import CalendarView from "./pages/Operations/TimeLogs/CalendarView";
+import ActiveTimers from "./pages/Operations/TimeLogs/ActiveTimers";
 
 const ProtectedRoute = ({
   children,
@@ -594,6 +597,54 @@ function App() {
               requiredAction="view"
             >
               <TaskBoard />
+            </ProtectedRoute>
+          ),
+        },
+        {
+          path: "/operations/timelogs",
+          element: (
+            <ProtectedRoute
+              isAuthenticated={isAuthenticated}
+              requiredPage="permissions"
+              requiredAction="view"
+            >
+              <TimeLogs />
+            </ProtectedRoute>
+          ),
+        },
+        {
+          path: "/operations/timelogs/active-timers",
+          element: (
+            <ProtectedRoute
+              isAuthenticated={isAuthenticated}
+              requiredPage="permissions"
+              requiredAction="view"
+            >
+              <ActiveTimers />
+            </ProtectedRoute>
+          ),
+        },
+        {
+          path: "/operations/timelogs/calendar-view",
+          element: (
+            <ProtectedRoute
+              isAuthenticated={isAuthenticated}
+              requiredPage="permissions"
+              requiredAction="view"
+            >
+              <CalendarView />
+            </ProtectedRoute>
+          ),
+        },
+        {
+          path: "/operations/timelogs/emplyees-time",
+          element: (
+            <ProtectedRoute
+              isAuthenticated={isAuthenticated}
+              requiredPage="permissions"
+              requiredAction="view"
+            >
+              <EmployeeTimeLogs />
             </ProtectedRoute>
           ),
         },
