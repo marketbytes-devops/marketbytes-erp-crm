@@ -4,7 +4,8 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from django.utils import timezone
 from datetime import timedelta, datetime, time
-from .models import Attendance, Holiday, LeaveType, Leave, Overtime, Candidate, Performance, Project, WorkSession, BreakSession
+from django.db.models import Q
+from .models import Attendance, Holiday, LeaveType, Leave, Overtime, Candidate, Performance, Project, Task, WorkSession, BreakSession
 from .serializers import *
 
 class AttendanceViewSet(viewsets.ModelViewSet):
@@ -382,13 +383,48 @@ class TimerViewSet(viewsets.ViewSet):
     
     @action(detail=False, methods=['get'])
     def projects_tasks(self, request):
-        projects = Project.objects.filter(is_active=True)
-        data = [
-            {
-                "id": p.id,
-                "name": p.name,
-                "tasks": [{"id": t.id, "name": t.name} for t in p.tasks.filter(is_active=True)]
-            }
-            for p in projects
-        ]
+        user = request.user
+        role = getattr(user, 'role', None)
+        # staff members and superadmins see everything
+        is_admin = user.is_superuser or user.is_staff or (role and role.name == "Superadmin")
+        
+        # 1. Get Projects
+        if is_admin:
+            # For admins, show ALL projects initially to verify they exist
+            projects = Project.objects.all()
+        else:
+            # For others, keep filters but allow inactive if they are members
+            query = Q(members=user) | Q(tasks__assignees=user)
+            if user.department_id:
+                query |= Q(department_id=user.department_id)
+            projects = Project.objects.filter(query).distinct()
+
+        data = []
+        for p in projects:
+            # 2. Get Tasks for this project
+            # Show all tasks except done for admins, and assigned for others
+            tasks_qs = p.tasks.exclude(status='done')
+            
+            if not is_admin:
+                tasks_qs = tasks_qs.filter(assignees=user)
+
+            task_list = []
+            for t in tasks_qs.distinct():
+                due_info = f" (Due: {t.due_date.strftime('%d-%m-%Y')})" if t.due_date else ""
+                task_list.append({
+                    "id": t.id,
+                    "name": f"{t.name}{due_info}"
+                })
+
+            # Check if user is a member
+            is_member = is_admin or p.members.filter(id=user.id).exists()
+            
+            # Include project if it has tasks for the user OR user is a member
+            if is_admin or is_member or len(task_list) > 0:
+                data.append({
+                    "id": p.id,
+                    "name": p.name,
+                    "tasks": task_list
+                })
+        
         return Response(data)

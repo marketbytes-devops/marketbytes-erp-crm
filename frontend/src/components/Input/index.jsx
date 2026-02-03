@@ -82,7 +82,7 @@ const Select = forwardRef(
         animate={{ opacity: 1, y: 0, scale: 1 }}
         exit={{ opacity: 0, y: -8, scale: 0.95 }}
         transition={{ duration: 0.15 }}
-        className="absolute bg-white border border-gray-300 rounded-lg shadow-2xl max-h-60 overflow-y-auto py-1 z-10"
+        className="absolute bg-white border border-gray-300 rounded-xl shadow-2xl max-h-64 overflow-y-auto py-1 z-[1001]"
         style={{
           top: triggerRect ? triggerRect.bottom + window.pageYOffset + 8 : 0,
           left: triggerRect ? triggerRect.left + window.pageXOffset : 0,

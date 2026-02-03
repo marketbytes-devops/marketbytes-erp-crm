@@ -34,9 +34,11 @@ import ProjectTemplate from "./pages/Operations/Projects/ProjectTemplate";
 import ProjectTemplateAdd from "./pages/Operations/Projects/ProjectTemplateAdd";
 import ProjectArchive from "./pages/Operations/Projects/ProjectArchive";
 import ProjectEdit from "./pages/Operations/Projects/ProjectEdit";
+import ProjectDetails from "./pages/Operations/Projects/ProjectDetails";
 import TaskView from "./pages/Operations/Tasks/TaskView";
 import TaskLabel from "./pages/Operations/Tasks/TaskLabel";
 import CreateTaskLabel from "./pages/Operations/Tasks/CreateTaskLabel";
+import TaskEdit from "./pages/Operations/Tasks/TaskEdit";
 import TaskBoard from "./pages/Operations/Tasks/TaskBoard";
 import NewTask from "./pages/Operations/Tasks/NewTask";
 import Leads from "./pages/Sales/Leads";
@@ -446,6 +448,18 @@ function App() {
             </ProtectedRoute>
           ),
         },
+        {
+          path: "/operations/projects/:id",
+          element: (
+            <ProtectedRoute
+              isAuthenticated={isAuthenticated}
+              requiredPage="permissions"
+              requiredAction="view"
+            >
+              <ProjectDetails />
+            </ProtectedRoute>
+          ),
+        },
 
         {
           path: "/operations/projects/projectcreate",
@@ -556,6 +570,18 @@ function App() {
               requiredAction="view"
             >
               <NewTask />
+            </ProtectedRoute>
+          ),
+        },
+        {
+          path: "/operations/tasks/edit/:id",
+          element: (
+            <ProtectedRoute
+              isAuthenticated={isAuthenticated}
+              requiredPage="permissions"
+              requiredAction="view"
+            >
+              <TaskEdit />
             </ProtectedRoute>
           ),
         },

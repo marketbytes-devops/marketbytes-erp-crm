@@ -54,11 +54,16 @@ const WorkTimerButton = ({ onOpenWorkTimer, status, timerSeconds, checkedIn }) =
       ) : isWorking ? (
         <>
           <MdAccessAlarm className="w-9 h-9" />
-          <div className="text-left">
-            <div className="font-mono text-sm font-medium tracking-wider">
+          <div className="text-left max-w-[150px]">
+            <div className="font-mono text-lg font-bold tracking-wider leading-none mb-1">
               {formatTime(displayWorkTime)}
             </div>
-            <div className="text-xs opacity-90">Click to Stop Work</div>
+            <div className="truncate text-[10px] font-bold uppercase opacity-80 tracking-tight">
+              {status.current_work_session?.project_name || "General"}
+            </div>
+            <div className="truncate text-[10px] font-medium opacity-90 italic">
+              {status.current_work_session?.task_name || "No Task Selected"}
+            </div>
           </div>
         </>
       ) : (

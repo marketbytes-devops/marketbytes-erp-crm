@@ -294,7 +294,7 @@ const EditProjectPage = () => {
                                 value={formData.projectName}
                                 onChange={(e) => setFormData({ ...formData, projectName: e.target.value })}
                             />
-                            <div>
+                            <div className="relative top-0 sm:-top-1.5">
                                 <div className="flex items-center gap-2 mb-2">
                                     <label className="text-sm font-semibold text-black">Project Category</label>
                                     <button type="button" onClick={() => setShowCategoryModal(true)} className="p-1 rounded-full border border-green-600 text-green-600 hover:bg-green-600 hover:text-white transition">
@@ -308,7 +308,7 @@ const EditProjectPage = () => {
                                     onChange={v => setFormData({ ...formData, projectCategory: v })}
                                 />
                             </div>
-                            <div>
+                            <div className="relative top-0 sm:-top-1.5">
                                 <div className="flex items-center gap-2 mb-2">
                                     <label className="text-sm font-semibold text-black">Department <span className="text-red-500">*</span></label>
                                     <button type="button" onClick={() => setShowDepartmentModal(true)} className="p-1 rounded-full border border-green-600 text-green-600 hover:bg-green-600 hover:text-white transition">
@@ -356,7 +356,7 @@ const EditProjectPage = () => {
                             ))}
                         </div>
 
-                        <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="mt-6 grid grid-cols-1 gap-6">
                             {formData.amc && <Input label="AMC Date" type="date" value={formData.amcDate} onChange={e => setFormData({ ...formData, amcDate: e.target.value })} />}
                             {formData.allowManualTimeLogs && <Input label="Allocated Hours" type="number" value={formData.allocatedHours} onChange={e => setFormData({ ...formData, allocatedHours: e.target.value })} />}
                         </div>
@@ -418,7 +418,7 @@ const EditProjectPage = () => {
                                 value={formData.currency}
                                 onChange={v => setFormData({ ...formData, currency: v })}
                             />
-                            <div>
+                            <div className="relative top-0 sm:-top-1.5">
                                 <div className="flex items-center gap-2 mb-2">
                                     <label className="text-sm font-semibold text-black">Status</label>
                                     <button type="button" onClick={() => setShowStatusModal(true)} className="p-1 rounded-full border border-green-600 text-green-600 hover:bg-green-600 hover:text-white transition">
@@ -432,7 +432,7 @@ const EditProjectPage = () => {
                                     onChange={v => setFormData({ ...formData, status: v })}
                                 />
                             </div>
-                            <div>
+                            <div className="relative top-0 sm:-top-1.5">
                                 <div className="flex items-center gap-2 mb-2">
                                     <label className="text-sm font-semibold text-black">Stage</label>
                                     <button type="button" onClick={() => setShowStageModal(true)} className="p-1 rounded-full border border-green-600 text-green-600 hover:bg-green-600 hover:text-white transition">

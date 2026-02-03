@@ -1,44 +1,99 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import {
+  MdFilterList,
+  MdClose,
+  MdKeyboardArrowDown,
+  MdDownload,
+  MdAdd,
+  MdEdit,
+  MdDelete,
+  MdVisibility,
+  MdPushPin,
+  MdWarning,
+  MdCalendarToday,
+  MdGroup,
+  MdOutlineAccessTime,
+} from "react-icons/md";
+import { FiSearch, FiCheck } from "react-icons/fi";
 import LayoutComponents from "../../../components/LayoutComponents";
-import { useNavigate, useLocation } from "react-router";
+import { useNavigate, useLocation, Link } from "react-router-dom";
 import apiClient from "../../../helpers/apiClient";
 import Loading from "../../../components/Loading";
 import toast from "react-hot-toast";
 import Input from "../../../components/Input";
 
 const TasksPage = () => {
-  const [search, setSearch] = useState("");
-  const [isPinnedModalOpen, setIsPinnedModalOpen] = useState(false);
-  const [tasks, setTasks] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [selectedTask, setSelectedTask] = useState(null); 
-  const [isTaskDetailOpen, setIsTaskDetailOpen] = useState(false);
-
-  // Advanced Filters State
-  const [isFiltersOpen, setIsFiltersOpen] = useState(false);
-  const [filterStatus, setFilterStatus] = useState("All Statuses");
-  const [filterProject, setFilterProject] = useState("All Projects");
-  const [filterAssignee, setFilterAssignee] = useState("All Members");
-  const [filterDueDateFrom, setFilterDueDateFrom] = useState("");
-  const [filterDueDateTo, setFilterDueDateTo] = useState("");
-
   const navigate = useNavigate();
   const location = useLocation();
 
-  const handleNewtaskClick = () => {
-    navigate("/operations/tasks/newtask");
+  const [tasks, setTasks] = useState([]);
+  const [filteredTasks, setFilteredTasks] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState("");
+  const [filtersOpen, setFiltersOpen] = useState(false);
+  const [pinnedTasks, setPinnedTasks] = useState([]);
+  const [isPinnedModalOpen, setIsPinnedModalOpen] = useState(false);
+  const [selectedTask, setSelectedTask] = useState(null);
+  const [isTaskDetailOpen, setIsTaskDetailOpen] = useState(false);
+
+  const [filters, setFilters] = useState({
+    status: "",
+    project: "",
+    assignee: "",
+    priority: "",
+  });
+
+  const [projectsList, setProjectsList] = useState([]);
+  const [membersList, setMembersList] = useState([]);
+
+  const activeFilterCount = Object.values(filters).filter((v) => v !== "").length;
+
+  const handleFilterChange = (key, value) => {
+    setFilters((prev) => ({ ...prev, [key]: value }));
   };
+
+  const resetFilters = () => {
+    setFilters({
+      status: "",
+      project: "",
+      assignee: "",
+      priority: "",
+    });
+    setSearch("");
+  };
+
+  const statusOptions = [
+    { value: "todo", label: "To Do" },
+    { value: "in_progress", label: "In Progress" },
+    { value: "review", label: "Review" },
+    { value: "done", label: "Done" },
+  ];
+
+  const priorityOptions = [
+    { value: "low", label: "Low" },
+    { value: "medium", label: "Medium" },
+    { value: "high", label: "High" },
+    { value: "critical", label: "Critical" },
+  ];
 
   const fetchTasks = async () => {
     try {
       setLoading(true);
       const response = await apiClient.get("/operation/tasks/");
-      const tasksData = response.data?.results || response.data || [];
-      setTasks(tasksData);
+      const data = Array.isArray(response.data) ? response.data : response.data.results || [];
+      setTasks(data);
+      setFilteredTasks(data);
+
+      // Extract unique projects and members for filters
+      const projs = [...new Set(data.map(t => t.project_name).filter(Boolean))].sort();
+      const members = [...new Set(data.flatMap(t => (t.assignees || []).map(a => a.name || a.username)).filter(Boolean))].sort();
+
+      setProjectsList(projs);
+      setMembersList(members);
     } catch (err) {
       console.error("Failed to fetch tasks:", err);
       toast.error("Failed to load tasks");
-      setTasks([]);
     } finally {
       setLoading(false);
     }
@@ -48,172 +103,187 @@ const TasksPage = () => {
     fetchTasks();
   }, [location.state?.refetch]);
 
-  const handleStatusChange = async (taskId, newStatusValue) => {
+  useEffect(() => {
+    let result = tasks;
+
+    if (search.trim()) {
+      const term = search.toLowerCase().trim();
+      result = result.filter(
+        (t) =>
+          t.name?.toLowerCase().includes(term) ||
+          t.project_name?.toLowerCase().includes(term) ||
+          t.description?.toLowerCase().includes(term)
+      );
+    }
+
+    if (filters.status) {
+      result = result.filter((t) => t.status === filters.status);
+    }
+
+    if (filters.project) {
+      result = result.filter((t) => t.project_name === filters.project);
+    }
+
+    if (filters.assignee) {
+      result = result.filter((t) =>
+        t.assignees?.some((a) => (a.name || a.username) === filters.assignee)
+      );
+    }
+
+    if (filters.priority) {
+      result = result.filter((t) => t.priority === filters.priority);
+    }
+
+    setFilteredTasks(result);
+  }, [search, filters, tasks]);
+
+  const handleStatusChange = async (taskId, newStatus) => {
     try {
-      const statusMap = {
-        "To Do": "todo",
-        "In progress": "in_progress",
-        "Review": "review",
-        "Done": "done",
-      };
-
-      const backendStatus = statusMap[newStatusValue];
-
-      await apiClient.patch(`/operation/tasks/${taskId}/`, {
-        status: backendStatus,
-      });
-
-      toast.success("Status updated successfully");
-      fetchTasks();
+      await apiClient.patch(`/operation/tasks/${taskId}/`, { status: newStatus });
+      setTasks(prev => prev.map(t => t.id === taskId ? { ...t, status: newStatus } : t));
+      toast.success("Status updated");
     } catch (err) {
-      console.error("Failed to update status:", err);
       toast.error("Failed to update status");
     }
   };
 
-  const handleMarkAsComplete = async () => {
-    if (!selectedTask) return;
-
-    try {
-      await apiClient.patch(`/operation/tasks/${selectedTask.id}/`, {
-        status: "done",
-      });
-
-      toast.success("Task marked as complete!");
-      fetchTasks();
-      setIsTaskDetailOpen(false); 
-      setSelectedTask(null);
-    } catch (err) {
-      console.error("Failed to mark task as complete:", err);
-      toast.error("Failed to complete task");
-    }
-  };
-
-  const statusOptions = [
-    { value: "To Do", label: "To Do" },
-    { value: "In progress", label: "In progress" },
-    { value: "Done", label: "Done" },
-    { value: "Review", label: "Review" },
-  ];
-
-  const getCurrentStatusLabel = (status) => {
-    const map = {
-      todo: "To Do",
-      in_progress: "In progress",
-      done: "Done",
-      review: "Review",
-    };
-    return map[status] || "To Do";
-  };
-  const [pinnedTasks, setPinnedTasks] = useState([]);
-
-const togglePinTask = (task) => {
-  setPinnedTasks((prev) => {
-    const isPinned = prev.some((t) => t.id === task.id);
+  const togglePinTask = (task) => {
+    const isPinned = pinnedTasks.some((t) => t.id === task.id);
     if (isPinned) {
+      setPinnedTasks((prev) => prev.filter((t) => t.id !== task.id));
       toast.success("Task unpinned");
-      return prev.filter((t) => t.id !== task.id);
     } else {
-      toast.success("Task pinned!");
-      return [...prev, task];
+      setPinnedTasks((prev) => [...prev, task]);
+      toast.success("Task pinned");
     }
-  });
-};
-
-const isTaskPinned = (task) => pinnedTasks.some((t) => t.id === task.id);
+  };
 
   const renderAvatars = (assignees = []) => {
-    const assigneeCount = assignees.length;
-
-    if (assigneeCount === 0) {
-      return <div className="w-8 h-8 rounded-full bg-gray-300 border-2 border-white" />;
-    }
-
+    const memberCount = assignees.length;
+    if (memberCount === 0) return <span className="text-sm text-gray-500">—</span>;
     return (
       <div className="flex -space-x-2">
-        {assignees.slice(0, 3).map((assignee, i) => {
-          const name = assignee.name || assignee.username || "Unknown";
+        {assignees.slice(0, 3).map((a, i) => {
+          const name = a.name || a.username || "Unknown";
           const initial = name[0]?.toUpperCase() || "?";
-
           return (
-            <div key={assignee.id || i} className="relative group">
-              <div className="w-8 h-8 rounded-full bg-gray-400 border-2 border-white flex items-center justify-center text-white text-xs font-bold cursor-pointer">
+            <div key={i} className="relative group">
+              <div className="w-10 h-10 rounded-full bg-linear-to-br from-blue-500 to-purple-600 border-2 border-white flex items-center justify-center text-white text-sm font-bold shadow-md">
                 {initial}
               </div>
-              <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-black text-white text-sm rounded-lg whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
+              <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-black text-white text-xs rounded-lg whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-20">
                 {name}
                 <div className="absolute top-full left-1/2 -translate-x-1/2 border-8 border-transparent border-t-black"></div>
               </div>
             </div>
           );
         })}
-        {assigneeCount > 3 && (
-          <div className="w-8 h-8 rounded-full bg-gray-500 border-2 border-white flex items-center justify-center text-white text-xs font-bold">
-            +{assigneeCount - 3}
+        {memberCount > 3 && (
+          <div className="w-10 h-10 rounded-full bg-gray-600 border-2 border-white flex items-center justify-center text-white text-sm font-bold shadow-md">
+            +{memberCount - 3}
           </div>
         )}
       </div>
     );
   };
 
-  // Filtering logic
-  const filteredTasks = tasks.filter((task) => {
-    const matchesSearch = 
-      task.name?.toLowerCase().includes(search.toLowerCase()) ||
-      task.project_name?.toLowerCase().includes(search.toLowerCase());
+  const stats = useMemo(() => ({
+    total: tasks.length,
+    todo: tasks.filter(t => t.status === "todo").length,
+    inProgress: tasks.filter(t => t.status === "in_progress").length,
+    done: tasks.filter(t => t.status === "done").length,
+  }), [tasks]);
 
-    const matchesStatus = filterStatus === "All Statuses" || getCurrentStatusLabel(task.status) === filterStatus;
-    const matchesProject = filterProject === "All Projects" || task.project_name === filterProject;
-    const matchesAssignee = filterAssignee === "All Members" || 
-      (task.assignees || []).some(a => (a.name || a.username) === filterAssignee);
+  const taskDetailContent = selectedTask && (
+    <div className="space-y-8">
+      <div className="flex justify-between items-start">
+        <div>
+          <h2 className="text-2xl font-bold text-gray-900 mb-1">{selectedTask.name}</h2>
+          <p className="text-sm font-medium text-gray-500">{selectedTask.project_name || "No Project"}</p>
+        </div>
+        <div className="flex gap-2">
+          <button
+            onClick={() => togglePinTask(selectedTask)}
+            className={`p-2 rounded-xl transition ${pinnedTasks.some(p => p.id === selectedTask.id) ? 'bg-yellow-50 text-yellow-600' : 'bg-gray-50 text-gray-400 hover:text-black'}`}
+          >
+            <MdPushPin className="w-6 h-6" />
+          </button>
+        </div>
+      </div>
 
-    const taskDueDate = task.due_date ? new Date(task.due_date) : null;
-    const fromDate = filterDueDateFrom ? new Date(filterDueDateFrom) : null;
-    const toDate = filterDueDateTo ? new Date(filterDueDateTo) : null;
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-6 p-6 bg-gray-50 rounded-2xl border border-gray-100">
+        <div className="space-y-1">
+          <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Status</p>
+          <span className="px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border bg-white text-gray-700">
+            {statusOptions.find(o => o.value === selectedTask.status)?.label || selectedTask.status}
+          </span>
+        </div>
+        <div className="space-y-1">
+          <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest flex items-center gap-1">
+            <MdCalendarToday className="w-3 h-3" /> Due Date
+          </p>
+          <p className="text-sm font-bold text-gray-900">
+            {selectedTask.due_date ? new Date(selectedTask.due_date).toLocaleDateString("en-GB") : "—"}
+          </p>
+        </div>
+        <div className="space-y-1">
+          <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest flex items-center gap-1">
+            <MdOutlineAccessTime className="w-3 h-3" /> Allocated
+          </p>
+          <p className="text-sm font-bold text-gray-900">
+            {selectedTask.allocated_hours || "0"} Hr
+          </p>
+        </div>
+        <div className="space-y-1">
+          <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Priority</p>
+          <span className={`text-xs font-bold uppercase ${selectedTask.priority === 'high' || selectedTask.priority === 'critical' ? 'text-red-600' : 'text-gray-900'}`}>
+            {selectedTask.priority || "Normal"}
+          </span>
+        </div>
+      </div>
 
-    const matchesDueDate = (!fromDate || !taskDueDate || taskDueDate >= fromDate) &&
-                           (!toDate || !taskDueDate || taskDueDate <= toDate);
+      <div className="space-y-3">
+        <h3 className="text-sm font-bold text-gray-900 flex items-center gap-2">
+          <MdGroup className="w-5 h-5 text-gray-400" /> Assigned Team
+        </h3>
+        <div className="flex flex-wrap gap-3">
+          {selectedTask.assignees?.map((a, i) => (
+            <div key={i} className="flex items-center gap-2 px-3 py-2 bg-white border border-gray-100 rounded-xl shadow-xs">
+              <div className="w-6 h-6 rounded-full bg-linear-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white text-[10px] font-bold">
+                {(a.name || a.username || "?")[0].toUpperCase()}
+              </div>
+              <span className="text-xs font-semibold text-gray-700">{a.name || a.username}</span>
+            </div>
+          ))}
+          {(!selectedTask.assignees || selectedTask.assignees.length === 0) && <p className="text-xs text-gray-500 italic">No assignees</p>}
+        </div>
+      </div>
 
-    return matchesSearch && matchesStatus && matchesProject && matchesAssignee && matchesDueDate;
-  });
+      <div className="space-y-3">
+        <h3 className="text-sm font-bold text-gray-900 flex items-center gap-2">
+          <FiSearch className="w-5 h-5 text-gray-400" /> Task Description
+        </h3>
+        <div className="bg-gray-50 rounded-2xl p-6 text-sm text-gray-700 leading-relaxed whitespace-pre-wrap">
+          {selectedTask.description || "No description provided."}
+        </div>
+      </div>
 
-  const openTaskDetail = (task) => {
-    setSelectedTask(task);
-    setIsTaskDetailOpen(true);
-  };
-
-  const resetFilters = () => {
-    setFilterStatus("All Statuses");
-    setFilterProject("All Projects");
-    setFilterAssignee("All Members");
-    setFilterDueDateFrom("");
-    setFilterDueDateTo("");
-  };
-
- 
-  const statusFilterOptions = [
-    { value: "All Statuses", label: "All Statuses" },
-    { value: "To Do", label: "To Do" },
-    { value: "In progress", label: "In progress" },
-    { value: "Review", label: "Review" },
-    { value: "Done", label: "Done" },
-  ];
-
-  const projectFilterOptions = [
-    { value: "All Projects", label: "All Projects" },
-    ...[...new Set(tasks.map(t => t.project_name).filter(Boolean))].map(proj => ({
-      value: proj,
-      label: proj,
-    })),
-  ];
-
-  const assigneeFilterOptions = [
-    { value: "All Members", label: "All Members" },
-    ...[...new Set(tasks.flatMap(t => (t.assignees || []).map(a => a.name || a.username)).filter(Boolean))].map(member => ({
-      value: member,
-      label: member,
-    })),
-  ];
+      <div className="flex justify-end gap-3 pt-4 border-t border-gray-100">
+        <button
+          onClick={() => setIsTaskDetailOpen(false)}
+          className="px-6 py-2.5 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 transition font-bold text-sm"
+        >
+          Close
+        </button>
+        <Link
+          to={`/operations/tasks/edit/${selectedTask.id}`}
+          className="px-6 py-2.5 bg-black text-white rounded-xl hover:bg-gray-900 transition font-bold text-sm flex items-center gap-2"
+        >
+          <MdEdit className="w-4 h-4" /> Edit Task
+        </Link>
+      </div>
+    </div>
+  );
 
   if (loading) {
     return (
@@ -223,388 +293,370 @@ const isTaskPinned = (task) => pinnedTasks.some((t) => t.id === task.id);
     );
   }
 
-  // === MODAL CONTENTS ===
-const pinnedModalContent = (
-  <div className="p-6 min-w-96">
-    <h3 className="text-lg font-semibold mb-4">Pinned Tasks ({pinnedTasks.length})</h3>
-    {pinnedTasks.length === 0 ? (
-      <div className="text-center text-gray-500 py-8">
-        No pinned tasks yet.
-      </div>
-    ) : (
-      <div className="space-y-4">
-        {pinnedTasks.map((task) => (
-          <div
-            key={task.id}
-            className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 cursor-pointer transition"
-            onClick={() => {
-              setSelectedTask(task);
-              setIsTaskDetailOpen(true);
-              setIsPinnedModalOpen(false);
-            }}
-          >
-            <div className="flex justify-between items-start">
-              <div>
-                <h4 className="font-medium text-gray-900">{task.name}</h4>
-                <p className="text-sm text-gray-600 mt-1">{task.project_name || "No project"}</p>
-              </div>
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  togglePinTask(task);
-                }}
-                className="text-yellow-600 hover:text-yellow-800"
-              >
-               <svg
-  className="w-6 h-6"
-  viewBox="0 0 24 24"
-  fill="currentColor"
->
-  <path d="M16 9V4h1c.55 0 1-.45 1-1s-.45-1-1-1H7c-.55 0-1 .45-1 1s.45 1 1 1h1v5c0 1.66-1.34 3-3 3v2h5.97v7l1 1 1-1v-7H19v-2c-1.66 0-3-1.34-3-3z" />
-</svg>
-              </button>
-            </div>
-          </div>
-        ))}
-      </div>
-    )}
-  </div>
-);
-
-const taskDetailModalContent = selectedTask && (
-  <div className="p-6 max-w-4xl mx-auto">
-    <div className="mb-6 flex justify-between items-start">
-      <div>
-        <h2 className="text-2xl font-bold text-gray-900">{selectedTask.name}</h2>
-        <p className="text-sm text-gray-500 mt-1">TASK #{selectedTask.id}</p>
-      </div>
-      {/* Pin/Unpin Button */}
-      <button
-        onClick={() => togglePinTask(selectedTask)}
-        className={`p-2 rounded-lg transition ${
-          isTaskPinned(selectedTask)
-            ? "text-blue-600 bg-blue-50"
-            : "text-gray-400 hover:text-blue-600 hover:bg-blue-50"
-        }`}
-        title={isTaskPinned(selectedTask) ? "Unpin task" : "Pin task"}
-      >
-        {isTaskPinned(selectedTask) ? (
-          /* Pinned state: normal pushpin */
-          <svg className="w-6 h-6" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M16 9V4h1c.55 0 1-.45 1-1s-.45-1-1-1H7c-.55 0-1 .45-1 1s.45 1 1 1h1v5c0 1.66-1.34 3-3 3v2h5.97v7l1 1 1-1v-7H19v-2c-1.66 0-3-1.34-3-3z" />
-          </svg>
-        ) : (
-          /* Unpinned state: pushpin with slash */
-          <svg className="w-6 h-6" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M16 9V4h1c.55 0 1-.45 1-1s-.45-1-1-1H7c-.55 0-1 .45-1 1s.45 1 1 1h1v5c0 1.66-1.34 3-3 3v2h5.97v7l1 1 1-1v-7H19v-2c-1.66 0-3-1.34-3-3z" />
-            <path
-              d="M18.36 18.36L5.64 5.64"
-              stroke="currentColor"
-              strokeWidth="2.5"
-              strokeLinecap="round"
-            />
-          </svg>
-        )}
-      </button>
-    </div>
-
-    <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-      <div>
-        <p className="text-sm font-medium text-gray-600">Project</p>
-        <p className="text-gray-900">{selectedTask.project_name || "No project"}</p>
-      </div>
-      <div>
-        <p className="text-sm font-medium text-gray-600">Status</p>
-        <p className="text-gray-900">{getCurrentStatusLabel(selectedTask.status)}</p>
-      </div>
-      <div>
-        <p className="text-sm font-medium text-gray-600">Priority</p>
-        <p className="text-gray-900">{selectedTask.priority || "Not set"}</p>
-      </div>
-      <div>
-        <p className="text-sm font-medium text-gray-600">Category</p>
-        <p className="text-gray-900">{selectedTask.category || "Not set"}</p>
-      </div>
-      <div>
-        <p className="text-sm font-medium text-gray-600">Start Date</p>
-        <p className="text-gray-900">
-          {selectedTask.start_date
-            ? new Date(selectedTask.start_date).toLocaleDateString("en-GB", {
-                day: "2-digit",
-                month: "2-digit",
-                year: "numeric",
-              }).replace(/\//g, "-")
-            : "Not set"}
-        </p>
-      </div>
-      <div>
-        <p className="text-sm font-medium text-gray-600">Due Date</p>
-        <p className="text-gray-900">
-          {selectedTask.due_date
-            ? new Date(selectedTask.due_date).toLocaleDateString("en-GB", {
-                day: "2-digit",
-                month: "2-digit",
-                year: "numeric",
-              }).replace(/\//g, "-")
-            : "No due date"}
-        </p>
-      </div>
-      <div>
-        <p className="text-sm font-medium text-gray-600">Allocated Hours</p>
-        <p className="text-gray-900">{selectedTask.allocated_hours || "Not set"}</p>
-      </div>
-    </div>
-
-    <div className="mb-8">
-      <p className="text-sm font-medium text-gray-600 mb-2">Assigned To</p>
-      <div className="flex items-center gap-3">
-        {renderAvatars(selectedTask.assignees || [])}
-      </div>
-    </div>
-
-    {selectedTask.description && (
-      <div className="mb-8">
-        <p className="text-sm font-medium text-gray-600 mb-2">Description</p>
-        <p className="text-gray-700 whitespace-pre-wrap">{selectedTask.description}</p>
-      </div>
-    )}
-
-    <div className="flex justify-end gap-4 mt-8">
-      <button
-        onClick={() => setIsTaskDetailOpen(false)}
-        className="px-6 py-3 border border-gray-300 rounded-lg hover:bg-gray-50"
-      >
-        Close
-      </button>
-      {getCurrentStatusLabel(selectedTask.status) !== "Done" && (
-        <button
-          onClick={handleMarkAsComplete}
-          className="px-6 py-3 bg-black text-white rounded-lg hover:bg-gray-800"
-        >
-          Mark as Complete
-        </button>
-      )}
-    </div>
-  </div>
-);
-  // === END OF MODAL CONTENTS ===
-
   return (
     <div className="p-6">
-      <LayoutComponents title="Tasks" variant="card">
-        <div className="bg-white rounded-xl shadow-sm overflow-hidden">
-          {/* Top Buttons Bar */}
-          <div className="px-6 py-4 flex flex-wrap items-center justify-between gap-4 border-b border-gray-200">
-            <div className="flex items-center gap-3">
-              <button
-                onClick={() => setIsPinnedModalOpen(true)}
-                className="border border-black text-black px-4 py-2 rounded-lg hover:bg-blue-50 flex items-center gap-2"
+      <LayoutComponents title="Tasks" subtitle="Manage and track project tasks" variant="table">
+        <div className="max-w-full mx-auto">
+          {/* Stats Row */}
+          <div className="bg-white rounded-2xl shadow-sm p-6 mb-6">
+            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+                <div className="text-center">
+                  <div className="text-4xl font-bold text-black mb-2">{stats.total}</div>
+                  <p className="text-sm text-gray-600">Total Tasks</p>
+                </div>
+                <div className="text-center">
+                  <div className="text-4xl font-bold text-blue-600 mb-2">{stats.todo}</div>
+                  <p className="text-sm text-gray-600">To Do</p>
+                </div>
+                <div className="text-center">
+                  <div className="text-4xl font-bold text-amber-600 mb-2">{stats.inProgress}</div>
+                  <p className="text-sm text-gray-600">In Progress</p>
+                </div>
+                <div className="text-center">
+                  <div className="text-4xl font-bold text-green-600 mb-2">{stats.done}</div>
+                  <p className="text-sm text-gray-600">Completed</p>
+                </div>
+              </div>
+              <Link
+                to="/operations/tasks/newtask"
+                className="flex items-center gap-3 px-6 py-3 bg-black text-white rounded-xl hover:bg-gray-900 transition text-sm font-semibold"
               >
-                Pinned Task
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                </svg>
-              </button>
-             
-              <button onClick={handleNewtaskClick} className="bg-black text-white px-4 py-2 rounded-lg flex items-center gap-2">
-                <span className="text-lg">+</span> New Task
-              </button>
+                <MdAdd className="w-5 h-5" /> New Task
+              </Link>
             </div>
-           
           </div>
 
-          <div className="px-6 py-4 border-b border-gray-200">
-            <div className="flex flex-col lg:flex-row gap-4 items-center justify-between mb-4">
-              <div className="relative flex-1 max-w-2xl">
-                <svg className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                </svg>
-                <input
-                  type="text"
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  placeholder="Search tasks..."
-                  className="w-full pl-12 pr-6 py-4 bg-white border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm"
-                />
-              </div>
+          {/* Search & Filters Bar */}
+          <div className="bg-white rounded-2xl shadow-sm p-6 mb-6">
+            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+              <div className="flex items-center gap-4 flex-1">
+                <div className="relative flex-1 max-w-2xl">
+                  <FiSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 w-5 h-5" />
+                  <input
+                    type="text"
+                    placeholder="Search tasks, projects, or team..."
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-black outline-none text-base transition"
+                  />
+                </div>
 
-              <div className="flex items-center gap-4">
                 <button
-                  onClick={() => setIsFiltersOpen(!isFiltersOpen)}
-                  className="flex items-center gap-2 px-6 py-4 bg-white border border-gray-300 rounded-xl hover:bg-gray-50 shadow-sm"
+                  onClick={() => setFiltersOpen(!filtersOpen)}
+                  className="flex items-center gap-3 px-5 py-4 border border-gray-300 rounded-xl hover:bg-gray-50 transition text-sm font-semibold whitespace-nowrap"
                 >
-                  <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
-                  </svg>
+                  <MdFilterList className="w-5 h-5" />
                   Filters
-                  <svg className={`w-4 h-4 transition-transform ${isFiltersOpen ? "rotate-180" : ""}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                  </svg>
+                  {activeFilterCount > 0 && (
+                    <span className="ml-2 bg-black text-white text-xs font-medium rounded-full w-6 h-6 flex items-center justify-center">
+                      {activeFilterCount}
+                    </span>
+                  )}
+                  <MdKeyboardArrowDown
+                    className={`w-5 h-5 transition-transform ${filtersOpen ? "rotate-180" : ""}`}
+                  />
                 </button>
 
-                <span className="text-gray-700 font-medium">{filteredTasks.length} tasks</span>
+                <span className="text-sm font-medium text-gray-600 hidden lg:block">
+                  {filteredTasks.length} {filteredTasks.length === 1 ? "task" : "tasks"}
+                </span>
+              </div>
 
-                <button className="flex items-center gap-2 px-6 py-4 bg-white border border-gray-300 rounded-xl hover:bg-gray-50 shadow-sm">
-                  <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                  </svg>
-                  Export
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setIsPinnedModalOpen(true)}
+                  className="flex items-center gap-2 px-5 py-4 border border-gray-300 rounded-xl hover:bg-gray-50 transition text-sm font-semibold"
+                >
+                  <MdPushPin className="w-5 h-5 text-yellow-600" />
+                  Pinned ({pinnedTasks.length})
+                </button>
+                <button
+                  onClick={() => navigate("/operations/tasks/archive")}
+                  className="px-5 py-4 border border-gray-300 rounded-xl hover:bg-gray-50 transition text-sm font-semibold"
+                >
+                  View Archive
+                </button>
+                <button className="flex items-center gap-2 px-5 py-4 border border-gray-300 rounded-xl hover:bg-gray-50 transition text-sm font-semibold">
+                  <MdDownload className="w-5 h-5" /> Export
                 </button>
               </div>
             </div>
-
-            {isFiltersOpen && (
-              <div className="mt-6 p-6 bg-white rounded-xl border border-gray-200">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                  <Input
-                    label="Status"
-                    type="select"
-                    value={filterStatus}
-                    onChange={setFilterStatus}
-                    options={statusFilterOptions}
-                    placeholder="All Statuses"
-                  />
-
-                  <Input
-                    label="Project"
-                    type="select"
-                    value={filterProject}
-                    onChange={setFilterProject}
-                    options={projectFilterOptions}
-                    placeholder="All Projects"
-                  />
-
-                  <Input
-                    label="Assigned To"
-                    type="select"
-                    value={filterAssignee}
-                    onChange={setFilterAssignee}
-                    options={assigneeFilterOptions}
-                    placeholder="All Members"
-                  />
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-                  <Input
-                    label="Due Date From"
-                    type="date"
-                    value={filterDueDateFrom}
-                    onChange={setFilterDueDateFrom}
-                  />
-
-                  <Input
-                    label="Due Date To"
-                    type="date"
-                    value={filterDueDateTo}
-                    onChange={setFilterDueDateTo}
-                  />
-                </div>
-
-                <div className="flex justify-end">
-                  <button
-                    onClick={resetFilters}
-                    className="px-6 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition"
-                  >
-                    Reset All Filters
-                  </button>
-                </div>
-              </div>
-            )}
           </div>
 
-          {/* Table */}
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead className="bg-gray-100 text-gray-600 text-xs uppercase">
-                <tr>
-                  <th className="px-6 py-4 text-left">#</th>
-                  <th className="px-6 py-4 text-left">Task</th>
-                  <th className="px-6 py-4 text-left">Project</th>
-                  <th className="px-6 py-4 text-left">Assigned To</th>
-                  <th className="px-6 py-4 text-left">Due Date</th>
-                  <th className="px-6 py-4 text-left">Status</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-200">
-                {filteredTasks.length === 0 ? (
+          {/* Advanced Filters Panel */}
+          <AnimatePresence>
+            {filtersOpen && (
+              <motion.div
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: "auto", opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                transition={{ duration: 0.3, ease: "easeInOut" }}
+                className="overflow-hidden mb-6"
+              >
+                <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
+                  <div className="flex items-center justify-between mb-6">
+                    <h3 className="text-xl font-medium text-gray-900">Advanced Filters</h3>
+                    <button
+                      onClick={() => setFiltersOpen(false)}
+                      className="p-2 hover:bg-gray-100 rounded-lg transition"
+                    >
+                      <MdClose className="w-6 h-6 text-gray-600" />
+                    </button>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
+                    <Input
+                      label="Status"
+                      type="select"
+                      value={filters.status}
+                      onChange={(v) => handleFilterChange("status", v)}
+                      options={[{ label: "All Statuses", value: "" }, ...statusOptions]}
+                    />
+                    <Input
+                      label="Project"
+                      type="select"
+                      value={filters.project}
+                      onChange={(v) => handleFilterChange("project", v)}
+                      options={[{ label: "All Projects", value: "" }, ...projectsList.map(p => ({ label: p, value: p }))]}
+                    />
+                    <Input
+                      label="Assignee"
+                      type="select"
+                      value={filters.assignee}
+                      onChange={(v) => handleFilterChange("assignee", v)}
+                      options={[{ label: "All Members", value: "" }, ...membersList.map(m => ({ label: m, value: m }))]}
+                    />
+                    <Input
+                      label="Priority"
+                      type="select"
+                      value={filters.priority}
+                      onChange={(v) => handleFilterChange("priority", v)}
+                      options={[{ label: "All Priorities", value: "" }, ...priorityOptions]}
+                    />
+                  </div>
+
+                  <div className="flex flex-col sm:flex-row gap-4 mt-8 pt-6 border-t border-gray-200">
+                    <button
+                      onClick={resetFilters}
+                      className="px-6 py-3.5 border-2 border-gray-300 text-gray-700 font-semibold rounded-xl hover:bg-gray-50 transition"
+                    >
+                      Reset All Filters
+                    </button>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* Tasks Table */}
+          <div className="bg-white rounded-2xl shadow-sm overflow-hidden border border-gray-200">
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-[1000px]">
+                <thead className="bg-gray-50 border-b border-gray-200">
                   <tr>
-                    <td colSpan={6} className="text-center py-12 text-gray-500">
-                      No tasks found
-                    </td>
+                    <th className="px-6 py-5 text-left text-xs font-medium text-gray-700 uppercase tracking-wider whitespace-nowrap">#</th>
+                    <th className="px-6 py-5 text-left text-xs font-medium text-gray-700 uppercase tracking-wider whitespace-nowrap">Task</th>
+                    <th className="px-6 py-5 text-left text-xs font-medium text-gray-700 uppercase tracking-wider whitespace-nowrap">Project</th>
+                    <th className="px-6 py-5 text-left text-xs font-medium text-gray-700 uppercase tracking-wider whitespace-nowrap">Assignees</th>
+                    <th className="px-6 py-5 text-left text-xs font-medium text-gray-700 uppercase tracking-wider whitespace-nowrap">Due Date</th>
+                    <th className="px-6 py-5 text-left text-xs font-medium text-gray-700 uppercase tracking-wider whitespace-nowrap">Status</th>
+                    <th className="px-6 py-5 text-left text-xs font-medium text-gray-700 uppercase tracking-wider whitespace-nowrap">Actions</th>
                   </tr>
-                ) : (
-                  filteredTasks.map((task, index) => (
-                    <tr key={task.id} className="hover:bg-gray-50">
-                      <td className="px-6 py-5">
-                        <div className="flex items-center gap-3">
-                          <span className="font-medium">{index + 1}</span>
-                        </div>
-                      </td>
-                      <td className="px-6 py-5 font-medium text-gray-900">
-                        <button
-                          onClick={() => openTaskDetail(task)}
-                          className="text-blue-600 hover:underline"
-                        >
-                          {task.name}
-                        </button>
-                      </td>
-                      <td className="px-6 py-5 text-gray-700">
-                        {task.project_name || "-"}
-                      </td>
-                      <td className="px-6 py-5">
-                        {renderAvatars(task.assignees || [])}
-                      </td>
-                      <td className="px-6 py-5 text-gray-700">
-                        {task.due_date
-                          ? new Date(task.due_date).toLocaleDateString("en-GB", {
-                              day: "2-digit",
-                              month: "2-digit",
-                              year: "numeric",
-                            }).replace(/\//g, "-")
-                          : "-"}
-                      </td>
-                      <td className="px-6 py-5">
-                        <div className="w-48">
-                          <Input
-                            type="select"
-                            options={statusOptions}
-                            value={getCurrentStatusLabel(task.status)}
-                            onChange={(newValue) =>
-                              handleStatusChange(task.id, newValue)
-                            }
-                            className="text-sm"
-                          />
+                </thead>
+                <tbody className="divide-y divide-gray-200">
+                  {filteredTasks.length === 0 ? (
+                    <tr>
+                      <td colSpan="7" className="text-center py-24">
+                        <div className="flex flex-col items-center">
+                          <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mb-5">
+                            <MdFilterList className="w-10 h-10 text-gray-400" />
+                          </div>
+                          <p className="text-xl font-semibold text-gray-700">No tasks found</p>
+                          <p className="text-gray-500 mt-2">Try adjusting your search or filters</p>
+                          {(search || activeFilterCount > 0) && (
+                            <button
+                              onClick={resetFilters}
+                              className="mt-5 px-6 py-3 bg-black text-white rounded-xl hover:bg-gray-900 transition font-medium"
+                            >
+                              Clear all filters
+                            </button>
+                          )}
                         </div>
                       </td>
                     </tr>
-                  ))
+                  ) : (
+                    filteredTasks.map((task, i) => {
+                      const isPinned = pinnedTasks.some((t) => t.id === task.id);
+                      return (
+                        <motion.tr
+                          key={task.id}
+                          initial={{ opacity: 0, y: 15 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: i * 0.03 }}
+                          className="hover:bg-gray-50 transition"
+                        >
+                          <td className="px-6 py-5 text-sm font-medium text-gray-900 whitespace-nowrap">
+                            {i + 1}
+                            {isPinned && <MdPushPin className="inline ml-2 text-yellow-600" />}
+                          </td>
+                          <td className="px-6 py-5 whitespace-nowrap">
+                            <div>
+                              <button
+                                onClick={() => {
+                                  setSelectedTask(task);
+                                  setIsTaskDetailOpen(true);
+                                }}
+                                className="font-semibold text-gray-900 hover:text-blue-600 transition text-left"
+                              >
+                                {task.name}
+                              </button>
+                              {task.priority && (
+                                <p className={`text-[10px] font-bold uppercase mt-1 ${task.priority === 'high' || task.priority === 'critical' ? 'text-red-600' : 'text-gray-500'}`}>
+                                  {task.priority} Priority
+                                </p>
+                              )}
+                            </div>
+                          </td>
+                          <td className="px-6 py-5 whitespace-nowrap">
+                            <span className="px-3 py-1 bg-purple-50 text-purple-700 text-[10px] font-bold rounded-lg border border-purple-100 uppercase tracking-wide">
+                              {task.project_name || "General"}
+                            </span>
+                          </td>
+                          <td className="px-6 py-5 whitespace-nowrap">{renderAvatars(task.assignees)}</td>
+                          <td className="px-6 py-5 text-sm text-gray-700 whitespace-nowrap">
+                            {task.due_date ? new Date(task.due_date).toLocaleDateString("en-GB") : "No due date"}
+                          </td>
+                          <td className="px-6 py-5 whitespace-nowrap min-w-[180px]">
+                            <Input
+                              type="select"
+                              value={task.status}
+                              onChange={(val) => handleStatusChange(task.id, val)}
+                              options={statusOptions}
+                              className="text-xs font-bold"
+                            />
+                          </td>
+                          <td className="px-6 py-5 whitespace-nowrap">
+                            <div className="flex items-center justify-end gap-3">
+                              <button
+                                onClick={() => {
+                                  setSelectedTask(task);
+                                  setIsTaskDetailOpen(true);
+                                }}
+                                className="p-2 hover:bg-blue-50 rounded-lg transition group"
+                              >
+                                <MdVisibility className="w-5 h-5 text-gray-600 group-hover:text-blue-600" />
+                              </button>
+                              <Link
+                                to={`/operations/tasks/edit/${task.id}`}
+                                className="p-2 hover:bg-amber-50 rounded-lg transition group"
+                              >
+                                <MdEdit className="w-5 h-5 text-gray-600 group-hover:text-amber-600" />
+                              </Link>
+                              <button
+                                onClick={() => togglePinTask(task)}
+                                className="p-2 hover:bg-yellow-50 rounded-lg transition group"
+                              >
+                                <MdPushPin
+                                  className={`w-5 h-5 ${isPinned ? "text-yellow-600" : "text-gray-600"
+                                    } group-hover:text-yellow-600`}
+                                />
+                              </button>
+                              <button
+                                onClick={async () => {
+                                  if (window.confirm("Permanently delete this task?")) {
+                                    try {
+                                      await apiClient.delete(`/operation/tasks/${task.id}/`);
+                                      toast.success("Task deleted");
+                                      fetchTasks();
+                                    } catch (err) { toast.error("Delete failed"); }
+                                  }
+                                }}
+                                className="p-2 hover:bg-red-50 rounded-lg transition group"
+                              >
+                                <MdDelete className="w-5 h-5 text-gray-600 group-hover:text-red-600" />
+                              </button>
+                            </div>
+                          </td>
+                        </motion.tr>
+                      );
+                    })
+                  )}
+                </tbody>
+              </table>
+            </div>
+
+            {filteredTasks.length > 0 && (
+              <div className="px-6 py-3 bg-gray-50 border-t border-gray-200 flex flex-col sm:flex-row justify-between items-center gap-3 text-sm text-gray-600">
+                <span>Showing {filteredTasks.length} of {tasks.length} tasks</span>
+                {activeFilterCount > 0 && (
+                  <button onClick={resetFilters} className="text-blue-600 hover:text-blue-800 font-medium">
+                    Clear all filters
+                  </button>
                 )}
-              </tbody>
-            </table>
+              </div>
+            )}
           </div>
         </div>
       </LayoutComponents>
 
-      {/* Pinned Task Modal */}
-      {isPinnedModalOpen && (
-        <LayoutComponents
-          title="Pinned Task"
-          variant="modal"
-          modal={pinnedModalContent}
-          onCloseModal={() => setIsPinnedModalOpen(false)}
-        />
-      )}
+      {/* Modals */}
+      <AnimatePresence>
+        {isPinnedModalOpen && (
+          <LayoutComponents
+            title={`Pinned Tasks (${pinnedTasks.length})`}
+            variant="modal"
+            onCloseModal={() => setIsPinnedModalOpen(false)}
+            modal={
+              <div className="space-y-4">
+                {pinnedTasks.length === 0 ? (
+                  <p className="text-center py-10 text-gray-500 italic">No pinned tasks yet.</p>
+                ) : (
+                  pinnedTasks.map(task => (
+                    <div key={task.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-2xl border border-gray-100 hover:bg-white transition group shadow-xs">
+                      <div className="overflow-hidden">
+                        <p className="font-bold text-gray-900 truncate">{task.name}</p>
+                        <p className="text-[10px] font-bold text-gray-400 uppercase">{task.project_name || "Project"}</p>
+                      </div>
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => {
+                            setSelectedTask(task);
+                            setIsTaskDetailOpen(true);
+                            setIsPinnedModalOpen(false);
+                          }}
+                          className="p-3 bg-white text-blue-600 rounded-xl shadow-xs hover:bg-blue-600 hover:text-white transition"
+                        >
+                          <MdVisibility className="w-5 h-5" />
+                        </button>
+                        <button
+                          onClick={() => togglePinTask(task)}
+                          className="p-3 bg-white text-red-600 rounded-xl shadow-xs hover:bg-red-600 hover:text-white transition"
+                        >
+                          <MdClose className="w-5 h-5" />
+                        </button>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            }
+          />
+        )}
+      </AnimatePresence>
 
-      {/* Task Detail Modal */}
-      {isTaskDetailOpen && selectedTask && (
-        <LayoutComponents
-          title={`TASK #${selectedTask.id}`}
-          variant="modal"
-          modal={taskDetailModalContent}
-          onCloseModal={() => setIsTaskDetailOpen(false)}
-        />
-      )}
+      <AnimatePresence>
+        {isTaskDetailOpen && (
+          <LayoutComponents
+            title="Task Details"
+            variant="modal"
+            onCloseModal={() => setIsTaskDetailOpen(false)}
+            modal={taskDetailContent}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 };
+
 export default TasksPage;

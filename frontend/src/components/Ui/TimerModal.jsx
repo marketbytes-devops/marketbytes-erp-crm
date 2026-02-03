@@ -11,20 +11,38 @@ const TimerModal = ({ open, onClose, onStartWork, onBreak, onSupport, onCheckOut
   const [project, setProject] = useState("");
   const [task, setTask] = useState("");
   const [memo, setMemo] = useState("");
+  const [error, setError] = useState("");
 
   useEffect(() => {
     if (open) {
-      apiClient.get("/hr/timer/projects_tasks/").then((res) => {
-        setProjects(res.data);
-      });
+      apiClient
+        .get("/hr/timer/projects_tasks/")
+        .then((res) => {
+          setProjects(res.data);
+        })
+        .catch((err) => console.error("Error fetching timer projects:", err));
     }
   }, [open]);
 
   const projectOptions = projects.map((p) => ({ value: p.id, label: p.name }));
-  const selectedProject = projects.find((p) => p.id === Number(project));
-  const taskOptions = selectedProject?.tasks.map((t) => ({ value: t.id, label: t.name })) || [];
+  const selectedProject = projects.find((p) => String(p.id) === String(project));
+  const taskOptions =
+    selectedProject?.tasks.map((t) => ({
+      value: t.id,
+      label: t.name,
+    })) || [];
 
   const handleStartWork = () => {
+    if (!project) {
+      setError("Please select a project");
+      return;
+    }
+    if (!task && taskOptions.length > 0) {
+      setError("Please select a task");
+      return;
+    }
+    setError("");
+
     onStartWork({
       project: project || null,
       task: task || null,
@@ -88,56 +106,71 @@ const TimerModal = ({ open, onClose, onStartWork, onBreak, onSupport, onCheckOut
             <div
               className="space-y-5"
             >
-              <button
-                onClick={() => setShowWorkForm(false)}
-                className="text-gray-500 hover:text-gray-700 text-sm font-medium mb-2"
-              >
-                ← Back
-              </button>
+              <div className="space-y-4">
+                <button
+                  onClick={() => setShowWorkForm(false)}
+                  className="text-gray-500 hover:text-black text-sm font-bold flex items-center gap-2 transition"
+                >
+                  ← Back to Dashboard
+                </button>
 
-              <h3 className="text-xl font-medium text-center">Start Work Timer</h3>
-              <div className="bg-gray-50 rounded-xl p-6 border border-gray-200 space-y-5">
-                <Input
-                  type="select"
-                  label="Project (optional)"
-                  placeholder="Choose project"
-                  options={projectOptions}
-                  value={project}
-                  onChange={setProject}
-                />
-                <Input
-                  type="select"
-                  label="Task (optional)"
-                  placeholder="Choose task"
-                  options={taskOptions}
-                  value={task}
-                  onChange={setTask}
-                  disabled={!project}
-                />
-                <div className="space-y-2">
-                  <label className="block text-sm font-semibold">Memo (optional)</label>
-                  <textarea
-                    rows={3}
-                    placeholder="What are you working on?"
-                    value={memo}
-                    onChange={(e) => setMemo(e.target.value)}
-                    className="w-full px-4 py-3 border border-gray-600 rounded-lg focus:ring-2 focus:ring-black outline-none resize-none"
-                  />
-                </div>
+                <h3 className="text-2xl font-bold text-center text-gray-900">Start Work Timer</h3>
+                <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm space-y-6">
+                  <div className="space-y-4">
+                    <Input
+                      type="select"
+                      label="Select Project"
+                      required
+                      placeholder="Choose a project to work on"
+                      options={projectOptions}
+                      value={project}
+                      onChange={(val) => {
+                        setProject(val);
+                        setTask("");
+                      }}
+                    />
+                    <Input
+                      type="select"
+                      label="Select Task"
+                      required
+                      placeholder={!project ? "Select a project first" : "Choose a task"}
+                      options={taskOptions}
+                      value={task}
+                      onChange={setTask}
+                      disabled={!project || taskOptions.length === 0}
+                    />
+                    <div className="space-y-2">
+                      <label className="block text-sm font-bold text-gray-700">Work Memo</label>
+                      <textarea
+                        rows={3}
+                        placeholder="What exactly are you working on right now?"
+                        value={memo}
+                        onChange={(e) => setMemo(e.target.value)}
+                        className="w-full px-4 py-3 border border-gray-100 rounded-xl focus:ring-2 focus:ring-black outline-none resize-none bg-gray-50 text-sm font-medium transition placeholder:text-gray-400"
+                      />
+                    </div>
+                  </div>
 
-                <div className="flex gap-3 pt-2">
-                  <button
-                    onClick={handleStartWork}
-                    className="flex-1 bg-black text-white text-sm font-medium py-3 rounded-xl hover:bg-gray-900 transition-all shadow-md"
-                  >
-                    Start Timer
-                  </button>
-                  <button
-                    onClick={() => setShowWorkForm(false)}
-                    className="px-6 border border-gray-300 text-gray-700 text-sm font-medium py-3 rounded-xl hover:bg-gray-50 transition"
-                  >
-                    Cancel
-                  </button>
+                  {error && (
+                    <div className="p-3 bg-red-50 text-red-600 text-xs font-bold rounded-lg border border-red-100 flex items-center gap-2 animate-pulse">
+                      ⚠️ {error}
+                    </div>
+                  )}
+
+                  <div className="flex gap-4 pt-2">
+                    <button
+                      onClick={handleStartWork}
+                      className="flex-3 bg-black text-white text-sm font-bold py-4 rounded-xl hover:bg-gray-800 transition-all shadow-lg active:scale-95"
+                    >
+                      Start Working Now
+                    </button>
+                    <button
+                      onClick={() => setShowWorkForm(false)}
+                      className="flex-1 border-2 border-gray-200 text-gray-600 text-sm font-bold py-4 rounded-xl hover:bg-gray-50 transition active:scale-95"
+                    >
+                      Cancel
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
