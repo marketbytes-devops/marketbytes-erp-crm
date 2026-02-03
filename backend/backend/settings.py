@@ -3,16 +3,19 @@ Django settings for backend project.
 """
 from pathlib import Path
 from datetime import timedelta
-from decouple import config
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = config('SECRET_KEY')
+SECRET_KEY = os.getenv('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = config('DEBUG', default=False, cast=bool)
+DEBUG = os.getenv('DEBUG', 'False').lower() == 'true'
 
 # Allowed hosts - restrict in production!
 ALLOWED_HOSTS = ['*'] if DEBUG else ['yourdomain.com', 'www.yourdomain.com', 'localhost', '127.0.0.1']
@@ -76,11 +79,11 @@ WSGI_APPLICATION = 'backend.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': config('DB_NAME'),
-        'USER': config('DB_USER'),
-        'PASSWORD': config('DB_PASSWORD'),
-        'HOST': config('DB_HOST', default='127.0.0.1'),
-        'PORT': config('DB_PORT', default='3306'),
+        'NAME': os.getenv('DB_NAME'),
+        'USER': os.getenv('DB_USER'),
+        'PASSWORD': os.getenv('DB_PASSWORD'),
+        'HOST': os.getenv('DB_HOST', '127.0.0.1'),
+        'PORT': os.getenv('DB_PORT', '3306'),
         'OPTIONS': {
             'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
             'charset': 'utf8mb4',
@@ -137,7 +140,7 @@ SIMPLE_JWT = {
 }
 
 # Frontend URL
-FRONTEND_URL = config('FRONTEND_URL', default='http://localhost:5173')
+FRONTEND_URL = os.getenv('FRONTEND_URL', 'http://localhost:5173')
 
 # CORS Settings
 CORS_ALLOWED_ORIGINS = [
@@ -166,27 +169,27 @@ CORS_ALLOW_HEADERS = [
 CORS_ALLOW_CREDENTIALS = True
 
 # File Upload Size Limit
-DATA_UPLOAD_MAX_MEMORY_SIZE = config('DATA_UPLOAD_MAX_MEMORY_SIZE', default=5242880, cast=int)
-FILE_UPLOAD_MAX_MEMORY_SIZE = config('FILE_UPLOAD_MAX_MEMORY_SIZE', default=5242880, cast=int)
+DATA_UPLOAD_MAX_MEMORY_SIZE = int(os.getenv('DATA_UPLOAD_MAX_MEMORY_SIZE', 5242880))
+FILE_UPLOAD_MAX_MEMORY_SIZE = int(os.getenv('FILE_UPLOAD_MAX_MEMORY_SIZE', 5242880))
 
 # Email Configuration
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = config('EMAIL_HOST')
-EMAIL_PORT = config('EMAIL_PORT', default=587, cast=int)
-EMAIL_USE_TLS = config('EMAIL_USE_TLS', default=True, cast=bool)
-EMAIL_HOST_USER = config('EMAIL_HOST_USER')
-EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD')
+EMAIL_HOST = os.getenv('EMAIL_HOST')
+EMAIL_PORT = int(os.getenv('EMAIL_PORT', 587))
+EMAIL_USE_TLS = os.getenv('EMAIL_USE_TLS', 'True').lower() == 'true'
+EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
-ADMIN_EMAIL = config('ADMIN_EMAIL')
-SERVER_EMAIL = config('COMPANY_FROM_EMAIL', default='no-reply@primearabiagroup.com')
+ADMIN_EMAIL = os.getenv('ADMIN_EMAIL')
+SERVER_EMAIL = os.getenv('COMPANY_FROM_EMAIL', 'no-reply@primearabiagroup.com')
 
 # Gmail Integration Configuration
-GMAIL_CLIENT_ID = config('GMAIL_CLIENT_ID')
-GMAIL_CLIENT_SECRET = config('GMAIL_CLIENT_SECRET')
-GMAIL_REDIRECT_URI = config('GMAIL_REDIRECT_URI', default='http://127.0.0.1:8000/api/gmail/callback/')
+GMAIL_CLIENT_ID = os.getenv('GMAIL_CLIENT_ID')
+GMAIL_CLIENT_SECRET = os.getenv('GMAIL_CLIENT_SECRET')
+GMAIL_REDIRECT_URI = os.getenv('GMAIL_REDIRECT_URI', 'http://127.0.0.1:8000/api/gmail/callback/')
 
 # Encryption Key for storing OAuth tokens securely
-FERNET_KEY = config('FERNET_KEY')
+FERNET_KEY = os.getenv('FERNET_KEY')
 
 # Security settings (enable in production)
 if not DEBUG:
