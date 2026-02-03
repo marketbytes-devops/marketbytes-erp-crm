@@ -1,4 +1,6 @@
 from rest_framework import viewsets, filters
+from rest_framework.decorators import action
+from rest_framework.response import Response
 from django_filters.rest_framework import DjangoFilterBackend
 from .models import (
     Company,
@@ -56,6 +58,19 @@ class LeadViewSet(viewsets.ModelViewSet):
     ]
     ordering_fields = ["created_at", "lead_value", "follow_up_date"]
     ordering = ["-created_at"]
+
+    @action(detail=False, methods=["get"])
+    def dashboard_stats(self, request):
+        from django.db.models import Count, Sum
+        total_leads = self.get_queryset().count()
+        leads_by_status = self.get_queryset().values('status').annotate(count=Count('id'))
+        total_value = self.get_queryset().aggregate(total=Sum('lead_value'))['total'] or 0
+        
+        return Response({
+            "total_leads": total_leads,
+            "leads_by_status": list(leads_by_status),
+            "total_value": total_value
+        })
 
 
 class LeadSourceViewSet(viewsets.ModelViewSet):

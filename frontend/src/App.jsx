@@ -51,6 +51,7 @@ import Customers from "./pages/Sales/Customer";
 import EmployeeTimeLogs from "./pages/Operations/TimeLogs/EmployeeTimeLogs";
 import CalendarView from "./pages/Operations/TimeLogs/CalendarView";
 import ActiveTimers from "./pages/Operations/TimeLogs/ActiveTimers";
+import TaskCalendarPage from "./pages/Operations/Tasks/TaskCalendar";
 
 const ProtectedRoute = ({
   children,
@@ -648,7 +649,19 @@ function App() {
             </ProtectedRoute>
           ),
         },
-
+    {
+          path: "/operations/taskcalendar",
+          element: (
+            <ProtectedRoute
+              isAuthenticated={isAuthenticated}
+              requiredPage="permissions"
+              requiredAction="view"
+            >
+              <TaskCalendarPage />
+            </ProtectedRoute>
+          ),
+        },
+ 
         {
           path: "/user-roles/users",
           element: (

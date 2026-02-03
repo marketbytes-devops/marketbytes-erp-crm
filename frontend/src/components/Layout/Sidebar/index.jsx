@@ -181,6 +181,8 @@ const Sidebar = ({ toggleSidebar }) => {
           label: "Timelogs",
           icon: <MdAssignment className="w-5 h-5" />,
           page: "TimeLogsView",
+          action: "view",
+         }, 
          {
           to: "/operations/taskcalendar",
           label: "Task Calendar",

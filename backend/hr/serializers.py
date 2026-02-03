@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from .models import Attendance, Holiday, LeaveType, Leave, Overtime, Candidate, Performance, Project, Task, WorkSession, BreakSession
-from authapp.serializers import UserSerializer
+from authapp.serializers import UserSerializer, DepartmentSerializer
 from authapp.models import CustomUser
 from django.utils import timezone
 from datetime import datetime
@@ -117,24 +117,30 @@ class AttendanceSerializer(serializers.ModelSerializer):
     def get_productive_hours(self, obj):
         """Calculate productive hours from work sessions (excluding breaks)"""
         work_sessions = self._get_work_sessions_for_date(obj)
-        completed_sessions = work_sessions.filter(end_time__isnull=False)
         
-        total_seconds = sum(
-            (session.end_time - session.start_time).total_seconds() 
-            for session in completed_sessions
-        )
+        total_seconds = 0
+        now = timezone.now()
+        for session in work_sessions:
+            if session.end_time:
+                total_seconds += (session.end_time - session.start_time).total_seconds()
+            elif obj.date == now.date():
+                total_seconds += (now - session.start_time).total_seconds()
+                
         hours = total_seconds / 3600
         return round(hours, 2)
     
     def get_break_hours(self, obj):
         """Calculate break hours from break sessions"""
         break_sessions = self._get_break_sessions_for_date(obj)
-        completed_breaks = break_sessions.filter(end_time__isnull=False)
         
-        total_seconds = sum(
-            (session.end_time - session.start_time).total_seconds() 
-            for session in completed_breaks
-        )
+        total_seconds = 0
+        now = timezone.now()
+        for session in break_sessions:
+            if session.end_time:
+                total_seconds += (session.end_time - session.start_time).total_seconds()
+            elif obj.date == now.date():
+                total_seconds += (now - session.start_time).total_seconds()
+                
         hours = total_seconds / 3600
         return round(hours, 2)
 
@@ -205,7 +211,8 @@ class CandidateSerializer(serializers.ModelSerializer):
 
 class PerformanceSerializer(serializers.ModelSerializer):
     employee = UserSerializer(read_only=True)
-    department_name = serializers.CharField(source='department.name', read_only=True)
+    department = DepartmentSerializer(read_only=True)
+    reviewed_by = UserSerializer(read_only=True)
     
     class Meta:
         model = Performance

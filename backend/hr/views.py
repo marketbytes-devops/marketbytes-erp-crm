@@ -146,6 +146,11 @@ class AttendanceViewSet(viewsets.ModelViewSet):
             attendance.clock_out = current_time
             attendance.clock_out_ip = ip
             attendance.save()
+
+            # Automatically stop any active timers when checking out for the day
+            now = timezone.now()
+            WorkSession.objects.filter(employee=request.user, end_time__isnull=True).update(end_time=now)
+            BreakSession.objects.filter(employee=request.user, end_time__isnull=True).update(end_time=now)
             
             return Response({
                 "message": "Checked out successfully",
@@ -163,18 +168,23 @@ class AttendanceViewSet(viewsets.ModelViewSet):
     
     @action(detail=False, methods=['get'])
     def status(self, request):
-        today = timezone.now().date()
-        att = Attendance.objects.filter(employee=request.user, date=today).first()
+        now = timezone.now()
+        local_now = timezone.localtime(now)
+        start_of_day = local_now.replace(hour=0, minute=0, second=0, microsecond=0)
+        
+        att = Attendance.objects.filter(employee=request.user, date=local_now.date()).first()
         
         work_sessions = WorkSession.objects.filter(
             employee=request.user,
-            start_time__date=today,
-            end_time__isnull=False
+            start_time__gte=start_of_day,
         )
-        total_seconds = sum(
-            (session.end_time - session.start_time).total_seconds()
-            for session in work_sessions
-        )
+        total_seconds = 0
+        for session in work_sessions:
+            if session.end_time:
+                total_seconds += (session.end_time - session.start_time).total_seconds()
+            else:
+                total_seconds += (now - session.start_time).total_seconds()
+        
         productive_hours = str(timedelta(seconds=int(total_seconds)))
         
         if att and att.clock_in and not att.clock_out:
@@ -300,6 +310,27 @@ class PerformanceViewSet(viewsets.ModelViewSet):
     serializer_class = PerformanceSerializer
     permission_classes = [IsAuthenticated]
 
+    def get_queryset(self):
+        user = self.request.user
+        queryset = self.queryset
+        
+        employee_id = self.request.query_params.get('employee_id')
+        start_date = self.request.query_params.get('start_date')
+        end_date = self.request.query_params.get('end_date')
+
+        if user.is_superuser or (getattr(user, 'role', None) and user.role.name == "Superadmin"):
+            if employee_id:
+                queryset = queryset.filter(employee_id=employee_id)
+        else:
+            queryset = queryset.filter(employee=user)
+
+        if start_date:
+            queryset = queryset.filter(created_at__date__gte=start_date)
+        if end_date:
+            queryset = queryset.filter(created_at__date__lte=end_date)
+            
+        return queryset
+
 class TimerViewSet(viewsets.ViewSet):
     permission_classes = [IsAuthenticated]
     
@@ -309,24 +340,47 @@ class TimerViewSet(viewsets.ViewSet):
         active_work = WorkSession.objects.filter(employee=user, end_time__isnull=True).first()
         active_break = BreakSession.objects.filter(employee=user, end_time__isnull=True).first()
         
-        today = timezone.now().date()
-        sessions = WorkSession.objects.filter(employee=user, start_time__date=today, end_time__isnull=False)
-        total_seconds = sum((s.end_time - s.start_time).total_seconds() for s in sessions if s.end_time)
-        total_work = str(timedelta(seconds=int(total_seconds))) if total_seconds > 0 else "00:00:00"
+        now = timezone.now()
+        local_now = timezone.localtime(now)
+        start_of_day = local_now.replace(hour=0, minute=0, second=0, microsecond=0)
         
-        break_sessions = BreakSession.objects.filter(employee=user, start_time__date=today, end_time__isnull=False)
-        break_seconds = sum((b.end_time - b.start_time).total_seconds() for b in break_sessions if b.end_time)
-        total_break = str(timedelta(seconds=int(break_seconds))) if break_seconds > 0 else "00:00:00"
+        # Calculate total work
+        work_sessions = WorkSession.objects.filter(employee=user, start_time__gte=start_of_day)
+        total_work_seconds = 0
+        for s in work_sessions:
+            if s.end_time:
+                total_work_seconds += (s.end_time - s.start_time).total_seconds()
+            else:
+                total_work_seconds += (now - s.start_time).total_seconds()
         
+        # Calculate total break & support
+        break_sessions = BreakSession.objects.filter(employee=user, start_time__gte=start_of_day)
+        total_break_seconds = 0
+        total_support_seconds = 0
+        for b in break_sessions:
+            duration = (b.end_time - b.start_time).total_seconds() if b.end_time else (now - b.start_time).total_seconds()
+            if b.type == 'break':
+                total_break_seconds += duration
+            elif b.type == 'support':
+                total_support_seconds += duration
+        
+        def format_seconds(s):
+            return str(timedelta(seconds=int(s)))
+
         return Response({
             "is_working": bool(active_work),
             "is_on_break": bool(active_break),
+            "active_type": "work" if active_work else (active_break.type if active_break else None),
             "current_work_session": WorkSessionSerializer(active_work).data if active_work else None,
             "current_break_session": BreakSessionSerializer(active_break).data if active_break else None,
-            "today_total_work": total_work,
-            "today_total_break": total_break,
+            "today_total_work": format_seconds(total_work_seconds),
+            "today_total_break": format_seconds(total_break_seconds),
+            "today_total_support": format_seconds(total_support_seconds),
+            "today_total_work_seconds": int(total_work_seconds),
+            "today_total_break_seconds": int(total_break_seconds),
+            "today_total_support_seconds": int(total_support_seconds),
             "target_hours": "08:00:00",
-            "remaining_hours": str(timedelta(seconds=max(0, 28800 - int(total_seconds))))
+            "remaining_hours": format_seconds(max(0, 28800 - int(total_work_seconds)))
         })
     
     @action(detail=False, methods=['post'])
