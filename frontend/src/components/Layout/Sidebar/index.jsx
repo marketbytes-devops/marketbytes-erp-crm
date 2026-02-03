@@ -176,6 +176,13 @@ const Sidebar = ({ toggleSidebar }) => {
           page: "Task Board",
           action: "view",
         },
+         {
+          to: "/Operations/taskcalendar",
+          label: "Task Calendar",
+          icon: <MdCalendarToday className="w-5 h-5" />,
+          page: "Task Calendar",
+          action: "view",
+        },
       ].filter((item) => hasPermission(item.page, item.action)),
     },
 
