@@ -377,7 +377,7 @@ const CreateProjectPage = () => {
                 value={formData.projectName}
                 onChange={(e) => setFormData(prev => ({ ...prev, projectName: e.target.value }))}
               />
-              <div>
+              <div className="relative top-0 sm:-top-1.5">
                 <div className="flex items-center gap-2 mb-2">
                   <label className="text-sm font-semibold text-black">Project Category</label>
                   <button
@@ -395,7 +395,7 @@ const CreateProjectPage = () => {
                   onChange={v => setFormData(prev => ({ ...prev, projectCategory: v }))}
                 />
               </div>
-              <div>
+              <div className="relative top-0 sm:-top-1.5">
                 <div className="flex items-center gap-2 mb-2">
                   <label className="text-sm font-semibold text-black">Department <span className="text-red-500">*</span></label>
                   <button
@@ -510,7 +510,7 @@ const CreateProjectPage = () => {
                   onChange={v => setFormData(prev => ({ ...prev, client: v }))}
                 />
               </div>
-              <div className="space-y-4">
+              <div className="space-y-4 relative top-0 sm:top-5">
                 <label className="flex items-center gap-3">
                   <input type="checkbox" checked={formData.clientCanManageTasks} onChange={e => setFormData(prev => ({ ...prev, clientCanManageTasks: e.target.checked }))} className="w-5 h-5 rounded" />
                   <span className="font-medium">Client can manage tasks</span>
@@ -536,7 +536,7 @@ const CreateProjectPage = () => {
                 value={formData.currency}
                 onChange={v => setFormData(prev => ({ ...prev, currency: v }))}
               />
-              <div>
+              <div className="relative top-0 sm:-top-1.5">
                 <div className="flex items-center gap-2 mb-2">
                   <label className="text-sm font-semibold text-black">Status</label>
                   <button type="button" onClick={() => setShowStatusModal(true)} className="p-1 rounded-full border border-green-600 text-green-600 hover:bg-green-600 hover:text-white transition">
@@ -550,7 +550,7 @@ const CreateProjectPage = () => {
                   onChange={v => setFormData(prev => ({ ...prev, status: v }))}
                 />
               </div>
-              <div>
+              <div className="relative top-0 sm:-top-1.5">
                 <div className="flex items-center gap-2 mb-2">
                   <label className="text-sm font-semibold text-black">Stage</label>
                   <button type="button" onClick={() => setShowStageModal(true)} className="p-1 rounded-full border border-green-600 text-green-600 hover:bg-green-600 hover:text-white transition">
