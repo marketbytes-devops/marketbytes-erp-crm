@@ -1,10 +1,12 @@
 import { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { MdAdd, MdEdit, MdDelete, MdClose, MdKeyboardArrowDown, MdEmail, MdSend } from "react-icons/md";
+import { motion } from "framer-motion";
+import ReactQuill from "react-quill";
+import "react-quill/dist/quill.snow.css";
 import LayoutComponents from "../../../components/LayoutComponents";
-import Input from "../../../components/Input";
-import toast from "react-hot-toast";
 import apiClient from "../../../helpers/apiClient";
+import { MdAdd, MdEdit, MdDelete, MdClose, MdKeyboardArrowDown, MdEmail, MdSend } from "react-icons/md";
+import toast from "react-hot-toast";
+import Input from "../../../components/Input";
 
 const Communication = () => {
   const [activeTab, setActiveTab] = useState("proposal");
@@ -12,6 +14,7 @@ const Communication = () => {
   // Proposal & RFP Templates
   const [proposalTemplates, setProposalTemplates] = useState([]);
   const [rfpTemplates, setRfpTemplates] = useState([]);
+  const [departments, setDepartments] = useState([]); // New: for RFP Category (Departments)
   const [loading, setLoading] = useState(true);
 
   // Gmail Integration
@@ -37,19 +40,36 @@ const Communication = () => {
   const [editingRfp, setEditingRfp] = useState(null);
   const [rfpForm, setRfpForm] = useState({ category: "", body: "" });
 
-  // Fetch templates & check Gmail status
+  // Quill toolbar configuration
+  const quillModules = {
+    toolbar: [
+      [{ header: [1, 2, false] }],
+      ["bold", "italic", "underline", "strike"],
+      [{ list: "ordered" }, { list: "bullet" }],
+      [{ script: "sub" }, { script: "super" }],
+      [{ color: [] }, { background: [] }],
+      [{ font: [] }],
+      [{ align: [] }],
+      ["link", "image", "video"],
+      ["clean"],
+    ],
+  };
+
+  // Fetch all data including departments
   useEffect(() => {
     const fetchData = async () => {
       try {
         setLoading(true);
-        const [propRes, rfpRes, gmailStatus] = await Promise.all([
+        const [propRes, rfpRes, deptRes, gmailStatus] = await Promise.all([
           apiClient.get("/sales/proposal-templates/"),
           apiClient.get("/sales/rfp-templates/"),
+          apiClient.get("/auth/departments/"), // New: Fetch departments for RFP category
           apiClient.get("/gmail/status/"),
         ]);
 
         setProposalTemplates(propRes.data.results || propRes.data || []);
         setRfpTemplates(rfpRes.data.results || rfpRes.data || []);
+        setDepartments(deptRes.data.results || deptRes.data || []);
         setGmailConnected(gmailStatus.data.connected || false);
 
         if (gmailStatus.data.connected) {
@@ -57,6 +77,7 @@ const Communication = () => {
         }
       } catch (err) {
         toast.error("Failed to load data");
+        console.error(err);
       } finally {
         setLoading(false);
       }
@@ -169,23 +190,29 @@ const Communication = () => {
   };
 
   const handleSaveRfp = async () => {
-    if (!rfpForm.category.trim()) {
-      toast.error("Category is required");
+    if (!rfpForm.category) {
+      toast.error("Category (Department) is required");
       return;
     }
 
     try {
+      const payload = {
+        category: parseInt(rfpForm.category), // Send department ID
+        body: rfpForm.body,
+      };
+
       if (editingRfp) {
-        const res = await apiClient.put(`/sales/rfp-templates/${editingRfp.id}/`, rfpForm);
+        const res = await apiClient.put(`/sales/rfp-templates/${editingRfp.id}/`, payload);
         setRfpTemplates(prev => prev.map(t => t.id === editingRfp.id ? res.data : t));
       } else {
-        const res = await apiClient.post("/sales/rfp-templates/", rfpForm);
+        const res = await apiClient.post("/sales/rfp-templates/", payload);
         setRfpTemplates([res.data, ...rfpTemplates]);
       }
       toast.success("RFP template saved");
       setShowRfpModal(false);
     } catch (err) {
       toast.error("Failed to save RFP template");
+      console.error(err.response?.data);
     }
   };
 
@@ -335,7 +362,7 @@ const Communication = () => {
                   <thead className="bg-gray-50 border-b border-gray-200">
                     <tr>
                       <th className="px-6 py-5 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">Sl No</th>
-                      <th className="px-6 py-5 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">Category</th>
+                      <th className="px-6 py-5 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">Category (Department)</th>
                       <th className="px-6 py-5 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">RFP Body</th>
                       <th className="px-6 py-5 text-center text-xs font-medium text-gray-700 uppercase tracking-wider">Actions</th>
                     </tr>
@@ -363,7 +390,7 @@ const Communication = () => {
                           className="hover:bg-gray-50 transition"
                         >
                           <td className="px-6 py-5 font-medium">{i + 1}</td>
-                          <td className="px-6 py-5 font-medium">{temp.category}</td>
+                          <td className="px-6 py-5 font-medium">{temp.category_name || temp.category}</td>
                           <td className="px-6 py-5 text-gray-700 truncate max-w-[400px]">{temp.body}</td>
                           <td className="px-6 py-5">
                             <div className="flex items-center justify-center gap-3">
@@ -473,7 +500,7 @@ const Communication = () => {
         </div>
       </LayoutComponents>
 
-      {/* Proposal Template Modal */}
+      {/* Proposal Template Modal with Rich Text Editor */}
       {showProposalModal && (
         <LayoutComponents
           variant="modal"
@@ -485,25 +512,31 @@ const Communication = () => {
                 label="Template Name"
                 required
                 value={proposalForm.name}
-                onChange={e => setProposalForm({ ...proposalForm, name: e.target.value })}
+                onChange={(e) => setProposalForm({ ...proposalForm, name: e.target.value })}
                 placeholder="e.g., Web Development Proposal"
               />
               <Input
                 label="Proposal Template"
                 required
                 value={proposalForm.template}
-                onChange={e => setProposalForm({ ...proposalForm, template: e.target.value })}
+                onChange={(e) => setProposalForm({ ...proposalForm, template: e.target.value })}
                 placeholder="e.g., Standard proposal for web projects"
               />
-              <Input
-                label="Body Content (HTML allowed)"
-                type="textarea"
-                rows={12}
-                value={proposalForm.body}
-                onChange={e => setProposalForm({ ...proposalForm, body: e.target.value })}
-                placeholder="Enter rich text or HTML content..."
-              />
-              <div className="flex justify-end gap-4 pt-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Body Content (Rich Text)
+                </label>
+                <div className="border border-gray-300 rounded-xl overflow-hidden">
+                  <ReactQuill
+                    theme="snow"
+                    value={proposalForm.body}
+                    onChange={(value) => setProposalForm({ ...proposalForm, body: value })}
+                    modules={quillModules}
+                    style={{ height: "300px", resize: "vertical", overflow: "auto" }}
+                  />
+                </div>
+              </div>
+              <div className="flex justify-end gap-4 pt-10">
                 <button
                   type="button"
                   onClick={() => setShowProposalModal(false)}
@@ -523,7 +556,7 @@ const Communication = () => {
         />
       )}
 
-      {/* RFP Template Modal */}
+      {/* RFP Template Modal with Rich Text Editor & Department Dropdown */}
       {showRfpModal && (
         <LayoutComponents
           variant="modal"
@@ -531,22 +564,39 @@ const Communication = () => {
           onCloseModal={() => setShowRfpModal(false)}
           modal={
             <div className="space-y-6">
-              <Input
-                label="Category"
-                required
-                value={rfpForm.category}
-                onChange={e => setRfpForm({ ...rfpForm, category: e.target.value })}
-                placeholder="e.g., Website Redesign"
-              />
-              <Input
-                label="RFP Body (HTML allowed)"
-                type="textarea"
-                rows={12}
-                value={rfpForm.body}
-                onChange={e => setRfpForm({ ...rfpForm, body: e.target.value })}
-                placeholder="Enter the RFP email body template..."
-              />
-              <div className="flex justify-end gap-4 pt-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Category (Department) *
+                </label>
+                <select
+                  value={rfpForm.category}
+                  onChange={(e) => setRfpForm({ ...rfpForm, category: e.target.value })}
+                  className="w-full px-5 py-3.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-black outline-none"
+                  required
+                >
+                  <option value="">Select Department</option>
+                  {departments.map((dept) => (
+                    <option key={dept.id} value={dept.id}>
+                      {dept.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  RFP Body (Rich Text)
+                </label>
+                <div className="border border-gray-300 rounded-xl overflow-hidden">
+                  <ReactQuill
+                    theme="snow"
+                    value={rfpForm.body}
+                    onChange={(value) => setRfpForm({ ...rfpForm, body: value })}
+                    modules={quillModules}
+                    style={{ height: "300px", resize: "vertical", overflow: "auto" }}
+                  />
+                </div>
+              </div>
+              <div className="flex justify-end gap-4 pt-10">
                 <button
                   type="button"
                   onClick={() => setShowRfpModal(false)}
@@ -579,28 +629,28 @@ const Communication = () => {
                 type="email"
                 required
                 value={emailForm.to}
-                onChange={e => setEmailForm({ ...emailForm, to: e.target.value })}
+                onChange={(e) => setEmailForm({ ...emailForm, to: e.target.value })}
                 placeholder="recipient@example.com"
               />
               <Input
                 label="CC"
                 type="text"
                 value={emailForm.cc}
-                onChange={e => setEmailForm({ ...emailForm, cc: e.target.value })}
+                onChange={(e) => setEmailForm({ ...emailForm, cc: e.target.value })}
                 placeholder="cc1@example.com, cc2@example.com"
               />
               <Input
                 label="BCC"
                 type="text"
                 value={emailForm.bcc}
-                onChange={e => setEmailForm({ ...emailForm, bcc: e.target.value })}
+                onChange={(e) => setEmailForm({ ...emailForm, bcc: e.target.value })}
                 placeholder="bcc1@example.com, bcc2@example.com"
               />
               <Input
                 label="Subject"
                 required
                 value={emailForm.subject}
-                onChange={e => setEmailForm({ ...emailForm, subject: e.target.value })}
+                onChange={(e) => setEmailForm({ ...emailForm, subject: e.target.value })}
                 placeholder="Email subject"
               />
               <div className="flex flex-wrap gap-4">
@@ -620,7 +670,7 @@ const Communication = () => {
                   </optgroup>
                   <optgroup label="RFP Templates">
                     {rfpTemplates.map(t => (
-                      <option key={`rfp-${t.id}`} value={t.id}>{t.category}</option>
+                      <option key={`rfp-${t.id}`} value={t.id}>{t.category_name || t.category}</option>
                     ))}
                   </optgroup>
                 </select>
@@ -630,7 +680,7 @@ const Communication = () => {
                 type="textarea"
                 rows={12}
                 value={emailForm.body}
-                onChange={e => setEmailForm({ ...emailForm, body: e.target.value })}
+                onChange={(e) => setEmailForm({ ...emailForm, body: e.target.value })}
                 placeholder="Email content..."
               />
               <div className="flex justify-end gap-4 pt-6">
