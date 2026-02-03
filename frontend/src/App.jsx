@@ -3,7 +3,7 @@ import { createBrowserRouter, RouterProvider, Navigate } from "react-router";
 import "./index.css";
 import apiClient from "./helpers/apiClient";
 import Layout from "./components/Layout";
-import Admin from "./pages/Dashboards/Admin";
+import Admin from "./pages/Dashboard/Admin";
 import Login from "./pages/Auth/Login";
 import ResetPassword from "./pages/Auth/ResetPassword";
 import Profile from "./pages/Profile";
@@ -33,6 +33,7 @@ import ProjectCreate from "./pages/Operations/Projects/ProjectCreate";
 import ProjectTemplate from "./pages/Operations/Projects/ProjectTemplate";
 import ProjectTemplateAdd from "./pages/Operations/Projects/ProjectTemplateAdd";
 import ProjectArchive from "./pages/Operations/Projects/ProjectArchive";
+import ProjectEdit from "./pages/Operations/Projects/ProjectEdit";
 import TaskView from "./pages/Operations/Tasks/TaskView";
 import TaskLabel from "./pages/Operations/Tasks/TaskLabel";
 import CreateTaskLabel from "./pages/Operations/Tasks/CreateTaskLabel";
@@ -455,6 +456,19 @@ function App() {
               requiredAction="view"
             >
               <ProjectCreate />
+            </ProtectedRoute>
+          ),
+        },
+
+        {
+          path: "/operations/projects/edit/:id",
+          element: (
+            <ProtectedRoute
+              isAuthenticated={isAuthenticated}
+              requiredPage="permissions"
+              requiredAction="view"
+            >
+              <ProjectEdit />
             </ProtectedRoute>
           ),
         },

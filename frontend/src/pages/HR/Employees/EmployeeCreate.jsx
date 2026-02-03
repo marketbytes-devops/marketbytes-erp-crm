@@ -7,6 +7,7 @@ import apiClient from "../../../helpers/apiClient";
 import Loading from "../../../components/Loading";
 import Input from "../../../components/Input";
 import PermissionMatrix from "../../../components/PermissionMatrix";
+import { Shield } from "lucide-react";
 
 const generateStrongPassword = () => {
   const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()_+-=[]{}|;:,.<>?";
