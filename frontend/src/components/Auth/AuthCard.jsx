@@ -1,4 +1,3 @@
-import { motion } from 'framer-motion';
 import { Toaster } from 'react-hot-toast';
 import bgAuth from '../../assets/images/bg-auth.jpg';
 
@@ -24,7 +23,7 @@ const AuthCard = ({ children, title, subtitle }) => {
         }}
       />
 
-      <motion.div
+      <div
         className="min-h-screen bg-gray-100 flex items-center justify-end p-6"
         style={{
           backgroundImage: `url(${bgAuth})`,
@@ -32,9 +31,6 @@ const AuthCard = ({ children, title, subtitle }) => {
           backgroundPosition: 'center',
           backgroundRepeat: 'no-repeat',
         }}
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.5 }}
       >
         <div className="bg-white bg-opacity-95 backdrop-blur-sm p-8 rounded-xl shadow-2xl w-full max-w-md">
           <div className="text-center mb-8">
@@ -43,7 +39,7 @@ const AuthCard = ({ children, title, subtitle }) => {
           </div>
           {children}
         </div>
-      </motion.div>
+      </div>
     </>
   );
 };

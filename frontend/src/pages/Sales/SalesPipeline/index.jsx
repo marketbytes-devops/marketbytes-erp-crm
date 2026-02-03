@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
-import { motion } from "framer-motion";
 import LayoutComponents from "../../../components/LayoutComponents/index";
 import apiClient from "../../../helpers/apiClient";
 import { MdDragIndicator, MdEdit, MdDelete } from "react-icons/md";
@@ -117,20 +116,18 @@ const Pipeline = () => {
                       <div
                         ref={provided.innerRef}
                         {...provided.droppableProps}
-                        className={`min-h-96 rounded-b-xl bg-gray-50 p-3 transition-colors ${
-                          snapshot.isDraggingOver ? "bg-gray-100" : ""
-                        }`}
+                        className={`min-h-96 rounded-b-xl bg-gray-50 p-3 transition-colors ${snapshot.isDraggingOver ? "bg-gray-100" : ""
+                          }`}
                       >
                         {columns[column.id]?.map((lead, index) => (
                           <Draggable key={lead.id} draggableId={lead.id.toString()} index={index}>
                             {(provided, snapshot) => (
-                              <motion.div
+                              <div
                                 ref={provided.innerRef}
                                 {...provided.draggableProps}
                                 {...provided.dragHandleProps}
-                                className={`bg-white rounded-xl shadow-md p-4 mb-3 cursor-grab active:cursor-grabbing transition-all ${
-                                  snapshot.isDragging ? "shadow-xl rotate-3 scale-105" : ""
-                                }`}
+                                className={`bg-white rounded-xl shadow-md p-4 mb-3 cursor-grab active:cursor-grabbing transition-all ${snapshot.isDragging ? "shadow-xl rotate-3 scale-105" : ""
+                                  }`}
                               >
                                 <div className="flex items-start justify-between mb-2">
                                   <h4 className="font-semibold text-gray-900">{lead.client_name || "No Client"}</h4>
@@ -150,7 +147,7 @@ const Pipeline = () => {
                                     <MdDelete className="w-4 h-4" />
                                   </button>
                                 </div>
-                              </motion.div>
+                              </div>
                             )}
                           </Draggable>
                         ))}

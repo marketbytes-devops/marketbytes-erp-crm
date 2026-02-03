@@ -60,7 +60,7 @@ const DesignationView = () => {
     <>
       <div className="p-6">
         <LayoutComponents title="Designations" subtitle="Manage job titles & roles" variant="table">
-          <div className="bg-white p-6 shadow-sm flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6">
+          <div className="bg-white p-6 shadow-sm flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6 rounded-t-xl">
             <div className="flex items-center gap-4 w-full sm:w-auto">
               <div className="relative">
                 <FiSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 w-5 h-5" />
