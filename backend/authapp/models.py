@@ -116,6 +116,103 @@ class CustomUser(AbstractUser):
             self.username = self.email.split("@")[0]
         super().save(*args, **kwargs)
 
+class UserPermission(models.Model):
+    """
+    Direct user-level permissions (PRIMARY control)
+    User can have permissions WITHOUT a role
+    """
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name="direct_permissions")
+    page = models.CharField(max_length=100)
+    can_view = models.BooleanField(default=False)
+    can_add = models.BooleanField(default=False)
+    can_edit = models.BooleanField(default=False)
+    can_delete = models.BooleanField(default=False)
+
+    class Meta:
+        unique_together = ("user", "page")
+        verbose_name_plural = "User Permissions"
+
+    def __str__(self):
+        return f"{self.user.email} - {self.page}"
+
+
+class PermissionOverride(models.Model):
+    """
+    Override permissions for specific user
+    Can BLOCK permissions from role or GRANT additional permissions
+    """
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name="permission_overrides")
+    page = models.CharField(max_length=100)
+    action = models.CharField(max_length=20, choices=[
+        ('can_view', 'View'),
+        ('can_add', 'Add'),
+        ('can_edit', 'Edit'),
+        ('can_delete', 'Delete'),
+    ])
+    is_blocked = models.BooleanField(default=False)  # True = blocked, False = granted
+
+    class Meta:
+        unique_together = ("user", "page", "action")
+        verbose_name_plural = "Permission Overrides"
+
+    def __str__(self):
+        status = "Blocked" if self.is_blocked else "Granted"
+        return f"{self.user.email} - {self.page}.{self.action} - {status}"
+
+
+def get_user_effective_permissions(user):
+    """
+    Calculate effective permissions for a user:
+    1. Direct UserPermissions (primary)
+    2. + Role Permissions (if role assigned)
+    3. - PermissionOverrides that block
+    
+    Returns dict: {page: {can_view, can_add, can_edit, can_delete}}
+    """
+    effective = {}
+
+    # Step 1: Add direct user permissions
+    user_perms = UserPermission.objects.filter(user=user)
+    for perm in user_perms:
+        effective[perm.page] = {
+            'can_view': perm.can_view,
+            'can_add': perm.can_add,
+            'can_edit': perm.can_edit,
+            'can_delete': perm.can_delete,
+        }
+
+    # Step 2: Merge role permissions (if role assigned)
+    if user.role:
+        role_perms = Permission.objects.filter(role=user.role)
+        for perm in role_perms:
+            if perm.page not in effective:
+                effective[perm.page] = {}
+            # OR combine: if already granted in direct, keep it; else take from role
+            effective[perm.page]['can_view'] = effective[perm.page].get('can_view', False) or perm.can_view
+            effective[perm.page]['can_add'] = effective[perm.page].get('can_add', False) or perm.can_add
+            effective[perm.page]['can_edit'] = effective[perm.page].get('can_edit', False) or perm.can_edit
+            effective[perm.page]['can_delete'] = effective[perm.page].get('can_delete', False) or perm.can_delete
+
+    # Step 3: Apply overrides (blocks take precedence)
+    overrides = PermissionOverride.objects.filter(user=user, is_blocked=True)
+    for override in overrides:
+        if override.page in effective:
+            effective[override.page][override.action] = False
+
+    return effective
+
+
+def has_user_permission(user, page, action):
+    """
+    Quick permission check for a specific user action
+    """
+    if user.role and user.role.name == "Superadmin":
+        return True
+
+    effective = get_user_effective_permissions(user)
+    return effective.get(page, {}).get(f'can_{action}', False)
+
+
 @receiver(post_save, sender=Role)
 def set_default_permissions(sender, instance, created, **kwargs):
     if created:
@@ -130,6 +227,15 @@ def set_default_permissions(sender, instance, created, **kwargs):
             {"page": "overtime", "can_view": True, "can_add": False, "can_edit": False, "can_delete": False},
             {"page": "recruitment", "can_view": True, "can_add": False, "can_edit": False, "can_delete": False},
             {"page": "performance", "can_view": True, "can_add": False, "can_edit": False, "can_delete": False},
+            {"page": "Projects", "can_view": True, "can_add": False, "can_edit": False, "can_delete": False},
+            {"page": "Tasks", "can_view": True, "can_add": False, "can_edit": False, "can_delete": False},
+            {"page": "Task Board", "can_view": True, "can_add": False, "can_edit": False, "can_delete": False},
+            {"page": "leads", "can_view": True, "can_add": False, "can_edit": False, "can_delete": False},
+            {"page": "pipeline", "can_view": True, "can_add": False, "can_edit": False, "can_delete": False},
+            {"page": "communication_tools", "can_view": True, "can_add": False, "can_edit": False, "can_delete": False},
+            {"page": "invoices", "can_view": True, "can_add": False, "can_edit": False, "can_delete": False},
+            {"page": "reports", "can_view": True, "can_add": False, "can_edit": False, "can_delete": False},
+            {"page": "customer", "can_view": True, "can_add": False, "can_edit": False, "can_delete": False},
             {"page": "profile", "can_view": True, "can_add": False, "can_edit": False, "can_delete": False},
             {"page": "users", "can_view": True, "can_add": False, "can_edit": False, "can_delete": False},
             {"page": "roles", "can_view": True, "can_add": False, "can_edit": False, "can_delete": False},
