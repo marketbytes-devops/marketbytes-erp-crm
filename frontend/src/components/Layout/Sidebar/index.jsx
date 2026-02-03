@@ -181,6 +181,11 @@ const Sidebar = ({ toggleSidebar }) => {
           label: "Timelogs",
           icon: <MdAssignment className="w-5 h-5" />,
           page: "TimeLogsView",
+         {
+          to: "/operations/taskcalendar",
+          label: "Task Calendar",
+          icon: <MdCalendarToday className="w-5 h-5" />,
+          page: "Task Calendar",
           action: "view",
         },
       ].filter((item) => hasPermission(item.page, item.action)),
