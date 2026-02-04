@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router";
 import LayoutComponents from "../../../components/LayoutComponents";
 import { MdArrowBack, MdAutoAwesome } from "react-icons/md";
@@ -6,8 +6,6 @@ import toast from "react-hot-toast";
 import apiClient from "../../../helpers/apiClient";
 import Loading from "../../../components/Loading";
 import Input from "../../../components/Input";
-import PermissionMatrix from "../../../components/PermissionMatrix";
-import { Shield } from "lucide-react";
 
 const generateStrongPassword = () => {
   const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()_+-=[]{}|;:,.<>?";
@@ -54,17 +52,6 @@ const EmployeeCreate = () => {
   const [departments, setDepartments] = useState([]);
   const [designations, setDesignations] = useState([]);
   const [employees, setEmployees] = useState([]);
-
-  // Default permissions state
-  const initialPermissions = useMemo(() => {
-    const perms = {};
-    Object.keys(pageNameMap).forEach(key => {
-      perms[key] = { view: false, add: false, edit: false, delete: false };
-    });
-    return perms;
-  }, []);
-
-  const [directPermissions, setDirectPermissions] = useState(initialPermissions);
 
   const [formData, setFormData] = useState({
     name: "",
@@ -147,16 +134,6 @@ const EmployeeCreate = () => {
     }
   }, [formData.designation_id, designations]);
 
-  const handlePermissionChange = (pageKey, action, value) => {
-    setDirectPermissions(prev => ({
-      ...prev,
-      [pageKey]: {
-        ...prev[pageKey],
-        [action]: value
-      }
-    }));
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -199,36 +176,7 @@ const EmployeeCreate = () => {
       formDataToSend.append('send_password_email', 'true');
     }
 
-    // Process and add direct permissions
-    const directPermsArray = Object.keys(directPermissions)
-      .map(key => {
-        const p = directPermissions[key];
-        if (p.view || p.add || p.edit || p.delete) {
-          return {
-            page: pageNameMap[key].apiName,
-            can_view: p.view,
-            can_add: p.add,
-            can_edit: p.edit,
-            can_delete: p.delete
-          };
-        }
-        return null;
-      })
-      .filter(Boolean);
-
-    // Append as JSON string if sending as FormData, but the backend expects individual fields or JSON.
-    // If using FormData, we might need a workaround for arrays of objects.
-    // Let's use a standard JSON post instead of FormData if no image is present,
-    // or handle how DRF expects nested lists in FormData.
-    // Actually, common way is append multiple 'user_permissions' fields or a single JSON string.
-    if (directPermsArray.length > 0) {
-      formDataToSend.append('user_permissions', JSON.stringify(directPermsArray));
-    }
-
     try {
-      // NOTE: Using multipart/form-data because of image.
-      // We might need to handle JSON stringification on backend or adjust how we send list of dicts.
-      // Backend expects 'user_permissions' as ListField.
       await apiClient.post("/auth/users/", formDataToSend);
       toast.success("Employee created successfully!");
       navigate("/hr/employees");
@@ -349,21 +297,6 @@ const EmployeeCreate = () => {
             </div>
           </div>
 
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-6 flex items-center gap-2">
-              <Shield className="w-6 h-6" />
-              Direct User Permissions
-            </h3>
-            <p className="text-sm text-gray-600 mb-6">
-              Assigned directly to this user. Combined with role permissions if a role is selected.
-            </p>
-            <PermissionMatrix
-              permissions={directPermissions}
-              onChange={handlePermissionChange}
-              pageNameMap={pageNameMap}
-              type="direct"
-            />
-          </div>
 
           <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
             <h3 className="text-lg font-semibold text-gray-900 mb-6">Account Settings</h3>
