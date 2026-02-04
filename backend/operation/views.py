@@ -2,6 +2,7 @@ from rest_framework import viewsets, status, filters
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
+from authapp.permissions import HasPermission
 from django_filters.rest_framework import DjangoFilterBackend
 from django.db.models import Q
 import datetime
@@ -33,7 +34,8 @@ class ProjectCategoryViewSet(viewsets.ModelViewSet):
 
     queryset = ProjectCategory.objects.all()
     serializer_class = ProjectCategorySerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [HasPermission]
+    page_name = 'projects'
     filter_backends = [
         DjangoFilterBackend,
         filters.SearchFilter,
@@ -55,7 +57,8 @@ class ProjectStatusViewSet(viewsets.ModelViewSet):
 
     queryset = ProjectStatus.objects.all()
     serializer_class = ProjectStatusSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [HasPermission]
+    page_name = 'projects'
     filter_backends = [DjangoFilterBackend, filters.SearchFilter]
     search_fields = ["name", "description"]
     filterset_fields = ["name"]
@@ -71,7 +74,8 @@ class ProjectStageViewSet(viewsets.ModelViewSet):
 
     queryset = ProjectStage.objects.all()
     serializer_class = ProjectStageSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [HasPermission]
+    page_name = 'projects'
     filter_backends = [DjangoFilterBackend, filters.SearchFilter]
     search_fields = ["name", "description"]
     filterset_fields = ["name"]
@@ -87,7 +91,8 @@ class ClientViewSet(viewsets.ModelViewSet):
 
     queryset = Client.objects.all()
     serializer_class = ClientSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [HasPermission]
+    page_name = 'customer'
     filter_backends = [
         DjangoFilterBackend,
         filters.SearchFilter,
@@ -109,7 +114,8 @@ class CurrencyViewSet(viewsets.ReadOnlyModelViewSet):
 
     queryset = Currency.objects.filter(is_active=True).order_by("code")
     serializer_class = CurrencySerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [HasPermission]
+    page_name = 'projects'
     filter_backends = [filters.SearchFilter]
     search_fields = ["code", "name"]
 
@@ -121,8 +127,8 @@ class ProjectViewSet(viewsets.ModelViewSet):
    
     serializer_class = ProjectSerializer
     queryset = Project.objects.all()
-    serializer_class = ProjectSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [HasPermission]
+    page_name = 'projects'
     filter_backends = [
         DjangoFilterBackend,
         filters.SearchFilter,
@@ -444,7 +450,8 @@ class TaskViewSet(viewsets.ModelViewSet):
     queryset = Task.objects.all().select_related(
         'project').prefetch_related('assignees')
     serializer_class = TaskSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [HasPermission]
+    page_name = 'tasks'
     filter_backends = [DjangoFilterBackend,
                        filters.SearchFilter, filters.OrderingFilter]
     search_fields = ['title', 'description', 'project__name']

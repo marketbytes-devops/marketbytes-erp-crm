@@ -79,16 +79,9 @@ const ProtectedRoute = ({
           return;
         }
 
-        const roleId = user.role?.id;
-        if (!roleId) {
-          setHasPermission(false);
-          setIsLoading(false);
-          return;
-        }
-
-        const roleResponse = await apiClient.get(`/auth/roles/${roleId}/`);
-        const perms = roleResponse.data.permissions || [];
-        const pagePerm = perms.find((p) => p.page === requiredPage);
+        // Use effective_permissions mapping which is already calculated by backend
+        const perms = user.effective_permissions || {};
+        const pagePerm = perms[requiredPage];
 
         if (!requiredPage || (pagePerm && pagePerm[`can_${requiredAction}`])) {
           setHasPermission(true);
@@ -378,6 +371,7 @@ function App() {
             <ProtectedRoute
               isAuthenticated={isAuthenticated}
               requiredPage="communication_tools"
+              requiredAction="view"
             >
               <Communication />
             </ProtectedRoute>
@@ -389,6 +383,7 @@ function App() {
             <ProtectedRoute
               isAuthenticated={isAuthenticated}
               requiredPage="pipeline"
+              requiredAction="view"
             >
               <Pipeline />
             </ProtectedRoute>
@@ -400,6 +395,7 @@ function App() {
             <ProtectedRoute
               isAuthenticated={isAuthenticated}
               requiredPage="invoices"
+              requiredAction="view"
             >
               <Invoice />
             </ProtectedRoute>
@@ -411,6 +407,7 @@ function App() {
             <ProtectedRoute
               isAuthenticated={isAuthenticated}
               requiredPage="reports"
+              requiredAction="view"
             >
               <Reports />
             </ProtectedRoute>
@@ -421,7 +418,8 @@ function App() {
           element: (
             <ProtectedRoute
               isAuthenticated={isAuthenticated}
-              requiredPage="reports"
+              requiredPage="customer"
+              requiredAction="view"
             >
               <Customers />
             </ProtectedRoute>
@@ -445,7 +443,7 @@ function App() {
           element: (
             <ProtectedRoute
               isAuthenticated={isAuthenticated}
-              requiredPage="permissions"
+              requiredPage="projects"
               requiredAction="view"
             >
               <Projects />
@@ -470,8 +468,8 @@ function App() {
           element: (
             <ProtectedRoute
               isAuthenticated={isAuthenticated}
-              requiredPage="permissions"
-              requiredAction="view"
+              requiredPage="projects"
+              requiredAction="add"
             >
               <ProjectCreate />
             </ProtectedRoute>
@@ -496,7 +494,7 @@ function App() {
           element: (
             <ProtectedRoute
               isAuthenticated={isAuthenticated}
-              requiredPage="permissions"
+              requiredPage="projects"
               requiredAction="view"
             >
               <ProjectTemplate />
@@ -509,8 +507,8 @@ function App() {
           element: (
             <ProtectedRoute
               isAuthenticated={isAuthenticated}
-              requiredPage="permissions"
-              requiredAction="view"
+              requiredPage="projects"
+              requiredAction="add"
             >
               <ProjectTemplateAdd />
             </ProtectedRoute>
@@ -522,7 +520,7 @@ function App() {
           element: (
             <ProtectedRoute
               isAuthenticated={isAuthenticated}
-              requiredPage="permissions"
+              requiredPage="projects"
               requiredAction="view"
             >
               <ProjectArchive />
@@ -534,7 +532,7 @@ function App() {
           element: (
             <ProtectedRoute
               isAuthenticated={isAuthenticated}
-              requiredPage="permissions"
+              requiredPage="tasks"
               requiredAction="view"
             >
               <TaskView />
@@ -546,7 +544,7 @@ function App() {
           element: (
             <ProtectedRoute
               isAuthenticated={isAuthenticated}
-              requiredPage="permissions"
+              requiredPage="tasks"
               requiredAction="view"
             >
               <TaskLabel />
@@ -558,8 +556,8 @@ function App() {
           element: (
             <ProtectedRoute
               isAuthenticated={isAuthenticated}
-              requiredPage="permissions"
-              requiredAction="view"
+              requiredPage="tasks"
+              requiredAction="add"
             >
               <CreateTaskLabel />
             </ProtectedRoute>
@@ -570,8 +568,8 @@ function App() {
           element: (
             <ProtectedRoute
               isAuthenticated={isAuthenticated}
-              requiredPage="permissions"
-              requiredAction="view"
+              requiredPage="tasks"
+              requiredAction="add"
             >
               <NewTask />
             </ProtectedRoute>
@@ -594,7 +592,7 @@ function App() {
           element: (
             <ProtectedRoute
               isAuthenticated={isAuthenticated}
-              requiredPage="permissions"
+              requiredPage="task board"
               requiredAction="view"
             >
               <TaskBoard />

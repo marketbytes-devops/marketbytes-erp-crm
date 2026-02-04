@@ -7,11 +7,10 @@ import Input from "../../components/Input";
 import PermissionMatrix from "../../components/PermissionMatrix";
 
 const pageNameMap = {
-  // Common
+  // Common / Home
   admin: { apiName: "admin", displayName: "Dashboard", route: "/Dashboard" },
-  profile: { apiName: "profile", displayName: "Profile", route: "/profile" },
 
-  // HR
+  // HR Management
   employees: { apiName: "employees", displayName: "Employees", route: "/hr/employees" },
   departments: { apiName: "departments", displayName: "Departments", route: "/hr/departments" },
   designations: { apiName: "designations", displayName: "Designations", route: "/hr/designations" },
@@ -23,7 +22,7 @@ const pageNameMap = {
   performance: { apiName: "performance", displayName: "Performance", route: "/hr/performance" },
 
   // Operations
-  projects: { apiName: "Projects", displayName: "Projects", route: "/Operations/projects" },
+  projects: { apiName: "Projects", displayName: "Projects", route: "/operations/projects" },
   tasks: { apiName: "Tasks", displayName: "Tasks", route: "/operations/tasks" },
   taskboard: { apiName: "Task Board", displayName: "Task Board", route: "/operations/taskboard" },
 
@@ -38,7 +37,10 @@ const pageNameMap = {
   // User Roles
   roles: { apiName: "roles", displayName: "Roles", route: "/user-roles/roles" },
   users: { apiName: "users", displayName: "Users", route: "/user-roles/users" },
-  permissions: { apiName: "permissions", displayName: "Permissions", route: "/user-roles/permissions" }
+  permissions: { apiName: "permissions", displayName: "Permissions", route: "/user-roles/permissions" },
+
+  // Profile
+  profile: { apiName: "profile", displayName: "Profile", route: "/profile" },
 };
 
 const Users = () => {

@@ -171,7 +171,18 @@ def get_user_effective_permissions(user):
     """
     effective = {}
 
-    # Step 1: Add direct user permissions
+    # Step 1: Merge role permissions (Baseline)
+    if user.role:
+        role_perms = Permission.objects.filter(role=user.role)
+        for perm in role_perms:
+            effective[perm.page] = {
+                'can_view': perm.can_view,
+                'can_add': perm.can_add,
+                'can_edit': perm.can_edit,
+                'can_delete': perm.can_delete,
+            }
+
+    # Step 2: Overwrite with direct user permissions (Precedence)
     user_perms = UserPermission.objects.filter(user=user)
     for perm in user_perms:
         effective[perm.page] = {
@@ -180,18 +191,6 @@ def get_user_effective_permissions(user):
             'can_edit': perm.can_edit,
             'can_delete': perm.can_delete,
         }
-
-    # Step 2: Merge role permissions (if role assigned)
-    if user.role:
-        role_perms = Permission.objects.filter(role=user.role)
-        for perm in role_perms:
-            if perm.page not in effective:
-                effective[perm.page] = {}
-            # OR combine: if already granted in direct, keep it; else take from role
-            effective[perm.page]['can_view'] = effective[perm.page].get('can_view', False) or perm.can_view
-            effective[perm.page]['can_add'] = effective[perm.page].get('can_add', False) or perm.can_add
-            effective[perm.page]['can_edit'] = effective[perm.page].get('can_edit', False) or perm.can_edit
-            effective[perm.page]['can_delete'] = effective[perm.page].get('can_delete', False) or perm.can_delete
 
     # Step 3: Apply overrides (blocks take precedence)
     overrides = PermissionOverride.objects.filter(user=user, is_blocked=True)
@@ -227,9 +226,9 @@ def set_default_permissions(sender, instance, created, **kwargs):
             {"page": "overtime", "can_view": True, "can_add": False, "can_edit": False, "can_delete": False},
             {"page": "recruitment", "can_view": True, "can_add": False, "can_edit": False, "can_delete": False},
             {"page": "performance", "can_view": True, "can_add": False, "can_edit": False, "can_delete": False},
-            {"page": "Projects", "can_view": True, "can_add": False, "can_edit": False, "can_delete": False},
-            {"page": "Tasks", "can_view": True, "can_add": False, "can_edit": False, "can_delete": False},
-            {"page": "Task Board", "can_view": True, "can_add": False, "can_edit": False, "can_delete": False},
+            {"page": "projects", "can_view": True, "can_add": False, "can_edit": False, "can_delete": False},
+            {"page": "tasks", "can_view": True, "can_add": False, "can_edit": False, "can_delete": False},
+            {"page": "task board", "can_view": True, "can_add": False, "can_edit": False, "can_delete": False},
             {"page": "leads", "can_view": True, "can_add": False, "can_edit": False, "can_delete": False},
             {"page": "pipeline", "can_view": True, "can_add": False, "can_edit": False, "can_delete": False},
             {"page": "communication_tools", "can_view": True, "can_add": False, "can_edit": False, "can_delete": False},

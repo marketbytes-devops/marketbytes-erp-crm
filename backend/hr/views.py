@@ -2,6 +2,7 @@ from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
+from authapp.permissions import HasPermission
 from django.utils import timezone
 from datetime import timedelta, datetime, time, timezone as dt_timezone
 from django.db.models import Q
@@ -11,7 +12,8 @@ from .serializers import *
 class AttendanceViewSet(viewsets.ModelViewSet):
     queryset = Attendance.objects.all().select_related('employee')
     serializer_class = AttendanceSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [HasPermission]
+    page_name = 'attendance'
     
     def get_queryset(self):
         user = self.request.user
@@ -259,22 +261,26 @@ class AttendanceViewSet(viewsets.ModelViewSet):
 class HolidayViewSet(viewsets.ModelViewSet):
     queryset = Holiday.objects.all()
     serializer_class = HolidaySerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [HasPermission]
+    page_name = 'holidays'
 
 class LeaveTypeViewSet(viewsets.ModelViewSet):
     queryset = LeaveType.objects.all()
     serializer_class = LeaveTypeSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [HasPermission]
+    page_name = 'leaves'
 
 class LeaveViewSet(viewsets.ModelViewSet):
     queryset = Leave.objects.all().select_related('employee', 'leave_type', 'approved_by')
     serializer_class = LeaveSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [HasPermission]
+    page_name = 'leaves'
 
 class OvertimeViewSet(viewsets.ModelViewSet):
     queryset = Overtime.objects.all().select_related('employee')
     serializer_class = OvertimeSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [HasPermission]
+    page_name = 'overtime'
     
     def get_queryset(self):
         user = self.request.user
@@ -352,12 +358,14 @@ class OvertimeViewSet(viewsets.ModelViewSet):
 class CandidateViewSet(viewsets.ModelViewSet):
     queryset = Candidate.objects.all().select_related('department')
     serializer_class = CandidateSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [HasPermission]
+    page_name = 'recruitment'
 
 class PerformanceViewSet(viewsets.ModelViewSet):
     queryset = Performance.objects.all().select_related('employee', 'department', 'reviewed_by')
     serializer_class = PerformanceSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [HasPermission]
+    page_name = 'performance'
 
     def get_queryset(self):
         user = self.request.user
