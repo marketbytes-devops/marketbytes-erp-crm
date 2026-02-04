@@ -23,9 +23,9 @@ const pageNameMap = {
   performance: { apiName: "performance", displayName: "Performance", route: "/hr/performance" },
 
   // Operations
-  projects: { apiName: "Projects", displayName: "Projects", route: "/operations/projects" },
-  tasks: { apiName: "Tasks", displayName: "Tasks", route: "/operations/tasks" },
-  taskboard: { apiName: "Task Board", displayName: "Task Board", route: "/operations/taskboard" },
+  projects: { apiName: "projects", displayName: "Projects", route: "/operations/projects" },
+  tasks: { apiName: "tasks", displayName: "Tasks", route: "/operations/tasks" },
+  taskboard: { apiName: "task board", displayName: "Task Board", route: "/operations/taskboard" },
 
   // Sales
   leads: { apiName: "leads", displayName: "Leads", route: "/sales/leads" },
@@ -33,7 +33,7 @@ const pageNameMap = {
   communication_tools: { apiName: "communication_tools", displayName: "Communication Tools", route: "/sales/communication-tools" },
   invoices: { apiName: "invoices", displayName: "Invoices", route: "/sales/invoices" },
   reports: { apiName: "reports", displayName: "Reports", route: "/sales/reports" },
-  customer: { apiName: "customer", displayName: "Customer", route: "/sales/customer" },
+  customer: { apiName: "customer", displayName: "Clients & Companies", route: "/sales/customer" },
 
   // User Roles
   roles: { apiName: "roles", displayName: "Roles", route: "/user-roles/roles" },

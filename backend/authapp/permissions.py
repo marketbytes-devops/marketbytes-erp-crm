@@ -29,6 +29,14 @@ class HasPermission(BasePermission):
         if page == 'users' and has_user_permission(request.user, 'employees', action):
             return True
 
+        # Alias 'roles' and 'designations' (Roles represent designations in this ERP)
+        if page == 'roles' and has_user_permission(request.user, 'designations', action):
+            return True
+
+        # Alias 'clients'/'client' and 'customer' (Clients are part of the 'customer' page in backend)
+        if page in ['clients', 'client'] and has_user_permission(request.user, 'customer', action):
+            return True
+
         # Allow view access to metadata (roles, departments) if user has employee access
         # This is needed for dropdowns and filters in the employee module.
         if action == 'view' and page in ['roles', 'departments'] and has_user_permission(request.user, 'employees', 'view'):
@@ -55,6 +63,14 @@ def has_permission(user, page, action):
         
     # Alias 'users' and 'employees'
     if page == 'users' and has_user_permission(user, 'employees', action):
+        return True
+
+    # Alias 'roles' and 'designations'
+    if page == 'roles' and has_user_permission(user, 'designations', action):
+        return True
+
+    # Alias 'clients'/'client' and 'customer'
+    if page in ['clients', 'client'] and has_user_permission(user, 'customer', action):
         return True
 
     # Allow view access to metadata
