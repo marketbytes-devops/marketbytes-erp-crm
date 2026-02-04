@@ -15,7 +15,7 @@ class Attendance(models.Model):
     is_late = models.BooleanField(default=False, null=True, blank=True)
     is_half_day = models.BooleanField(default=False, null=True, blank=True)
     working_from = models.CharField(max_length=100, default="Office", null=True, blank=True)
-    status = models.CharField(max_length=20, choices=[('present', 'Present'),('absent', 'Absent'),('late', 'Late'),('half_day', 'Half Day'),('leave', 'On Leave'),('holiday', 'Holiday')], default='absent', null=True, blank=True)
+    status = models.CharField(max_length=20, choices=[('present', 'Present'),('absent', 'Absent'),('late', 'Late'),('half_day', 'Half Day'),('half_day_late', 'Half Day Late'),('leave', 'On Leave'),('holiday', 'Holiday')], default='absent', null=True, blank=True)
     notes = models.TextField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True, null=True, blank=True)
     updated_at = models.DateTimeField(auto_now=True, null=True, blank=True)

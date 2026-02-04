@@ -3,7 +3,7 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from django.utils import timezone
-from datetime import timedelta, datetime, time
+from datetime import timedelta, datetime, time, timezone as dt_timezone
 from django.db.models import Q
 from .models import Attendance, Holiday, LeaveType, Leave, Overtime, Candidate, Performance, Project, Task, WorkSession, BreakSession
 from .serializers import *
@@ -87,7 +87,12 @@ class AttendanceViewSet(viewsets.ModelViewSet):
         today = timezone.now().date()
         action = serializer.validated_data['action']
         ip = request.META.get('REMOTE_ADDR', '0.0.0.0')
-        current_time = timezone.now().time()
+        
+        now = timezone.now()
+        current_time_utc = now.time()
+        current_time_local = timezone.localtime(now).time()
+        
+        current_time = current_time_local 
         
         attendance, created = Attendance.objects.get_or_create(
             employee=request.user,
@@ -100,7 +105,7 @@ class AttendanceViewSet(viewsets.ModelViewSet):
         
         if action == 'in':
             if attendance.clock_in and attendance.clock_out:
-                attendance.clock_in = current_time
+                attendance.clock_in = current_time_utc # Store UTC
                 attendance.clock_out = None
                 attendance.clock_in_ip = ip
                 attendance.status = self._calculate_status(current_time)
@@ -112,7 +117,7 @@ class AttendanceViewSet(viewsets.ModelViewSet):
                 })
             
             elif attendance.clock_in:
-                attendance.clock_in = current_time
+                attendance.clock_in = current_time_utc 
                 attendance.clock_in_ip = ip
                 attendance.status = self._calculate_status(current_time)
                 attendance.save()
@@ -123,12 +128,31 @@ class AttendanceViewSet(viewsets.ModelViewSet):
                 })
                 
             else:
-                attendance.clock_in = current_time
+                check_in_limit = time(9, 30)
+                half_day_start = time(14, 0)
+                
+                attendance.clock_in = current_time_utc 
                 attendance.clock_in_ip = ip
                 attendance.working_from = serializer.validated_data.get('working_from', 'Office')
-                attendance.status = self._calculate_status(current_time)
-                attendance.is_late = current_time > time(9, 30)
-                attendance.is_half_day = current_time >= time(13, 0)
+                
+                if current_time <= check_in_limit:
+                    attendance.status = 'present'
+                    attendance.is_late = False
+                    attendance.is_half_day = False
+                elif current_time < half_day_start:
+                    attendance.status = 'late'
+                    attendance.is_late = True
+                    attendance.is_half_day = False
+                else:
+                    attendance.is_half_day = True
+                    
+                    if current_time > half_day_start:
+                         attendance.status = 'half_day_late'
+                         attendance.is_late = True
+                    else:
+                         attendance.status = 'half_day'
+                         attendance.is_late = False
+
                 attendance.save()
                 return Response({
                     "message": "Checked in successfully",
@@ -143,11 +167,10 @@ class AttendanceViewSet(viewsets.ModelViewSet):
             if attendance.clock_out:
                 return Response({"error": "You have already checked out today"}, status=400)
             
-            attendance.clock_out = current_time
+            attendance.clock_out = current_time_utc 
             attendance.clock_out_ip = ip
             attendance.save()
 
-            # Automatically stop any active timers when checking out for the day
             now = timezone.now()
             WorkSession.objects.filter(employee=request.user, end_time__isnull=True).update(end_time=now)
             BreakSession.objects.filter(employee=request.user, end_time__isnull=True).update(end_time=now)
@@ -157,10 +180,13 @@ class AttendanceViewSet(viewsets.ModelViewSet):
                 "time": attendance.clock_out.strftime("%H:%M")
             })
     
+    
     def _calculate_status(self, check_in_time):
         """Calculate attendance status based on check-in time"""
-        if check_in_time >= time(13, 0):
-            return 'half_day'
+        if check_in_time > time(14, 0):
+             return 'half_day_late'
+        elif check_in_time >= time(14, 0):
+             return 'half_day'
         elif check_in_time > time(9, 30):
             return 'late'
         else:
@@ -187,10 +213,33 @@ class AttendanceViewSet(viewsets.ModelViewSet):
         
         productive_hours = str(timedelta(seconds=int(total_seconds)))
         
+        first_session_time = None
+        if att:
+             start_of_day_unaware = datetime.combine(local_now.date(), datetime.min.time())
+             end_of_day_unaware = datetime.combine(local_now.date(), datetime.max.time())
+                  
+             current_tz = timezone.get_current_timezone()
+             start_of_day_aware = timezone.make_aware(start_of_day_unaware, current_tz)
+             end_of_day_aware = timezone.make_aware(end_of_day_unaware, current_tz)
+                  
+             first_session = WorkSession.objects.filter(
+                      employee=request.user, 
+                      start_time__gte=start_of_day_aware,
+                      start_time__lte=end_of_day_aware
+                  ).order_by('start_time').first()
+                  
+             if first_session:
+                 first_session_time = timezone.localtime(first_session.start_time).strftime("%I:%M %p")
+
+        if not first_session_time and att and att.clock_in:
+             dt = datetime.combine(local_now.date(), att.clock_in)
+             dt = dt.replace(tzinfo=dt_timezone.utc)
+             first_session_time = timezone.localtime(dt).strftime("%I:%M %p")
+
         if att and att.clock_in and not att.clock_out:
             return Response({
                 "checked_in": True,
-                "clock_in": att.clock_in.strftime("%H:%M"),
+                "clock_in": first_session_time,
                 "clock_out": None,
                 "productive_hours": productive_hours,
                 "status": att.status,
@@ -200,8 +249,8 @@ class AttendanceViewSet(viewsets.ModelViewSet):
         message = "Checked out today" if att and att.clock_out else "Not checked in today"
         return Response({
             "checked_in": False,
-            "clock_in": att.clock_in.strftime("%H:%M") if att and att.clock_in else None,
-            "clock_out": att.clock_out.strftime("%H:%M") if att and att.clock_out else None,
+            "clock_in": first_session_time,
+            "clock_out": att.clock_out.strftime("%I:%M %p") if att and att.clock_out else None,
             "productive_hours": productive_hours,
             "status": att.status if att else "absent",
             "message": message
@@ -342,6 +391,22 @@ class TimerViewSet(viewsets.ViewSet):
         
         now = timezone.now()
         local_now = timezone.localtime(now)
+        
+        if active_work:
+            start_local = active_work.start_time.astimezone(timezone.get_current_timezone())
+            if start_local.date() < local_now.date():
+                end_of_day_local = start_local.replace(hour=23, minute=59, second=59)
+                active_work.end_time = end_of_day_local
+                active_work.save()
+                active_work = None
+            
+        if active_break:
+            start_local = active_break.start_time.astimezone(timezone.get_current_timezone())
+            if start_local.date() < local_now.date():
+                end_of_day_local = start_local.replace(hour=23, minute=59, second=59)
+                active_break.end_time = end_of_day_local
+                active_break.save()
+                active_break = None
         start_of_day = local_now.replace(hour=0, minute=0, second=0, microsecond=0)
         
         # Calculate total work
@@ -439,15 +504,11 @@ class TimerViewSet(viewsets.ViewSet):
     def projects_tasks(self, request):
         user = request.user
         role = getattr(user, 'role', None)
-        # staff members and superadmins see everything
         is_admin = user.is_superuser or user.is_staff or (role and role.name == "Superadmin")
         
-        # 1. Get Projects
         if is_admin:
-            # For admins, show ALL projects initially to verify they exist
             projects = Project.objects.all()
         else:
-            # For others, keep filters but allow inactive if they are members
             query = Q(members=user) | Q(tasks__assignees=user)
             if user.department_id:
                 query |= Q(department_id=user.department_id)
@@ -455,8 +516,6 @@ class TimerViewSet(viewsets.ViewSet):
 
         data = []
         for p in projects:
-            # 2. Get Tasks for this project
-            # Show all tasks except done for admins, and assigned for others
             tasks_qs = p.tasks.exclude(status='done')
             
             if not is_admin:
@@ -470,10 +529,8 @@ class TimerViewSet(viewsets.ViewSet):
                     "name": f"{t.name}{due_info}"
                 })
 
-            # Check if user is a member
             is_member = is_admin or p.members.filter(id=user.id).exists()
             
-            # Include project if it has tasks for the user OR user is a member
             if is_admin or is_member or len(task_list) > 0:
                 data.append({
                     "id": p.id,
