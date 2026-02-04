@@ -21,10 +21,51 @@ class HasPermission(BasePermission):
         if not action:
             return False
             
-        return has_user_permission(request.user, page, action)
+        # Primary check
+        if has_user_permission(request.user, page, action):
+            return True
+        
+        # Alias 'users' and 'employees' for consistency between frontend/backend
+        if page == 'users' and has_user_permission(request.user, 'employees', action):
+            return True
+
+        # Allow view access to metadata (roles, departments) if user has employee access
+        # This is needed for dropdowns and filters in the employee module.
+        if action == 'view' and page in ['roles', 'departments'] and has_user_permission(request.user, 'employees', 'view'):
+            return True
+
+        # Allow view access to attendance status if user has dashboard or employee access
+        # This is needed for the clock-in/out status in the header.
+        if action == 'view' and page == 'attendance' and (
+            has_user_permission(request.user, 'admin', 'view') or 
+            has_user_permission(request.user, 'employees', 'view')
+        ):
+            return True
+            
+        return False
 
 def has_permission(user, page, action):
     """Helper function for manual permission checks"""
     if user.is_superuser or (user.role and user.role.name == "Superadmin"):
         return True
-    return has_user_permission(user, page, action)
+    
+    # Primary check
+    if has_user_permission(user, page, action):
+        return True
+        
+    # Alias 'users' and 'employees'
+    if page == 'users' and has_user_permission(user, 'employees', action):
+        return True
+
+    # Allow view access to metadata
+    if action == 'view' and page in ['roles', 'departments'] and has_user_permission(user, 'employees', 'view'):
+        return True
+
+    # Allow view access to attendance status
+    if action == 'view' and page == 'attendance' and (
+        has_user_permission(user, 'admin', 'view') or 
+        has_user_permission(user, 'employees', 'view')
+    ):
+        return True
+        
+    return False

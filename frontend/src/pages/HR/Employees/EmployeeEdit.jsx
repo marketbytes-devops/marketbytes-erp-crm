@@ -1,12 +1,11 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect } from "react";
 import { Link, useParams, useNavigate } from "react-router";
-import { MdArrowBack, MdAutoAwesome, MdBadge, MdShield, MdBlock, MdCheckCircle } from "react-icons/md";
+import { MdArrowBack, MdAutoAwesome, MdBadge } from "react-icons/md";
 import toast from "react-hot-toast";
 import apiClient from "../../../helpers/apiClient";
 import Loading from "../../../components/Loading";
 import LayoutComponents from "../../../components/LayoutComponents";
 import Input from "../../../components/Input";
-import PermissionMatrix from "../../../components/PermissionMatrix";
 
 const generateStrongPassword = () => {
   const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()_+-=[]{}|;:,.<>?";
@@ -57,17 +56,6 @@ const EmployeeEdit = () => {
   const [roles, setRoles] = useState([]);
   const [employees, setEmployees] = useState([]);
 
-  // Permission states
-  const initialPermissions = useMemo(() => {
-    const perms = {};
-    Object.keys(pageNameMap).forEach(key => {
-      perms[key] = { view: false, add: false, edit: false, delete: false };
-    });
-    return perms;
-  }, []);
-
-  const [directPermissions, setDirectPermissions] = useState(initialPermissions);
-  const [overrides, setOverrides] = useState(initialPermissions);
   const [effectivePermissions, setEffectivePermissions] = useState({});
 
   useEffect(() => {
@@ -115,23 +103,6 @@ const EmployeeEdit = () => {
           image: null,
         });
 
-        // Load Direct Permissions
-        const loadedDirect = { ...initialPermissions };
-        (empData.direct_permissions || []).forEach(perm => {
-          const key = Object.keys(pageNameMap).find(k => pageNameMap[k].apiName === perm.page);
-          if (key) {
-            loadedDirect[key] = {
-              view: perm.can_view,
-              add: perm.can_add,
-              edit: perm.can_edit,
-              delete: perm.can_delete
-            };
-          }
-        });
-        setDirectPermissions(loadedDirect);
-
-        // Load Overrides (Note: Backend structure for overrides might vary, assuming is_blocked for now)
-        // We'll calculate/load them if available or if the user creates them.
         setEffectivePermissions(empData.effective_permissions || {});
 
       } catch (err) {
@@ -142,27 +113,8 @@ const EmployeeEdit = () => {
       }
     };
     fetchData();
-  }, [id, navigate, initialPermissions]);
+  }, [id, navigate]);
 
-  const handlePermissionChange = (pageKey, action, value) => {
-    setDirectPermissions(prev => ({
-      ...prev,
-      [pageKey]: {
-        ...prev[pageKey],
-        [action]: value
-      }
-    }));
-  };
-
-  const handleOverrideChange = (pageKey, action, value) => {
-    setOverrides(prev => ({
-      ...prev,
-      [pageKey]: {
-        ...prev[pageKey],
-        [action]: value
-      }
-    }));
-  };
 
   const handleGeneratePassword = () => {
     const newPass = generateStrongPassword();
@@ -194,43 +146,6 @@ const EmployeeEdit = () => {
       data.append("send_password_email", "true");
     }
 
-    // Process direct permissions
-    const directPermsArray = Object.keys(directPermissions)
-      .map(key => {
-        const p = directPermissions[key];
-        if (p.view || p.add || p.edit || p.delete) {
-          return {
-            page: pageNameMap[key].apiName,
-            can_view: p.view,
-            can_add: p.add,
-            can_edit: p.edit,
-            can_delete: p.delete
-          };
-        }
-        return null;
-      })
-      .filter(Boolean);
-
-    if (directPermsArray.length > 0) {
-      data.append('user_permissions', JSON.stringify(directPermsArray));
-    }
-
-    // Process overrides (BLOCKS)
-    const overridesArray = Object.keys(overrides)
-      .flatMap(key => {
-        const o = overrides[key];
-        return Object.keys(o)
-          .filter(action => o[action])
-          .map(action => ({
-            page: pageNameMap[key].apiName,
-            action: `can_${action}`,
-            is_blocked: true
-          }));
-      });
-
-    if (overridesArray.length > 0) {
-      data.append('permission_overrides', JSON.stringify(overridesArray));
-    }
 
     try {
       await apiClient.put(`/auth/users/${id}/`, data, {
@@ -355,68 +270,6 @@ const EmployeeEdit = () => {
             </div>
           </div>
 
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-6 flex items-center gap-2">
-              <MdShield className="w-6 h-6" />
-              Direct User Permissions
-            </h3>
-            <p className="text-sm text-gray-600 mb-6">
-              Assigned directly to this user. Combined with role permissions using OR logic.
-            </p>
-            <PermissionMatrix
-              permissions={directPermissions}
-              onChange={handlePermissionChange}
-              pageNameMap={pageNameMap}
-              type="direct"
-            />
-          </div>
-
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
-            <h3 className="text-lg font-semibold text-red-600 mb-6 flex items-center gap-2">
-              <MdBlock className="w-6 h-6" />
-              Permission Overrides (BLOCKS)
-            </h3>
-            <p className="text-sm text-gray-600 mb-6">
-              BLOCK specific actions even if they are allowed by the role or direct permissions.
-            </p>
-            <PermissionMatrix
-              permissions={overrides}
-              onChange={handleOverrideChange}
-              pageNameMap={pageNameMap}
-              type="override"
-            />
-          </div>
-
-          <div className="bg-gray-50 rounded-2xl border-2 border-dashed border-gray-300 p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-6 flex items-center gap-2">
-              <MdCheckCircle className="w-6 h-6 text-green-600" />
-              Effective Permissions (Preview)
-            </h3>
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-              {Object.keys(pageNameMap).map(key => {
-                const apiName = pageNameMap[key].apiName;
-                const perms = effectivePermissions[apiName] || {};
-                const hasAny = perms.can_view || perms.can_add || perms.can_edit || perms.can_delete;
-
-                if (!hasAny) return null;
-
-                return (
-                  <div key={key} className="bg-white p-3 rounded-lg border border-gray-200 shadow-sm">
-                    <p className="font-bold text-xs uppercase text-gray-500 mb-2">{pageNameMap[key].displayName}</p>
-                    <div className="flex flex-wrap gap-1">
-                      {perms.can_view && <span className="px-2 py-0.5 bg-blue-100 text-blue-700 text-[10px] rounded-full font-bold">VIEW</span>}
-                      {perms.can_add && <span className="px-2 py-0.5 bg-green-100 text-green-700 text-[10px] rounded-full font-bold">ADD</span>}
-                      {perms.can_edit && <span className="px-2 py-0.5 bg-amber-100 text-amber-700 text-[10px] rounded-full font-bold">EDIT</span>}
-                      {perms.can_delete && <span className="px-2 py-0.5 bg-red-100 text-red-700 text-[10px] rounded-full font-bold">DEL</span>}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-            <p className="text-xs text-gray-500 mt-4 italic">
-              * This is a read-only preview of what the user can actually do after combining all sources.
-            </p>
-          </div>
 
           <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
             <h3 className="text-lg font-semibold text-gray-900 mb-6">Account & Access Settings</h3>
