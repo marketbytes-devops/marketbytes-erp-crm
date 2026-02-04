@@ -170,7 +170,7 @@ const Sidebar = ({ toggleSidebar }) => {
           action: "view",
         },
         {
-          to: "/Operations/taskboard",
+          to: "/operations/taskboard",
           label: "Task Board",
           icon: <MdViewKanban className="w-5 h-5" />,
           page: "Task Board",
