@@ -112,8 +112,8 @@ class RoleView(APIView):
         return Response(serializer.data)
     
     def post(self, request):
-        if request.user.role.name != "Superadmin":
-            return Response({'error': 'Only Superadmin'}, status=status.HTTP_403_FORBIDDEN)
+        if not has_permission(request.user, 'roles', 'add'):
+            return Response({'error': 'Permission denied'}, status=status.HTTP_403_FORBIDDEN)
         serializer = RoleCreateSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
@@ -126,7 +126,7 @@ class RoleDetailView(APIView):
     def get(self, request, pk):
         try:
             role = Role.objects.get(pk=pk)
-            if role != request.user.role and request.user.role.name != "Superadmin":
+            if role != request.user.role and not has_permission(request.user, 'roles', 'view'):
                 return Response({'error': 'Forbidden'}, status=status.HTTP_403_FORBIDDEN)
             return Response(RoleSerializer(role).data)
         except Role.DoesNotExist:
@@ -159,8 +159,8 @@ class PermissionView(APIView):
     permission_classes = [HasPermission]
     page_name = 'permissions'
     def post(self, request):
-        if request.user.role.name != "Superadmin":
-            return Response({'error': 'Only Superadmin'}, status=status.HTTP_403_FORBIDDEN)
+        if not has_permission(request.user, 'permissions', 'add'):
+            return Response({'error': 'Permission denied'}, status=status.HTTP_403_FORBIDDEN)
         serializer = PermissionSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
@@ -178,8 +178,8 @@ class PermissionDetailView(APIView):
     permission_classes = [HasPermission]
     page_name = 'permissions'
     def put(self, request, pk):
-        if request.user.role.name != "Superadmin":
-            return Response({'error': 'Only Superadmin'}, status=status.HTTP_403_FORBIDDEN)
+        if not has_permission(request.user, 'permissions', 'edit'):
+            return Response({'error': 'Permission denied'}, status=status.HTTP_403_FORBIDDEN)
         try:
             perm = Permission.objects.get(pk=pk)
             serializer = PermissionSerializer(perm, data=request.data, partial=True)
@@ -191,8 +191,8 @@ class PermissionDetailView(APIView):
             return Response({'error': 'Not found'}, status=status.HTTP_404_NOT_FOUND)
 
     def delete(self, request, pk):
-        if request.user.role.name != "Superadmin":
-            return Response({'error': 'Only Superadmin'}, status=status.HTTP_403_FORBIDDEN)
+        if not has_permission(request.user, 'permissions', 'delete'):
+            return Response({'error': 'Permission denied'}, status=status.HTTP_403_FORBIDDEN)
         try:
             perm = Permission.objects.get(pk=pk)
             perm.delete()
