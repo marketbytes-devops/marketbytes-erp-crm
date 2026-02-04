@@ -1,4 +1,3 @@
-import { motion } from 'framer-motion';
 import { Toaster } from 'react-hot-toast';
 import { MdClose } from 'react-icons/md';
 import { createPortal } from 'react-dom';
@@ -31,18 +30,14 @@ const LayoutComponents = ({
     return (
       <>
         {toaster}
-        <div className="w-full">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="bg-white rounded-xl shadow-inner overflow-hidden"
-          >
-            <div className="bg-black p-6 text-center lg:text-left">
-              <h2 className="text-2xl font-medium text-white mb-2">{title}</h2>
-              {subtitle && <p className="text-gray-300 text-sm">{subtitle}</p>}
+        <div className="w-full p-6">
+          <div className="bg-white rounded-3xl border border-gray-100 shadow-xl shadow-gray-200/50 overflow-hidden">
+            <div className="p-8 border-b border-gray-50 bg-linear-to-r from-white to-gray-50/50">
+              <h2 className="text-3xl font-medium text-black tracking-tight font-syne mb-1">{title}</h2>
+              {subtitle && <p className="text-gray-600 text-sm font-medium">{subtitle}</p>}
             </div>
-            <div className="p-6">{children}</div>
-          </motion.div>
+            <div className="p-8">{children}</div>
+          </div>
         </div>
       </>
     );
@@ -53,21 +48,13 @@ const LayoutComponents = ({
       <>
         {toaster}
         <div className="max-w-full mx-auto">
-          <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="mb-6 text-center lg:text-left"
-          >
+          <div className="mb-6 text-center lg:text-left">
             <h2 className="text-2xl font-medium text-black mb-2">{title}</h2>
             {subtitle && <p className="text-gray-600 text-sm">{subtitle}</p>}
-          </motion.div>
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-          >
+          </div>
+          <div>
             {children}
-          </motion.div>
+          </div>
         </div>
       </>
     );
@@ -77,12 +64,8 @@ const LayoutComponents = ({
     return createPortal(
       <>
         {toaster}
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
-          <motion.div
-            initial={{ scale: 0.9, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            exit={{ scale: 0.9, opacity: 0 }}
-            transition={{ type: "spring", damping: 25, stiffness: 300 }}
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+          <div
             className="bg-white rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto"
             onClick={(e) => e.stopPropagation()}
           >
@@ -96,7 +79,7 @@ const LayoutComponents = ({
               </button>
             </div>
             <div className="p-8">{modal}</div>
-          </motion.div>
+          </div>
         </div>
       </>,
       document.body

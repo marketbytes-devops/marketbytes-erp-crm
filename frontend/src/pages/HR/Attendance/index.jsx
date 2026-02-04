@@ -259,6 +259,7 @@ const Attendance = () => {
       absent: { label: "A", bg: "bg-white text-black", border: "border-2 border-black" },
       half_day: { label: "H", bg: "bg-white text-black", border: "border-2 border-black" },
       leave: { label: "LV", bg: "bg-white text-black", border: "border-2 border-black" },
+      half_day_late: { label: "HL", bg: "bg-white text-black", border: "border-2 border-black" },
       holiday: { label: "HD", bg: "bg-gray-200 text-black", border: "" },
     };
     return badges[status] || { label: "-", bg: "bg-gray-100 text-gray-500", border: "" };

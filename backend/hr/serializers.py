@@ -1,33 +1,47 @@
 from rest_framework import serializers
 from .models import Attendance, Holiday, LeaveType, Leave, Overtime, Candidate, Performance, Project, Task, WorkSession, BreakSession
-from authapp.serializers import UserSerializer
+from authapp.serializers import UserSerializer, DepartmentSerializer
 from authapp.models import CustomUser
 from django.utils import timezone
-from datetime import datetime
+from datetime import datetime, timezone as dt_timezone
 
 class AttendanceSerializer(serializers.ModelSerializer):
     employee = UserSerializer(read_only=True)
     employee_id = serializers.PrimaryKeyRelatedField(queryset=CustomUser.objects.all(), source='employee', write_only=True)
     total_hours = serializers.SerializerMethodField()
-    productive_hours = serializers.SerializerMethodField()
-    break_hours = serializers.SerializerMethodField()
+    clock_in = serializers.SerializerMethodField()
+    clock_out = serializers.SerializerMethodField()
     first_clock_in = serializers.SerializerMethodField()
-    last_clock_out = serializers.SerializerMethodField()
-    check_in_out_history = serializers.SerializerMethodField()
     
     class Meta:
         model = Attendance
         fields = '__all__'
         read_only_fields = ['total_hours', 'productive_hours', 'break_hours', 'first_clock_in', 'last_clock_out', 'check_in_out_history', 'created_at', 'updated_at']
+
+    def get_clock_in(self, obj):
+        if obj.clock_in:
+             if obj.date and obj.clock_in:
+                 dt = datetime.combine(obj.date, obj.clock_in)
+                 dt = dt.replace(tzinfo=dt_timezone.utc) 
+                 return timezone.localtime(dt).strftime("%I:%M:%S %p")
+        return None
+
+    def get_clock_out(self, obj):
+        if obj.date and obj.clock_out:
+             dt = datetime.combine(obj.date, obj.clock_out)
+             dt = dt.replace(tzinfo=dt_timezone.utc)
+             return timezone.localtime(dt).strftime("%I:%M:%S %p")
+        return None
     
     def _get_work_sessions_for_date(self, obj):
         """Get work sessions for the attendance date in local timezone"""
+        # Robust logic ensuring awareness match
         local_tz = timezone.get_current_timezone()
-        start_of_day = datetime.combine(obj.date, datetime.min.time())
-        end_of_day = datetime.combine(obj.date, datetime.max.time())
+        start_of_day_unaware = datetime.combine(obj.date, datetime.min.time())
+        end_of_day_unaware = datetime.combine(obj.date, datetime.max.time())
         
-        start_of_day = timezone.make_aware(start_of_day, local_tz)
-        end_of_day = timezone.make_aware(end_of_day, local_tz)
+        start_of_day = timezone.make_aware(start_of_day_unaware, local_tz)
+        end_of_day = timezone.make_aware(end_of_day_unaware, local_tz)
         
         return WorkSession.objects.filter(
             employee=obj.employee,
@@ -57,9 +71,15 @@ class AttendanceSerializer(serializers.ModelSerializer):
         
         if first_session:
             local_time = timezone.localtime(first_session.start_time)
-            return local_time.strftime("%I:%M:%S %p")
+            return local_time.strftime("%I:%M %p")
         
-        return obj.clock_in.strftime("%I:%M:%S %p") if obj.clock_in else None
+        # Fallback to obj.clock_in if no session found 
+        if obj.clock_in:
+             # Manually convert obj.clock_in (UTC) to local
+             dt = datetime.combine(obj.date, obj.clock_in)
+             dt = dt.replace(tzinfo=dt_timezone.utc)
+             return timezone.localtime(dt).strftime("%I:%M %p")
+        return None
     
     def get_last_clock_out(self, obj):
         """Get the very last check-out time - only if user has checked out"""
@@ -117,24 +137,30 @@ class AttendanceSerializer(serializers.ModelSerializer):
     def get_productive_hours(self, obj):
         """Calculate productive hours from work sessions (excluding breaks)"""
         work_sessions = self._get_work_sessions_for_date(obj)
-        completed_sessions = work_sessions.filter(end_time__isnull=False)
         
-        total_seconds = sum(
-            (session.end_time - session.start_time).total_seconds() 
-            for session in completed_sessions
-        )
+        total_seconds = 0
+        now = timezone.now()
+        for session in work_sessions:
+            if session.end_time:
+                total_seconds += (session.end_time - session.start_time).total_seconds()
+            elif obj.date == now.date():
+                total_seconds += (now - session.start_time).total_seconds()
+                
         hours = total_seconds / 3600
         return round(hours, 2)
     
     def get_break_hours(self, obj):
         """Calculate break hours from break sessions"""
         break_sessions = self._get_break_sessions_for_date(obj)
-        completed_breaks = break_sessions.filter(end_time__isnull=False)
         
-        total_seconds = sum(
-            (session.end_time - session.start_time).total_seconds() 
-            for session in completed_breaks
-        )
+        total_seconds = 0
+        now = timezone.now()
+        for session in break_sessions:
+            if session.end_time:
+                total_seconds += (session.end_time - session.start_time).total_seconds()
+            elif obj.date == now.date():
+                total_seconds += (now - session.start_time).total_seconds()
+                
         hours = total_seconds / 3600
         return round(hours, 2)
 
@@ -166,7 +192,7 @@ class LeaveSerializer(serializers.ModelSerializer):
         queryset=CustomUser.objects.all(),
         source='employee',
         write_only=True,
-        required=True,        # important
+        required=True,       
         allow_null=False
     )
     leave_type_name = serializers.CharField(source='leave_type.name', read_only=True)
@@ -205,7 +231,8 @@ class CandidateSerializer(serializers.ModelSerializer):
 
 class PerformanceSerializer(serializers.ModelSerializer):
     employee = UserSerializer(read_only=True)
-    department_name = serializers.CharField(source='department.name', read_only=True)
+    department = DepartmentSerializer(read_only=True)
+    reviewed_by = UserSerializer(read_only=True)
     
     class Meta:
         model = Performance

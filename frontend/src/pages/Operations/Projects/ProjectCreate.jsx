@@ -64,6 +64,12 @@ const CreateProjectPage = () => {
   });
   const [showPassword, setShowPassword] = useState(false);
 
+  const [showStatusModal, setShowStatusModal] = useState(false);
+  const [newStatusName, setNewStatusName] = useState("");
+
+  const [showStageModal, setShowStageModal] = useState(false);
+  const [newStageName, setNewStageName] = useState("");
+
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
     setFormData((prev) => ({
@@ -319,6 +325,34 @@ const CreateProjectPage = () => {
     setClients(clients.filter((client) => client.id !== id));
   };
 
+  const handleAddStatus = async () => {
+    if (!newStatusName.trim()) return;
+    try {
+      const res = await apiClient.post("/operation/statuses/", { name: newStatusName });
+      setStatuses([...statuses, res.data]);
+      setFormData(prev => ({ ...prev, status: res.data.id.toString() }));
+      setNewStatusName("");
+      setShowStatusModal(false);
+      toast.success("Status added");
+    } catch (err) {
+      toast.error("Failed to add status");
+    }
+  };
+
+  const handleAddStage = async () => {
+    if (!newStageName.trim()) return;
+    try {
+      const res = await apiClient.post("/operation/stages/", { name: newStageName });
+      setStages([...stages, res.data]);
+      setFormData(prev => ({ ...prev, stage: res.data.id.toString() }));
+      setNewStageName("");
+      setShowStageModal(false);
+      toast.success("Stage added");
+    } catch (err) {
+      toast.error("Failed to add stage");
+    }
+  };
+
   return (
     <div className="p-4 md:p-6 max-w-7xl mx-auto">
       <LayoutComponents title="Add New Project" subtitle="Fill in the details to create a new project" variant="card">
@@ -343,7 +377,7 @@ const CreateProjectPage = () => {
                 value={formData.projectName}
                 onChange={(e) => setFormData(prev => ({ ...prev, projectName: e.target.value }))}
               />
-              <div>
+              <div className="relative top-0 sm:-top-1.5">
                 <div className="flex items-center gap-2 mb-2">
                   <label className="text-sm font-semibold text-black">Project Category</label>
                   <button
@@ -361,7 +395,7 @@ const CreateProjectPage = () => {
                   onChange={v => setFormData(prev => ({ ...prev, projectCategory: v }))}
                 />
               </div>
-              <div>
+              <div className="relative top-0 sm:-top-1.5">
                 <div className="flex items-center gap-2 mb-2">
                   <label className="text-sm font-semibold text-black">Department <span className="text-red-500">*</span></label>
                   <button
@@ -476,7 +510,7 @@ const CreateProjectPage = () => {
                   onChange={v => setFormData(prev => ({ ...prev, client: v }))}
                 />
               </div>
-              <div className="space-y-4">
+              <div className="space-y-4 relative top-0 sm:top-5">
                 <label className="flex items-center gap-3">
                   <input type="checkbox" checked={formData.clientCanManageTasks} onChange={e => setFormData(prev => ({ ...prev, clientCanManageTasks: e.target.checked }))} className="w-5 h-5 rounded" />
                   <span className="font-medium">Client can manage tasks</span>
@@ -498,24 +532,38 @@ const CreateProjectPage = () => {
               <Input
                 label="Currency"
                 type="select"
-                options={[{ value: "", label: "Select currency" }, ...currencies.map(c => ({ value: c.id, label: `${c.name} (${c.code})` }))]}
+                options={[{ value: "", label: "Select currency" }, ...currencies.map(c => ({ value: c.id, label: `${c.symbol || ''} ${c.code} - ${c.name}` }))]}
                 value={formData.currency}
                 onChange={v => setFormData(prev => ({ ...prev, currency: v }))}
               />
-              <Input
-                label="Status"
-                type="select"
-                options={[{ value: "", label: "Select status" }, ...statuses.map(s => ({ value: s.id, label: s.name }))]}
-                value={formData.status}
-                onChange={v => setFormData(prev => ({ ...prev, status: v }))}
-              />
-              <Input
-                label="Stage"
-                type="select"
-                options={[{ value: "", label: "Select stage" }, ...stages.map(s => ({ value: s.id, label: s.name }))]}
-                value={formData.stage}
-                onChange={v => setFormData(prev => ({ ...prev, stage: v }))}
-              />
+              <div className="relative top-0 sm:-top-1.5">
+                <div className="flex items-center gap-2 mb-2">
+                  <label className="text-sm font-semibold text-black">Status</label>
+                  <button type="button" onClick={() => setShowStatusModal(true)} className="p-1 rounded-full border border-green-600 text-green-600 hover:bg-green-600 hover:text-white transition">
+                    <MdAdd className="w-4 h-4" />
+                  </button>
+                </div>
+                <Input
+                  type="select"
+                  options={[{ value: "", label: "Select status" }, ...statuses.map(s => ({ value: s.id, label: s.name }))]}
+                  value={formData.status}
+                  onChange={v => setFormData(prev => ({ ...prev, status: v }))}
+                />
+              </div>
+              <div className="relative top-0 sm:-top-1.5">
+                <div className="flex items-center gap-2 mb-2">
+                  <label className="text-sm font-semibold text-black">Stage</label>
+                  <button type="button" onClick={() => setShowStageModal(true)} className="p-1 rounded-full border border-green-600 text-green-600 hover:bg-green-600 hover:text-white transition">
+                    <MdAdd className="w-4 h-4" />
+                  </button>
+                </div>
+                <Input
+                  type="select"
+                  options={[{ value: "", label: "Select stage" }, ...stages.map(s => ({ value: s.id, label: s.name }))]}
+                  value={formData.stage}
+                  onChange={v => setFormData(prev => ({ ...prev, stage: v }))}
+                />
+              </div>
             </div>
           </div>
 
@@ -700,6 +748,56 @@ const CreateProjectPage = () => {
                   Add Client
                 </button>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showStatusModal && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full">
+            <div className="flex justify-between items-center p-6 border-b border-gray-200">
+              <h3 className="text-xl font-semibold">Add New Status</h3>
+              <button onClick={() => setShowStatusModal(false)} className="p-2 hover:bg-gray-100 rounded-lg">
+                <MdClose className="w-6 h-6" />
+              </button>
+            </div>
+            <div className="p-6 space-y-4">
+              <input
+                type="text"
+                placeholder="Status name (e.g. In Progress)"
+                value={newStatusName}
+                onChange={e => setNewStatusName(e.target.value)}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black outline-none"
+              />
+              <button onClick={handleAddStatus} className="w-full py-3 bg-black text-white rounded-lg hover:bg-gray-900 font-medium">
+                Save Status
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showStageModal && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full">
+            <div className="flex justify-between items-center p-6 border-b border-gray-200">
+              <h3 className="text-xl font-semibold">Add New Stage</h3>
+              <button onClick={() => setShowStageModal(false)} className="p-2 hover:bg-gray-100 rounded-lg">
+                <MdClose className="w-6 h-6" />
+              </button>
+            </div>
+            <div className="p-6 space-y-4">
+              <input
+                type="text"
+                placeholder="Stage name (e.g. Proposal Sent)"
+                value={newStageName}
+                onChange={e => setNewStageName(e.target.value)}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black outline-none"
+              />
+              <button onClick={handleAddStage} className="w-full py-3 bg-black text-white rounded-lg hover:bg-gray-900 font-medium">
+                Save Stage
+              </button>
             </div>
           </div>
         </div>
