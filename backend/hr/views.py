@@ -4,8 +4,9 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from authapp.permissions import HasPermission
 from django.utils import timezone
-from datetime import timedelta, datetime, time
-from .models import Attendance, Holiday, LeaveType, Leave, Overtime, Candidate, Performance, Project, WorkSession, BreakSession
+from datetime import timedelta, datetime, time, timezone as dt_timezone
+from django.db.models import Q
+from .models import Attendance, Holiday, LeaveType, Leave, Overtime, Candidate, Performance, Project, Task, WorkSession, BreakSession
 from .serializers import *
 
 class AttendanceViewSet(viewsets.ModelViewSet):
@@ -88,7 +89,12 @@ class AttendanceViewSet(viewsets.ModelViewSet):
         today = timezone.now().date()
         action = serializer.validated_data['action']
         ip = request.META.get('REMOTE_ADDR', '0.0.0.0')
-        current_time = timezone.now().time()
+        
+        now = timezone.now()
+        current_time_utc = now.time()
+        current_time_local = timezone.localtime(now).time()
+        
+        current_time = current_time_local 
         
         attendance, created = Attendance.objects.get_or_create(
             employee=request.user,
@@ -101,7 +107,7 @@ class AttendanceViewSet(viewsets.ModelViewSet):
         
         if action == 'in':
             if attendance.clock_in and attendance.clock_out:
-                attendance.clock_in = current_time
+                attendance.clock_in = current_time_utc # Store UTC
                 attendance.clock_out = None
                 attendance.clock_in_ip = ip
                 attendance.status = self._calculate_status(current_time)
@@ -113,7 +119,7 @@ class AttendanceViewSet(viewsets.ModelViewSet):
                 })
             
             elif attendance.clock_in:
-                attendance.clock_in = current_time
+                attendance.clock_in = current_time_utc 
                 attendance.clock_in_ip = ip
                 attendance.status = self._calculate_status(current_time)
                 attendance.save()
@@ -124,12 +130,31 @@ class AttendanceViewSet(viewsets.ModelViewSet):
                 })
                 
             else:
-                attendance.clock_in = current_time
+                check_in_limit = time(9, 30)
+                half_day_start = time(14, 0)
+                
+                attendance.clock_in = current_time_utc 
                 attendance.clock_in_ip = ip
                 attendance.working_from = serializer.validated_data.get('working_from', 'Office')
-                attendance.status = self._calculate_status(current_time)
-                attendance.is_late = current_time > time(9, 30)
-                attendance.is_half_day = current_time >= time(13, 0)
+                
+                if current_time <= check_in_limit:
+                    attendance.status = 'present'
+                    attendance.is_late = False
+                    attendance.is_half_day = False
+                elif current_time < half_day_start:
+                    attendance.status = 'late'
+                    attendance.is_late = True
+                    attendance.is_half_day = False
+                else:
+                    attendance.is_half_day = True
+                    
+                    if current_time > half_day_start:
+                         attendance.status = 'half_day_late'
+                         attendance.is_late = True
+                    else:
+                         attendance.status = 'half_day'
+                         attendance.is_late = False
+
                 attendance.save()
                 return Response({
                     "message": "Checked in successfully",
@@ -144,19 +169,26 @@ class AttendanceViewSet(viewsets.ModelViewSet):
             if attendance.clock_out:
                 return Response({"error": "You have already checked out today"}, status=400)
             
-            attendance.clock_out = current_time
+            attendance.clock_out = current_time_utc 
             attendance.clock_out_ip = ip
             attendance.save()
+
+            now = timezone.now()
+            WorkSession.objects.filter(employee=request.user, end_time__isnull=True).update(end_time=now)
+            BreakSession.objects.filter(employee=request.user, end_time__isnull=True).update(end_time=now)
             
             return Response({
                 "message": "Checked out successfully",
                 "time": attendance.clock_out.strftime("%H:%M")
             })
     
+    
     def _calculate_status(self, check_in_time):
         """Calculate attendance status based on check-in time"""
-        if check_in_time >= time(13, 0):
-            return 'half_day'
+        if check_in_time > time(14, 0):
+             return 'half_day_late'
+        elif check_in_time >= time(14, 0):
+             return 'half_day'
         elif check_in_time > time(9, 30):
             return 'late'
         else:
@@ -164,24 +196,52 @@ class AttendanceViewSet(viewsets.ModelViewSet):
     
     @action(detail=False, methods=['get'])
     def status(self, request):
-        today = timezone.now().date()
-        att = Attendance.objects.filter(employee=request.user, date=today).first()
+        now = timezone.now()
+        local_now = timezone.localtime(now)
+        start_of_day = local_now.replace(hour=0, minute=0, second=0, microsecond=0)
+        
+        att = Attendance.objects.filter(employee=request.user, date=local_now.date()).first()
         
         work_sessions = WorkSession.objects.filter(
             employee=request.user,
-            start_time__date=today,
-            end_time__isnull=False
+            start_time__gte=start_of_day,
         )
-        total_seconds = sum(
-            (session.end_time - session.start_time).total_seconds()
-            for session in work_sessions
-        )
+        total_seconds = 0
+        for session in work_sessions:
+            if session.end_time:
+                total_seconds += (session.end_time - session.start_time).total_seconds()
+            else:
+                total_seconds += (now - session.start_time).total_seconds()
+        
         productive_hours = str(timedelta(seconds=int(total_seconds)))
         
+        first_session_time = None
+        if att:
+             start_of_day_unaware = datetime.combine(local_now.date(), datetime.min.time())
+             end_of_day_unaware = datetime.combine(local_now.date(), datetime.max.time())
+                  
+             current_tz = timezone.get_current_timezone()
+             start_of_day_aware = timezone.make_aware(start_of_day_unaware, current_tz)
+             end_of_day_aware = timezone.make_aware(end_of_day_unaware, current_tz)
+                  
+             first_session = WorkSession.objects.filter(
+                      employee=request.user, 
+                      start_time__gte=start_of_day_aware,
+                      start_time__lte=end_of_day_aware
+                  ).order_by('start_time').first()
+                  
+             if first_session:
+                 first_session_time = timezone.localtime(first_session.start_time).strftime("%I:%M %p")
+
+        if not first_session_time and att and att.clock_in:
+             dt = datetime.combine(local_now.date(), att.clock_in)
+             dt = dt.replace(tzinfo=dt_timezone.utc)
+             first_session_time = timezone.localtime(dt).strftime("%I:%M %p")
+
         if att and att.clock_in and not att.clock_out:
             return Response({
                 "checked_in": True,
-                "clock_in": att.clock_in.strftime("%H:%M"),
+                "clock_in": first_session_time,
                 "clock_out": None,
                 "productive_hours": productive_hours,
                 "status": att.status,
@@ -191,8 +251,8 @@ class AttendanceViewSet(viewsets.ModelViewSet):
         message = "Checked out today" if att and att.clock_out else "Not checked in today"
         return Response({
             "checked_in": False,
-            "clock_in": att.clock_in.strftime("%H:%M") if att and att.clock_in else None,
-            "clock_out": att.clock_out.strftime("%H:%M") if att and att.clock_out else None,
+            "clock_in": first_session_time,
+            "clock_out": att.clock_out.strftime("%I:%M %p") if att and att.clock_out else None,
             "productive_hours": productive_hours,
             "status": att.status if att else "absent",
             "message": message
@@ -307,6 +367,27 @@ class PerformanceViewSet(viewsets.ModelViewSet):
     permission_classes = [HasPermission]
     page_name = 'performance'
 
+    def get_queryset(self):
+        user = self.request.user
+        queryset = self.queryset
+        
+        employee_id = self.request.query_params.get('employee_id')
+        start_date = self.request.query_params.get('start_date')
+        end_date = self.request.query_params.get('end_date')
+
+        if user.is_superuser or (getattr(user, 'role', None) and user.role.name == "Superadmin"):
+            if employee_id:
+                queryset = queryset.filter(employee_id=employee_id)
+        else:
+            queryset = queryset.filter(employee=user)
+
+        if start_date:
+            queryset = queryset.filter(created_at__date__gte=start_date)
+        if end_date:
+            queryset = queryset.filter(created_at__date__lte=end_date)
+            
+        return queryset
+
 class TimerViewSet(viewsets.ViewSet):
     permission_classes = [IsAuthenticated]
     
@@ -316,24 +397,63 @@ class TimerViewSet(viewsets.ViewSet):
         active_work = WorkSession.objects.filter(employee=user, end_time__isnull=True).first()
         active_break = BreakSession.objects.filter(employee=user, end_time__isnull=True).first()
         
-        today = timezone.now().date()
-        sessions = WorkSession.objects.filter(employee=user, start_time__date=today, end_time__isnull=False)
-        total_seconds = sum((s.end_time - s.start_time).total_seconds() for s in sessions if s.end_time)
-        total_work = str(timedelta(seconds=int(total_seconds))) if total_seconds > 0 else "00:00:00"
+        now = timezone.now()
+        local_now = timezone.localtime(now)
         
-        break_sessions = BreakSession.objects.filter(employee=user, start_time__date=today, end_time__isnull=False)
-        break_seconds = sum((b.end_time - b.start_time).total_seconds() for b in break_sessions if b.end_time)
-        total_break = str(timedelta(seconds=int(break_seconds))) if break_seconds > 0 else "00:00:00"
+        if active_work:
+            start_local = active_work.start_time.astimezone(timezone.get_current_timezone())
+            if start_local.date() < local_now.date():
+                end_of_day_local = start_local.replace(hour=23, minute=59, second=59)
+                active_work.end_time = end_of_day_local
+                active_work.save()
+                active_work = None
+            
+        if active_break:
+            start_local = active_break.start_time.astimezone(timezone.get_current_timezone())
+            if start_local.date() < local_now.date():
+                end_of_day_local = start_local.replace(hour=23, minute=59, second=59)
+                active_break.end_time = end_of_day_local
+                active_break.save()
+                active_break = None
+        start_of_day = local_now.replace(hour=0, minute=0, second=0, microsecond=0)
         
+        # Calculate total work
+        work_sessions = WorkSession.objects.filter(employee=user, start_time__gte=start_of_day)
+        total_work_seconds = 0
+        for s in work_sessions:
+            if s.end_time:
+                total_work_seconds += (s.end_time - s.start_time).total_seconds()
+            else:
+                total_work_seconds += (now - s.start_time).total_seconds()
+        
+        # Calculate total break & support
+        break_sessions = BreakSession.objects.filter(employee=user, start_time__gte=start_of_day)
+        total_break_seconds = 0
+        total_support_seconds = 0
+        for b in break_sessions:
+            duration = (b.end_time - b.start_time).total_seconds() if b.end_time else (now - b.start_time).total_seconds()
+            if b.type == 'break':
+                total_break_seconds += duration
+            elif b.type == 'support':
+                total_support_seconds += duration
+        
+        def format_seconds(s):
+            return str(timedelta(seconds=int(s)))
+
         return Response({
             "is_working": bool(active_work),
             "is_on_break": bool(active_break),
+            "active_type": "work" if active_work else (active_break.type if active_break else None),
             "current_work_session": WorkSessionSerializer(active_work).data if active_work else None,
             "current_break_session": BreakSessionSerializer(active_break).data if active_break else None,
-            "today_total_work": total_work,
-            "today_total_break": total_break,
+            "today_total_work": format_seconds(total_work_seconds),
+            "today_total_break": format_seconds(total_break_seconds),
+            "today_total_support": format_seconds(total_support_seconds),
+            "today_total_work_seconds": int(total_work_seconds),
+            "today_total_break_seconds": int(total_break_seconds),
+            "today_total_support_seconds": int(total_support_seconds),
             "target_hours": "08:00:00",
-            "remaining_hours": str(timedelta(seconds=max(0, 28800 - int(total_seconds))))
+            "remaining_hours": format_seconds(max(0, 28800 - int(total_work_seconds)))
         })
     
     @action(detail=False, methods=['post'])
@@ -390,13 +510,40 @@ class TimerViewSet(viewsets.ViewSet):
     
     @action(detail=False, methods=['get'])
     def projects_tasks(self, request):
-        projects = Project.objects.filter(is_active=True)
-        data = [
-            {
-                "id": p.id,
-                "name": p.name,
-                "tasks": [{"id": t.id, "name": t.name} for t in p.tasks.filter(is_active=True)]
-            }
-            for p in projects
-        ]
+        user = request.user
+        role = getattr(user, 'role', None)
+        is_admin = user.is_superuser or user.is_staff or (role and role.name == "Superadmin")
+        
+        if is_admin:
+            projects = Project.objects.all()
+        else:
+            query = Q(members=user) | Q(tasks__assignees=user)
+            if user.department_id:
+                query |= Q(department_id=user.department_id)
+            projects = Project.objects.filter(query).distinct()
+
+        data = []
+        for p in projects:
+            tasks_qs = p.tasks.exclude(status='done')
+            
+            if not is_admin:
+                tasks_qs = tasks_qs.filter(assignees=user)
+
+            task_list = []
+            for t in tasks_qs.distinct():
+                due_info = f" (Due: {t.due_date.strftime('%d-%m-%Y')})" if t.due_date else ""
+                task_list.append({
+                    "id": t.id,
+                    "name": f"{t.name}{due_info}"
+                })
+
+            is_member = is_admin or p.members.filter(id=user.id).exists()
+            
+            if is_admin or is_member or len(task_list) > 0:
+                data.append({
+                    "id": p.id,
+                    "name": p.name,
+                    "tasks": task_list
+                })
+        
         return Response(data)

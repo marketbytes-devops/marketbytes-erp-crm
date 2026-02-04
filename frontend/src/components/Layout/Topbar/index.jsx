@@ -174,7 +174,7 @@ const Topbar = ({
         )}
         {isAuthenticated && (
           <button
-            className="relative p-3 rounded-full hover:bg-gray-100 border border-gray-100 transition-colors group"
+            className="whitespace-nowrap relative p-3 rounded-full hover:bg-gray-100 border border-gray-100 transition-colors group"
             onClick={() => navigate("/notifications")}
           >
             <Bell size={22} className="text-gray-600 group-hover:text-black transition-colors" />

@@ -22,9 +22,9 @@ const pageNameMap = {
   performance: { apiName: "performance", displayName: "Performance", route: "/hr/performance" },
 
   // Operations
-  projects: { apiName: "projects", displayName: "Projects", route: "/Operations/projects" },
-  tasks: { apiName: "tasks", displayName: "Tasks", route: "/Operations/tasks" },
-  taskboard: { apiName: "task board", displayName: "Task Board", route: "/Operations/taskboard" },
+  projects: { apiName: "Projects", displayName: "Projects", route: "/operations/projects" },
+  tasks: { apiName: "Tasks", displayName: "Tasks", route: "/operations/tasks" },
+  taskboard: { apiName: "Task Board", displayName: "Task Board", route: "/operations/taskboard" },
 
   // Sales
   leads: { apiName: "leads", displayName: "Leads", route: "/sales/leads" },

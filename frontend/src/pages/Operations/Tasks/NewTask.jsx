@@ -15,7 +15,6 @@ const NewTaskPage = () => {
 
   const [projects, setProjects] = useState([]);
   const [users, setUsers] = useState([]);
-  const [categories, setCategories] = useState([]);
 
   const [formData, setFormData] = useState({
     project: "",
@@ -26,8 +25,7 @@ const NewTaskPage = () => {
     start_date: "",
     due_date: "",
     allocated_hours: "",
-    category: "",
-    assignees: [], 
+    assignees: [],
   });
 
   useEffect(() => {
@@ -35,10 +33,9 @@ const NewTaskPage = () => {
       try {
         setFormLoading(true);
 
-        const [projectsRes, usersRes, categoriesRes] = await Promise.all([
+        const [projectsRes, usersRes] = await Promise.all([
           apiClient.get("/operation/projects/"),
           apiClient.get("/auth/users/"),
-          apiClient.get("/operation/categories/"),
         ]);
 
         const extractData = (response) => {
@@ -50,7 +47,6 @@ const NewTaskPage = () => {
 
         setProjects(extractData(projectsRes));
         setUsers(extractData(usersRes));
-        setCategories(extractData(categoriesRes));
 
         const today = new Date().toISOString().split("T")[0];
 
@@ -83,7 +79,6 @@ const NewTaskPage = () => {
         start_date: formData.start_date || null,
         due_date: formData.due_date || null,
         allocated_hours: formData.allocated_hours ? parseFloat(formData.allocated_hours) : null,
-        category: formData.category ? Number(formData.category) : null,
         assignee_ids: formData.assignees || [],
       };
 
@@ -98,7 +93,7 @@ const NewTaskPage = () => {
       await apiClient.post("/operation/tasks/", payload);
 
       toast.success("Task created successfully!");
-      navigate("/Operations/tasks");
+      navigate("/operations/tasks");
     } catch (err) {
       console.error("Full error response:", err.response);
       console.error("Error data from backend:", err.response?.data);
@@ -121,8 +116,8 @@ const NewTaskPage = () => {
         errorMessages.push("Unknown error from server");
       }
 
-      const finalError = errorMessages.length > 0 
-        ? errorMessages.join(" | ") 
+      const finalError = errorMessages.length > 0
+        ? errorMessages.join(" | ")
         : "Failed to create task";
 
       toast.error(finalError);
@@ -151,11 +146,6 @@ const NewTaskPage = () => {
     label: proj.name,
   }));
 
-  const categoryOptions = categories.map((cat) => ({
-    value: cat.id,
-    label: cat.name || "Unnamed Category",
-  }));
-
   const statusOptions = [
     { value: "todo", label: "To Do" },
     { value: "in_progress", label: "In Progress" },
@@ -173,7 +163,7 @@ const NewTaskPage = () => {
       <LayoutComponents title="New Task" subtitle="Create a new task for a project" variant="card">
         <div className="mb-8">
           <Link
-            to="Operations/tasks"
+            to="/operations/tasks"
             className="inline-flex items-center gap-2 px-5 py-3 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 transition"
           >
             <MdArrowBack className="w-5 h-5" />
@@ -292,17 +282,6 @@ const NewTaskPage = () => {
               </div>
             </div>
 
-            {/* Category / Label */}
-            <div className="mb-8">
-              <Input
-                label="Category "
-                type="select"
-                placeholder="None"
-                options={[{ value: "", label: "None" }, ...categoryOptions]}
-                value={formData.category}
-                onChange={(val) => setFormData({ ...formData, category: val })}
-              />
-            </div>
 
             {/* Assigned To */}
             <div className="mb-8">
@@ -320,7 +299,7 @@ const NewTaskPage = () => {
             {/* Submit Buttons */}
             <div className="flex justify-end gap-4">
               <Link
-                to="/tasks"
+                to="/operations/tasks"
                 className="px-6 py-3 border border-gray-300 text-gray-700 font-medium rounded-xl hover:bg-gray-50 transition"
               >
                 Cancel

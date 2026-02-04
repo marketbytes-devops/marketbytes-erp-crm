@@ -9,7 +9,7 @@ from .models import (
     Currency,
     Task
 )
-from authapp.serializers import ProfileSerializer
+from authapp.serializers import ProfileSerializer, DepartmentSerializer
 from authapp.models import CustomUser, Department
 
 
@@ -80,7 +80,7 @@ class CurrencySerializer(serializers.ModelSerializer):
 
 class ProjectSerializer(serializers.ModelSerializer):
     category = ProjectCategorySerializer(read_only=True)
-    department = serializers.StringRelatedField(read_only=True)
+    department = DepartmentSerializer(read_only=True)
     status = ProjectStatusSerializer(read_only=True)
     stage = ProjectStageSerializer(read_only=True)
     client = ClientSerializer(read_only=True)
@@ -90,7 +90,6 @@ class ProjectSerializer(serializers.ModelSerializer):
     category_id = serializers.PrimaryKeyRelatedField(
         queryset=ProjectCategory.objects.all(),
         source="category",
-        write_only=True,
         required=False,
         allow_null=True,
     )
@@ -98,7 +97,6 @@ class ProjectSerializer(serializers.ModelSerializer):
     department_id = serializers.PrimaryKeyRelatedField(
         queryset=Department.objects.all(),
         source="department",
-        write_only=True,
         required=False,
         allow_null=True,
     )
@@ -106,7 +104,6 @@ class ProjectSerializer(serializers.ModelSerializer):
     status_id = serializers.PrimaryKeyRelatedField(
         queryset=ProjectStatus.objects.all(),
         source="status",
-        write_only=True,
         required=False,
         allow_null=True,
     )
@@ -114,7 +111,6 @@ class ProjectSerializer(serializers.ModelSerializer):
     stage_id = serializers.PrimaryKeyRelatedField(
         queryset=ProjectStage.objects.all(),
         source="stage",
-        write_only=True,
         required=False,
         allow_null=True,
     )
@@ -122,7 +118,6 @@ class ProjectSerializer(serializers.ModelSerializer):
     client_id = serializers.PrimaryKeyRelatedField(
         queryset=Client.objects.all(),
         source="client",
-        write_only=True,
         required=False,
         allow_null=True,
     )
@@ -139,7 +134,6 @@ class ProjectSerializer(serializers.ModelSerializer):
     currency_id = serializers.PrimaryKeyRelatedField(
         queryset=Currency.objects.all(),
         source="currency",
-        write_only=True,
         required=False,
         allow_null=True,
     )
@@ -248,6 +242,11 @@ class ProjectSerializer(serializers.ModelSerializer):
         members_ids = validated_data.pop("members_ids", [])
         project = super().create(validated_data)
 
+        if self.context.get("request"):
+            user = self.context["request"].user
+            if user not in members_ids:
+                members_ids.append(user)
+
         if members_ids:
             project.members.set(members_ids)
 
@@ -349,6 +348,12 @@ class TaskSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         assignee_ids = validated_data.pop('assignee_ids', [])
         task = Task.objects.create(**validated_data)
+        
+        if self.context.get("request"):
+            user = self.context["request"].user
+            if user not in assignee_ids:
+                assignee_ids.append(user)
+
         if assignee_ids:
             task.assignees.set(assignee_ids)
         return task

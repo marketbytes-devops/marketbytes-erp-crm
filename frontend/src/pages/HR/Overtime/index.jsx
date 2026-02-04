@@ -1,9 +1,28 @@
 import { useState, useEffect } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import LayoutComponents from "../../../components/LayoutComponents";
 import apiClient from "../../../helpers/apiClient";
-import { MdAdd, MdDownload, MdRefresh, MdCalculate } from "react-icons/md";
+import {
+  MdCalculate,
+  MdRefresh,
+  MdDownload,
+  MdTimer,
+  MdTrendingUp,
+  MdInfoOutline,
+  MdFilterList,
+  MdSearch
+} from "react-icons/md";
+import {
+  Clock,
+  Zap,
+  Calendar,
+  ChevronRight,
+  User,
+  Briefcase,
+  ChevronDown
+} from "lucide-react";
 import Input from "../../../components/Input";
+import toast from "react-hot-toast";
 
 const Overtime = () => {
   const [overtime, setOvertime] = useState([]);
@@ -11,6 +30,7 @@ const Overtime = () => {
   const [month, setMonth] = useState(new Date().getMonth() + 1);
   const [year, setYear] = useState(new Date().getFullYear());
   const [calculating, setCalculating] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
 
   const months = [
     { value: 1, label: "January" },
@@ -40,12 +60,11 @@ const Overtime = () => {
         if (data && data.results) {
           data = data.results;
         }
-        const overtimeArray = Array.isArray(data) ? data : [];
-        setOvertime(overtimeArray);
+        setOvertime(Array.isArray(data) ? data : []);
       })
       .catch((err) => {
         console.error("Failed to load overtime records:", err);
-        setOvertime([]);
+        toast.error("Failed to load overtime records");
       })
       .finally(() => setLoading(false));
   };
@@ -57,207 +76,241 @@ const Overtime = () => {
     apiClient
       .post("/hr/overtime/calculate_from_sessions/", { date: today })
       .then((res) => {
-        alert(res.data.message);
+        toast.success(res.data.message);
         fetchOvertime();
       })
       .catch((err) => {
         const errorMsg = err.response?.data?.message || err.response?.data?.error || "Failed to calculate overtime";
-        alert(errorMsg);
+        toast.error(errorMsg);
       })
       .finally(() => setCalculating(false));
   };
 
   const totalOvertimeHours = overtime.reduce((sum, ot) => sum + (parseFloat(ot.hours) || 0), 0);
 
+  const filteredOvertime = overtime.filter(ot =>
+    ot.employee?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    ot.project?.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
   return (
-    <div className="p-6">
-      <LayoutComponents title="Overtime" subtitle="Track extra working hours beyond 8 hours productive time" variant="card">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <motion.div
-            whileHover={{ scale: 1.05 }}
-            className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100"
-          >
-            <p className="text-gray-600 text-sm">Total Overtime Records</p>
-            <p className="text-4xl font-medium mt-3">{overtime.length}</p>
-          </motion.div>
+    <div className="space-y-8 animate-in fade-in duration-700">
+      <LayoutComponents
+        title="Overtime Lifecycle"
+        subtitle="Manage and track extended productivity beyond the 8-hour window."
+        variant="card"
+      >
+        {/* Metric Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-10">
+          <div className="bg-gray-50/50 rounded-3xl p-6 border border-gray-100 hover:shadow-lg transition-all group overflow-hidden relative">
+            <div className="absolute -right-2 -top-2 text-gray-100 group-hover:text-black/5 transition-colors">
+              <Clock size={80} />
+            </div>
+            <p className="text-gray-600 text-[10px] font-bold uppercase tracking-widest mb-1">Total Hours</p>
+            <p className="text-3xl font-medium text-black font-syne group-hover:scale-110 transition-transform origin-left">{totalOvertimeHours.toFixed(2)}h</p>
+            <div className="mt-4 flex items-center gap-2 text-emerald-600">
+              <MdTrendingUp className="text-lg" />
+              <span className="text-[10px] font-bold uppercase">Efficiency Bonus</span>
+            </div>
+          </div>
 
-          <motion.div
-            whileHover={{ scale: 1.05 }}
-            className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100"
-          >
-            <p className="text-gray-600 text-sm">Total Overtime Hours</p>
-            <p className="text-4xl font-medium mt-3">{totalOvertimeHours.toFixed(2)}h</p>
-          </motion.div>
+          <div className="bg-gray-50/50 rounded-3xl p-6 border border-gray-100 hover:shadow-lg transition-all group overflow-hidden relative">
+            <div className="absolute -right-2 -top-2 text-gray-100 group-hover:text-black/5 transition-colors">
+              <Zap size={80} />
+            </div>
+            <p className="text-gray-600 text-[10px] font-bold uppercase tracking-widest mb-1">Total Records</p>
+            <p className="text-3xl font-medium text-black font-syne">{overtime.length}</p>
+            <p className="text-[10px] text-gray-500 mt-4 font-medium uppercase tracking-tight">Across {month}/{year}</p>
+          </div>
 
-          <motion.div
-            whileHover={{ scale: 1.05 }}
-            className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100"
-          >
-            <p className="text-gray-600 text-sm">Average Per Record</p>
-            <p className="text-4xl font-medium mt-3">
-              {overtime.length > 0 ? (totalOvertimeHours / overtime.length).toFixed(2) : 0}h
-            </p>
-          </motion.div>
+          <div className="bg-black rounded-3xl p-6 shadow-2xl shadow-black/20 group overflow-hidden relative col-span-1 md:col-span-2">
+            <div className="absolute inset-0 bg-linear-to-br from-white/10 to-transparent" />
+            <div className="relative z-10 flex flex-col h-full justify-between">
+              <div>
+                <p className="text-gray-400 text-[10px] font-bold uppercase tracking-widest mb-1">Productivity Standard</p>
+                <h3 className="text-white text-xl font-medium font-syne">8-Hour Productive Window</h3>
+              </div>
+              <p className="text-gray-400 text-xs leading-relaxed max-w-sm mt-4">
+                Overtime is automatically triggered when your productive time (excluding breaks & support) exceeds the 8-hour daily threshold.
+              </p>
+            </div>
+          </div>
         </div>
 
-        {/* Actions Bar */}
-        <div className="bg-white rounded-2xl shadow-sm p-6 mb-6">
-          <div className="flex flex-wrap gap-4 justify-between items-center">
-            <div className="flex flex-wrap gap-4 items-center">
+        {/* Global Controls */}
+        <div className="flex flex-col md:flex-row gap-6 justify-between items-end mb-10">
+          <div className="flex flex-wrap gap-4 items-end w-full md:w-auto">
+            <div className="w-56">
               <Input
                 type="select"
+                label="Fiscal Month"
                 value={month}
                 onChange={setMonth}
                 options={months}
-                placeholder="Select month"
-                className="w-48"
+                className="rounded-2xl border-gray-200"
               />
+            </div>
+            <div className="w-32">
               <Input
                 type="number"
+                label="Fiscal Year"
                 value={year}
                 onChange={(e) => setYear(Number(e.target.value))}
-                placeholder="Year"
-                className="w-32"
-                min="2000"
-                max="2100"
+                className="rounded-2xl border-gray-200"
               />
-              <button
-                onClick={fetchOvertime}
-                className="flex items-center gap-3 px-6 py-3.5 bg-black text-white rounded-xl hover:bg-gray-900 transition font-medium"
-              >
-                <MdRefresh className="w-5 h-5" />
-                Refresh
-              </button>
             </div>
+            <button
+              onClick={fetchOvertime}
+              className="p-3.5 bg-gray-50 text-gray-600 hover:text-black border border-gray-200 rounded-2xl transition hover:bg-gray-100 shadow-xs"
+              title="Refresh Records"
+            >
+              <MdRefresh className="w-6 h-6" />
+            </button>
+          </div>
 
-            <div className="flex gap-3">
-              <button
-                onClick={calculateOvertime}
-                disabled={calculating}
-                className="flex items-center gap-3 px-6 py-3.5 bg-black text-white rounded-xl hover:bg-black transition font-medium disabled:opacity-50"
-              >
-                {calculating ? (
-                  <>
-                    <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent"></div>
-                    Calculating...
-                  </>
-                ) : (
-                  <>
-                    <MdCalculate className="w-5 h-5" />
-                    Calculate Today's OT
-                  </>
-                )}
-              </button>
-
-              <button className="flex items-center gap-3 px-6 py-3.5 border border-gray-300 rounded-xl hover:bg-gray-50 transition font-medium">
-                <MdDownload className="w-5 h-5" /> Export
-              </button>
+          <div className="flex gap-4 w-full md:w-auto">
+            <div className="relative flex-1 md:w-64">
+              <MdSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-xl" />
+              <input
+                type="text"
+                placeholder="Universal search..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full pl-12 pr-4 py-3.5 bg-gray-50/50 border border-gray-200 rounded-2xl text-sm focus:ring-4 focus:ring-black/5 focus:border-black outline-none transition-all placeholder:text-gray-400 font-medium"
+              />
             </div>
+            <button
+              onClick={calculateOvertime}
+              disabled={calculating}
+              className="flex items-center gap-3 px-8 py-3.5 bg-black text-white rounded-2xl hover:bg-gray-800 transition shadow-xl shadow-black/10 active:scale-95 disabled:opacity-50"
+            >
+              {calculating ? (
+                <div className="animate-spin rounded-full h-5 w-5 border-2 border-white/20 border-t-white"></div>
+              ) : (
+                <MdCalculate className="text-xl" />
+              )}
+              <span className="text-[11px] font-bold uppercase tracking-widest">Calculate Sync</span>
+            </button>
           </div>
         </div>
 
-        {/* Overtime Table */}
-        {loading ? (
-          <div className="bg-white rounded-2xl shadow-sm p-12 text-center">
-            <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-black border-t-transparent"></div>
-            <p className="mt-4 text-gray-600">Loading overtime records...</p>
-          </div>
-        ) : overtime.length === 0 ? (
-          <div className="bg-white rounded-2xl shadow-sm p-16 text-center text-gray-500">
-            <div className="w-20 h-20 mx-auto mb-6 bg-gray-100 rounded-full flex items-center justify-center">
-              <MdAdd className="w-10 h-10 text-gray-400" />
+        {/* Data Matrix */}
+        <div className="bg-white rounded-[2.5rem] border border-gray-100 shadow-2xl shadow-gray-200/50 overflow-hidden">
+          {loading ? (
+            <div className="p-20 flex flex-col items-center justify-center text-center">
+              <div className="w-16 h-1 bg-gray-100 rounded-full overflow-hidden relative mb-4">
+                <div className="absolute inset-0 bg-black animate-progress" />
+              </div>
+              <p className="text-[10px] font-bold uppercase text-gray-400 tracking-[0.2em]">Synchronizing Records...</p>
             </div>
-            <p className="text-xl font-medium">No overtime records found</p>
-            <p className="text-sm mt-2">Overtime is automatically tracked when productive hours exceed 8 hours</p>
-            <button
-              onClick={calculateOvertime}
-              className="mt-6 flex items-center gap-3 px-6 py-3.5 bg-black text-white rounded-xl hover:bg-black transition font-medium mx-auto"
-            >
-              <MdCalculate className="w-5 h-5" />
-              Calculate Today's Overtime
-            </button>
-          </div>
-        ) : (
-          <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
+          ) : filteredOvertime.length === 0 ? (
+            <div className="p-24 text-center">
+              <div className="w-24 h-24 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-8 animate-pulse">
+                <Clock className="text-gray-200 w-10 h-10" />
+              </div>
+              <h4 className="text-2xl font-medium font-syne text-black mb-2 uppercase tracking-tighter">Zero Impact Detected</h4>
+              <p className="text-gray-500 text-sm max-w-xs mx-auto font-medium">No overtime records match your current sync parameters. Try calculating for today.</p>
+            </div>
+          ) : (
             <div className="overflow-x-auto">
-              <table className="w-full min-w-max">
-                <thead className="bg-gray-50 border-b border-gray-200">
-                  <tr>
-                    <th className="px-6 py-5 text-left text-sm font-medium text-gray-700">Employee</th>
-                    <th className="px-6 py-5 text-left text-sm font-medium text-gray-700">Project</th>
-                    <th className="px-6 py-5 text-left text-sm font-medium text-gray-700">Date</th>
-                    <th className="px-6 py-5 text-left text-sm font-medium text-gray-700">Overtime Hours</th>
-                    <th className="px-6 py-5 text-left text-sm font-medium text-gray-700">Effort Details</th>
+              <table className="w-full border-collapse">
+                <thead>
+                  <tr className="bg-gray-50/50 border-b border-gray-100">
+                    <th className="px-10 py-8 text-left text-[10px] font-bold text-gray-400 uppercase tracking-widest w-64">Stakeholder</th>
+                    <th className="px-10 py-8 text-left text-[10px] font-bold text-gray-400 uppercase tracking-widest">Temporal Context</th>
+                    <th className="px-10 py-8 text-left text-[10px] font-bold text-gray-400 uppercase tracking-widest">Project/Effort</th>
+                    <th className="px-10 py-8 text-right text-[10px] font-bold text-gray-400 uppercase tracking-widest w-48">Impact Value</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-200">
-                  {overtime.map((ot, i) => (
-                    <motion.tr
-                      key={ot.id || i}
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: i * 0.05 }}
-                      className="hover:bg-gray-50 transition"
-                    >
-                      <td className="px-6 py-5 text-sm font-medium text-gray-900">
-                        {ot.employee?.name || "Unknown"}
-                      </td>
-                      <td className="px-6 py-5 text-sm text-gray-700">
-                        <span className="inline-flex px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-medium">
-                          {ot.project || "—"}
-                        </span>
-                      </td>
-                      <td className="px-6 py-5 text-sm text-gray-700">
-                        {ot.date ? new Date(ot.date).toLocaleDateString("en-US", {
-                          day: "numeric",
-                          month: "short",
-                          year: "numeric",
-                          weekday: "short"
-                        }) : "—"}
-                      </td>
-                      <td className="px-6 py-5">
-                        <span className="inline-flex px-4 py-2 bg-amber-100 text-amber-800 rounded-full text-sm font-medium">
-                          +{parseFloat(ot.hours || 0).toFixed(2)}h
-                        </span>
-                      </td>
-                      <td className="px-6 py-5 text-sm text-gray-600">
-                        <div className="max-w-md">
-                          {ot.effort ? (
-                            <pre className="whitespace-pre-wrap text-xs bg-gray-50 p-3 rounded-lg">
-                              {ot.effort}
-                            </pre>
-                          ) : (
-                            "—"
-                          )}
-                        </div>
-                      </td>
-                    </motion.tr>
-                  ))}
+                <tbody className="divide-y divide-gray-50">
+                  <AnimatePresence>
+                    {filteredOvertime.map((ot, i) => (
+                      <motion.tr
+                        key={ot.id || i}
+                        initial={{ opacity: 0, x: -10 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        exit={{ opacity: 0, scale: 0.95 }}
+                        transition={{ delay: i * 0.03 }}
+                        className="group hover:bg-gray-50/80 transition-all duration-300"
+                      >
+                        <td className="px-10 py-8">
+                          <div className="flex items-center gap-4">
+                            <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center text-gray-400 group-hover:bg-black group-hover:text-white transition-all duration-500 overflow-hidden">
+                              {ot.employee?.image ? (
+                                <img src={ot.employee.image} alt="" className="w-full h-full object-cover" />
+                              ) : (
+                                <User size={20} />
+                              )}
+                            </div>
+                            <div className="flex flex-col">
+                              <span className="text-sm font-semibold text-black font-syne">{ot.employee?.name || "Anonymous"}</span>
+                              <span className="text-[10px] text-gray-500 font-medium uppercase tracking-tighter mt-0.5">{ot.employee?.designation?.name || "Platform Contributor"}</span>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="px-10 py-8">
+                          <div className="flex flex-col gap-1">
+                            <div className="flex items-center gap-2 text-black">
+                              <Calendar size={14} className="text-gray-300" />
+                              <span className="text-xs font-bold uppercase tracking-wide">
+                                {ot.date ? new Date(ot.date).toLocaleDateString("en-GB", { day: '2-digit', month: 'short', year: 'numeric' }) : "--"}
+                              </span>
+                            </div>
+                            <span className="text-[10px] text-gray-400 font-bold uppercase ml-6">{ot.date ? new Date(ot.date).toLocaleDateString("en-GB", { weekday: 'long' }) : ""}</span>
+                          </div>
+                        </td>
+                        <td className="px-10 py-8">
+                          <div className="max-w-md">
+                            <div className="flex items-center gap-2 mb-2">
+                              <Briefcase size={14} className="text-gray-300" />
+                              <span className="text-xs font-bold text-black uppercase tracking-widest">{ot.project || "General Operations"}</span>
+                            </div>
+                            <p className="text-[11px] text-gray-500 line-clamp-2 leading-relaxed font-medium bg-gray-50/50 p-3 rounded-2xl group-hover:bg-white group-hover:shadow-sm transition-all border border-transparent group-hover:border-gray-100 whitespace-pre-wrap">
+                              {ot.effort || "No execution details specified."}
+                            </p>
+                          </div>
+                        </td>
+                        <td className="px-10 py-8 text-right">
+                          <div className="flex flex-col items-end gap-1">
+                            <span className="inline-flex px-5 py-2.5 bg-black text-white rounded-full text-[13px] font-bold tracking-tighter shadow-lg shadow-black/10 group-hover:scale-110 transition-transform">
+                              +{parseFloat(ot.hours || 0).toFixed(2)}h
+                            </span>
+                            <span className="text-[9px] text-gray-400 font-bold uppercase tracking-widest mt-1">Confirmed Units</span>
+                          </div>
+                        </td>
+                      </motion.tr>
+                    ))}
+                  </AnimatePresence>
                 </tbody>
               </table>
             </div>
+          )}
+        </div>
+
+        {/* Protocol Footer */}
+        <div className="mt-12 p-8 bg-gray-50 border border-gray-100 rounded-[2.5rem] flex flex-col md:flex-row gap-8 items-start justify-between relative overflow-hidden group">
+          <div className="absolute right-0 bottom-0 opacity-5 group-hover:opacity-10 transition-opacity">
+            <Clock size={240} />
           </div>
-        )}
-        <div className="mt-6 bg-gray-50 rounded-2xl p-6">
-          <h4 className="font-medium text-gray-900 mb-3">How Overtime Works</h4>
-          <ul className="space-y-2 text-sm text-gray-700">
-            <li className="flex items-start gap-2">
-              <span className="text-black font-medium">1.</span>
-              <span>Start work using the timer with project and task selection</span>
-            </li>
-            <li className="flex items-start gap-2">
-              <span className="text-black font-medium">2.</span>
-              <span>Your productive hours are tracked (excluding breaks and support time)</span>
-            </li>
-            <li className="flex items-start gap-2">
-              <span className="text-black font-medium">3.</span>
-              <span>When productive hours exceed 8 hours, overtime is automatically calculated</span>
-            </li>
-            <li className="flex items-start gap-2">
-              <span className="text-black font-medium">4.</span>
-              <span>Overtime records show which projects and tasks contributed to extra hours</span>
-            </li>
-          </ul>
+          <div className="space-y-4 max-w-xl relative z-10">
+            <div className="flex items-center gap-3 text-black">
+              <MdInfoOutline className="text-2xl" />
+              <h4 className="text-lg font-medium font-syne uppercase tracking-tighter leading-none">Standard Operating Procedure</h4>
+            </div>
+            <p className="text-xs text-gray-600 font-medium leading-relaxed">
+              Impact records are generated through a high-precision synchronization between the daily timer and the platform threshold.
+              Only <strong>productive work units</strong> (Active Timer status) are counted towards the 8-hour window.
+              Support tickets and Break sessions are excluded from the lifecycle to ensure elite performance metrics.
+            </p>
+          </div>
+          <div className="flex gap-4 relative z-10">
+            <button className="flex items-center gap-3 px-6 py-3 bg-white border border-gray-200 text-black text-[10px] font-bold uppercase tracking-widest rounded-2xl hover:bg-gray-100 transition shadow-xs active:scale-95">
+              <MdDownload /> Export Ledger
+            </button>
+            <button className="flex items-center gap-3 px-6 py-3 bg-black text-white text-[10px] font-bold uppercase tracking-widest rounded-2xl hover:bg-gray-800 transition shadow-xl shadow-black/10 active:scale-95">
+              <ChevronRight size={14} /> Audit History
+            </button>
+          </div>
         </div>
       </LayoutComponents>
     </div>

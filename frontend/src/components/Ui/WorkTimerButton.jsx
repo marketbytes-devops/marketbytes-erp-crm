@@ -7,68 +7,91 @@ const formatTime = (s) => {
   return `${h}:${m}:${sec}`;
 };
 
-const WorkTimerButton = ({ onOpenWorkTimer, status, timerSeconds, checkedIn }) => {
+const WorkTimerButton = ({ onOpenWorkTimer, status, timerSeconds, checkedIn, clockIn }) => {
   const isWorking = status?.is_working;
   const isOnBreak = status?.is_on_break;
-  const breakType = status?.current_break_session?.type;
+  const activeType = status?.active_type;
 
-  const breakElapsed = isOnBreak && status.current_break_session?.start_time
-    ? Math.floor((new Date() - new Date(status.current_break_session.start_time)) / 1000)
-    : 0;
-
-  const todayTotalSeconds = status?.today_total_work
-    ? (() => {
-      const [h, m, s] = status.today_total_work.split(":").map(Number);
-      return h * 3600 + m * 60 + s;
-    })()
-    : 0;
-
-  const currentWorkSeconds = isWorking && status.current_work_session?.start_time
-    ? Math.floor((new Date() - new Date(status.current_work_session.start_time)) / 1000)
-    : 0;
-
-  const displayWorkTime = todayTotalSeconds + currentWorkSeconds;
+  // Visual feedback for the daily goal (8 hours)
+  const workGoalSeconds = 8 * 3600;
+  const progress = Math.min(100, ((status?.workSeconds || 0) / workGoalSeconds) * 100);
 
   return (
     <button
       onClick={onOpenWorkTimer}
-      className={`flex items-center gap-4 px-6 py-3 rounded-full text-sm font-medium transition-all shadow-inner border border-white/20 active:scale-95 hover:scale-105 ${isOnBreak
-        ? breakType === "break"
-          ? "bg-orange-600 hover:bg-orange-700 text-white"
-          : "bg-indigo-600 hover:bg-indigo-700 text-white"
+      className={`group relative flex items-center gap-4 px-5 py-2.5 rounded-2xl text-sm font-medium transition-all duration-300 shadow border border-white/10 active:scale-95 overflow-hidden ${isOnBreak
+        ? activeType === "break"
+          ? "bg-linear-to-br from-orange-500 to-orange-700 text-white"
+          : "bg-linear-to-br from-indigo-500 to-indigo-700 text-white"
         : isWorking
-          ? "bg-green-600 hover:bg-green-700 text-white"
+          ? "bg-linear-to-br from-gray-900 to-black text-white"
           : checkedIn
-            ? "bg-black hover:bg-gray-900 text-white"
-            : "bg-gray-400 text-black hover:bg-black hover:text-white"
+            ? "bg-white text-black border-gray-200"
+            : "bg-gray-100 text-gray-400 grayscale hover:grayscale-0"
         }`}
     >
-      {isOnBreak ? (
-        <>
-          {breakType === "break" ? <MdAccessTime className="w-9 h-9" /> : <MdAccessTimeFilled className="w-9 h-9" />}
-          <div className="text-left">
-            <div className="text-xs opacity-90">On {breakType === "break" ? "Break" : "Support"}</div>
-            <div className="font-mono text-lg font-medium">{formatTime(breakElapsed)}</div>
-          </div>
-        </>
-      ) : isWorking ? (
-        <>
-          <MdAccessAlarm className="w-9 h-9" />
-          <div className="text-left">
-            <div className="font-mono text-sm font-medium tracking-wider">
-              {formatTime(displayWorkTime)}
-            </div>
-            <div className="text-xs opacity-90">Click to Stop Work</div>
-          </div>
-        </>
-      ) : (
-        <>
-          <MdPlayArrow className="w-9 h-9" />
-          <span className="relative -left-3 text-sm font-medium">
-            {checkedIn ? "Resume Timer" : "Check In"}
-          </span>
-        </>
+      {/* Background Progress Indicator for Work Goal (only when checked in) */}
+      {checkedIn && (
+        <div
+          className="absolute bottom-0 left-0 h-1 bg-white/20 transition-all duration-1000"
+          style={{ width: `${progress}%` }}
+        />
       )}
+
+      <div className="relative z-10 flex items-center gap-3">
+        {isOnBreak ? (
+          <>
+            <div className="bg-white/20 p-2 rounded-xl">
+              {activeType === "break" ? <MdAccessTime className="w-6 h-6" /> : <MdAccessTimeFilled className="w-6 h-6" />}
+            </div>
+            <div className="text-left">
+              <div className="text-[10px] uppercase tracking-wider opacity-70">On {activeType}</div>
+              <div className="font-mono text-base font-medium leading-none">{formatTime(timerSeconds)}</div>
+            </div>
+          </>
+        ) : isWorking ? (
+          <>
+            <div className="bg-white/10 p-2 rounded-xl animate-pulse">
+              <MdAccessAlarm className="w-6 h-6" />
+            </div>
+            <div className="text-left max-w-[140px]">
+              <div className="font-mono text-lg font-medium tracking-normal leading-none mb-1">
+                {formatTime(timerSeconds)}
+              </div>
+              <div className="flex flex-col">
+                <span className="truncate text-[9px] font-medium uppercase opacity-60 tracking-wider">
+                  {status.current_work_session?.project_name || "General"}
+                </span>
+              </div>
+            </div>
+          </>
+        ) : (
+          <>
+            <div className={`${checkedIn ? 'bg-black text-white' : 'bg-gray-200 text-gray-500'} p-2 rounded-xl transition-colors`}>
+              <MdPlayArrow className="w-6 h-6" />
+            </div>
+            <div className="text-left">
+              <span className="text-sm font-medium uppercase tracking-wider text-gray-900">
+                {checkedIn ? "Resume Timer" : "Check In"}
+              </span>
+              {checkedIn && (
+                <div className="text-[9px] opacity-50 font-medium flex items-center gap-1.5">
+                  {clockIn && <span>IN: {clockIn}</span>}
+                  {status?.workSeconds > 0 && (
+                    <>
+                      <span className="w-1 h-1 bg-gray-400 rounded-full opacity-30" />
+                      <span>{formatTime(status.workSeconds)} today</span>
+                    </>
+                  )}
+                </div>
+              )}
+            </div>
+          </>
+        )}
+      </div>
+
+      {/* Hover Effect */}
+      <div className="absolute inset-0 bg-white/5 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
     </button>
   );
 };

@@ -3,7 +3,7 @@ import { createBrowserRouter, RouterProvider, Navigate } from "react-router";
 import "./index.css";
 import apiClient from "./helpers/apiClient";
 import Layout from "./components/Layout";
-import Admin from "./pages/Dashboards/Admin";
+import Admin from "./pages/Dashboard/Admin";
 import Login from "./pages/Auth/Login";
 import ResetPassword from "./pages/Auth/ResetPassword";
 import Profile from "./pages/Profile";
@@ -33,9 +33,12 @@ import ProjectCreate from "./pages/Operations/Projects/ProjectCreate";
 import ProjectTemplate from "./pages/Operations/Projects/ProjectTemplate";
 import ProjectTemplateAdd from "./pages/Operations/Projects/ProjectTemplateAdd";
 import ProjectArchive from "./pages/Operations/Projects/ProjectArchive";
+import ProjectEdit from "./pages/Operations/Projects/ProjectEdit";
+import ProjectDetails from "./pages/Operations/Projects/ProjectDetails";
 import TaskView from "./pages/Operations/Tasks/TaskView";
 import TaskLabel from "./pages/Operations/Tasks/TaskLabel";
 import CreateTaskLabel from "./pages/Operations/Tasks/CreateTaskLabel";
+import TaskEdit from "./pages/Operations/Tasks/TaskEdit";
 import TaskBoard from "./pages/Operations/Tasks/TaskBoard";
 import NewTask from "./pages/Operations/Tasks/NewTask";
 import Leads from "./pages/Sales/Leads";
@@ -45,6 +48,10 @@ import Communication from "./pages/Sales/Communication";
 import Pipeline from "./pages/Sales/SalesPipeline";
 import TimeLogs from "./pages/Operations/TimeLogs/TimeLogsView";
 import Customers from "./pages/Sales/Customer";
+import EmployeeTimeLogs from "./pages/Operations/TimeLogs/EmployeeTimeLogs";
+import CalendarView from "./pages/Operations/TimeLogs/CalendarView";
+import ActiveTimers from "./pages/Operations/TimeLogs/ActiveTimers";
+import TaskCalendarPage from "./pages/Operations/Tasks/TaskCalendar";
 
 const ProtectedRoute = ({
   children,
@@ -443,6 +450,18 @@ function App() {
             </ProtectedRoute>
           ),
         },
+        {
+          path: "/operations/projects/:id",
+          element: (
+            <ProtectedRoute
+              isAuthenticated={isAuthenticated}
+              requiredPage="permissions"
+              requiredAction="view"
+            >
+              <ProjectDetails />
+            </ProtectedRoute>
+          ),
+        },
 
         {
           path: "/operations/projects/projectcreate",
@@ -453,6 +472,19 @@ function App() {
               requiredAction="add"
             >
               <ProjectCreate />
+            </ProtectedRoute>
+          ),
+        },
+
+        {
+          path: "/operations/projects/edit/:id",
+          element: (
+            <ProtectedRoute
+              isAuthenticated={isAuthenticated}
+              requiredPage="permissions"
+              requiredAction="view"
+            >
+              <ProjectEdit />
             </ProtectedRoute>
           ),
         },
@@ -544,6 +576,18 @@ function App() {
           ),
         },
         {
+          path: "/operations/tasks/edit/:id",
+          element: (
+            <ProtectedRoute
+              isAuthenticated={isAuthenticated}
+              requiredPage="permissions"
+              requiredAction="view"
+            >
+              <TaskEdit />
+            </ProtectedRoute>
+          ),
+        },
+        {
           path: "/operations/taskboard",
           element: (
             <ProtectedRoute
@@ -555,7 +599,67 @@ function App() {
             </ProtectedRoute>
           ),
         },
-
+        {
+          path: "/operations/timelogs",
+          element: (
+            <ProtectedRoute
+              isAuthenticated={isAuthenticated}
+              requiredPage="permissions"
+              requiredAction="view"
+            >
+              <TimeLogs />
+            </ProtectedRoute>
+          ),
+        },
+        {
+          path: "/operations/timelogs/active-timers",
+          element: (
+            <ProtectedRoute
+              isAuthenticated={isAuthenticated}
+              requiredPage="permissions"
+              requiredAction="view"
+            >
+              <ActiveTimers />
+            </ProtectedRoute>
+          ),
+        },
+        {
+          path: "/operations/timelogs/calendar-view",
+          element: (
+            <ProtectedRoute
+              isAuthenticated={isAuthenticated}
+              requiredPage="permissions"
+              requiredAction="view"
+            >
+              <CalendarView />
+            </ProtectedRoute>
+          ),
+        },
+        {
+          path: "/operations/timelogs/emplyees-time",
+          element: (
+            <ProtectedRoute
+              isAuthenticated={isAuthenticated}
+              requiredPage="permissions"
+              requiredAction="view"
+            >
+              <EmployeeTimeLogs />
+            </ProtectedRoute>
+          ),
+        },
+    {
+          path: "/operations/taskcalendar",
+          element: (
+            <ProtectedRoute
+              isAuthenticated={isAuthenticated}
+              requiredPage="permissions"
+              requiredAction="view"
+            >
+              <TaskCalendarPage />
+            </ProtectedRoute>
+          ),
+        },
+ 
         {
           path: "/user-roles/users",
           element: (

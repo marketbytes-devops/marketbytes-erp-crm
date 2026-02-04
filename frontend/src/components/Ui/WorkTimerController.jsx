@@ -5,10 +5,18 @@ import TimerModal from "../Ui/TimerModal";
 
 const WorkTimerController = () => {
   const [checkedIn, setCheckedIn] = useState(false);
+  const [clockIn, setClockIn] = useState(null);
   const [status, setStatus] = useState(null);
-  const [timerSeconds, setTimerSeconds] = useState(0);
   const [modalOpen, setModalOpen] = useState(false);
   const [loading, setLoading] = useState(true);
+
+  // Daily totals (ticking)
+  const [workSeconds, setWorkSeconds] = useState(0);
+  const [breakSeconds, setBreakSeconds] = useState(0);
+  const [supportSeconds, setSupportSeconds] = useState(0);
+
+  // Current session timer (for Break/Support only, starts at 0 each time)
+  const [sessionSeconds, setSessionSeconds] = useState(0);
 
   const fetchStatus = useCallback(async () => {
     try {
@@ -16,9 +24,24 @@ const WorkTimerController = () => {
         apiClient.get("/hr/attendance/status/"),
         apiClient.get("/hr/timer/status/"),
       ]);
+      const s = timerRes.data;
       setCheckedIn(attRes.data.checked_in);
-      setStatus(timerRes.data);
-      setTimerSeconds(0);
+      setClockIn(attRes.data.clock_in);
+      setStatus(s);
+
+      // Sync local timers with backend daily totals
+      setWorkSeconds(s.today_total_work_seconds || 0);
+      setBreakSeconds(s.today_total_break_seconds || 0);
+      setSupportSeconds(s.today_total_support_seconds || 0);
+
+      // Initialize session timer for breaks/support based on current session start
+      if (s.is_on_break && s.current_break_session?.start_time) {
+        const start = new Date(s.current_break_session.start_time);
+        const elapsed = Math.floor((new Date() - start) / 1000);
+        setSessionSeconds(elapsed);
+      } else {
+        setSessionSeconds(0);
+      }
     } catch (e) {
       console.error("Status fetch error", e);
     } finally {
@@ -33,24 +56,40 @@ const WorkTimerController = () => {
   useEffect(() => {
     if (!status) return;
     if (!status.is_working && !status.is_on_break) return;
+
     const id = setInterval(() => {
-      setTimerSeconds((prev) => prev + 1);
+      if (status.is_working) {
+        // Work timer always shows daily total
+        setWorkSeconds((prev) => prev + 1);
+      } else if (status.is_on_break) {
+        // Break/Support shows current session timer on the main display
+        setSessionSeconds((prev) => prev + 1);
+
+        // But also update the daily counts for the dashboard
+        if (status.active_type === "break") {
+          setBreakSeconds((prev) => prev + 1);
+        } else if (status.active_type === "support") {
+          setSupportSeconds((prev) => prev + 1);
+        }
+      }
     }, 1000);
     return () => clearInterval(id);
   }, [status]);
 
-  const openModal = () => setModalOpen(true);
-  const closeModal = () => setModalOpen(false);
+  // Main display timer: Work = Daily Total, Break/Support = Session Duration
+  const activeTimerSeconds = status?.is_working
+    ? workSeconds
+    : status?.is_on_break
+      ? sessionSeconds
+      : 0;
 
   const handleCheckIn = async () => {
     try {
       await apiClient.post("/hr/attendance/check_in_out/", { action: "in" });
       setCheckedIn(true);
-
       await apiClient.post("/hr/timer/start_work/", { project: null, task: null, memo: "Started day" });
-      
       fetchStatus();
-      openModal(); 
+      setModalOpen(true);
     } catch (e) {
       console.error(e);
     }
@@ -61,8 +100,11 @@ const WorkTimerController = () => {
       await apiClient.post("/hr/attendance/check_in_out/", { action: "out" });
       setCheckedIn(false);
       setStatus(null);
-      setTimerSeconds(0);
-      closeModal();
+      setWorkSeconds(0);
+      setBreakSeconds(0);
+      setSupportSeconds(0);
+      setSessionSeconds(0);
+      setModalOpen(false);
     } catch (e) {
       console.error(e);
     }
@@ -71,9 +113,8 @@ const WorkTimerController = () => {
   const startWork = async ({ project, task, memo }) => {
     try {
       await apiClient.post("/hr/timer/start_work/", { project, task, memo });
-      closeModal();
+      setModalOpen(false);
       fetchStatus();
-      setTimerSeconds(0);
     } catch (e) {
       console.error(e);
     }
@@ -82,7 +123,7 @@ const WorkTimerController = () => {
   const stopWork = async () => {
     try {
       await apiClient.post("/hr/timer/stop_work/");
-      openModal();
+      setModalOpen(true);
       fetchStatus();
     } catch (e) {
       console.error(e);
@@ -91,10 +132,10 @@ const WorkTimerController = () => {
 
   const startBreak = async (type) => {
     try {
+      setSessionSeconds(0); // Reset session timer immediately for visual snappiness
       await apiClient.post("/hr/timer/start_break/", { type });
-      closeModal();
+      setModalOpen(false);
       fetchStatus();
-      setTimerSeconds(0);
     } catch (e) {
       console.error(e);
     }
@@ -103,7 +144,7 @@ const WorkTimerController = () => {
   const stopBreak = async () => {
     try {
       await apiClient.post("/hr/timer/stop_break/");
-      openModal();
+      setModalOpen(true);
       fetchStatus();
     } catch (e) {
       console.error(e);
@@ -123,7 +164,7 @@ const WorkTimerController = () => {
       stopBreak();
       return;
     }
-    openModal();
+    setModalOpen(true);
   };
 
   if (loading) return null;
@@ -132,19 +173,31 @@ const WorkTimerController = () => {
     <>
       <WorkTimerButton
         onOpenWorkTimer={handleTopbarButtonClick}
-        status={status}
-        timerSeconds={timerSeconds}
+        status={{
+          ...status,
+          workSeconds,
+          breakSeconds,
+          supportSeconds
+        }}
+        timerSeconds={activeTimerSeconds}
         checkedIn={checkedIn}
+        clockIn={clockIn}
       />
       <TimerModal
         open={modalOpen}
-        onClose={closeModal}
+        onClose={() => setModalOpen(false)}
         onStartWork={startWork}
         onBreak={() => startBreak("break")}
         onSupport={() => startBreak("support")}
         onCheckOut={handleCheckOut}
         checkedIn={checkedIn}
-        status={status}
+        status={{
+          ...status,
+          workSeconds,
+          breakSeconds,
+          supportSeconds,
+          sessionSeconds
+        }}
       />
     </>
   );

@@ -169,21 +169,38 @@ const ProjectsView = () => {
 
   const handleStatusChange = async (projectId, newStatusId) => {
     try {
+      const statusValue = newStatusId === "" ? null : parseInt(newStatusId);
       await apiClient.patch(`/operation/projects/${projectId}/`, {
-        status_id: parseInt(newStatusId),
+        status_id: statusValue,
       });
 
-      const newStatus = statuses.find((s) => s.id === parseInt(newStatusId));
+      const newStatus = statuses.find((s) => s.id === statusValue) || null;
       setProjects((prev) =>
         prev.map((p) =>
           p.id === projectId
-            ? { ...p, status: newStatus, status_id: parseInt(newStatusId) }
+            ? { ...p, status: newStatus, status_id: statusValue }
             : p
         )
       );
       toast.success("Status updated");
     } catch (err) {
       toast.error("Failed to update status");
+    }
+  };
+
+  const handleHourChange = async (projectId, hours) => {
+    try {
+      await apiClient.patch(`/operation/projects/${projectId}/`, {
+        hours_allocated: parseFloat(hours),
+      });
+      setProjects((prev) =>
+        prev.map((p) =>
+          p.id === projectId ? { ...p, hours_allocated: hours } : p
+        )
+      );
+      toast.success("Hours updated");
+    } catch (err) {
+      toast.error("Failed to update hours");
     }
   };
 
@@ -200,16 +217,15 @@ const ProjectsView = () => {
   };
 
   const togglePin = (project) => {
-    setPinnedProjects((prev) => {
-      const exists = prev.find((p) => p.id === project.id);
-      if (exists) {
-        toast.success("Project unpinned");
-        return prev.filter((p) => p.id !== project.id);
-      } else {
-        toast.success("Project pinned");
-        return [...prev, project];
-      }
-    });
+    const isAlreadyPinned = pinnedProjects.some((p) => p.id === project.id);
+
+    if (isAlreadyPinned) {
+      setPinnedProjects((prev) => prev.filter((p) => p.id !== project.id));
+      toast.success("Project unpinned");
+    } else {
+      setPinnedProjects((prev) => [...prev, project]);
+      toast.success("Project pinned");
+    }
   };
 
   const renderAvatars = (members = []) => {
@@ -571,22 +587,24 @@ const ProjectsView = () => {
                               : "No deadline"}
                           </td>
                           <td className="px-6 py-5">
-                            <div className="text-sm font-medium text-gray-900">0%</div>
-                            <div className="text-xs text-red-600 mt-1">Loss: ₹0</div>
+                            <div className="flex flex-col gap-1">
+                              <div className="text-sm font-bold text-gray-900">0%</div>
+                              <div className="text-[10px] font-bold text-red-500 uppercase">Loss: ₹0</div>
+                            </div>
                           </td>
-                          <td className="px-6 py-5 whitespace-nowrap">
-                            <select
-                              value={project.status_id || ""}
-                              onChange={(e) => handleStatusChange(project.id, e.target.value)}
-                              className="px-4 py-2 text-sm font-medium rounded-full border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-black cursor-pointer"
-                            >
-                              <option value="">Not Started</option>
-                              {statuses.map((s) => (
-                                <option key={s.id} value={s.id}>
-                                  {s.name}
-                                </option>
-                              ))}
-                            </select>
+                          <td className="px-6 py-5 whitespace-nowrap min-w-[180px]">
+                            <Input
+                              type="select"
+                              value={project.status_id ? project.status_id.toString() : ""}
+                              onChange={(val) => handleStatusChange(project.id, val)}
+                              options={[
+                                { label: "Not Started", value: "" },
+                                ...statuses
+                                  .filter(s => s.name.toLowerCase() !== "not started")
+                                  .map((s) => ({ label: s.name, value: s.id.toString() })),
+                              ]}
+                              className="text-xs font-bold"
+                            />
                           </td>
                           <td className="px-6 py-5 whitespace-nowrap">
                             <div className="flex items-center justify-end gap-3">
@@ -607,9 +625,8 @@ const ProjectsView = () => {
                                 className="p-2 hover:bg-yellow-50 rounded-lg transition group"
                               >
                                 <MdPushPin
-                                  className={`w-5 h-5 ${
-                                    isPinned ? "text-yellow-600" : "text-gray-600"
-                                  } group-hover:text-yellow-600`}
+                                  className={`w-5 h-5 ${isPinned ? "text-yellow-600" : "text-gray-600"
+                                    } group-hover:text-yellow-600`}
                                 />
                               </button>
                               <button
