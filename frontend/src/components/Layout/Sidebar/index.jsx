@@ -155,14 +155,14 @@ const Sidebar = ({ toggleSidebar }) => {
       toggle: () => setOperationOpen((prev) => !prev),
       subItems: [
         {
-          to: "/Operations/projects",
+          to: "/operations/projects",
           label: "Projects",
           icon: <MdDashboard className="w-6 h-6" />,
           page: "projects",
           action: "view",
         },
         {
-          to: "/Operations/tasks",
+          to: "/operations/tasks",
           label: "Tasks",
           icon: <MdAssignment className="w-5 h-5" />,
           page: "tasks",
