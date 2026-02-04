@@ -46,14 +46,11 @@ const Sidebar = ({ toggleSidebar }) => {
         const user = response.data;
         setIsSuperadmin(user.is_superuser || user.role?.name === "Superadmin");
 
-        const roleId = user.role?.id;
-        if (roleId) {
-          const roleRes = await apiClient.get(`/auth/roles/${roleId}/`);
-          setPermissions(roleRes.data.permissions || []);
-        }
+        // Use effective_permissions which includes role perms + direct perms + overrides
+        setPermissions(user.effective_permissions || {});
       } catch (error) {
         console.error("Failed to load user profile or permissions:", error);
-        setPermissions([]);
+        setPermissions({});
         setIsSuperadmin(false);
       } finally {
         setIsLoading(false);
@@ -64,8 +61,10 @@ const Sidebar = ({ toggleSidebar }) => {
 
   const hasPermission = (page, action) => {
     if (isSuperadmin) return true;
-    const perm = permissions.find((p) => p.page === page);
-    return perm && perm[`can_${action}`];
+
+    // permissions is now an object { pageName: { can_view: bool, ... } }
+    const pagePerms = permissions[page];
+    return pagePerms && pagePerms[`can_${action}`];
   };
 
   const isMobile = () => window.innerWidth < 768;
@@ -159,21 +158,21 @@ const Sidebar = ({ toggleSidebar }) => {
           to: "/Operations/projects",
           label: "Projects",
           icon: <MdDashboard className="w-6 h-6" />,
-          page: "Projects",
+          page: "projects",
           action: "view",
         },
         {
           to: "/Operations/tasks",
           label: "Tasks",
           icon: <MdAssignment className="w-5 h-5" />,
-          page: "Tasks",
+          page: "tasks",
           action: "view",
         },
         {
           to: "/Operations/taskboard",
           label: "Task Board",
           icon: <MdViewKanban className="w-5 h-5" />,
-          page: "Task Board",
+          page: "task board",
           action: "view",
         },
       ].filter((item) => hasPermission(item.page, item.action)),

@@ -1,4 +1,5 @@
 from rest_framework import viewsets, filters
+from authapp.permissions import HasPermission
 from django_filters.rest_framework import DjangoFilterBackend
 from .models import (
     Company,
@@ -25,6 +26,8 @@ from .serializers import (
 class CompanyViewSet(viewsets.ModelViewSet):
     queryset = Company.objects.all()
     serializer_class = CompanySerializer
+    permission_classes = [HasPermission]
+    page_name = 'customer'
     filter_backends = [DjangoFilterBackend, filters.SearchFilter]
     search_fields = ["name", "website", "mobile"]
 
@@ -32,6 +35,8 @@ class CompanyViewSet(viewsets.ModelViewSet):
 class ClientViewSet(viewsets.ModelViewSet):
     queryset = Client.objects.select_related("company").all()
     serializer_class = ClientSerializer
+    permission_classes = [HasPermission]
+    page_name = 'customer'
     filter_backends = [DjangoFilterBackend, filters.SearchFilter]
     search_fields = ["name", "email", "company__name"]
 
@@ -41,6 +46,8 @@ class LeadViewSet(viewsets.ModelViewSet):
         "company", "client", "lead_agent", "lead_source", "lead_category", "lead_team"
     ).all()
     serializer_class = LeadSerializer
+    permission_classes = [HasPermission]
+    page_name = 'leads'
     filter_backends = [
         DjangoFilterBackend,
         filters.SearchFilter,
@@ -76,6 +83,8 @@ class LeadTeamViewSet(viewsets.ModelViewSet):
 class ProposalTemplateViewSet(viewsets.ModelViewSet):
     queryset = ProposalTemplate.objects.all()
     serializer_class = ProposalTemplateSerializer
+    permission_classes = [HasPermission]
+    page_name = 'reports'
     filter_backends = [
         DjangoFilterBackend,
         filters.SearchFilter,
@@ -95,6 +104,8 @@ class ProposalTemplateViewSet(viewsets.ModelViewSet):
 class RfpTemplateViewSet(viewsets.ModelViewSet):
     queryset = RfpTemplate.objects.all()
     serializer_class = RfpTemplateSerializer
+    permission_classes = [HasPermission]
+    page_name = 'reports'
     filter_backends = [
         DjangoFilterBackend,
         filters.SearchFilter,

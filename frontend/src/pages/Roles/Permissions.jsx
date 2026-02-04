@@ -8,11 +8,10 @@ import Loading from "../../components/Loading";
 import Toggle from "../../components/Toggle";
 
 const pageNameMap = {
-  // Common
+  // Common / Home
   admin: { apiName: "admin", displayName: "Dashboard", route: "/Dashboard" },
-  profile: { apiName: "profile", displayName: "Profile", route: "/profile" },
 
-  // HR
+  // HR Management
   employees: { apiName: "employees", displayName: "Employees", route: "/hr/employees" },
   departments: { apiName: "departments", displayName: "Departments", route: "/hr/departments" },
   designations: { apiName: "designations", displayName: "Designations", route: "/hr/designations" },
@@ -24,9 +23,9 @@ const pageNameMap = {
   performance: { apiName: "performance", displayName: "Performance", route: "/hr/performance" },
 
   // Operations
-  projects: { apiName: "Projects", displayName: "Projects", route: "/Operations/projects" },
-  tasks: { apiName: "Tasks", displayName: "Tasks", route: "/Operations/tasks" },
-  taskboard: { apiName: "Task Board", displayName: "Task Board", route: "/Operations/taskboard" },
+  projects: { apiName: "projects", displayName: "Projects", route: "/Operations/projects" },
+  tasks: { apiName: "tasks", displayName: "Tasks", route: "/Operations/tasks" },
+  taskboard: { apiName: "task board", displayName: "Task Board", route: "/Operations/taskboard" },
 
   // Sales
   leads: { apiName: "leads", displayName: "Leads", route: "/sales/leads" },
@@ -39,7 +38,10 @@ const pageNameMap = {
   // User Roles
   roles: { apiName: "roles", displayName: "Roles", route: "/user-roles/roles" },
   users: { apiName: "users", displayName: "Users", route: "/user-roles/users" },
-  permissions: { apiName: "permissions", displayName: "Permissions", route: "/user-roles/permissions" }
+  permissions: { apiName: "permissions", displayName: "Permissions", route: "/user-roles/permissions" },
+
+  // Profile
+  profile: { apiName: "profile", displayName: "Profile", route: "/profile" },
 };
 
 const Permissions = () => {
@@ -135,18 +137,15 @@ const Permissions = () => {
       const permsArray = Object.keys(userPermissions)
         .map(key => {
           const p = userPermissions[key];
-          if (p.view || p.add || p.edit || p.delete) {
-            return {
-              page: pageNameMap[key].apiName,
-              can_view: p.view,
-              can_add: p.add,
-              can_edit: p.edit,
-              can_delete: p.delete
-            };
-          }
-          return null;
-        })
-        .filter(Boolean);
+          // Send all pages that are definitely in the map
+          return {
+            page: pageNameMap[key].apiName,
+            can_view: p.view || false,
+            can_add: p.add || false,
+            can_edit: p.edit || false,
+            can_delete: p.delete || false
+          };
+        });
 
       await apiClient.put(`/auth/users/${selectedUser.id}/`, {
         user_permissions: permsArray

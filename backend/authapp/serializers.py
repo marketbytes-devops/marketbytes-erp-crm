@@ -228,9 +228,9 @@ class UserCreateSerializer(serializers.ModelSerializer):
         user.set_password(password)
         user.save()
         
-        # Create direct user permissions
         for perm_data in user_permissions_data:
-            UserPermission.objects.get_or_create(user=user, page=perm_data.get('page'), defaults={
+            page = str(perm_data.get('page', '')).lower()
+            UserPermission.objects.get_or_create(user=user, page=page, defaults={
                 'can_view': perm_data.get('can_view', False),
                 'can_add': perm_data.get('can_add', False),
                 'can_edit': perm_data.get('can_edit', False),
@@ -348,7 +348,8 @@ class UserUpdateSerializer(serializers.ModelSerializer):
             # Clear existing direct permissions for this user
             UserPermission.objects.filter(user=instance).delete()
             for perm_data in user_permissions_data:
-                UserPermission.objects.get_or_create(user=instance, page=perm_data.get('page'), defaults={
+                page = str(perm_data.get('page', '')).lower()
+                UserPermission.objects.get_or_create(user=instance, page=page, defaults={
                     'can_view': perm_data.get('can_view', False),
                     'can_add': perm_data.get('can_add', False),
                     'can_edit': perm_data.get('can_edit', False),
@@ -367,7 +368,8 @@ class UserUpdateSerializer(serializers.ModelSerializer):
             # Clear existing overrides for this user
             PermissionOverride.objects.filter(user=instance).delete()
             for override_data in permission_overrides_data:
-                PermissionOverride.objects.get_or_create(user=user, page=override_data.get('page'), action=override_data.get('action'), defaults={
+                page = str(override_data.get('page', '')).lower()
+                PermissionOverride.objects.get_or_create(user=instance, page=page, action=override_data.get('action'), defaults={
                     'is_blocked': override_data.get('is_blocked', False)
                 })
 
