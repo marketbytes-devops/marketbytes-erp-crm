@@ -40,6 +40,7 @@ import TaskLabel from "./pages/Operations/tasks/TaskLabel";
 import CreateTaskLabel from "./pages/Operations/tasks/CreateTaskLabel";
 import TaskEdit from "./pages/Operations/Tasks/TaskEdit";
 import TaskBoard from "./pages/Operations/Tasks/TaskBoard";
+import TaskArchive from "./pages/Operations/Tasks/TaskArchive";
 import NewTask from "./pages/operations/tasks/NewTask";
 import ScrumView from "./pages/Operations/Scrum/ScrumView";
 import Leads from "./pages/Sales/Leads";
@@ -720,6 +721,18 @@ function App() {
               requiredAction="view"
             >
               <Permissions />
+            </ProtectedRoute>
+          ),
+        },
+        {
+          path: "/operations/tasks/archive",
+          element: (
+            <ProtectedRoute
+              isAuthenticated={isAuthenticated}
+              requiredPage="permissions"
+              requiredAction="view"
+            >
+              <TaskArchive />
             </ProtectedRoute>
           ),
         },

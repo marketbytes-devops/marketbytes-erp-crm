@@ -126,7 +126,7 @@ const Pipeline = () => {
   if (loading && leads.length === 0) return <Loading />;
 
   return (
-    <div className="p-6 min-h-screen bg-[#f8fafc]">
+    <div className="p-6 min-h-screen">
       <LayoutComponents
         title="Revenue Pipeline"
         subtitle="Manage leads through high-conversion stages"
@@ -205,10 +205,10 @@ const Pipeline = () => {
               <div key={column.id} className="flex flex-col min-w-[340px] w-[340px] snap-center">
                 {/* Stage Header */}
                 <div className="bg-white p-5 rounded-3xl shadow-sm border border-gray-100 mb-6 relative overflow-hidden group">
-                  <div className={`absolute top-0 left-0 w-1.5 h-full bg-gradient-to-b ${column.color}`}></div>
+                  <div className={`absolute top-0 left-0 w-1.5 h-full bg-linear-to-b ${column.color}`}></div>
                   <div className="flex items-center justify-between relative z-10">
                     <div className="flex items-center gap-3">
-                      <div className={`p-2 rounded-xl bg-gradient-to-br ${column.color} text-white shadow-lg shadow-indigo-500/10`}>
+                      <div className={`p-2 rounded-xl bg-linear-to-br ${column.color} text-white shadow-lg shadow-indigo-500/10`}>
                         <column.icon className="w-4 h-4" />
                       </div>
                       <div>

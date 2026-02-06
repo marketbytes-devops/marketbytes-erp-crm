@@ -453,7 +453,7 @@ const Scrum = () => {
                         </td>
                         <td className="px-6 py-5">
                           <div className="flex items-center gap-3">
-                            <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-xs font-bold whitespace-nowrap">
+                            <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-xs font-medium whitespace-nowrap">
                               {item.employee_name.charAt(0).toUpperCase()}
                             </div>
                             <span className="text-sm text-gray-700 font-medium whitespace-nowrap">{item.employee_name}</span>

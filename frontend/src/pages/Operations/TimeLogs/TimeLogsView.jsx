@@ -221,9 +221,6 @@ const TimeLogs = () => {
                                         <MdTimer className="w-5 h-5" /> Active Timers
                                     </button>
                                 </Link>
-                                <button className="flex items-center justify-center gap-2 px-6 py-3 bg-black text-white rounded-xl hover:bg-gray-900 transition text-sm font-medium whitespace-nowrap">
-                                    <MdAdd className="w-5 h-5" /> New Log
-                                </button>
                             </div>
                         </div>
                     </div>

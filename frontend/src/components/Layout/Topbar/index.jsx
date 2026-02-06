@@ -1,10 +1,12 @@
-import { ChevronRight, Logs, User, LogOut, ChevronDown, Search, Bell } from "lucide-react";
+import { ChevronRight, Logs, User, LogOut, ChevronDown, Search } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router";
 import apiClient from "../../../helpers/apiClient";
 import placeholderImage from "../../../assets/images/placeholder-profile.webp";
 import Dropdown from "../../Dropdown";
 import WorkTimerController from "../../Ui/WorkTimerController";
+import NotificationCenter from "../../NotificationCenter";
+
 
 const Topbar = ({
   toggleSidebar,
@@ -17,7 +19,6 @@ const Topbar = ({
   const [displayName, setDisplayName] = useState("User");
   const [displayUsername, setDisplayUsername] = useState("guest");
   const [searchQuery, setSearchQuery] = useState("");
-  const [notificationCount] = useState(3);
   const navigate = useNavigate();
   const searchInputRef = useRef(null);
 
@@ -172,21 +173,7 @@ const Topbar = ({
             <WorkTimerController />
           </div>
         )}
-        {isAuthenticated && (
-          <button
-            className="whitespace-nowrap relative p-3 rounded-full hover:bg-gray-100 border border-gray-100 transition-colors group"
-            onClick={() => navigate("/notifications")}
-          >
-            <Bell size={22} className="text-gray-600 group-hover:text-black transition-colors" />
-            {notificationCount > 0 && (
-              <span
-                className="absolute -top-1 -right-1 bg-black text-white text-xs font-medium rounded-full w-5 h-5 flex items-center justify-center shadow-lg"
-              >
-                {notificationCount > 99 ? "99+" : notificationCount}
-              </span>
-            )}
-          </button>
-        )}
+        {isAuthenticated && <NotificationCenter />}
         <button
           className="md:hidden p-3 rounded-full hover:bg-gray-100"
           onClick={() => searchInputRef.current?.focus()}

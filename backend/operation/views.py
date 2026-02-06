@@ -469,7 +469,27 @@ class TaskViewSet(viewsets.ModelViewSet):
     }
     ordering_fields = ['title', 'due_date',
                        'priority', 'created_at', 'start_date']
-    ordering = [ 'due_date','priority']
+    ordering = ['due_date', 'priority']
+
+    def destroy(self, request, *args, **kwargs):
+        """
+        Soft delete / archive task
+        """
+        instance = self.get_object()
+        instance.is_active = False
+        instance.save()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+    @action(detail=True, methods=['post'])
+    def restore(self, request, pk=None):
+        """
+        Restore archived task
+        """
+        instance = self.get_object()
+        instance.is_active = True
+        instance.save()
+        return Response({'status': 'restored'})
+
 
     def get_queryset(self):
         """

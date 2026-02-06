@@ -258,7 +258,7 @@ const WeekView = ({ currentDate }) => {
             {weekDays.map((d) => (
               <th key={d.dateObj} className="border-b border-r border-gray-200 p-4 text-center bg-gray-50">
                 <p className="text-xs font-medium text-gray-500 uppercase">{d.day.split(' ')[0]}</p>
-                <p className="text-lg font-semibold text-gray-900">{d.day.split(' ')[1]}</p>
+                <p className="text-lg font-medium text-gray-900">{d.day.split(' ')[1]}</p>
               </th>
             ))}
           </tr>
@@ -272,13 +272,13 @@ const WeekView = ({ currentDate }) => {
               <td key={d.dateObj} className="border-r border-gray-200 p-2 align-top h-[500px] relative hover:bg-gray-50/50 transition">
                 {i === 1 && ( // Dummy data placement
                   <div className="absolute top-10 left-1 right-1 bg-blue-100 border-l-4 border-blue-500 text-blue-800 p-2 rounded text-xs font-medium shadow-sm">
-                    <p className="font-bold">Frontend Dev</p>
+                    <p className="font-medium">Frontend Dev</p>
                     <p>9:00 AM - 12:00 PM</p>
                   </div>
                 )}
                 {i === 3 && ( // Dummy data placement
                   <div className="absolute top-32 left-1 right-1 bg-purple-100 border-l-4 border-purple-500 text-purple-800 p-2 rounded text-xs font-medium shadow-sm">
-                    <p className="font-bold">Client Call</p>
+                    <p className="font-medium">Client Call</p>
                     <p>1:00 PM - 2:00 PM</p>
                   </div>
                 )}
@@ -296,12 +296,12 @@ const DayView = ({ currentDate }) => (
   <div className="h-full overflow-y-auto">
     <div className="sticky top-0 z-10 bg-white border-b border-gray-200 p-4 flex justify-between items-center shadow-sm">
       <div>
-        <p className="text-2xl font-semibold text-gray-900">{currentDate.toLocaleDateString("default", { weekday: "long" })}</p>
+        <p className="text-2xl font-medium text-gray-900">{currentDate.toLocaleDateString("default", { weekday: "long" })}</p>
         <p className="text-gray-500 text-sm">{currentDate.toLocaleDateString("default", { month: 'long', day: 'numeric', year: 'numeric' })}</p>
       </div>
       <div className="text-right">
         <p className="text-sm font-medium text-gray-500">Total Logged</p>
-        <p className="text-xl font-bold text-green-600">4h 30m</p>
+        <p className="text-xl font-medium text-green-600">4h 30m</p>
       </div>
     </div>
 
@@ -342,7 +342,7 @@ const ListView = ({ currentDate }) => {
           <div className="w-32 shrink-0 text-center">
             <div className="text-sm font-medium text-gray-500 uppercase tracking-wide">{d.dateObj.toLocaleDateString("default", { month: "short" })}</div>
             <div className="text-3xl font-light text-gray-900">{d.dateObj.getDate()}</div>
-            <div className="text-xs font-bold text-gray-400 uppercase mt-1">{d.dateObj.toLocaleDateString("default", { weekday: "short" })}</div>
+            <div className="text-xs font-medium text-gray-400 uppercase mt-1">{d.dateObj.toLocaleDateString("default", { weekday: "short" })}</div>
           </div>
 
           <div className="flex-1 space-y-3">
@@ -353,7 +353,7 @@ const ListView = ({ currentDate }) => {
                   <p className="text-sm text-gray-500">Project Alpha • Task #102</p>
                 </div>
                 <div className="text-right">
-                  <p className="text-lg font-semibold text-gray-900">4h 15m</p>
+                  <p className="text-lg font-medium text-gray-900">4h 15m</p>
                   <p className="text-xs text-green-600 font-medium bg-green-50 px-2 py-0.5 rounded-full inline-block">Billable</p>
                 </div>
               </div>

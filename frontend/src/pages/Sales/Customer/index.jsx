@@ -431,7 +431,7 @@ const Customers = () => {
           title={`${editingCompany ? "Edit" : "Register"} Company`}
           onCloseModal={() => setShowCompanyModal(false)}
           modal={
-            <div className="space-y-8 max-h-[75vh] overflow-y-auto pr-2 custom-scrollbar">
+            <div className="space-y-8 max-h-[75vh] overflow-y-auto p-2 custom-scrollbar">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="md:col-span-2">
                   <h4 className="text-[10px] font-medium text-blue-600 uppercase tracking-widest mb-4">Core Information</h4>
@@ -444,9 +444,7 @@ const Customers = () => {
                   <Input label="Industry Sector *" placeholder="Technology / Finance" value={companyForm.industry} onChange={(e) => setCompanyForm({ ...companyForm, industry: e.target.value })} />
                 </div>
               </div>
-
-              <div className="p-1 bg-gray-50 rounded-4xl border border-gray-100 overflow-hidden">
-                <div className="p-6 space-y-6">
+                <div className="space-y-6">
                   <h4 className="text-[10px] font-medium text-purple-600 uppercase tracking-widest mb-2">Geo-Spatial Data</h4>
                   <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                     <Input label="City" value={companyForm.city} onChange={(e) => setCompanyForm({ ...companyForm, city: e.target.value })} />
@@ -455,7 +453,6 @@ const Customers = () => {
                     <Input label="Postal Code" value={companyForm.postal_code} onChange={(e) => setCompanyForm({ ...companyForm, postal_code: e.target.value })} />
                   </div>
                 </div>
-              </div>
 
               <div className="flex justify-end gap-4 pt-6">
                 <button onClick={() => setShowCompanyModal(false)} className="px-8 py-4 text-sm font-medium text-gray-600 hover:text-black transition">Discard Changes</button>

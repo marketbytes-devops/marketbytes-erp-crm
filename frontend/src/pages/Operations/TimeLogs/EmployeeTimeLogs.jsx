@@ -373,7 +373,7 @@ const EmployeeTimeLogs = () => {
                         <td className="px-6 py-5 whitespace-nowrap">
                           <div className="flex items-center gap-1 text-green-600">
                             <MdAttachMoney className="w-5 h-5" />
-                            <span className="text-sm font-bold">₹{emp.earnings || 0}</span>
+                            <span className="text-sm font-medium">₹{emp.earnings || 0}</span>
                           </div>
                         </td>
                         <td className="px-6 py-5 whitespace-nowrap text-right">

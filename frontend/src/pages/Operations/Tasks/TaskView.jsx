@@ -80,7 +80,7 @@ const TasksPage = () => {
   const fetchTasks = async () => {
     try {
       setLoading(true);
-      const response = await apiClient.get("/operation/tasks/");
+      const response = await apiClient.get("/operation/tasks/?is_active=true");
       const data = Array.isArray(response.data) ? response.data : response.data.results || [];
       setTasks(data);
       setFilteredTasks(data);
@@ -564,12 +564,12 @@ const TasksPage = () => {
                               </button>
                               <button
                                 onClick={async () => {
-                                  if (window.confirm("Permanently delete this task?")) {
+                                  if (window.confirm("Archive this task?")) {
                                     try {
                                       await apiClient.delete(`/operation/tasks/${task.id}/`);
-                                      toast.success("Task deleted");
+                                      toast.success("Task archived");
                                       fetchTasks();
-                                    } catch (err) { toast.error("Delete failed"); }
+                                    } catch (err) { toast.error("Archive failed"); }
                                   }
                                 }}
                                 className="p-2 hover:bg-red-50 rounded-lg transition group"

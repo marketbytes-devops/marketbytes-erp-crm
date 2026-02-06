@@ -27,6 +27,7 @@ urlpatterns = [
     path('api/operation/', include('operation.urls')),
     path('api/sales/', include('sales.urls')),
     path('api/gmail/', include('gmail.urls')),
+    path('api/notifications/', include('notifications.urls')),
 ]
 
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
