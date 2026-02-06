@@ -27,9 +27,13 @@ const EmployeeTimeLogs = () => {
   const fetchClockinCounts = async () => {
   try {
     setLoading(true);
-    const params = {};
-    if (filters.from) params.start_date = filters.from;
-    if (filters.to)   params.end_date = filters.to;
+   const params = {};
+if (filters.from) params.start_date = filters.from;
+if (filters.to)   params.end_date = filters.to;
+if (filters.project)  params.project = filters.project;
+if (filters.task)     params.task = filters.task;
+if (filters.employee) params.employee = filters.employee;
+
 
     const response = await apiClient.get(
       "/hr/attendance/clockin-counts/",
@@ -39,12 +43,12 @@ const EmployeeTimeLogs = () => {
     const clockinData = response.data.results || [];
     setEmployees(clockinData);
 
-    // NEW CODE: Get unique employees from clock-in data for dropdown
+    // Get unique employees from clock-in data for dropdown
     const uniqueEmployees = [];
     const seen = new Set();
 
     clockinData.forEach((record) => {
-      const emp = record.employee;  // employee object from serializer
+      const emp = record;
       if (emp && emp.id && !seen.has(emp.id)) {
         seen.add(emp.id);
         uniqueEmployees.push(emp);
@@ -91,7 +95,7 @@ useEffect(() => {
   };
 
   const handleReset = () => {
-    setFilters({ from: "", to: "" });
+    setFilters({ from: "", to: "",project: "", task: "", employee: "", });
   };
 
   const handleApply = () => {
