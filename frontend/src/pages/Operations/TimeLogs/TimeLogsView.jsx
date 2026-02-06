@@ -41,7 +41,6 @@ const TimeLogs = () => {
     employee: "",
     status: "",
     startDate: "",
-    startDate: "",
     endDate: ""
   });
 
