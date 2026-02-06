@@ -12,11 +12,16 @@ class AttendanceSerializer(serializers.ModelSerializer):
     clock_in = serializers.SerializerMethodField()
     clock_out = serializers.SerializerMethodField()
     first_clock_in = serializers.SerializerMethodField()
+    last_clock_out = serializers.SerializerMethodField()
+    tasks = serializers.SerializerMethodField()
+    projects = serializers.SerializerMethodField()
+    is_billable = serializers.SerializerMethodField()
+
     
     class Meta:
         model = Attendance
         fields = '__all__'
-        read_only_fields = ['total_hours', 'productive_hours', 'break_hours', 'first_clock_in', 'last_clock_out', 'check_in_out_history', 'created_at', 'updated_at']
+        read_only_fields = ['total_hours', 'productive_hours', 'break_hours', 'first_clock_in', 'last_clock_out', 'check_in_out_history', 'tasks', 'projects', 'is_billable', 'created_at', 'updated_at']
 
     def get_clock_in(self, obj):
         if obj.clock_in:
@@ -164,6 +169,20 @@ class AttendanceSerializer(serializers.ModelSerializer):
         hours = total_seconds / 3600
         return round(hours, 2)
 
+    def get_tasks(self, obj):
+        work_sessions = self._get_work_sessions_for_date(obj)
+        tasks = work_sessions.values_list('task__name', flat=True).distinct()
+        return ", ".join(filter(None, tasks)) if tasks.exists() else "Daily Work"
+    
+    def get_projects(self, obj):
+        work_sessions = self._get_work_sessions_for_date(obj)
+        projects = work_sessions.values_list('project__name', flat=True).distinct()
+        return ", ".join(filter(None, projects)) if projects.exists() else "General"
+
+    def get_is_billable(self, obj):
+        work_sessions = self._get_work_sessions_for_date(obj)
+        return work_sessions.filter(is_billable=True).exists()
+
 class AttendanceCheckInOutSerializer(serializers.Serializer):
     action = serializers.ChoiceField(choices=['in', 'out'])
     working_from = serializers.CharField(max_length=100, required=False, default="Office")
@@ -255,6 +274,8 @@ class WorkSessionSerializer(serializers.ModelSerializer):
     project_name = serializers.CharField(source='project.name', read_only=True)
     task_name = serializers.CharField(source='task.name', read_only=True)
     duration = serializers.SerializerMethodField()
+    total_hours = serializers.SerializerMethodField()
+    productive_hours = serializers.SerializerMethodField()
     
     class Meta:
         model = WorkSession
@@ -264,6 +285,17 @@ class WorkSessionSerializer(serializers.ModelSerializer):
         if obj.end_time and obj.start_time:
             return str(obj.end_time - obj.start_time).split('.')[0]
         return "Running..."
+
+    def get_total_hours(self, obj):
+        if obj.duration_seconds:
+            return round(obj.duration_seconds / 3600, 2)
+        return 0
+
+    def get_productive_hours(self, obj):
+        if obj.duration_seconds:
+            return round(obj.duration_seconds / 3600, 2)
+        return 0
+
 
 class BreakSessionSerializer(serializers.ModelSerializer):
     class Meta:

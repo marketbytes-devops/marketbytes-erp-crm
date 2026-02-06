@@ -11,6 +11,8 @@ router.register(r'overtime', OvertimeViewSet)
 router.register(r'candidates', CandidateViewSet)
 router.register(r'performance', PerformanceViewSet)
 router.register(r'timer', TimerViewSet, basename='timer')
+router.register(r'work-sessions', WorkSessionViewSet)
+
 
 urlpatterns = [
     path('', include(router.urls)),
