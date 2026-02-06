@@ -22,6 +22,7 @@ import {
   MdReceipt,
   MdAttachMoney,
   MdViewKanban,
+  MdPendingActions,
 } from "react-icons/md";
 import { SiDraugiemdotlv } from "react-icons/si";
 import logo from "../../../assets/images/img-logo.png";
@@ -187,6 +188,13 @@ const Sidebar = ({ toggleSidebar }) => {
           label: "Task Calendar",
           icon: <MdCalendarToday className="w-5 h-5" />,
           page: "Task Calendar",
+          action: "view",
+        },
+         {
+          to: "/operations/scrum",
+          label: "Scrum",
+          icon: <MdPendingActions className="w-5 h-5" />,
+          page: "ScrumView",
           action: "view",
         },
       ].filter((item) => hasPermission(item.page, item.action)),

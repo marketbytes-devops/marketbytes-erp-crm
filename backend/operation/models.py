@@ -1,3 +1,4 @@
+from django.utils import timezone
 from django.db import models
 from django.contrib.auth.hashers import make_password
 from authapp.models import CustomUser, Department
@@ -195,3 +196,89 @@ class Task(models.Model):
      project_name = self.project.name if self.project else "No Project"
      task_name = self.name if self.name else f"Task #{self.pk}"
      return f"{project_name} - {task_name}"
+
+class Scrum(models.Model):
+    task = models.ForeignKey(
+        Task,
+        on_delete=models.CASCADE,
+        related_name='scrum_entries'
+    )
+
+    date = models.DateField(
+        default=timezone.now,
+        help_text="Date of this scrum update (usually today)"
+    )
+
+    employee = models.ForeignKey(
+        CustomUser,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='scrum_entries',
+        verbose_name="Employee Name"
+    )
+
+  
+    reported_status = models.CharField(
+        max_length=20,
+        choices=TaskStatus.choices,
+        default=TaskStatus.TODO,
+        null=True,
+        blank=True,
+        verbose_name="Reported Status",
+        help_text="Status as reported in this daily scrum"
+    )
+
+    morning_memo = models.TextField(
+        blank=True,
+        null=True,
+        verbose_name="Morning Memo"
+    )
+
+    evening_memo = models.TextField(
+        blank=True,
+        null=True,
+        verbose_name="Evening Memo / General Memo"
+    )
+
+  
+    morning_submitted = models.BooleanField(default=False)
+    evening_submitted = models.BooleanField(default=False)
+
+    created_by = models.ForeignKey(
+        CustomUser,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name='scrum_created',
+        help_text="User who actually submitted this entry"
+    )
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+ 
+       
+        verbose_name = "Scrum"
+        verbose_name_plural = "Scrums"
+
+    def __str__(self):
+        employee_str = self.employee.get_full_name() if self.employee else 'Unassigned'
+        return f"{self.task} – {self.date} ({employee_str})"
+
+
+    @property
+    def morning_display(self):
+        if self.morning_submitted:
+            return "Yes"
+        if self.morning_memo and self.morning_memo.strip():
+            return "Pending"
+        return "No"
+
+    @property
+    def evening_display(self):
+        if self.evening_submitted:
+            return "Yes"
+        if self.evening_memo and self.evening_memo.strip():
+            return "Pending"
+        return "No"

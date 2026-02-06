@@ -1,3 +1,4 @@
+
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from .views import (
@@ -7,7 +8,8 @@ from .views import (
     ProjectStageViewSet,
     ClientViewSet,
     CurrencyViewSet,
-    TaskViewSet
+    TaskViewSet,
+    ScrumViewSet
 )
 
 router = DefaultRouter()
@@ -18,7 +20,8 @@ router.register(r'stages', ProjectStageViewSet, basename='stage')
 router.register(r'clients', ClientViewSet, basename='client')
 router.register(r'currencies', CurrencyViewSet, basename='currency')
 router.register(r'tasks', TaskViewSet, basename='task')
-
+router.register(r'scrum', ScrumViewSet, basename='scrum')
 urlpatterns = [
     path('', include(router.urls)),
 ]
+

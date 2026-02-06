@@ -41,6 +41,7 @@ import CreateTaskLabel from "./pages/Operations/Tasks/CreateTaskLabel";
 import TaskEdit from "./pages/Operations/Tasks/TaskEdit";
 import TaskBoard from "./pages/Operations/Tasks/TaskBoard";
 import NewTask from "./pages/Operations/Tasks/NewTask";
+import ScrumView from "./pages/Operations/Scrum/ScrumView";
 import Leads from "./pages/Sales/Leads";
 import Invoice from "./pages/Sales/Invoice";
 import Reports from "./pages/Sales/Reports";
@@ -79,9 +80,16 @@ const ProtectedRoute = ({
           return;
         }
 
-        // Use effective_permissions mapping which is already calculated by backend
-        const perms = user.effective_permissions || {};
-        const pagePerm = perms[requiredPage];
+        const roleId = user.role?.id;
+        if (!roleId) {
+          setHasPermission(false);
+          setIsLoading(false);
+          return;
+        }
+
+        const roleResponse = await apiClient.get(`/auth/roles/${roleId}/`);
+        const perms = roleResponse.data.permissions || [];
+        const pagePerm = perms.find((p) => p.page === requiredPage);
 
         if (!requiredPage || (pagePerm && pagePerm[`can_${requiredAction}`])) {
           setHasPermission(true);
@@ -371,7 +379,6 @@ function App() {
             <ProtectedRoute
               isAuthenticated={isAuthenticated}
               requiredPage="communication_tools"
-              requiredAction="view"
             >
               <Communication />
             </ProtectedRoute>
@@ -383,7 +390,6 @@ function App() {
             <ProtectedRoute
               isAuthenticated={isAuthenticated}
               requiredPage="pipeline"
-              requiredAction="view"
             >
               <Pipeline />
             </ProtectedRoute>
@@ -395,7 +401,6 @@ function App() {
             <ProtectedRoute
               isAuthenticated={isAuthenticated}
               requiredPage="invoices"
-              requiredAction="view"
             >
               <Invoice />
             </ProtectedRoute>
@@ -407,7 +412,6 @@ function App() {
             <ProtectedRoute
               isAuthenticated={isAuthenticated}
               requiredPage="reports"
-              requiredAction="view"
             >
               <Reports />
             </ProtectedRoute>
@@ -418,8 +422,7 @@ function App() {
           element: (
             <ProtectedRoute
               isAuthenticated={isAuthenticated}
-              requiredPage="customer"
-              requiredAction="view"
+              requiredPage="reports"
             >
               <Customers />
             </ProtectedRoute>
@@ -443,7 +446,7 @@ function App() {
           element: (
             <ProtectedRoute
               isAuthenticated={isAuthenticated}
-              requiredPage="projects"
+              requiredPage="permissions"
               requiredAction="view"
             >
               <Projects />
@@ -468,8 +471,8 @@ function App() {
           element: (
             <ProtectedRoute
               isAuthenticated={isAuthenticated}
-              requiredPage="projects"
-              requiredAction="add"
+              requiredPage="permissions"
+              requiredAction="view"
             >
               <ProjectCreate />
             </ProtectedRoute>
@@ -494,7 +497,7 @@ function App() {
           element: (
             <ProtectedRoute
               isAuthenticated={isAuthenticated}
-              requiredPage="projects"
+              requiredPage="permissions"
               requiredAction="view"
             >
               <ProjectTemplate />
@@ -507,8 +510,8 @@ function App() {
           element: (
             <ProtectedRoute
               isAuthenticated={isAuthenticated}
-              requiredPage="projects"
-              requiredAction="add"
+              requiredPage="permissions"
+              requiredAction="view"
             >
               <ProjectTemplateAdd />
             </ProtectedRoute>
@@ -520,7 +523,7 @@ function App() {
           element: (
             <ProtectedRoute
               isAuthenticated={isAuthenticated}
-              requiredPage="projects"
+              requiredPage="permissions"
               requiredAction="view"
             >
               <ProjectArchive />
@@ -532,7 +535,7 @@ function App() {
           element: (
             <ProtectedRoute
               isAuthenticated={isAuthenticated}
-              requiredPage="tasks"
+              requiredPage="permissions"
               requiredAction="view"
             >
               <TaskView />
@@ -544,7 +547,7 @@ function App() {
           element: (
             <ProtectedRoute
               isAuthenticated={isAuthenticated}
-              requiredPage="tasks"
+              requiredPage="permissions"
               requiredAction="view"
             >
               <TaskLabel />
@@ -556,8 +559,8 @@ function App() {
           element: (
             <ProtectedRoute
               isAuthenticated={isAuthenticated}
-              requiredPage="tasks"
-              requiredAction="add"
+              requiredPage="permissions"
+              requiredAction="view"
             >
               <CreateTaskLabel />
             </ProtectedRoute>
@@ -568,8 +571,8 @@ function App() {
           element: (
             <ProtectedRoute
               isAuthenticated={isAuthenticated}
-              requiredPage="tasks"
-              requiredAction="add"
+              requiredPage="permissions"
+              requiredAction="view"
             >
               <NewTask />
             </ProtectedRoute>
@@ -592,7 +595,7 @@ function App() {
           element: (
             <ProtectedRoute
               isAuthenticated={isAuthenticated}
-              requiredPage="task board"
+              requiredPage="permissions"
               requiredAction="view"
             >
               <TaskBoard />
@@ -659,6 +662,18 @@ function App() {
             </ProtectedRoute>
           ),
         },
+         {
+          path: "/operations/scrum",
+          element: (
+            <ProtectedRoute
+              isAuthenticated={isAuthenticated}
+              requiredPage="permissions"
+              requiredAction="view"
+            >
+              <ScrumView />
+            </ProtectedRoute>
+          ),
+        },
  
         {
           path: "/user-roles/users",
@@ -704,3 +719,4 @@ function App() {
 }
 
 export default App;
+
