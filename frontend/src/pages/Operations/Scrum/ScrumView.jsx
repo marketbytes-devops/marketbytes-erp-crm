@@ -49,50 +49,58 @@ const Scrum = () => {
           apiClient.get("/operation/projects/"),
           apiClient.get("/auth/users/"),
           apiClient.get("/operation/tasks/"),
-          apiClient.get("/operation/scrum/")
+          apiClient.get("/operation/scrum/"),
         ]);
 
         if (!isMounted) return;
 
-        if (projRes.status === 'fulfilled') {
+        if (projRes.status === "fulfilled") {
           const projectsList = Array.isArray(projRes.value.data?.results)
             ? projRes.value.data.results
-            : Array.isArray(projRes.value.data) ? projRes.value.data : [];
+            : Array.isArray(projRes.value.data)
+              ? projRes.value.data
+              : [];
           setProjects(projectsList);
         } else setProjects([]);
 
-        if (empRes.status === 'fulfilled') {
+        if (empRes.status === "fulfilled") {
           const employeesList = Array.isArray(empRes.value.data?.results)
             ? empRes.value.data.results
-            : Array.isArray(empRes.value.data) ? empRes.value.data : [];
+            : Array.isArray(empRes.value.data)
+              ? empRes.value.data
+              : [];
           setEmployees(employeesList);
         } else setEmployees([]);
 
-        if (tasksRes.status === 'fulfilled') {
+        if (tasksRes.status === "fulfilled") {
           const taskList = Array.isArray(tasksRes.value.data?.results)
             ? tasksRes.value.data.results
-            : Array.isArray(tasksRes.value.data) ? tasksRes.value.data : [];
+            : Array.isArray(tasksRes.value.data)
+              ? tasksRes.value.data
+              : [];
           setTasks(taskList);
         } else setTasks([]);
 
-        if (scrumRes.status === 'fulfilled') {
+        if (scrumRes.status === "fulfilled") {
           let scrumList = Array.isArray(scrumRes.value.data?.results)
             ? scrumRes.value.data.results
-            : Array.isArray(scrumRes.value.data) ? scrumRes.value.data : [];
+            : Array.isArray(scrumRes.value.data)
+              ? scrumRes.value.data
+              : [];
 
           console.log(`Fresh API returned ${scrumList.length} scrum items`);
 
           if (scrumList.length > 0) {
-            const formatted = scrumList.map(s => ({
+            const formatted = scrumList.map((s) => ({
               id: s.id,
-              project_id:   s.project || "",         
+              project_id: s.project || "",
               project_name: s.project_name || "—",
-              task_id:      s.task || "",             
-              task_name:    s.task_name || "—",
-              employee_id:  s.employee || "",         
+              task_id: s.task || "",
+              task_name: s.task_name || "—",
+              employee_id: s.employee || "",
               employee_name: s.employee_name || "—",
               task: {
-                due_date: s.due_date || "No deadline"  
+                due_date: s.due_date || "No deadline",
               },
               morning_memo: s.morning_memo || "",
               evening_memo: s.evening_memo || "",
@@ -116,7 +124,6 @@ const Scrum = () => {
             } catch {}
           }
         }
-
       } catch (err) {
         console.error("Critical fetch error:", err);
         toast.error("Network or auth error");
@@ -127,7 +134,9 @@ const Scrum = () => {
 
     loadData();
 
-    return () => { isMounted = false; };
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   const handleFilterChange = (field, value) => {
@@ -136,32 +145,37 @@ const Scrum = () => {
 
   const handleCreateFormChange = (field, value) => {
     if (field === "project") {
-      const selectedProject = projects.find(p => String(p.id) === value);
-      setCreateForm(prev => ({
+      const selectedProject = projects.find((p) => String(p.id) === value);
+      setCreateForm((prev) => ({
         ...prev,
         project: value,
         project_name: selectedProject ? selectedProject.name : "",
       }));
     } else if (field === "task") {
-      const selectedTask = tasks.find(t => String(t.id) === value);
-      setCreateForm(prev => ({
+      const selectedTask = tasks.find((t) => String(t.id) === value);
+      setCreateForm((prev) => ({
         ...prev,
         task: value,
         task_name: selectedTask ? selectedTask.name : "",
       }));
     } else {
-      setCreateForm(prev => ({ ...prev, [field]: value }));
+      setCreateForm((prev) => ({ ...prev, [field]: value }));
     }
   };
 
   const handleCreateSubmit = async () => {
-    if (!createForm.project || !createForm.task || !createForm.employeeName || !createForm.status) {
+    if (
+      !createForm.project ||
+      !createForm.task ||
+      !createForm.employeeName ||
+      !createForm.status
+    ) {
       toast.error("Please fill all required fields");
       return;
     }
 
     try {
-      const today = new Date().toISOString().split('T')[0];
+      const today = new Date().toISOString().split("T")[0];
 
       const response = await apiClient.post("/operation/scrum/", {
         task: createForm.task,
@@ -174,7 +188,9 @@ const Scrum = () => {
 
       const newScrum = response.data;
 
-      const selectedEmployee = employees.find(emp => String(emp.id) === String(createForm.employeeName));
+      const selectedEmployee = employees.find(
+        (emp) => String(emp.id) === String(createForm.employeeName),
+      );
 
       const formattedNewScrum = {
         id: newScrum.id,
@@ -183,11 +199,13 @@ const Scrum = () => {
         project_id: createForm.project || "",
         task_id: createForm.task || "",
         employee_name: selectedEmployee
-          ? `${selectedEmployee.first_name || ''} ${selectedEmployee.last_name || selectedEmployee.username || ''}`.trim() || "—"
+          ? `${selectedEmployee.first_name || ""} ${selectedEmployee.last_name || selectedEmployee.username || ""}`.trim() ||
+            "—"
           : "—",
         employee_id: createForm.employeeName || "",
         task: {
-          due_date: newScrum.due_date || newScrum.task?.due_date || "No deadline"
+          due_date:
+            newScrum.due_date || newScrum.task?.due_date || "No deadline",
         },
         morning_memo: newScrum.morning_memo || "",
         evening_memo: newScrum.evening_memo || "",
@@ -195,7 +213,7 @@ const Scrum = () => {
         date: today,
       };
 
-      setScrumData(prev => [...prev, formattedNewScrum]);
+      setScrumData((prev) => [...prev, formattedNewScrum]);
 
       toast.success("Scrum created successfully!");
 
@@ -228,26 +246,33 @@ const Scrum = () => {
     });
     setSearchQuery("");
   };
-
   const filteredScrumData = scrumData.filter((item) => {
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
-      const matchesSearch = 
-        (item.project_name && item.project_name.toLowerCase().includes(query)) ||
-        (item.task_name && item.task_name.toLowerCase().includes(query)) ||
-        (item.employee_name && item.employee_name.toLowerCase().includes(query));
-      
+      const matchesSearch =
+        (item.project_name?.toLowerCase().includes(query) ?? false) ||
+        (item.task_name?.toLowerCase().includes(query) ?? false) ||
+        (item.employee_name?.toLowerCase().includes(query) ?? false);
+
       if (!matchesSearch) return false;
     }
 
-    if (filters.project && String(item.project_id) !== String(filters.project)) return false;
-    if (filters.task && String(item.task_id) !== String(filters.task)) return false;
-    if (filters.employees && String(item.employee_id) !== String(filters.employees)) return false;
+    // Only keep the item if it matches ALL active filters
+    if (filters.project && String(item.project_id) !== String(filters.project))
+      return false;
+    if (filters.task && String(item.task_id) !== String(filters.task))
+      return false;
+    if (
+      filters.employees &&
+      String(item.employee_id) !== String(filters.employees)
+    )
+      return false;
     if (filters.status && item.status !== filters.status) return false;
 
-
     if (filters.startDate) {
-      const itemDate = item.date ? new Date(item.date).toISOString().split('T')[0] : "";
+      const itemDate = item.date
+        ? new Date(item.date).toISOString().split("T")[0]
+        : "";
       if (itemDate !== filters.startDate) return false;
     }
 
@@ -286,7 +311,9 @@ const Scrum = () => {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-12">
               <div className="text-center">
-                <div className="text-4xl font-bold text-gray-900 mb-2">{totalTasks}</div>
+                <div className="text-4xl font-bold text-gray-900 mb-2">
+                  {totalTasks}
+                </div>
                 <div className="text-sm text-gray-600">Total Scrums</div>
               </div>
 
@@ -299,7 +326,10 @@ const Scrum = () => {
 
               <div className="text-center">
                 <div className="text-4xl font-bold text-orange-600 mb-2">
-                  {filteredScrumData.filter((s) => s.status === "in_progress").length}
+                  {
+                    filteredScrumData.filter((s) => s.status === "in_progress")
+                      .length
+                  }
                 </div>
                 <div className="text-sm text-gray-600">In Progress</div>
               </div>
@@ -338,7 +368,9 @@ const Scrum = () => {
                 </label>
                 <select
                   value={createForm.project}
-                  onChange={(e) => handleCreateFormChange("project", e.target.value)}
+                  onChange={(e) =>
+                    handleCreateFormChange("project", e.target.value)
+                  }
                   className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-700 bg-white"
                 >
                   <option value="">--</option>
@@ -357,7 +389,9 @@ const Scrum = () => {
                 </label>
                 <select
                   value={createForm.task}
-                  onChange={(e) => handleCreateFormChange("task", e.target.value)}
+                  onChange={(e) =>
+                    handleCreateFormChange("task", e.target.value)
+                  }
                   className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-700 bg-white"
                 >
                   <option value="">--</option>
@@ -381,7 +415,9 @@ const Scrum = () => {
                 </label>
                 <select
                   value={createForm.employeeName}
-                  onChange={(e) => handleCreateFormChange("employeeName", e.target.value)}
+                  onChange={(e) =>
+                    handleCreateFormChange("employeeName", e.target.value)
+                  }
                   className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-700 bg-white"
                 >
                   <option value="">--</option>
@@ -400,7 +436,9 @@ const Scrum = () => {
                 </label>
                 <select
                   value={createForm.status}
-                  onChange={(e) => handleCreateFormChange("status", e.target.value)}
+                  onChange={(e) =>
+                    handleCreateFormChange("status", e.target.value)
+                  }
                   className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-700 bg-white"
                 >
                   <option value="">--</option>
@@ -413,7 +451,9 @@ const Scrum = () => {
             </div>
 
             <div className="mb-6">
-              <label className="block text-sm font-medium text-gray-900 mb-2">Memo</label>
+              <label className="block text-sm font-medium text-gray-900 mb-2">
+                Memo
+              </label>
               <textarea
                 value={createForm.memo}
                 onChange={(e) => handleCreateFormChange("memo", e.target.value)}
@@ -428,8 +468,18 @@ const Scrum = () => {
                 onClick={handleCreateSubmit}
                 className="flex items-center gap-2 px-6 py-3 bg-teal-500 text-white rounded-lg hover:bg-teal-600 transition-colors font-medium"
               >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                <svg
+                  className="w-5 h-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M5 13l4 4L19 7"
+                  />
                 </svg>
                 Save
               </button>
@@ -438,8 +488,18 @@ const Scrum = () => {
                 onClick={() => setShowCreateModal(false)}
                 className="flex items-center gap-2 px-6 py-3 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition-colors font-medium"
               >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                <svg
+                  className="w-5 h-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M6 18L18 6M6 6l12 12"
+                  />
                 </svg>
                 Close
               </button>
@@ -550,7 +610,9 @@ const Scrum = () => {
                 </label>
                 <select
                   value={filters.project}
-                  onChange={(e) => handleFilterChange("project", e.target.value)}
+                  onChange={(e) =>
+                    handleFilterChange("project", e.target.value)
+                  }
                   className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-700 bg-white"
                 >
                   <option value="">All Projects</option>
@@ -588,7 +650,9 @@ const Scrum = () => {
                 </label>
                 <select
                   value={filters.employees}
-                  onChange={(e) => handleFilterChange("employees", e.target.value)}
+                  onChange={(e) =>
+                    handleFilterChange("employees", e.target.value)
+                  }
                   className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-700 bg-white"
                 >
                   <option value="">All Members</option>
@@ -610,17 +674,6 @@ const Scrum = () => {
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Status
                 </label>
-                <select
-                  value={filters.status}
-                  onChange={(e) => handleFilterChange("status", e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-700 bg-white"
-                >
-                  <option value="">All Statuses</option>
-                  <option value="todo">To Do</option>
-                  <option value="in_progress">In Progress</option>
-                  <option value="review">Review</option>
-                  <option value="done">Done</option>
-                </select>
               </div>
 
               <div>
@@ -630,7 +683,9 @@ const Scrum = () => {
                 <input
                   type="date"
                   value={filters.startDate}
-                  onChange={(e) => handleFilterChange("startDate", e.target.value)}
+                  onChange={(e) =>
+                    handleFilterChange("startDate", e.target.value)
+                  }
                   className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-700"
                 />
               </div>
@@ -665,7 +720,7 @@ const Scrum = () => {
                     MEMBERS
                   </th>
                   <th className="text-left px-6 py-4 text-sm font-semibold text-gray-700 uppercase tracking-wider">
-                    START DATE      {/* ← Changed from DEADLINE */}
+                    START DATE 
                   </th>
                   <th className="text-left px-6 py-4 text-sm font-semibold text-gray-700 uppercase tracking-wider">
                     MORNING MEMO
@@ -699,10 +754,19 @@ const Scrum = () => {
                   </tr>
                 ) : (
                   filteredScrumData.map((item, index) => (
-                    <tr key={item.id} className="border-b border-gray-100 hover:bg-gray-50">
-                      <td className="px-6 py-6 text-gray-900 font-medium">{index + 1}</td>
-                      <td className="px-6 py-6 text-gray-900 font-medium">{item.project_name || "—"}</td>
-                      <td className="px-6 py-6 text-gray-700">{item.task_name || "—"}</td>
+                    <tr
+                      key={item.id}
+                      className="border-b border-gray-100 hover:bg-gray-50"
+                    >
+                      <td className="px-6 py-6 text-gray-900 font-medium">
+                        {index + 1}
+                      </td>
+                      <td className="px-6 py-6 text-gray-900 font-medium">
+                        {item.project_name || "—"}
+                      </td>
+                      <td className="px-6 py-6 text-gray-700">
+                        {item.task_name || "—"}
+                      </td>
                       <td className="px-6 py-6">
                         {item.employee_name ? (
                           <div className="relative group">
@@ -719,7 +783,10 @@ const Scrum = () => {
                         )}
                       </td>
                       <td className="px-2 py-6 text-gray-700">
-                        {item.date ? new Date(item.date).toISOString().split('T')[0] : "—"}   {/* ← Show date properly */}
+                        {item.date
+                          ? new Date(item.date).toISOString().split("T")[0]
+                          : "—"}{" "}
+                        
                       </td>
                       <td className="px-6 py-6">
                         <div className="text-sm text-gray-700">
@@ -727,23 +794,123 @@ const Scrum = () => {
                         </div>
                       </td>
                       <td className="px-1 py-1">
-                        <textarea
+                        <textarea 
                           value={item.evening_memo || ""}
                           onChange={(e) => {
-                            const updatedData = [...scrumData];
-                            const originalIndex = scrumData.findIndex(s => s.id === item.id);
-                            updatedData[originalIndex].evening_memo = e.target.value;
-                            setScrumData(updatedData);
+                            const newValue = e.target.value;
+                            console.log(
+                              `Typing in memo for scrum ${item.id}: "${newValue}"`,
+                            );
+
+                            setScrumData((prev) =>
+                              prev.map((s) =>
+                                s.id === item.id
+                                  ? { ...s, evening_memo: newValue }
+                                  : s,
+                              ),
+                            );
+                          }}
+                          onBlur={async (e) => {
+                            const newValue = e.target.value;
+                            const original = item.evening_memo || "";
+
+                            console.log("Evening memo blur triggered", {
+                              scrumId: item.id,
+                              currentInUI: newValue,
+                              storedInState: original,
+                              areTheyEqual: newValue === original,
+                              lengths: {
+                                current: newValue.length,
+                                stored: original.length,
+                              },
+                            });
+
+                            try {
+                              console.log(
+                                `Sending PATCH for scrum ${item.id} → evening_memo: "${newValue}"`,
+                              );
+
+                              const res = await apiClient.patch(
+                                `/operation/scrum/${item.id}/`,
+                                {
+                                  evening_memo: newValue,
+                                },
+                              );
+
+                              console.log(
+                                "Evening memo saved successfully:",
+                                res.status,
+                                res.data,
+                              );
+
+                              toast.success("Evening memo saved");
+                            } catch (err) {
+                              console.error("Evening memo save FAILED:", {
+                                status: err?.response?.status,
+                                data: err?.response?.data,
+                                message: err.message,
+                              });
+
+                              toast.error(
+                                "Could not save evening memo – check console",
+                              );
+
+                            
+                              setScrumData((prev) =>
+                                prev.map((s) =>
+                                  s.id === item.id
+                                    ? { ...s, evening_memo: original }
+                                    : s,
+                                ),
+                              );
+                            }
                           }}
                           rows={2}
                           className="w-full px-2 py-1 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
-                          placeholder="Write evening memo..."
+                          placeholder="Write evening memo... (click outside to try saving)"
                         />
                       </td>
                       <td className="px-6 py-6">
                         <select
                           value={item.status || "todo"}
-                          className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-700 cursor-pointer"
+                          onChange={async (e) => {
+                            const newStatus = e.target.value;
+
+                            const previousStatus = item.status || "todo";
+
+                            setScrumData((prev) =>
+                              prev.map((s) =>
+                                s.id === item.id
+                                  ? { ...s, status: newStatus }
+                                  : s,
+                              ),
+                            );
+
+                            try {
+                              await apiClient.patch(
+                                `/operation/scrum/${item.id}/`,
+                                {
+                                  reported_status: newStatus,
+                                },
+                              );
+                              toast.success("Status updated");
+                            } catch (err) {
+                              console.error(
+                                "Status update failed:",
+                                err?.response?.data || err,
+                              );
+                              toast.error("Failed to update status");
+
+                              setScrumData((prev) =>
+                                prev.map((s) =>
+                                  s.id === item.id
+                                    ? { ...s, status: previousStatus }
+                                    : s,
+                                ),
+                              );
+                            }
+                          }}
+                          className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-700 cursor-pointer min-w-[140px]"
                         >
                           <option value="todo">To Do</option>
                           <option value="in_progress">In Progress</option>
@@ -753,28 +920,85 @@ const Scrum = () => {
                       </td>
                       <td className="px-6 py-6">
                         <div className="flex items-center gap-3">
-                          <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors" title="View">
-                            <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                          <button
+                            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                            title="View"
+                          >
+                            <svg
+                              className="w-5 h-5 text-gray-600"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                              />
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                              />
                             </svg>
                           </button>
 
-                          <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors" title="Edit">
-                            <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                          <button
+                            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                            title="Edit"
+                          >
+                            <svg
+                              className="w-5 h-5 text-gray-600"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                              />
                             </svg>
                           </button>
 
-                          <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors" title="Pin">
-                            <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
+                          <button
+                            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                            title="Pin"
+                          >
+                            <svg
+                              className="w-5 h-5 text-gray-600"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"
+                              />
                             </svg>
                           </button>
 
-                          <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors" title="Archive">
-                            <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
+                          <button
+                            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                            title="Archive"
+                          >
+                            <svg
+                              className="w-5 h-5 text-gray-600"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"
+                              />
                             </svg>
                           </button>
                         </div>
