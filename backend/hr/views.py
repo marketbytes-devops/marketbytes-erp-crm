@@ -597,3 +597,29 @@ class TimerViewSet(viewsets.ViewSet):
         return Response(ActiveWorkSessionSerializer(sessions, many=True).data)
     
    
+
+class WorkSessionViewSet(viewsets.ModelViewSet):
+    queryset = WorkSession.objects.all().select_related('employee', 'project', 'task').order_by('-start_time')
+    serializer_class = WorkSessionSerializer
+    permission_classes = [HasPermission]
+    page_name = 'time_logs'
+
+    def get_queryset(self):
+        user = self.request.user
+        queryset = self.queryset
+        
+        project_id = self.request.query_params.get('project')
+        employee_id = self.request.query_params.get('employee')
+        status = self.request.query_params.get('status')
+        
+        if project_id:
+            queryset = queryset.filter(project_id=project_id)
+        if employee_id:
+            queryset = queryset.filter(employee_id=employee_id)
+        if status:
+            queryset = queryset.filter(status=status)
+
+        if user.is_superuser or (getattr(user, 'role', None) and user.role.name == "Superadmin"):
+            return queryset
+        return queryset.filter(employee=user)
+

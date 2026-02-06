@@ -600,7 +600,7 @@ function App() {
           ),
         },
         {
-          path: "/operations/timelogs",
+          path: "/operations/time-logs",
           element: (
             <ProtectedRoute
               isAuthenticated={isAuthenticated}
@@ -612,7 +612,7 @@ function App() {
           ),
         },
         {
-          path: "/operations/timelogs/active-timers",
+          path: "/operations/time-logs/active-timers",
           element: (
             <ProtectedRoute
               isAuthenticated={isAuthenticated}
@@ -624,7 +624,7 @@ function App() {
           ),
         },
         {
-          path: "/operations/timelogs/calendar-view",
+          path: "/operations/time-logs/calendar-view",
           element: (
             <ProtectedRoute
               isAuthenticated={isAuthenticated}
@@ -636,7 +636,7 @@ function App() {
           ),
         },
         {
-          path: "/operations/timelogs/emplyees-time",
+          path: "/operations/time-logs/emplyees-time",
           element: (
             <ProtectedRoute
               isAuthenticated={isAuthenticated}
@@ -647,7 +647,7 @@ function App() {
             </ProtectedRoute>
           ),
         },
-    {
+        {
           path: "/operations/taskcalendar",
           element: (
             <ProtectedRoute
@@ -659,7 +659,7 @@ function App() {
             </ProtectedRoute>
           ),
         },
- 
+
         {
           path: "/user-roles/users",
           element: (

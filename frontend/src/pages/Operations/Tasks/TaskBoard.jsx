@@ -1,43 +1,67 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import {
+  MdFilterList,
+  MdClose,
+  MdKeyboardArrowDown,
+  MdAdd,
+  MdCalendarToday,
+  MdSearch,
+  MdOutlineAccessTime,
+} from "react-icons/md";
+import { FiSearch } from "react-icons/fi";
 import LayoutComponents from "../../../components/LayoutComponents";
 import apiClient from "../../../helpers/apiClient";
 import Loading from "../../../components/Loading";
 import toast from "react-hot-toast";
+import Input from "../../../components/Input";
+import { Link } from "react-router-dom";
 
 const TaskBoardPage = () => {
-  const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [loading, setLoading] = useState(true);
-
-  // Filter states
-  const [filterDueDateFrom, setFilterDueDateFrom] = useState("");
-  const [filterDueDateTo, setFilterDueDateTo] = useState("");
-  const [filterProject, setFilterProject] = useState("All");
-  const [filterClient, setFilterClient] = useState("All");
-  const [filterAssignee, setFilterAssignee] = useState("All");
-  const [filterAssignedBy, setFilterAssignedBy] = useState("All");
-
-  // Data from backend
   const [tasks, setTasks] = useState([]);
   const [projects, setProjects] = useState([]);
-  const [clients, setClients] = useState([]);
   const [users, setUsers] = useState([]);
 
-  // Fetch all data on mount
+  // Data for filters
+  const [projectsList, setProjectsList] = useState([]);
+  const [membersList, setMembersList] = useState([]);
+
+  // Filter States
+  const [search, setSearch] = useState("");
+  const [filtersOpen, setFiltersOpen] = useState(false);
+  const [filters, setFilters] = useState({
+    dueDateFrom: "",
+    dueDateTo: "",
+    project: "",
+    assignee: "",
+    client: "", // kept if needed, though TaskView doesn't show it explicitly
+  });
+
+  const activeFilterCount = Object.values(filters).filter((v) => v !== "").length;
+
   useEffect(() => {
     const fetchData = async () => {
       try {
         setLoading(true);
-        const [tasksRes, projectsRes, clientsRes, usersRes] = await Promise.all([
+        const [tasksRes, projectsRes, usersRes] = await Promise.all([
           apiClient.get("/operation/tasks/"),
           apiClient.get("/operation/projects/"),
-          apiClient.get("/operation/clients/"),
-          apiClient.get("/auth/users/"), 
+          apiClient.get("/auth/users/"),
         ]);
 
-        setTasks(tasksRes.data?.results || tasksRes.data || []);
-        setProjects(projectsRes.data?.results || projectsRes.data || []);
-        setClients(clientsRes.data?.results || clientsRes.data || []);
-        setUsers(usersRes.data?.results || usersRes.data || []);
+        const tasksData = tasksRes.data?.results || tasksRes.data || [];
+        const projectsData = projectsRes.data?.results || projectsRes.data || [];
+        const usersData = usersRes.data?.results || usersRes.data || [];
+
+        setTasks(tasksData);
+        setProjects(projectsData);
+        setUsers(usersData);
+
+        // Extract lists for Selects
+        setProjectsList(projectsData.map(p => ({ label: p.name, value: p.id })));
+        setMembersList(usersData.map(u => ({ label: u.name || u.username, value: u.id })));
+
       } catch (err) {
         console.error("Failed to fetch data:", err);
         toast.error("Failed to load data");
@@ -49,59 +73,94 @@ const TaskBoardPage = () => {
     fetchData();
   }, []);
 
-const filteredTasks = tasks.filter((task) => {
-
-  if (filterDueDateFrom && task.due_date) {
-    if (new Date(task.due_date) < new Date(filterDueDateFrom)) return false;
-  }
-  if (filterDueDateTo && task.due_date) {
-    if (new Date(task.due_date) > new Date(filterDueDateTo)) return false;
-  }
-
-  if (filterProject !== "All") {
-    if (!task.project) return false; 
-    if (task.project.id != filterProject) return false; 
-  }
-
-  if (filterClient !== "All") {
-    if (!task.project) return false; 
-    const projectObj = projects.find(p => p.id == task.project.id);
-    if (!projectObj || !projectObj.client) return false;
-    if (projectObj.client.id != filterClient) return false;
-  }
-
-
-  if (filterAssignee !== "All") {
-    if (!task.assignees || task.assignees.length === 0) return false;
-    const hasAssignee = task.assignees.some(a => a.id == filterAssignee);
-    if (!hasAssignee) return false;
-  }
-
-  return true;
-});
-
-  const handleApply = () => {
-  
-    setIsFilterOpen(false);
-    toast.success("Filters applied!");
+  const handleFilterChange = (key, value) => {
+    setFilters((prev) => ({ ...prev, [key]: value }));
   };
 
-  const handleReset = () => {
-    setFilterDueDateFrom("");
-    setFilterDueDateTo("");
-    setFilterProject("All");
-    setFilterClient("All");
-    setFilterAssignee("All");
-    setFilterAssignedBy("All");
-    toast.success("Filters reset");
+  const resetFilters = () => {
+    setFilters({
+      dueDateFrom: "",
+      dueDateTo: "",
+      project: "",
+      assignee: "",
+      client: "",
+    });
+    setSearch("");
   };
 
- 
+  const filteredTasks = useMemo(() => {
+    let result = tasks;
+
+    // Search
+    if (search.trim()) {
+      const term = search.toLowerCase().trim();
+      result = result.filter(
+        (t) =>
+          t.name?.toLowerCase().includes(term) ||
+          t.project?.name?.toLowerCase().includes(term) ||
+          t.description?.toLowerCase().includes(term)
+      );
+    }
+
+    // Date Range
+    if (filters.dueDateFrom) {
+      result = result.filter((t) => t.due_date && new Date(t.due_date) >= new Date(filters.dueDateFrom));
+    }
+    if (filters.dueDateTo) {
+      result = result.filter((t) => t.due_date && new Date(t.due_date) <= new Date(filters.dueDateTo));
+    }
+
+    // Project
+    if (filters.project) {
+      result = result.filter((t) => t.project && String(t.project.id) === String(filters.project));
+    }
+
+    // Assignee
+    if (filters.assignee) {
+      result = result.filter((t) =>
+        t.assignees && t.assignees.some(a => String(a.id) === String(filters.assignee))
+      );
+    }
+
+    return result;
+  }, [tasks, search, filters]);
+
   const tasksByStatus = {
     todo: filteredTasks.filter(t => t.status === "todo"),
     in_progress: filteredTasks.filter(t => t.status === "in_progress"),
     review: filteredTasks.filter(t => t.status === "review"),
     done: filteredTasks.filter(t => t.status === "done"),
+  };
+
+  const stats = useMemo(() => ({
+    total: tasks.length,
+    todo: tasks.filter(t => t.status === "todo").length,
+    inProgress: tasks.filter(t => t.status === "in_progress").length,
+    review: tasks.filter(t => t.status === "review").length,
+    done: tasks.filter(t => t.status === "done").length,
+  }), [tasks]);
+
+  const renderAvatars = (assignees = []) => {
+    const memberCount = assignees.length;
+    if (memberCount === 0) return null;
+    return (
+      <div className="flex -space-x-2">
+        {assignees.slice(0, 3).map((a, i) => {
+          const name = a.name || a.username || "Unknown";
+          const initial = name[0]?.toUpperCase() || "?";
+          return (
+            <div key={i} className="w-6 h-6 rounded-full bg-linear-to-br from-blue-500 to-purple-600 border border-white flex items-center justify-center text-white text-[10px] font-bold shadow-xs">
+              {initial}
+            </div>
+          );
+        })}
+        {memberCount > 3 && (
+          <div className="w-6 h-6 rounded-full bg-gray-600 border border-white flex items-center justify-center text-white text-[10px] font-bold shadow-xs">
+            +{memberCount - 3}
+          </div>
+        )}
+      </div>
+    );
   };
 
   if (loading) {
@@ -114,182 +173,214 @@ const filteredTasks = tasks.filter((task) => {
 
   return (
     <div className="p-6">
-      <LayoutComponents title="Task Board" variant="card">
-        <div className="bg-white rounded-xl shadow-sm overflow-hidden">
-          {/* Header */}
-          <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
-            <h1 className="text-xl font-semibold text-gray-900 flex items-center gap-3">
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12h4l3 9 4-17 3 9h4" />
-              </svg>
-              Task Board
-            </h1>
-            <button
-              onClick={() => setIsFilterOpen(!isFilterOpen)}
-              className="px-4 py-2 border border-gray-300 rounded-lg flex items-center gap-2 hover:bg-gray-50 transition"
-            >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
-              </svg>
-              Filter Results
-              <svg className={`w-4 h-4 transition-transform ${isFilterOpen ? "rotate-180" : ""}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-              </svg>
-            </button>
+      <LayoutComponents title="Task Board" subtitle="Kanban view of project tasks" variant="table">
+        <div className="max-w-full mx-auto">
+
+          {/* Stats Row */}
+          <div className="bg-white rounded-2xl shadow-sm p-6 mb-6">
+            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+              <div className="grid grid-cols-2 md:grid-cols-5 gap-8">
+                <div className="text-center">
+                  <div className="text-4xl font-bold text-black mb-2">{stats.total}</div>
+                  <p className="text-sm text-gray-600">Total Tasks</p>
+                </div>
+                <div className="text-center">
+                  <div className="text-4xl font-bold text-blue-600 mb-2">{stats.todo}</div>
+                  <p className="text-sm text-gray-600">To Do</p>
+                </div>
+                <div className="text-center">
+                  <div className="text-4xl font-bold text-cyan-600 mb-2">{stats.inProgress}</div>
+                  <p className="text-sm text-gray-600">In Progress</p>
+                </div>
+                <div className="text-center">
+                  <div className="text-4xl font-bold text-orange-600 mb-2">{stats.review}</div>
+                  <p className="text-sm text-gray-600">Review</p>
+                </div>
+                <div className="text-center">
+                  <div className="text-4xl font-bold text-green-600 mb-2">{stats.done}</div>
+                  <p className="text-sm text-gray-600">Done</p>
+                </div>
+              </div>
+              <Link
+                to="/operations/tasks/newtask"
+                className="flex items-center gap-3 px-6 py-3 bg-black text-white rounded-xl hover:bg-gray-900 transition text-sm font-semibold"
+              >
+                <MdAdd className="w-5 h-5" /> New Task
+              </Link>
+            </div>
           </div>
 
-          {/* Filter Panel */}
-          {isFilterOpen && (
-            <div className="mt-6 p-6 bg-white rounded-xl border border-gray-200">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-                {/* Date Range */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Select Date Range</label>
-                  <div className="flex items-center gap-3">
-                    <input
-                      type="date"
-                      value={filterDueDateFrom}
-                      onChange={(e) => setFilterDueDateFrom(e.target.value)}
-                      className="px-3 py-2 border border-gray-300 rounded-lg w-full"
-                    />
-                    <div className="px-4 py-2 bg-black text-white font-medium rounded-lg">
-                      To
-                    </div>
-                    <input
-                      type="date"
-                      value={filterDueDateTo}
-                      onChange={(e) => setFilterDueDateTo(e.target.value)}
-                      className="px-3 py-2 border border-gray-300 rounded-lg w-full"
-                    />
-                  </div>
+          {/* Search & Filters Bar */}
+          <div className="bg-white rounded-2xl shadow-sm p-6 mb-6">
+            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+              <div className="flex items-center gap-4 flex-1">
+                <div className="relative flex-1 max-w-2xl">
+                  <FiSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 w-5 h-5" />
+                  <input
+                    type="text"
+                    placeholder="Search tasks, projects, or team..."
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-black outline-none text-base transition"
+                  />
                 </div>
 
-                {/* Project */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Select Project</label>
-                  <select
-                    value={filterProject}
-                    onChange={(e) => setFilterProject(e.target.value)}
-                    className="px-3 py-2 border border-gray-300 rounded-lg w-full"
-                  >
-                    <option value="All">All Projects</option>
-                    {projects.map((proj) => (
-                      <option key={proj.id} value={proj.id}>
-                        {proj.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                {/* Client */}
-                
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-                {/* Assigned To */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Select Assigned To</label>
-                  <select
-                    value={filterAssignee}
-                    onChange={(e) => setFilterAssignee(e.target.value)}
-                    className="px-3 py-2 border border-gray-300 rounded-lg w-full"
-                  >
-                    <option value="All">All Members</option>
-                    {users.map((user) => (
-                      <option key={user.id} value={user.id}>
-                        {user.name || user.username}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-
-              <div className="flex justify-end gap-4">
                 <button
-                  onClick={handleReset}
-                  className="px-6 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition"
+                  onClick={() => setFiltersOpen(!filtersOpen)}
+                  className="flex items-center gap-3 px-5 py-4 border border-gray-300 rounded-xl hover:bg-gray-50 transition text-sm font-semibold whitespace-nowrap"
                 >
-                  Reset All Filters
-                </button>
-                <button
-                  onClick={handleApply}
-                  className="px-6 py-3 bg-black text-white rounded-lg hover:bg-gray-800 transition"
-                >
-                  Apply
+                  <MdFilterList className="w-5 h-5" />
+                  Filters
+                  {activeFilterCount > 0 && (
+                    <span className="ml-2 bg-black text-white text-xs font-medium rounded-full w-6 h-6 flex items-center justify-center">
+                      {activeFilterCount}
+                    </span>
+                  )}
+                  <MdKeyboardArrowDown
+                    className={`w-5 h-5 transition-transform ${filtersOpen ? "rotate-180" : ""}`}
+                  />
                 </button>
               </div>
             </div>
-          )}
-
-          {/* Date Display */}
-          <div className="px-6 py-4 flex justify-between items-center bg-gray-50">
-            <p className="text-lg font-medium text-gray-700">
-              Tasks From {filterDueDateFrom || "Start"} → {filterDueDateTo || "End"}
-            </p>
           </div>
+
+          {/* Advanced Filters Panel */}
+          <AnimatePresence>
+            {filtersOpen && (
+              <motion.div
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: "auto", opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                transition={{ duration: 0.3, ease: "easeInOut" }}
+                className="overflow-hidden mb-6"
+              >
+                <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
+                  <div className="flex items-center justify-between mb-6">
+                    <h3 className="text-xl font-medium text-gray-900">Advanced Filters</h3>
+                    <button
+                      onClick={() => setFiltersOpen(false)}
+                      className="p-2 hover:bg-gray-100 rounded-lg transition"
+                    >
+                      <MdClose className="w-6 h-6 text-gray-600" />
+                    </button>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
+                    <Input
+                      label="Start Date"
+                      type="date"
+                      value={filters.dueDateFrom}
+                      onChange={(e) => handleFilterChange("dueDateFrom", e.target.value)}
+                    />
+                    <Input
+                      label="End Date"
+                      type="date"
+                      value={filters.dueDateTo}
+                      onChange={(e) => handleFilterChange("dueDateTo", e.target.value)}
+                    />
+                    <Input
+                      label="Project"
+                      type="select"
+                      value={filters.project}
+                      onChange={(v) => handleFilterChange("project", v)}
+                      options={[{ label: "All Projects", value: "" }, ...projectsList]}
+                    />
+                    <Input
+                      label="Assignee"
+                      type="select"
+                      value={filters.assignee}
+                      onChange={(v) => handleFilterChange("assignee", v)}
+                      options={[{ label: "All Members", value: "" }, ...membersList]}
+                    />
+                  </div>
+
+                  <div className="flex flex-col sm:flex-row gap-4 mt-8 pt-6 border-t border-gray-200">
+                    <button
+                      onClick={resetFilters}
+                      className="px-6 py-3.5 border-2 border-gray-300 text-gray-700 font-semibold rounded-xl hover:bg-gray-50 transition"
+                    >
+                      Reset All Filters
+                    </button>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
 
           {/* Kanban Board */}
-          <div className="p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {/* TO DO */}
-            <div>
-              <h3 className="text-lg font-semibold text-red-600 mb-4">TO DO</h3>
-              <div className="space-y-3">
-                {tasksByStatus.todo.map((task) => (
-                  <div key={task.id} className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
-                    <h4 className="font-medium text-gray-900">{task.name}</h4>
-               <p className="text-sm text-gray-600 mt-1">
-  {task.project 
-    ? projects.find(p => p.id === task.project)?.name || "No Project"
-    : "No Project"
-  }
-</p>
-                    {task.due_date && (
-                      <p className="text-xs text-gray-500 mt-2">Due: {new Date(task.due_date).toLocaleDateString("en-GB")}</p>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
 
-            {/* IN PROGRESS */}
-            <div>
-              <h3 className="text-lg font-semibold text-cyan-600 mb-4">IN PROGRESS</h3>
-              <div className="space-y-3">
-                {tasksByStatus.in_progress.map((task) => (
-                  <div key={task.id} className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
-                    <h4 className="font-medium text-gray-900">{task.name}</h4>
-                    <p className="text-sm text-gray-600 mt-1">{task.project?.name || "No Project"}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
+            {/* Columns */}
+            {[
+              { id: "todo", label: "To Do", styles: { bg: "bg-blue-50", border: "border-blue-100", text: "text-blue-700" }, items: tasksByStatus.todo },
+              { id: "in_progress", label: "In Progress", styles: { bg: "bg-purple-50", border: "border-purple-100", text: "text-purple-700" }, items: tasksByStatus.in_progress },
+              { id: "review", label: "Review", styles: { bg: "bg-orange-50", border: "border-orange-100", text: "text-orange-700" }, items: tasksByStatus.review },
+              { id: "done", label: "Done", styles: { bg: "bg-green-50", border: "border-green-100", text: "text-green-700" }, items: tasksByStatus.done },
+            ].map((column) => (
+              <div key={column.id} className="flex flex-col h-full">
+                <div className={`flex items-center justify-between p-4 mb-4 rounded-xl ${column.styles.bg} border ${column.styles.border}`}>
+                  <h3 className={`font-bold ${column.styles.text}`}>{column.label}</h3>
+                  <span className={`bg-white px-2 py-1 rounded-lg text-xs font-bold ${column.styles.text} shadow-xs`}>
+                    {column.items.length}
+                  </span>
+                </div>
 
-            {/* REVIEW */}
-            <div>
-              <h3 className="text-lg font-semibold text-orange-600 mb-4">REVIEW</h3>
-              <div className="space-y-3">
-                {tasksByStatus.review.map((task) => (
-                  <div key={task.id} className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
-                    <h4 className="font-medium text-gray-900">{task.name}</h4>
-                    <p className="text-sm text-gray-600 mt-1">{task.project?.name || "No Project"}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
+                <div className="space-y-4 flex-1">
+                  {column.items.length === 0 ? (
+                    <div className="text-center py-10 border-2 border-dashed border-gray-200 rounded-xl">
+                      <p className="text-gray-400 text-sm">No tasks</p>
+                    </div>
+                  ) : (
+                    column.items.map((task, i) => (
+                      <motion.div
+                        key={task.id}
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: i * 0.05 }}
+                        className="bg-white p-5 rounded-2xl shadow-xs border border-gray-100 hover:shadow-md transition-shadow group"
+                      >
+                        <div className="flex justify-between items-start mb-2">
+                          {task.project ? (
+                            <span className="px-2 py-1 bg-gray-50 text-gray-600 text-[10px] font-bold rounded-lg uppercase tracking-wider">
+                              {task.project.name}
+                            </span>
+                          ) : <span />}
+                          {task.priority && (
+                            <span className={`text-[10px] font-bold uppercase ${task.priority === 'critical' ? 'text-red-600' :
+                                task.priority === 'high' ? 'text-orange-600' :
+                                  'text-gray-400'
+                              }`}>
+                              {task.priority}
+                            </span>
+                          )}
+                        </div>
 
-            {/* DONE */}
-            <div>
-              <h3 className="text-lg font-semibold text-green-600 mb-4">DONE</h3>
-              <div className="space-y-3">
-                {tasksByStatus.done.map((task) => (
-                  <div key={task.id} className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
-                    <h4 className="font-medium text-gray-900">{task.name}</h4>
-                    <p className="text-sm text-gray-600 mt-1">{task.project?.name || "No Project"}</p>
-                  </div>
-                ))}
+                        <Link to={`/operations/tasks/edit/${task.id}`}>
+                          <h4 className="font-semibold text-gray-900 mb-2 leading-snug hover:text-blue-600 transition">
+                            {task.name}
+                          </h4>
+                        </Link>
+
+                        <div className="flex items-center justify-between mt-4">
+                          <div className="flex items-center gap-2 text-xs text-gray-500 font-medium">
+                            {task.due_date && (
+                              <div className="flex items-center gap-1">
+                                <MdCalendarToday className="w-3.5 h-3.5" />
+                                {new Date(task.due_date).toLocaleDateString("en-GB")}
+                              </div>
+                            )}
+                          </div>
+                          {renderAvatars(task.assignees)}
+                        </div>
+                      </motion.div>
+                    ))
+                  )}
+                </div>
               </div>
-            </div>
+            ))}
+
           </div>
+
         </div>
       </LayoutComponents>
     </div>
