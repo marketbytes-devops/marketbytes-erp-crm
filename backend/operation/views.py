@@ -2,11 +2,16 @@ from rest_framework import viewsets, status, filters
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
-from authapp.permissions import HasPermission
+from django_filters.rest_framework import DjangoFilterBackend
+from django.db.models import Q
+from rest_framework import viewsets, status, filters
+from rest_framework.decorators import action
+from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
 from django_filters.rest_framework import DjangoFilterBackend
 from django.db.models import Q
 import datetime
-
+from .models import Scrum
 from .models import (
     Project,
     ProjectCategory,
@@ -14,7 +19,8 @@ from .models import (
     ProjectStage,
     Client,
     Currency,
-    Task
+    Task,
+    Scrum
 )
 from .serializers import (
     ProjectSerializer,
@@ -23,8 +29,10 @@ from .serializers import (
     ProjectStageSerializer,
     ClientSerializer,
     CurrencySerializer,
-    TaskSerializer
+    TaskSerializer,
+    ScrumSerializer
 )
+
 
 
 class ProjectCategoryViewSet(viewsets.ModelViewSet):
@@ -34,8 +42,7 @@ class ProjectCategoryViewSet(viewsets.ModelViewSet):
 
     queryset = ProjectCategory.objects.all()
     serializer_class = ProjectCategorySerializer
-    permission_classes = [HasPermission]
-    page_name = 'projects'
+    permission_classes = [IsAuthenticated]
     filter_backends = [
         DjangoFilterBackend,
         filters.SearchFilter,
@@ -57,8 +64,7 @@ class ProjectStatusViewSet(viewsets.ModelViewSet):
 
     queryset = ProjectStatus.objects.all()
     serializer_class = ProjectStatusSerializer
-    permission_classes = [HasPermission]
-    page_name = 'projects'
+    permission_classes = [IsAuthenticated]
     filter_backends = [DjangoFilterBackend, filters.SearchFilter]
     search_fields = ["name", "description"]
     filterset_fields = ["name"]
@@ -74,8 +80,7 @@ class ProjectStageViewSet(viewsets.ModelViewSet):
 
     queryset = ProjectStage.objects.all()
     serializer_class = ProjectStageSerializer
-    permission_classes = [HasPermission]
-    page_name = 'projects'
+    permission_classes = [IsAuthenticated]
     filter_backends = [DjangoFilterBackend, filters.SearchFilter]
     search_fields = ["name", "description"]
     filterset_fields = ["name"]
@@ -91,8 +96,7 @@ class ClientViewSet(viewsets.ModelViewSet):
 
     queryset = Client.objects.all()
     serializer_class = ClientSerializer
-    permission_classes = [HasPermission]
-    page_name = 'customer'
+    permission_classes = [IsAuthenticated]
     filter_backends = [
         DjangoFilterBackend,
         filters.SearchFilter,
@@ -114,8 +118,7 @@ class CurrencyViewSet(viewsets.ReadOnlyModelViewSet):
 
     queryset = Currency.objects.filter(is_active=True).order_by("code")
     serializer_class = CurrencySerializer
-    permission_classes = [HasPermission]
-    page_name = 'projects'
+    permission_classes = [IsAuthenticated]
     filter_backends = [filters.SearchFilter]
     search_fields = ["code", "name"]
 
@@ -127,8 +130,8 @@ class ProjectViewSet(viewsets.ModelViewSet):
    
     serializer_class = ProjectSerializer
     queryset = Project.objects.all()
-    permission_classes = [HasPermission]
-    page_name = 'projects'
+    serializer_class = ProjectSerializer
+    permission_classes = [IsAuthenticated]
     filter_backends = [
         DjangoFilterBackend,
         filters.SearchFilter,
@@ -450,8 +453,7 @@ class TaskViewSet(viewsets.ModelViewSet):
     queryset = Task.objects.all().select_related(
         'project').prefetch_related('assignees')
     serializer_class = TaskSerializer
-    permission_classes = [HasPermission]
-    page_name = 'tasks'
+    permission_classes = [IsAuthenticated]
     filter_backends = [DjangoFilterBackend,
                        filters.SearchFilter, filters.OrderingFilter]
     search_fields = ['title', 'description', 'project__name']
@@ -488,3 +490,88 @@ class TaskViewSet(viewsets.ModelViewSet):
             queryset = queryset.filter(project_id=project_id)
 
         return queryset
+class ScrumViewSet(viewsets.ModelViewSet):
+  
+    queryset = Scrum.objects.select_related(
+        'task', 'task__project', 'employee', 'created_by'
+    ).prefetch_related('task__assignees')
+    
+    serializer_class = ScrumSerializer
+    permission_classes = [IsAuthenticated]
+    
+    filter_backends = [
+        DjangoFilterBackend,
+        filters.SearchFilter,
+        filters.OrderingFilter,
+    ]
+    
+    search_fields = [
+        'task__name',
+        'task__project__name',
+        'employee__first_name',
+        'employee__last_name',
+        'employee__username',
+        'morning_memo',
+        'evening_memo',
+    ]
+    
+    filterset_fields = {
+        'task': ['exact'],
+        'task__project': ['exact'],
+        'employee': ['exact'],
+         'reported_status': ['exact', 'in'],
+        'date': ['exact', 'gte', 'lte'],
+        'morning_submitted': ['exact'],
+        'evening_submitted': ['exact'],
+    }
+    
+    ordering_fields = ['date', 'task__name',   'reported_status', 'created_at']
+    ordering = ['-date', 'task__name']
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        user = self.request.user
+
+        if not user.is_superuser and not user.is_staff:
+            queryset = queryset.filter(
+                Q(task__project__members=user) |
+                Q(task__project__department=user.department) |
+                Q(task__assignees=user) |
+                Q(employee=user) |
+                Q(created_by=user)
+            ).distinct()
+
+        task_id = self.request.query_params.get('task')
+        if task_id:
+            queryset = queryset.filter(task_id=task_id)
+
+        project_id = self.request.query_params.get('project')
+        if project_id:
+            queryset = queryset.filter(task__project_id=project_id)
+
+        employee_id = self.request.query_params.get('employee')
+        if employee_id:
+            queryset = queryset.filter(employee_id=employee_id)
+
+        return queryset
+
+    def perform_create(self, serializer):
+        serializer.save(created_by=self.request.user)
+
+    @action(detail=False, methods=['get'], url_path='today')
+    def today(self, request):
+        today = timezone.now().date()
+        todays_scrums = self.get_queryset().filter(date=today)
+        serializer = self.get_serializer(todays_scrums, many=True)
+        return Response(serializer.data)
+
+    @action(detail=False, methods=['get'], url_path='by-task')
+    def by_task(self, request):
+        task_id = request.query_params.get('task')
+        if not task_id:
+            return Response({"error": "task query param is required"}, status=400)
+
+        scrums = self.get_queryset().filter(task_id=task_id).order_by('-date')
+        serializer = self.get_serializer(scrums, many=True)
+        return Response(serializer.data)
+

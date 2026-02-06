@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from django.utils import timezone
 from .models import (
     Project,
     ProjectCategory,
@@ -7,12 +8,13 @@ from .models import (
     Client,
     ProjectFile,
     Currency,
-    Task
+    Task,
+    Scrum,
 )
 from authapp.serializers import ProfileSerializer, DepartmentSerializer
 from authapp.models import CustomUser, Department
-
-
+from .models import Scrum
+from django.utils import timezone
 class ProjectCategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = ProjectCategory
@@ -368,3 +370,82 @@ class TaskSerializer(serializers.ModelSerializer):
             instance.assignees.set(assignee_ids)
 
         return instance
+class ScrumSerializer(serializers.ModelSerializer):
+    task_name = serializers.CharField(source='task.name', read_only=True)
+    project_name = serializers.CharField(source='task.project.name', read_only=True, allow_null=True)
+    
+    employee = ProfileSerializer(read_only=True, allow_null=True)
+    employee_name = serializers.CharField(
+        source='employee.get_full_name', 
+        read_only=True, 
+        default="Unassigned"
+    )
+    
+    created_by = ProfileSerializer(read_only=True, allow_null=True)
+    
+    # Do NOT redefine morning_display / evening_display as fields
+    # They are already @property in model → just list them in fields
+    
+    status_display = serializers.CharField(source='get_reported_status_display', read_only=True, allow_null=True)
+
+    date = serializers.DateField(
+    format="%Y-%m-%d",
+    input_formats=["%Y-%m-%d"],
+    required=False,
+    default=timezone.now().date,  # ← now works after import
+)
+
+    class Meta:
+        model = Scrum
+        fields = [
+            'id',
+            'task',
+            'task_name',
+            'project_name',
+            'date',
+            'employee',
+            'employee_name',
+            'reported_status',
+            'status_display',
+            'morning_memo',
+            'evening_memo',
+            'morning_display',       # ← model @property — auto-included
+            'evening_display',       # ← model @property — auto-included
+            'created_by',
+            'created_at',
+            'updated_at',
+        ]
+        read_only_fields = [
+            'id',
+            'created_at',
+            'updated_at',
+            'created_by',
+            'morning_display',
+            'evening_display',
+            'status_display',
+            'task_name',
+            'project_name',
+            'employee_name',
+        ]
+
+    def create(self, validated_data):
+        request = self.context.get('request')
+        if request and request.user.is_authenticated:
+            validated_data['created_by'] = request.user
+
+        # Make sure date is always a date object
+        if 'date' in validated_data:
+            if isinstance(validated_data['date'], timezone.datetime):
+                validated_data['date'] = validated_data['date'].date()
+        else:
+            validated_data['date'] = timezone.now().date()
+
+        return super().create(validated_data)
+
+    def update(self, instance, validated_data):
+        # Optional: if you allow updating date
+        if 'date' in validated_data:
+            if isinstance(validated_data['date'], timezone.datetime):
+                validated_data['date'] = validated_data['date'].date()
+
+        return super().update(instance, validated_data)
