@@ -169,7 +169,7 @@ const Permissions = () => {
   if (isLoading) return <div className="p-6"><Loading /></div>;
 
   return (
-    <div className="p-6 bg-gray-50 min-h-screen">
+    <div className="p-6 min-h-screen">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
         <div>
           <h1 className="text-2xl font-semibold text-gray-900">Permissions Management</h1>

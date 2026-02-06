@@ -299,7 +299,7 @@ const Users = () => {
       transition={{ duration: 0.5 }}
     >
       <div className="max-w-full mx-auto">
-        <h1 className="text-2xl font-medium text-black mb-2 font-mono uppercase tracking-tighter">Users Management</h1>
+        <h1 className="text-2xl font-medium text-black mb-2 tracking-tighter">Users Management</h1>
         <p className="text-gray-600 mb-6">
           Create, edit, and manage user accounts and assign roles. Roles are optional templates.
         </p>

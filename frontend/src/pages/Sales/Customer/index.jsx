@@ -1,16 +1,34 @@
-import { useState, useEffect } from "react";
-import { motion } from "framer-motion";
+import { useState, useEffect, useMemo } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import LayoutComponents from "../../../components/LayoutComponents";
 import apiClient from "../../../helpers/apiClient";
-import { MdAdd, MdEdit, MdDelete, MdClose } from "react-icons/md";
+import Loading from "../../../components/Loading";
+import Input from "../../../components/Input";
+import {
+  MdAdd,
+  MdEdit,
+  MdDelete,
+  MdBusiness,
+  MdPerson,
+  MdSearch,
+  MdFilterList,
+  MdLanguage,
+  MdPhone,
+  MdLocationCity,
+  MdCategory,
+  MdChevronRight
+} from "react-icons/md";
+import { FiExternalLink, FiMail, FiPhone, FiGlobe, FiMapPin } from "react-icons/fi";
+import { toast } from "react-hot-toast";
 
 const Customers = () => {
   const [activeTab, setActiveTab] = useState("companies");
   const [companies, setCompanies] = useState([]);
   const [clients, setClients] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState("");
 
-  // Company Modal
+  // Modals
   const [showCompanyModal, setShowCompanyModal] = useState(false);
   const [editingCompany, setEditingCompany] = useState(null);
   const [companyForm, setCompanyForm] = useState({
@@ -25,7 +43,6 @@ const Customers = () => {
     industry: "",
   });
 
-  // Client Modal
   const [showClientModal, setShowClientModal] = useState(false);
   const [editingClient, setEditingClient] = useState(null);
   const [clientForm, setClientForm] = useState({
@@ -35,7 +52,6 @@ const Customers = () => {
     mobile: "",
   });
 
-  // Fetch Companies & Clients
   const fetchData = async () => {
     setLoading(true);
     try {
@@ -47,7 +63,7 @@ const Customers = () => {
       setClients(clientRes.data.results || clientRes.data || []);
     } catch (err) {
       console.error("Failed to load data:", err);
-      alert("Error loading customers");
+      toast.error("Error loading customers");
     } finally {
       setLoading(false);
     }
@@ -57,7 +73,28 @@ const Customers = () => {
     fetchData();
   }, []);
 
-  // Open Company Modal
+  const TABS = [
+    { id: "companies", label: "Companies", icon: MdBusiness },
+    { id: "clients", label: "Clients", icon: MdPerson },
+  ];
+
+  const stats = useMemo(() => [
+    { label: "Total Companies", value: companies.length, icon: MdBusiness, color: "text-blue-600", bg: "bg-blue-50" },
+    { label: "Total Clients", value: clients.length, icon: MdPerson, color: "text-emerald-600", bg: "bg-emerald-50" },
+    { label: "Industries", value: [...new Set(companies.map(c => c.industry))].filter(Boolean).length, icon: MdCategory, color: "text-purple-600", bg: "bg-purple-50" },
+    { label: "Direct Outreach", value: clients.filter(c => !c.company).length, icon: FiMail, color: "text-amber-600", bg: "bg-amber-50" },
+  ], [companies, clients]);
+
+  const filteredData = useMemo(() => {
+    const list = activeTab === "companies" ? companies : clients;
+    if (!search) return list;
+    return list.filter(item =>
+      item.name?.toLowerCase().includes(search.toLowerCase()) ||
+      (activeTab === "clients" ? item.email : item.industry)?.toLowerCase().includes(search.toLowerCase())
+    );
+  }, [activeTab, companies, clients, search]);
+
+  // Company Handlers
   const openCompanyModal = (company = null) => {
     if (company) {
       setEditingCompany(company);
@@ -75,67 +112,46 @@ const Customers = () => {
     } else {
       setEditingCompany(null);
       setCompanyForm({
-        name: "",
-        website: "",
-        mobile: "",
-        office_phone: "",
-        city: "",
-        state: "",
-        country: "",
-        postal_code: "",
-        industry: "",
+        name: "", website: "", mobile: "", office_phone: "",
+        city: "", state: "", country: "", postal_code: "", industry: "",
       });
     }
     setShowCompanyModal(true);
   };
 
-  // Save Company
   const handleSaveCompany = async () => {
-    if (
-      !companyForm.name.trim() ||
-      !companyForm.mobile.trim() ||
-      !companyForm.industry.trim()
-    ) {
-      alert("Company Name, Mobile, and Industry are required");
+    if (!companyForm.name.trim() || !companyForm.mobile.trim() || !companyForm.industry.trim()) {
+      toast.error("Name, Mobile, and Industry are required");
       return;
     }
-
     try {
       if (editingCompany) {
-        const res = await apiClient.put(
-          `/sales/companies/${editingCompany.id}/`,
-          companyForm
-        );
-        setCompanies(
-          companies.map((c) => (c.id === editingCompany.id ? res.data : c))
-        );
+        const res = await apiClient.put(`/sales/companies/${editingCompany.id}/`, companyForm);
+        setCompanies(companies.map((c) => (c.id === editingCompany.id ? res.data : c)));
+        toast.success("Company updated");
       } else {
         const res = await apiClient.post("/sales/companies/", companyForm);
         setCompanies([...companies, res.data]);
+        toast.success("Company added successfully");
       }
       setShowCompanyModal(false);
     } catch (err) {
-      alert("Error saving company");
+      toast.error("Error saving company");
     }
   };
 
-  // Delete Company
   const handleDeleteCompany = async (id) => {
-    if (
-      !window.confirm(
-        "Delete this company? All related clients will be affected."
-      )
-    )
-      return;
+    if (!window.confirm("Delete this company? All related clients will be affected.")) return;
     try {
       await apiClient.delete(`/sales/companies/${id}/`);
       setCompanies(companies.filter((c) => c.id !== id));
+      toast.success("Company deleted");
     } catch (err) {
-      alert("Error deleting company");
+      toast.error("Error deleting company");
     }
   };
 
-  // Open Client Modal
+  // Client Handlers
   const openClientModal = (client = null) => {
     if (client) {
       setEditingClient(client);
@@ -147,468 +163,352 @@ const Customers = () => {
       });
     } else {
       setEditingClient(null);
-      setClientForm({
-        name: "",
-        email: "",
-        company: "",
-        mobile: "",
-      });
+      setClientForm({ name: "", email: "", company: "", mobile: "" });
     }
     setShowClientModal(true);
   };
 
-  // Save Client
   const handleSaveClient = async () => {
     if (!clientForm.name.trim() || !clientForm.email.trim()) {
-      alert("Name and Email are required");
+      toast.error("Name and Email are required");
       return;
     }
-
-    // Convert company to number or null
     const payload = {
-      name: clientForm.name.trim(),
-      email: clientForm.email.trim(),
+      ...clientForm,
       company: clientForm.company ? parseInt(clientForm.company) : null,
-      mobile: clientForm.mobile || null,
     };
-
     try {
-      let res;
       if (editingClient) {
-        res = await apiClient.put(
-          `/sales/clients/${editingClient.id}/`,
-          payload
-        );
-        setClients(
-          clients.map((c) => (c.id === editingClient.id ? res.data : c))
-        );
+        const res = await apiClient.put(`/sales/clients/${editingClient.id}/`, payload);
+        setClients(clients.map((c) => (c.id === editingClient.id ? res.data : c)));
+        toast.success("Client updated");
       } else {
-        res = await apiClient.post("/sales/clients/", payload);
+        const res = await apiClient.post("/sales/clients/", payload);
         setClients([...clients, res.data]);
+        toast.success("Client added successfully");
       }
       setShowClientModal(false);
-      toast.success(
-        editingClient ? "Client updated" : "Client added successfully"
-      );
     } catch (err) {
-      console.error("Error response:", err.response?.data);
-      toast.error(
-        "Failed to save client: " + JSON.stringify(err.response?.data)
-      );
+      toast.error("Error saving client");
     }
   };
 
-  // Delete Client
   const handleDeleteClient = async (id) => {
     if (!window.confirm("Delete this client?")) return;
     try {
       await apiClient.delete(`/sales/clients/${id}/`);
       setClients(clients.filter((c) => c.id !== id));
+      toast.success("Client deleted");
     } catch (err) {
-      alert("Error deleting client");
+      toast.error("Error deleting client");
     }
   };
 
-  if (loading) {
-    return (
-      <div className="p-6">
-        <LayoutComponents
-          title="Customers"
-          subtitle="Loading..."
-          variant="card"
-        >
-          <div className="text-center py-16">
-            <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-black border-t-transparent"></div>
-          </div>
-        </LayoutComponents>
-      </div>
-    );
-  }
+  if (loading && companies.length === 0) return <Loading />;
 
   return (
-    <div className="p-6">
+    <div className="p-6 min-h-screen">
       <LayoutComponents
-        title="Customers"
-        subtitle="Manage companies and clients"
-        variant="card"
+        title="Customer Management"
+        subtitle="Manage your business network and stakeholder relations"
+        variant="table"
       >
-        <div className="bg-white rounded-2xl shadow-sm p-6">
-          <div className="flex border-b border-gray-200 mb-8">
-            <button
-              onClick={() => setActiveTab("companies")}
-              className={`px-8 py-4 font-medium text-sm border-b-2 transition-colors ${
-                activeTab === "companies"
-                  ? "border-black text-black"
-                  : "border-transparent text-gray-500 hover:text-gray-700"
-              }`}
+        {/* Stats Section */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          {stats.map((stat, i) => (
+            <motion.div
+              key={i}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: i * 0.1 }}
+              className="bg-white p-6 rounded-4xl border border-gray-100 shadow-sm hover:shadow-md transition-all group"
             >
-              Companies
-            </button>
-            <button
-              onClick={() => setActiveTab("clients")}
-              className={`px-8 py-4 font-medium text-sm border-b-2 transition-colors ${
-                activeTab === "clients"
-                  ? "border-black text-black"
-                  : "border-transparent text-gray-500 hover:text-gray-700"
-              }`}
-            >
-              Clients
-            </button>
+              <div className="flex items-center gap-4">
+                <div className={`p-4 rounded-2xl ${stat.bg} ${stat.color} transition-transform group-hover:scale-110`}>
+                  <stat.icon className="w-6 h-6" />
+                </div>
+                <div>
+                  <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">{stat.label}</p>
+                  <p className="text-2xl font-bold text-gray-900">{stat.value}</p>
+                </div>
+              </div>
+            </motion.div>
+          ))}
+        </div>
+
+        {/* Tab Switcher & Search */}
+        <div className="flex flex-col lg:flex-row justify-between items-center gap-6 mb-8 bg-white p-4 rounded-4xl border border-gray-100 shadow-sm">
+          <div className="flex gap-2 p-1 bg-gray-50 rounded-2xl border border-gray-100">
+            {TABS.map((tab) => {
+              const Icon = tab.icon;
+              const isActive = activeTab === tab.id;
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                  className={`relative flex items-center gap-3 px-6 py-3 rounded-xl text-sm font-medium transition-all duration-300 ${isActive ? "text-black" : "text-gray-500 hover:text-gray-900 hover:bg-white"
+                    }`}
+                >
+                  {isActive && (
+                    <motion.div
+                      layoutId="activeTabPill"
+                      className="absolute inset-0 bg-white rounded-xl shadow-sm border border-gray-100 -z-10"
+                      transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+                    />
+                  )}
+                  <Icon className={`w-5 h-5 ${isActive ? "text-black" : "text-gray-400"}`} />
+                  {tab.label}
+                </button>
+              );
+            })}
           </div>
 
-          {/* Companies Tab */}
-          {activeTab === "companies" && (
-            <div>
-              <div className="flex justify-between items-center mb-6">
-                <h3 className="text-xl font-medium">All Companies</h3>
-                <button
-                  onClick={() => openCompanyModal()}
-                  className="flex items-center gap-3 px-6 py-3.5 bg-black text-white rounded-xl hover:bg-gray-900 font-medium"
-                >
-                  <MdAdd className="w-5 h-5" /> Add Company
-                </button>
-              </div>
-
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead>
-                    <tr className="border-b bg-gray-50 text-left text-sm font-medium text-gray-700">
-                      <th className="px-6 py-4">Sl No</th>
-                      <th className="px-6 py-4">Company Name</th>
-                      <th className="px-6 py-4">Website</th>
-                      <th className="px-6 py-4">Mobile</th>
-                      <th className="px-6 py-4">City</th>
-                      <th className="px-6 py-4">Industry</th>
-                      <th className="px-6 py-4 text-center">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-200">
-                    {companies.length === 0 ? (
-                      <tr>
-                        <td
-                          colSpan="7"
-                          className="text-center py-8 text-gray-500"
-                        >
-                          No companies found.
-                        </td>
-                      </tr>
-                    ) : (
-                      companies.map((company, i) => (
-                        <tr key={company.id} className="hover:bg-gray-50">
-                          <td className="px-6 py-4">{i + 1}</td>
-                          <td className="px-6 py-4 font-medium">
-                            {company.name}
-                          </td>
-                          <td className="px-6 py-4">
-                            {company.website || "—"}
-                          </td>
-                          <td className="px-6 py-4">{company.mobile}</td>
-                          <td className="px-6 py-4">{company.city || "—"}</td>
-                          <td className="px-6 py-4">{company.industry}</td>
-                          <td className="px-6 py-4 text-center">
-                            <div className="flex items-center justify-center gap-3">
-                              <button
-                                onClick={() => openCompanyModal(company)}
-                                className="p-2 hover:bg-indigo-100 rounded-lg text-indigo-600"
-                              >
-                                <MdEdit className="w-5 h-5" />
-                              </button>
-                              <button
-                                onClick={() => handleDeleteCompany(company.id)}
-                                className="p-2 hover:bg-red-100 rounded-lg text-red-600"
-                              >
-                                <MdDelete className="w-5 h-5" />
-                              </button>
-                            </div>
-                          </td>
-                        </tr>
-                      ))
-                    )}
-                  </tbody>
-                </table>
-              </div>
+          <div className="flex flex-col md:flex-row gap-4 w-full lg:w-auto">
+            <div className="relative flex-1 md:w-72">
+              <MdSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
+              <input
+                type="text"
+                placeholder={`Search ${activeTab}...`}
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="w-full pl-12 pr-4 py-3 bg-gray-50 border-none rounded-2xl focus:ring-2 focus:ring-black transition-all outline-none font-medium text-sm"
+              />
             </div>
-          )}
+            <button
+              onClick={() => activeTab === "companies" ? openCompanyModal() : openClientModal()}
+              className="flex items-center justify-center gap-2 px-6 py-3 bg-black text-white rounded-2xl hover:bg-gray-900 transition-all font-medium shadow-black/10 active:scale-95 whitespace-nowrap"
+            >
+              <MdAdd className="w-5 h-5" /> New {activeTab === "companies" ? "Company" : "Client"}
+            </button>
+          </div>
+        </div>
 
-          {/* Clients Tab */}
-          {activeTab === "clients" && (
-            <div>
-              <div className="flex justify-between items-center mb-6">
-                <h3 className="text-xl font-medium">All Clients</h3>
-                <button
-                  onClick={() => openClientModal()}
-                  className="flex items-center gap-3 px-6 py-3.5 bg-black text-white rounded-xl hover:bg-gray-900 font-medium"
-                >
-                  <MdAdd className="w-5 h-5" /> Add Client
-                </button>
-              </div>
-
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead>
-                    <tr className="border-b bg-gray-50 text-left text-sm font-medium text-gray-700">
-                      <th className="px-6 py-4">Sl No</th>
-                      <th className="px-6 py-4">Client Name</th>
-                      <th className="px-6 py-4">Email</th>
-                      <th className="px-6 py-4">Company</th>
-                      <th className="px-6 py-4">Mobile</th>
-                      <th className="px-6 py-4 text-center">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-200">
-                    {clients.length === 0 ? (
-                      <tr>
-                        <td
-                          colSpan="6"
-                          className="text-center py-8 text-gray-500"
-                        >
-                          No clients found.
+        {/* Table Content */}
+        <div className="bg-white rounded-4xl border border-gray-100 shadow-sm overflow-hidden min-h-[400px]">
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead className="bg-gray-50/50 border-b border-gray-50">
+                <tr>
+                  {activeTab === "companies" ? (
+                    <>
+                      <th className="px-8 py-5 text-left text-[11px] font-bold text-gray-400 uppercase tracking-widest">Company Branding</th>
+                      <th className="px-8 py-5 text-left text-[11px] font-bold text-gray-400 uppercase tracking-widest">Industry & Reach</th>
+                      <th className="px-8 py-5 text-left text-[11px] font-bold text-gray-400 uppercase tracking-widest">Location</th>
+                      <th className="px-8 py-5 text-right text-[11px] font-bold text-gray-400 uppercase tracking-widest">Actions</th>
+                    </>
+                  ) : (
+                    <>
+                      <th className="px-8 py-5 text-left text-[11px] font-bold text-gray-400 uppercase tracking-widest">Persona Details</th>
+                      <th className="px-8 py-5 text-left text-[11px] font-bold text-gray-400 uppercase tracking-widest">Associated Company</th>
+                      <th className="px-8 py-5 text-left text-[11px] font-bold text-gray-400 uppercase tracking-widest">Reach Out</th>
+                      <th className="px-8 py-5 text-right text-[11px] font-bold text-gray-400 uppercase tracking-widest">Actions</th>
+                    </>
+                  )}
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-50">
+                <AnimatePresence mode="popLayout">
+                  {filteredData.length === 0 ? (
+                    <motion.tr
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                    >
+                      <td colSpan="4" className="py-32 text-center text-gray-400">
+                        <div className="flex flex-col items-center">
+                          <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mb-4">
+                            <MdSearch className="w-8 h-8 text-gray-200" />
+                          </div>
+                          <p className="font-medium capitalize text-sm">No {activeTab} matching your filters</p>
+                        </div>
+                      </td>
+                    </motion.tr>
+                  ) : (
+                    filteredData.map((item, idx) => (
+                      <motion.tr
+                        key={item.id}
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="group hover:bg-slate-50/50 transition-colors"
+                      >
+                        {activeTab === "companies" ? (
+                          <>
+                            <td className="px-8 py-6">
+                              <div className="flex items-center gap-4">
+                                <div className="w-12 h-12 rounded-2xl bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-600 font-bold text-lg shadow-sm">
+                                  {item.name.charAt(0)}
+                                </div>
+                                <div>
+                                  <div className="font-bold text-gray-900 group-hover:text-black transition-colors">{item.name}</div>
+                                  <div className="flex items-center gap-1.5 text-xs text-blue-600 font-medium mt-1">
+                                    <FiGlobe className="w-3 h-3" />
+                                    {item.website || "No website"}
+                                  </div>
+                                </div>
+                              </div>
+                            </td>
+                            <td className="px-8 py-6">
+                              <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-slate-100 text-slate-600 rounded-full text-[10px] font-bold uppercase tracking-widest">
+                                <MdCategory className="w-3.5 h-3.5" />
+                                {item.industry}
+                              </div>
+                              <div className="flex items-center gap-1.5 text-xs text-gray-400 font-medium mt-2">
+                                <MdPhone className="w-3.5 h-3.5" />
+                                {item.mobile}
+                              </div>
+                            </td>
+                            <td className="px-8 py-6 text-sm">
+                              <div className="flex items-center gap-2 text-gray-700 font-medium">
+                                <MdLocationCity className="w-4 h-4 text-gray-400" />
+                                {item.city || "N/A"}, {item.country || "Intl"}
+                              </div>
+                            </td>
+                          </>
+                        ) : (
+                          <>
+                            <td className="px-8 py-6">
+                              <div className="flex items-center gap-4">
+                                <div className="w-12 h-12 rounded-full bg-emerald-50 border border-emerald-100 flex items-center justify-center text-emerald-600 font-bold text-lg shadow-sm">
+                                  {item.name.charAt(0)}
+                                </div>
+                                <div>
+                                  <div className="font-bold text-gray-900 group-hover:text-black transition-colors">{item.name}</div>
+                                  <div className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-1">Stakeholder</div>
+                                </div>
+                              </div>
+                            </td>
+                            <td className="px-8 py-6">
+                              <div className="flex items-center gap-2 text-sm font-semibold text-blue-600 bg-blue-50/50 w-fit px-3 py-1.5 rounded-xl border border-blue-100/50">
+                                <MdBusiness className="w-4 h-4" />
+                                {item.company_name || "Independent"}
+                              </div>
+                            </td>
+                            <td className="px-8 py-6 space-y-2">
+                              <div className="flex items-center gap-2 text-xs font-medium text-gray-500 hover:text-black transition-colors cursor-pointer">
+                                <FiMail className="w-3.5 h-3.5" />
+                                {item.email}
+                              </div>
+                              <div className="flex items-center gap-2 text-xs font-medium text-gray-500">
+                                <FiPhone className="w-3.5 h-3.5" />
+                                {item.mobile || "N/A"}
+                              </div>
+                            </td>
+                          </>
+                        )}
+                        <td className="px-8 py-6 text-right">
+                          <div className="flex justify-end gap-1 opacity-0 group-hover:opacity-100 transition-all transform translate-x-2 group-hover:translate-x-0">
+                            <button
+                              onClick={() => activeTab === "companies" ? openCompanyModal(item) : openClientModal(item)}
+                              className="p-2.5 bg-white shadow-sm border border-gray-100 hover:bg-slate-50 hover:text-indigo-600 rounded-xl transition-all"
+                              title="Edit"
+                            >
+                              <MdEdit className="w-4.5 h-4.5" />
+                            </button>
+                            <button
+                              onClick={() => activeTab === "companies" ? handleDeleteCompany(item.id) : handleDeleteClient(item.id)}
+                              className="p-2.5 bg-white shadow-sm border border-gray-100 hover:bg-rose-50 hover:text-rose-600 rounded-xl transition-all"
+                              title="Delete"
+                            >
+                              <MdDelete className="w-4.5 h-4.5" />
+                            </button>
+                          </div>
                         </td>
-                      </tr>
-                    ) : (
-                      clients.map((client, i) => (
-                        <tr key={client.id} className="hover:bg-gray-50">
-                          <td className="px-6 py-4">{i + 1}</td>
-                          <td className="px-6 py-4 font-medium">
-                            {client.name}
-                          </td>
-                          <td className="px-6 py-4">{client.email}</td>
-                          <td className="px-6 py-4">
-                            {client.company_name || "—"}
-                          </td>
-                          <td className="px-6 py-4">{client.mobile || "—"}</td>
-                          <td className="px-6 py-4 text-center">
-                            <div className="flex items-center justify-center gap-3">
-                              <button
-                                onClick={() => openClientModal(client)}
-                                className="p-2 hover:bg-indigo-100 rounded-lg text-indigo-600"
-                              >
-                                <MdEdit className="w-5 h-5" />
-                              </button>
-                              <button
-                                onClick={() => handleDeleteClient(client.id)}
-                                className="p-2 hover:bg-red-100 rounded-lg text-red-600"
-                              >
-                                <MdDelete className="w-5 h-5" />
-                              </button>
-                            </div>
-                          </td>
-                        </tr>
-                      ))
-                    )}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          )}
+                      </motion.tr>
+                    ))
+                  )}
+                </AnimatePresence>
+              </tbody>
+            </table>
+          </div>
         </div>
       </LayoutComponents>
 
       {/* Company Modal */}
       {showCompanyModal && (
-        <div className="fixed inset-0 backdrop-brightness-50 flex items-center justify-center z-50 p-4">
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto"
-          >
-            <div className="p-6 border-b flex justify-between items-center">
-              <h2 className="text-2xl font-bold">
-                {editingCompany ? "Edit" : "Add"} Company
-              </h2>
-              <button
-                onClick={() => setShowCompanyModal(false)}
-                className="p-2 hover:bg-gray-100 rounded-xl"
-              >
-                <MdClose className="w-6 h-6" />
-              </button>
-            </div>
-            <div className="p-8 space-y-6">
+        <LayoutComponents
+          variant="modal"
+          title={`${editingCompany ? "Edit" : "Register"} Company`}
+          onCloseModal={() => setShowCompanyModal(false)}
+          modal={
+            <div className="space-y-8 max-h-[75vh] overflow-y-auto pr-2 custom-scrollbar">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <input
-                  type="text"
-                  placeholder="Company Name *"
-                  value={companyForm.name}
-                  onChange={(e) =>
-                    setCompanyForm({ ...companyForm, name: e.target.value })
-                  }
-                  className="px-5 py-3.5 border rounded-xl"
-                />
-                <input
-                  type="text"
-                  placeholder="Website"
-                  value={companyForm.website}
-                  onChange={(e) =>
-                    setCompanyForm({ ...companyForm, website: e.target.value })
-                  }
-                  className="px-5 py-3.5 border rounded-xl"
-                />
-                <input
-                  type="text"
-                  placeholder="Mobile *"
-                  required
-                  value={companyForm.mobile}
-                  onChange={(e) =>
-                    setCompanyForm({ ...companyForm, mobile: e.target.value })
-                  }
-                  className="px-5 py-3.5 border rounded-xl"
-                />
-                <input
-                  type="text"
-                  placeholder="Office Phone Number"
-                  value={companyForm.office_phone}
-                  onChange={(e) =>
-                    setCompanyForm({
-                      ...companyForm,
-                      office_phone: e.target.value,
-                    })
-                  }
-                  className="px-5 py-3.5 border rounded-xl"
-                />
-                <input
-                  type="text"
-                  placeholder="City"
-                  value={companyForm.city}
-                  onChange={(e) =>
-                    setCompanyForm({ ...companyForm, city: e.target.value })
-                  }
-                  className="px-5 py-3.5 border rounded-xl"
-                />
-                <input
-                  type="text"
-                  placeholder="State"
-                  value={companyForm.state}
-                  onChange={(e) =>
-                    setCompanyForm({ ...companyForm, state: e.target.value })
-                  }
-                  className="px-5 py-3.5 border rounded-xl"
-                />
-                <input
-                  type="text"
-                  placeholder="Country"
-                  value={companyForm.country}
-                  onChange={(e) =>
-                    setCompanyForm({ ...companyForm, country: e.target.value })
-                  }
-                  className="px-5 py-3.5 border rounded-xl"
-                />
-                <input
-                  type="text"
-                  placeholder="Postal Code"
-                  value={companyForm.postal_code}
-                  onChange={(e) =>
-                    setCompanyForm({
-                      ...companyForm,
-                      postal_code: e.target.value,
-                    })
-                  }
-                  className="px-5 py-3.5 border rounded-xl"
-                />
-                <input
-                  type="text"
-                  placeholder="Industry *"
-                  required
-                  value={companyForm.industry}
-                  onChange={(e) =>
-                    setCompanyForm({ ...companyForm, industry: e.target.value })
-                  }
-                  className="px-5 py-3.5 border rounded-xl md:col-span-2"
-                />
+                <div className="md:col-span-2">
+                  <h4 className="text-[10px] font-bold text-blue-600 uppercase tracking-widest mb-4">Core Information</h4>
+                  <Input label="Company Entity Name *" placeholder="Enterprise Solutions Ltd" value={companyForm.name} onChange={(e) => setCompanyForm({ ...companyForm, name: e.target.value })} />
+                </div>
+                <Input label="Digital Portfolio" placeholder="https://example.com" value={companyForm.website} onChange={(e) => setCompanyForm({ ...companyForm, website: e.target.value })} />
+                <Input label="Primary Mobile *" placeholder="+1 234 567 890" value={companyForm.mobile} onChange={(e) => setCompanyForm({ ...companyForm, mobile: e.target.value })} />
+                <Input label="Office Phone" placeholder="+1 098 765 432" value={companyForm.office_phone} onChange={(e) => setCompanyForm({ ...companyForm, office_phone: e.target.value })} />
+                <div className="md:col-span-1">
+                  <Input label="Industry Sector *" placeholder="Technology / Finance" value={companyForm.industry} onChange={(e) => setCompanyForm({ ...companyForm, industry: e.target.value })} />
+                </div>
               </div>
-              <div className="flex justify-end gap-4">
-                <button
-                  onClick={() => setShowCompanyModal(false)}
-                  className="px-8 py-3.5 border rounded-xl hover:bg-gray-50"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={handleSaveCompany}
-                  className="px-8 py-3.5 bg-black text-white rounded-xl hover:bg-gray-900"
-                >
-                  Save Company
+
+              <div className="p-1 bg-gray-50 rounded-4xl border border-gray-100 overflow-hidden">
+                <div className="p-6 space-y-6">
+                  <h4 className="text-[10px] font-bold text-purple-600 uppercase tracking-widest mb-2">Geo-Spatial Data</h4>
+                  <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                    <Input label="City" value={companyForm.city} onChange={(e) => setCompanyForm({ ...companyForm, city: e.target.value })} />
+                    <Input label="State" value={companyForm.state} onChange={(e) => setCompanyForm({ ...companyForm, state: e.target.value })} />
+                    <Input label="Country" value={companyForm.country} onChange={(e) => setCompanyForm({ ...companyForm, country: e.target.value })} />
+                    <Input label="Postal Code" value={companyForm.postal_code} onChange={(e) => setCompanyForm({ ...companyForm, postal_code: e.target.value })} />
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex justify-end gap-4 pt-6">
+                <button onClick={() => setShowCompanyModal(false)} className="px-8 py-4 text-sm font-bold text-gray-600 hover:text-black transition">Discard Changes</button>
+                <button onClick={handleSaveCompany} className="px-12 py-4 bg-black text-white rounded-2xl font-bold shadow-xl shadow-black/10 hover:translate-y-[-2px] transition-all">
+                  Commit Record
                 </button>
               </div>
             </div>
-          </motion.div>
-        </div>
+          }
+        />
       )}
 
       {/* Client Modal */}
       {showClientModal && (
-        <div className="fixed inset-0 backdrop-brightness-50 flex items-center justify-center z-50 p-4">
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="bg-white rounded-2xl shadow-2xl max-w-3xl w-full"
-          >
-            <div className="p-6 border-b flex justify-between items-center">
-              <h2 className="text-2xl font-bold">
-                {editingClient ? "Edit" : "Add"} Client
-              </h2>
-              <button
-                onClick={() => setShowClientModal(false)}
-                className="p-2 hover:bg-gray-100 rounded-xl"
-              >
-                <MdClose className="w-6 h-6" />
-              </button>
-            </div>
-            <div className="p-8 space-y-6">
+        <LayoutComponents
+          variant="modal"
+          title={`${editingClient ? "Modify" : "Enlist"} Client Persona`}
+          onCloseModal={() => setShowClientModal(false)}
+          modal={
+            <div className="space-y-8">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <input
-                  type="text"
-                  placeholder="Client Name *"
-                  value={clientForm.name}
-                  onChange={(e) =>
-                    setClientForm({ ...clientForm, name: e.target.value })
-                  }
-                  className="px-5 py-3.5 border rounded-xl"
-                />
-                <input
-                  type="email"
-                  placeholder="Email *"
-                  value={clientForm.email}
-                  onChange={(e) =>
-                    setClientForm({ ...clientForm, email: e.target.value })
-                  }
-                  className="px-5 py-3.5 border rounded-xl"
-                />
-                <input
-                  type="text"
-                  placeholder="Company"
-                  value={clientForm.company}
-                  onChange={(e) =>
-                    setClientForm({ ...clientForm, company: e.target.value })
-                  }
-                  className="px-5 py-3.5 border rounded-xl"
-                />
-                <input
-                  type="text"
-                  placeholder="Mobile"
-                  value={clientForm.mobile}
-                  onChange={(e) =>
-                    setClientForm({ ...clientForm, mobile: e.target.value })
-                  }
-                  className="px-5 py-3.5 border rounded-xl"
-                />
+                <div className="md:col-span-2">
+                  <h4 className="text-[10px] font-bold text-emerald-600 uppercase tracking-widest mb-4">Stakeholder Profile</h4>
+                </div>
+                <Input label="Full Identity Name *" placeholder="Sarah Jenkins" value={clientForm.name} onChange={(e) => setClientForm({ ...clientForm, name: e.target.value })} />
+                <Input label="Secure Email Address *" type="email" placeholder="sarah@example.com" value={clientForm.email} onChange={(e) => setClientForm({ ...clientForm, email: e.target.value })} />
+
+                <div className="space-y-1">
+                  <label className="block text-sm font-bold text-gray-700 mb-[11px]">Primary Organizational Link</label>
+                  <select
+                    value={clientForm.company}
+                    onChange={(e) => setClientForm({ ...clientForm, company: e.target.value })}
+                    className="w-full px-5 py-[15px] bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-black outline-none font-medium text-sm appearance-none cursor-pointer"
+                  >
+                    <option value="">Independent Stakeholder</option>
+                    {companies.map(c => (
+                      <option key={c.id} value={c.id}>{c.name}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <Input label="Verified Mobile" placeholder="+1 234 567 890" value={clientForm.mobile} onChange={(e) => setClientForm({ ...clientForm, mobile: e.target.value })} />
               </div>
-              <div className="flex justify-end gap-4">
-                <button
-                  onClick={() => setShowClientModal(false)}
-                  className="px-8 py-3.5 border rounded-xl hover:bg-gray-50"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={handleSaveClient}
-                  className="px-8 py-3.5 bg-black text-white rounded-xl hover:bg-gray-900"
-                >
-                  Save Client
+
+              <div className="flex justify-end gap-4 pt-8">
+                <button onClick={() => setShowClientModal(false)} className="px-8 py-4 text-sm font-bold text-gray-600 hover:text-black transition">Cancel Outreach</button>
+                <button onClick={handleSaveClient} className="px-12 py-4 bg-emerald-600 text-white rounded-2xl font-bold shadow-xl shadow-emerald-600/10 hover:translate-y-[-2px] transition-all">
+                  {editingClient ? "Update Persona" : "Record Stakeholder"}
                 </button>
               </div>
             </div>
-          </motion.div>
-        </div>
+          }
+        />
       )}
     </div>
   );

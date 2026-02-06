@@ -413,7 +413,7 @@ const Leads = () => {
                         <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mb-5">
                           <MdVisibility className="w-10 h-10 text-gray-400" />
                         </div>
-                        <p className="text-xl font-semibold text-gray-700">
+                        <p className="text-xl font-medium text-gray-700">
                           No leads found
                         </p>
                         <p className="text-gray-500 mt-2">
@@ -487,7 +487,7 @@ const Leads = () => {
             <form onSubmit={handleSubmit} className="space-y-8">
               {/* Company Selection */}
               <div>
-                <h3 className="text-lg font-semibold mb-4">Company Details</h3>
+                <h3 className="text-lg font-medium mb-4">Company Details</h3>
                 <div className="md:col-span-2">
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Company *

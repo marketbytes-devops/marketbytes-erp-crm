@@ -4,7 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { motion } from 'framer-motion';
 import { toast } from 'react-hot-toast';
-import { Camera, User } from 'lucide-react';
+import { Camera, User, Mail, MapPin, Phone, ShieldCheck, UserCircle, Settings } from 'lucide-react';
 import apiClient from '../../helpers/apiClient';
 import LayoutComponents from '../../components/LayoutComponents';
 import Input from '../../components/Input';
@@ -55,7 +55,7 @@ const Profile = () => {
     const fetchProfile = async () => {
       try {
         const { data } = await apiClient.get('/auth/profile/');
-        
+
         const profileData = {
           email: data.email || '',
           name: data.name || '',
@@ -130,9 +130,9 @@ const Profile = () => {
         phone_number: updatedData.phone_number || '',
       });
 
-      toast.success('Profile updated successfully!');
+      toast.success('Identity updated successfully.');
     } catch (err) {
-      toast.error(err.response?.data?.detail || 'Failed to update profile');
+      toast.error(err.response?.data?.detail || 'Update failure');
     }
   };
 
@@ -141,123 +141,211 @@ const Profile = () => {
       await apiClient.put('/auth/profile/', {
         new_password: data.new_password,
       });
-      toast.success('Password changed successfully!');
+      toast.success('Security credentials updated.');
       resetPasswordForm();
     } catch (err) {
-      toast.error(err.response?.data?.detail || 'Failed to change password');
+      toast.error(err.response?.data?.detail || 'Password change failed');
     }
   };
 
   return (
-    <>
-      <motion.div
-        className="w-full flex items-center justify-center p-6"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.5 }}
-      >
-        <div className="w-full">
+    <div className="p-6 min-h-screen">
+      <div className="mx-auto">
+        <div className="flex flex-col lg:flex-row gap-6">
+
+          {/* Left Column: Profile Card */}
           <motion.div
-            className="bg-white rounded-2xl shadow-xl p-10 mb-8 text-center border border-gray-200"
-            initial={{ y: -40, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ delay: 0.1 }}
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            className="lg:w-1/3 flex flex-col gap-6"
           >
-            <div className="relative inline-block">
-              <div className="w-40 h-40 rounded-full overflow-hidden border-8 border-white shadow-2xl mx-auto bg-gray-100">
-                {imagePreview ? (
-                  <img src={imagePreview} alt="Profile" className="w-full h-full object-cover" />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center">
-                    <User className="w-24 h-24 text-gray-400" />
+            <div className="bg-white rounded-4xl border border-gray-100 shadow-sm p-8 text-center relative overflow-hidden group">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-gray-50/50 rounded-full blur-3xl -mr-16 -mt-16"></div>
+
+              <div className="relative z-10">
+                <div className="relative inline-block mb-6">
+                  <div className="w-40 h-40 rounded-full overflow-hidden border-4 border-white shadow-2xl mx-auto bg-gray-50 ring-1 ring-gray-100 ring-offset-4">
+                    {imagePreview ? (
+                      <img src={imagePreview} alt="Profile" className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center">
+                        <User className="w-16 h-16 text-gray-300" />
+                      </div>
+                    )}
                   </div>
-                )}
+                  <label className="absolute bottom-2 right-2 p-2.5 bg-black text-white rounded-2xl shadow-xl cursor-pointer hover:scale-110 transition-transform ring-4 ring-white">
+                    <Camera className="w-5 h-5" />
+                    <input type="file" accept="image/*" onChange={handleImageChange} className="hidden" />
+                  </label>
+                </div>
+
+                <h1 className="text-2xl font-black text-black tracking-tight mb-1">{profile.name || 'Account Owner'}</h1>
+                <p className="text-gray-400 font-bold text-[10px] uppercase tracking-widest mb-4">@{profile.username || 'user'}</p>
+
+                <div className="flex flex-col gap-3 text-left pt-6 border-t border-gray-50">
+                  <div className="flex items-center gap-3 text-gray-500">
+                    <div className="w-8 h-8 rounded-xl bg-gray-50 flex items-center justify-center shrink-0">
+                      <Mail className="w-4 h-4 text-black" />
+                    </div>
+                    <span className="text-sm font-medium truncate">{profile.email}</span>
+                  </div>
+                  {profile.phone_number && (
+                    <div className="flex items-center gap-3 text-gray-500">
+                      <div className="w-8 h-8 rounded-xl bg-gray-50 flex items-center justify-center shrink-0">
+                        <Phone className="w-4 h-4 text-black" />
+                      </div>
+                      <span className="text-sm font-medium">{profile.phone_number}</span>
+                    </div>
+                  )}
+                  {profile.address && (
+                    <div className="flex items-center gap-3 text-gray-500">
+                      <div className="w-8 h-8 rounded-xl bg-gray-50 flex items-center justify-center shrink-0">
+                        <MapPin className="w-4 h-4 text-black" />
+                      </div>
+                      <span className="text-sm font-medium line-clamp-1">{profile.address}</span>
+                    </div>
+                  )}
+                </div>
               </div>
-              <label className="absolute bottom-2 right-2 bg-black hover:bg-gray-800 rounded-full p-4 cursor-pointer shadow-2xl transition-all hover:scale-110">
-                <Camera className="w-7 h-7 text-white" />
-                <input type="file" accept="image/*" onChange={handleImageChange} className="hidden" />
-              </label>
             </div>
 
-            <h2 className="mt-8 text-3xl font-medium text-black">{profile.name || 'Your Name'}</h2>
-            <p className="text-lg text-gray-600 mt-2">{profile.email}</p>
-            <p className="text-sm text-gray-500 mt-1">@{profile.username || 'username'}</p>
+            <div className="bg-black rounded-4xl p-8 text-white relative overflow-hidden group">
+              <div className="absolute bottom-0 right-0 w-32 h-32 bg-white/5 rounded-full blur-2xl -mb-16 -mr-16"></div>
+              <div className="relative z-10">
+                <div className="w-12 h-12 rounded-2xl bg-white/10 flex items-center justify-center mb-6">
+                  <ShieldCheck className="w-6 h-6" />
+                </div>
+                <h3 className="text-lg font-bold mb-2">Verified Profile</h3>
+                <p className="text-gray-400 text-xs leading-relaxed">Your account is secured with high-level encryption and internal role protocols.</p>
+              </div>
+            </div>
           </motion.div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            <LayoutComponents variant="card" title="Personal Information" subtitle="Update your profile details">
-              <form onSubmit={handleProfileSubmit(onProfileUpdate)} className="space-y-6">
+          {/* Right Column: Settings Forms */}
+          <motion.div
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            className="flex-1 flex flex-col gap-6"
+          >
+            {/* Profile Info Form */}
+            <div className="bg-white rounded-4xl border border-gray-100 shadow-sm overflow-hidden">
+              <div className="px-8 py-6 border-b border-gray-50 flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-2xl bg-gray-50 flex items-center justify-center">
+                    <UserCircle className="w-5 h-5 text-black" />
+                  </div>
+                  <div>
+                    <h2 className="text-lg font-bold text-black leading-none mb-1">Personal Details</h2>
+                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Identification & Presence</p>
+                  </div>
+                </div>
+              </div>
+
+              <form onSubmit={handleProfileSubmit(onProfileUpdate)} className="p-8 grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
                 <Input
-                  label="Full Name"
+                  label="Legal Name"
                   id="name"
-                  placeholder="John Doe"
+                  placeholder="e.g. Alexander Pierce"
                   {...registerProfile('name')}
                   error={profileErrors.name?.message}
+                  className="font-medium"
                 />
                 <Input
-                  label="Username"
+                  label="Username Alias"
                   id="username"
-                  placeholder="johndoe123"
+                  placeholder="e.g. alex_01"
                   {...registerProfile('username')}
                   error={profileErrors.username?.message}
+                  className="font-medium"
                 />
+                <div className="md:col-span">
+                  <Input
+                    label="Physical Address"
+                    id="address"
+                    placeholder="e.g. 742 Evergreen Terrace, Springfield"
+                    {...registerProfile('address')}
+                    error={profileErrors.address?.message}
+                    className="font-medium"
+                  />
+                </div>
                 <Input
-                  label="Address"
-                  id="address"
-                  placeholder="123 Main St, City, Country"
-                  {...registerProfile('address')}
-                  error={profileErrors.address?.message}
-                />
-                <Input
-                  label="Phone Number"
+                  label="Contact Number"
                   id="phone_number"
                   type="tel"
-                  placeholder="+123 456 7890"
+                  placeholder="+91 00000 00000"
                   {...registerProfile('phone_number')}
                   error={profileErrors.phone_number?.message}
+                  className="font-medium"
                 />
 
-                <button
-                  type="submit"
-                  disabled={isUpdatingProfile}
-                  className="w-full bg-black text-white hover:bg-white hover:text-black border gap-3 px-6 py-3 rounded-xl text-sm font-medium transition-all duration-300 shadow-lg"
-                >
-                  {isUpdatingProfile ? 'Updating Profile...' : 'Update Profile'}
-                </button>
+                <div className="md:col-span-2 pt-4">
+                  <motion.button
+                    whileHover={{ scale: 1.01 }}
+                    whileTap={{ scale: 0.98 }}
+                    type="submit"
+                    disabled={isUpdatingProfile}
+                    className="px-8 py-4 bg-black text-white rounded-2xl font-bold text-sm shadow-xl shadow-black/10 hover:shadow-black/20 flex items-center justify-center gap-3 transition-all disabled:opacity-50"
+                  >
+                    {isUpdatingProfile ? 'Processing...' : 'Apply Modifications'}
+                  </motion.button>
+                </div>
               </form>
-            </LayoutComponents>
-            <LayoutComponents variant="card" title="Change Password" subtitle="Keep your account secure">
-              <form onSubmit={handlePasswordSubmit(onPasswordChange)} className="space-y-6">
-                <Input
-                  label="New Password"
-                  id="new_password"
-                  type="password"
-                  placeholder="Enter new password"
-                  {...registerPassword('new_password')}
-                  error={passwordErrors.new_password?.message}
-                />
-                <Input
-                  label="Confirm New Password"
-                  id="confirm_password"
-                  type="password"
-                  placeholder="Repeat new password"
-                  {...registerPassword('confirm_password')}
-                  error={passwordErrors.confirm_password?.message}
-                />
+            </div>
 
-                <button
-                  type="submit"
-                  disabled={isChangingPassword}
-                  className="w-full bg-black text-white hover:bg-white hover:text-black border gap-3 px-6 py-3 rounded-xl text-sm font-medium transition-all duration-300 shadow-lg"
-                >
-                  {isChangingPassword ? 'Changing Password...' : 'Change Password'}
-                </button>
+            {/* Security Form */}
+            <div className="bg-white rounded-4xl border border-gray-100 shadow-sm overflow-hidden">
+              <div className="px-8 py-6 border-b border-gray-50 flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-2xl bg-gray-50 flex items-center justify-center">
+                    <Settings className="w-5 h-5 text-black" />
+                  </div>
+                  <div>
+                    <h2 className="text-lg font-bold text-black leading-none mb-1">Security Update</h2>
+                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Authentication Keys</p>
+                  </div>
+                </div>
+              </div>
+
+              <form onSubmit={handlePasswordSubmit(onPasswordChange)} className="p-8 flex flex-col gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <Input
+                    label="New Access Key"
+                    id="new_password"
+                    type="password"
+                    placeholder="Min. 8 characters"
+                    {...registerPassword('new_password')}
+                    error={passwordErrors.new_password?.message}
+                    className="font-medium"
+                  />
+                  <Input
+                    label="Confirm Access Key"
+                    id="confirm_password"
+                    type="password"
+                    placeholder="Repeat access key"
+                    {...registerPassword('confirm_password')}
+                    error={passwordErrors.confirm_password?.message}
+                    className="font-medium"
+                  />
+                </div>
+
+                <div className="pt-2">
+                  <motion.button
+                    whileHover={{ scale: 1.01 }}
+                    whileTap={{ scale: 0.98 }}
+                    type="submit"
+                    disabled={isChangingPassword}
+                    className="px-8 py-4 bg-white text-black border-2 border-black rounded-2xl font-bold text-sm hover:bg-black hover:text-white transition-all disabled:opacity-50"
+                  >
+                    {isChangingPassword ? 'Securing...' : 'Renew Password'}
+                  </motion.button>
+                </div>
               </form>
-            </LayoutComponents>
-          </div>
+            </div>
+
+          </motion.div>
         </div>
-      </motion.div>
-    </>
+      </div>
+    </div>
   );
 };
 

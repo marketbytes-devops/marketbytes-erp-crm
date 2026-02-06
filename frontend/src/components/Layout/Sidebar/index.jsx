@@ -190,7 +190,7 @@ const Sidebar = ({ toggleSidebar }) => {
           page: "Task Calendar",
           action: "view",
         },
-         {
+        {
           to: "/operations/scrum",
           label: "Scrum",
           icon: <MdPendingActions className="w-5 h-5" />,
@@ -335,7 +335,7 @@ const Sidebar = ({ toggleSidebar }) => {
                   <button
                     onClick={item.toggle}
                     className={`w-full flex items-center justify-between px-5 py-4 rounded-xl text-sm font-medium transition-all duration-300 group relative overflow-hidden ${item.isOpen
-                      ? "bg-linear-to-r from-indigo-50 to-purple-50 text-black shadow-md"
+                      ? "bg-linear-to-r bg-black text-white"
                       : "text-black hover:bg-gray-50"
                       }`}
                   >
