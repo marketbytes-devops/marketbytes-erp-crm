@@ -301,3 +301,31 @@ class BreakSessionSerializer(serializers.ModelSerializer):
     class Meta:
         model = BreakSession
         fields = '__all__'
+
+class ActiveWorkSessionSerializer(serializers.ModelSerializer):
+    employee = UserSerializer(read_only=True)
+    project = serializers.CharField(source='project.name', read_only=True)
+    task = serializers.CharField(source='task.name', read_only=True)
+    start_time = serializers.DateTimeField()  
+    duration_seconds = serializers.SerializerMethodField()
+    status = serializers.SerializerMethodField()
+
+    class Meta:
+        model = WorkSession
+        fields = [
+            'id',
+            'employee',
+            'project',
+            'task',
+            'start_time',
+            'duration_seconds',
+            'status'
+        ]
+
+    def get_duration_seconds(self, obj):
+        now = timezone.now()
+        return int((now - obj.start_time).total_seconds())
+
+    def get_status(self, obj):
+        return "Active"
+

@@ -257,6 +257,47 @@ class AttendanceViewSet(viewsets.ModelViewSet):
             "status": att.status if att else "absent",
             "message": message
         })
+    
+    @action(detail=False, methods=['get'], url_path='clockin-counts')
+    def clockin_counts(self, request):
+        start_date = request.query_params.get('start_date')   
+        end_date   = request.query_params.get('end_date')
+        queryset = Attendance.objects.filter(clock_in__isnull=False)
+
+        if start_date:
+           queryset = queryset.filter(date__gte=start_date)
+        if end_date:
+           queryset = queryset.filter(date__lte=end_date)
+
+        from authapp.models import CustomUser
+        active_employees = CustomUser.objects.filter(status='active')
+
+        from django.db.models import Count
+        result = (
+        queryset
+        .values('employee')                          # group by employee
+        .annotate(clockin_count=Count('id'))         # count rows = count clock-ins
+        .order_by('-clockin_count')                  # most clock-ins first (optional)
+    )
+        final_data = []
+        for item in result:
+
+            try:
+                employee = CustomUser.objects.get(id=item['employee'])
+                final_data.append({
+                'id': employee.id,
+                'name': employee.name or employee.email.split('@')[0],
+                'role': employee.role.name if employee.role else 'No Role',
+                'department': employee.department.name if employee.department else None,
+                'clockin_count': item['clockin_count'],
+                'profile_picture': employee.image.url if employee.image else None,
+              })
+            except CustomUser.DoesNotExist:
+                continue
+        return Response({
+            'results': final_data,
+            'total_records': len(final_data)
+              })
 
 class HolidayViewSet(viewsets.ModelViewSet):
     queryset = Holiday.objects.all()
@@ -547,6 +588,15 @@ class TimerViewSet(viewsets.ViewSet):
                 })
         
         return Response(data)
+    
+    @action(detail=False, methods=['get'], permission_classes=[HasPermission])
+    def active_sessions(self, request):
+        sessions = WorkSession.objects.filter(end_time__isnull=True)\
+            .select_related('employee', 'project', 'task')
+
+        return Response(ActiveWorkSessionSerializer(sessions, many=True).data)
+    
+   
 
 class WorkSessionViewSet(viewsets.ModelViewSet):
     queryset = WorkSession.objects.all().select_related('employee', 'project', 'task').order_by('-start_time')
