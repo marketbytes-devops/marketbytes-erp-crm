@@ -168,7 +168,7 @@ const TasksPage = () => {
           const initial = name[0]?.toUpperCase() || "?";
           return (
             <div key={i} className="relative group">
-              <div className="w-10 h-10 rounded-full bg-linear-to-br from-blue-500 to-purple-600 border-2 border-white flex items-center justify-center text-white text-sm font-bold shadow-md">
+              <div className="w-10 h-10 rounded-full bg-linear-to-br from-blue-500 to-purple-600 border-2 border-white flex items-center justify-center text-white text-sm font-medium shadow-md">
                 {initial}
               </div>
               <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-black text-white text-xs rounded-lg whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-20">
@@ -179,7 +179,7 @@ const TasksPage = () => {
           );
         })}
         {memberCount > 3 && (
-          <div className="w-10 h-10 rounded-full bg-gray-600 border-2 border-white flex items-center justify-center text-white text-sm font-bold shadow-md">
+          <div className="w-10 h-10 rounded-full bg-gray-600 border-2 border-white flex items-center justify-center text-white text-sm font-medium shadow-md">
             +{memberCount - 3}
           </div>
         )}
@@ -198,7 +198,7 @@ const TasksPage = () => {
     <div className="space-y-8">
       <div className="flex justify-between items-start">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900 mb-1">{selectedTask.name}</h2>
+          <h2 className="text-2xl font-medium text-gray-900 mb-1">{selectedTask.name}</h2>
           <p className="text-sm font-medium text-gray-500">{selectedTask.project_name || "No Project"}</p>
         </div>
         <div className="flex gap-2">
@@ -213,46 +213,46 @@ const TasksPage = () => {
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-6 p-6 bg-gray-50 rounded-2xl border border-gray-100">
         <div className="space-y-1">
-          <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Status</p>
-          <span className="px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border bg-white text-gray-700">
+          <p className="text-[10px] font-medium text-gray-400 uppercase tracking-widest">Status</p>
+          <span className="px-3 py-1 rounded-full text-[10px] font-medium uppercase tracking-wider border bg-white text-gray-700">
             {statusOptions.find(o => o.value === selectedTask.status)?.label || selectedTask.status}
           </span>
         </div>
         <div className="space-y-1">
-          <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest flex items-center gap-1">
+          <p className="text-[10px] font-medium text-gray-400 uppercase tracking-widest flex items-center gap-1">
             <MdCalendarToday className="w-3 h-3" /> Due Date
           </p>
-          <p className="text-sm font-bold text-gray-900">
+          <p className="text-sm font-medium text-gray-900">
             {selectedTask.due_date ? new Date(selectedTask.due_date).toLocaleDateString("en-GB") : "—"}
           </p>
         </div>
         <div className="space-y-1">
-          <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest flex items-center gap-1">
+          <p className="text-[10px] font-medium text-gray-400 uppercase tracking-widest flex items-center gap-1">
             <MdOutlineAccessTime className="w-3 h-3" /> Allocated
           </p>
-          <p className="text-sm font-bold text-gray-900">
+          <p className="text-sm font-medium text-gray-900">
             {selectedTask.allocated_hours || "0"} Hr
           </p>
         </div>
         <div className="space-y-1">
-          <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Priority</p>
-          <span className={`text-xs font-bold uppercase ${selectedTask.priority === 'high' || selectedTask.priority === 'critical' ? 'text-red-600' : 'text-gray-900'}`}>
+          <p className="text-[10px] font-medium text-gray-400 uppercase tracking-widest">Priority</p>
+          <span className={`text-xs font-medium uppercase ${selectedTask.priority === 'high' || selectedTask.priority === 'critical' ? 'text-red-600' : 'text-gray-900'}`}>
             {selectedTask.priority || "Normal"}
           </span>
         </div>
       </div>
 
       <div className="space-y-3">
-        <h3 className="text-sm font-bold text-gray-900 flex items-center gap-2">
+        <h3 className="text-sm font-medium text-gray-900 flex items-center gap-2">
           <MdGroup className="w-5 h-5 text-gray-400" /> Assigned Team
         </h3>
         <div className="flex flex-wrap gap-3">
           {selectedTask.assignees?.map((a, i) => (
             <div key={i} className="flex items-center gap-2 px-3 py-2 bg-white border border-gray-100 rounded-xl shadow-xs">
-              <div className="w-6 h-6 rounded-full bg-linear-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white text-[10px] font-bold">
+              <div className="w-6 h-6 rounded-full bg-linear-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white text-[10px] font-medium">
                 {(a.name || a.username || "?")[0].toUpperCase()}
               </div>
-              <span className="text-xs font-semibold text-gray-700">{a.name || a.username}</span>
+              <span className="text-xs font-medium text-gray-700">{a.name || a.username}</span>
             </div>
           ))}
           {(!selectedTask.assignees || selectedTask.assignees.length === 0) && <p className="text-xs text-gray-500 italic">No assignees</p>}
@@ -260,7 +260,7 @@ const TasksPage = () => {
       </div>
 
       <div className="space-y-3">
-        <h3 className="text-sm font-bold text-gray-900 flex items-center gap-2">
+        <h3 className="text-sm font-medium text-gray-900 flex items-center gap-2">
           <FiSearch className="w-5 h-5 text-gray-400" /> Task Description
         </h3>
         <div className="bg-gray-50 rounded-2xl p-6 text-sm text-gray-700 leading-relaxed whitespace-pre-wrap">
@@ -271,13 +271,13 @@ const TasksPage = () => {
       <div className="flex justify-end gap-3 pt-4 border-t border-gray-100">
         <button
           onClick={() => setIsTaskDetailOpen(false)}
-          className="px-6 py-2.5 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 transition font-bold text-sm"
+          className="px-6 py-2.5 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 transition font-medium text-sm"
         >
           Close
         </button>
         <Link
           to={`/operations/tasks/edit/${selectedTask.id}`}
-          className="px-6 py-2.5 bg-black text-white rounded-xl hover:bg-gray-900 transition font-bold text-sm flex items-center gap-2"
+          className="px-6 py-2.5 bg-black text-white rounded-xl hover:bg-gray-900 transition font-medium text-sm flex items-center gap-2"
         >
           <MdEdit className="w-4 h-4" /> Edit Task
         </Link>
@@ -302,25 +302,25 @@ const TasksPage = () => {
             <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
               <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
                 <div className="text-center">
-                  <div className="text-4xl font-bold text-black mb-2">{stats.total}</div>
+                  <div className="text-4xl font-medium text-black mb-2">{stats.total}</div>
                   <p className="text-sm text-gray-600">Total Tasks</p>
                 </div>
                 <div className="text-center">
-                  <div className="text-4xl font-bold text-blue-600 mb-2">{stats.todo}</div>
+                  <div className="text-4xl font-medium text-blue-600 mb-2">{stats.todo}</div>
                   <p className="text-sm text-gray-600">To Do</p>
                 </div>
                 <div className="text-center">
-                  <div className="text-4xl font-bold text-amber-600 mb-2">{stats.inProgress}</div>
+                  <div className="text-4xl font-medium text-amber-600 mb-2">{stats.inProgress}</div>
                   <p className="text-sm text-gray-600">In Progress</p>
                 </div>
                 <div className="text-center">
-                  <div className="text-4xl font-bold text-green-600 mb-2">{stats.done}</div>
+                  <div className="text-4xl font-medium text-green-600 mb-2">{stats.done}</div>
                   <p className="text-sm text-gray-600">Completed</p>
                 </div>
               </div>
               <Link
                 to="/operations/tasks/newtask"
-                className="flex items-center gap-3 px-6 py-3 bg-black text-white rounded-xl hover:bg-gray-900 transition text-sm font-semibold"
+                className="flex items-center gap-3 px-6 py-3 bg-black text-white rounded-xl hover:bg-gray-900 transition text-sm font-medium"
               >
                 <MdAdd className="w-5 h-5" /> New Task
               </Link>
@@ -344,7 +344,7 @@ const TasksPage = () => {
 
                 <button
                   onClick={() => setFiltersOpen(!filtersOpen)}
-                  className="flex items-center gap-3 px-5 py-4 border border-gray-300 rounded-xl hover:bg-gray-50 transition text-sm font-semibold whitespace-nowrap"
+                  className="flex items-center gap-3 px-5 py-4 border border-gray-300 rounded-xl hover:bg-gray-50 transition text-sm font-medium whitespace-nowrap"
                 >
                   <MdFilterList className="w-5 h-5" />
                   Filters
@@ -366,18 +366,18 @@ const TasksPage = () => {
               <div className="flex gap-3">
                 <button
                   onClick={() => setIsPinnedModalOpen(true)}
-                  className="flex items-center gap-2 px-5 py-4 border border-gray-300 rounded-xl hover:bg-gray-50 transition text-sm font-semibold"
+                  className="flex items-center gap-2 px-5 py-4 border border-gray-300 rounded-xl hover:bg-gray-50 transition text-sm font-medium"
                 >
                   <MdPushPin className="w-5 h-5 text-yellow-600" />
                   Pinned ({pinnedTasks.length})
                 </button>
                 <button
                   onClick={() => navigate("/operations/tasks/archive")}
-                  className="px-5 py-4 border border-gray-300 rounded-xl hover:bg-gray-50 transition text-sm font-semibold"
+                  className="px-5 py-4 border border-gray-300 rounded-xl hover:bg-gray-50 transition text-sm font-medium"
                 >
                   View Archive
                 </button>
-                <button className="flex items-center gap-2 px-5 py-4 border border-gray-300 rounded-xl hover:bg-gray-50 transition text-sm font-semibold">
+                <button className="flex items-center gap-2 px-5 py-4 border border-gray-300 rounded-xl hover:bg-gray-50 transition text-sm font-medium">
                   <MdDownload className="w-5 h-5" /> Export
                 </button>
               </div>
@@ -439,7 +439,7 @@ const TasksPage = () => {
                   <div className="flex flex-col sm:flex-row gap-4 mt-8 pt-6 border-t border-gray-200">
                     <button
                       onClick={resetFilters}
-                      className="px-6 py-3.5 border-2 border-gray-300 text-gray-700 font-semibold rounded-xl hover:bg-gray-50 transition"
+                      className="px-6 py-3.5 border-2 border-gray-300 text-gray-700 font-medium rounded-xl hover:bg-gray-50 transition"
                     >
                       Reset All Filters
                     </button>
@@ -472,7 +472,7 @@ const TasksPage = () => {
                           <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mb-5">
                             <MdFilterList className="w-10 h-10 text-gray-400" />
                           </div>
-                          <p className="text-xl font-semibold text-gray-700">No tasks found</p>
+                          <p className="text-xl font-medium text-gray-700">No tasks found</p>
                           <p className="text-gray-500 mt-2">Try adjusting your search or filters</p>
                           {(search || activeFilterCount > 0) && (
                             <button
@@ -507,19 +507,19 @@ const TasksPage = () => {
                                   setSelectedTask(task);
                                   setIsTaskDetailOpen(true);
                                 }}
-                                className="font-semibold text-gray-900 hover:text-blue-600 transition text-left"
+                                className="font-medium text-gray-900 hover:text-blue-600 transition text-left"
                               >
                                 {task.name}
                               </button>
                               {task.priority && (
-                                <p className={`text-[10px] font-bold uppercase mt-1 ${task.priority === 'high' || task.priority === 'critical' ? 'text-red-600' : 'text-gray-500'}`}>
+                                <p className={`text-[10px] font-medium uppercase mt-1 ${task.priority === 'high' || task.priority === 'critical' ? 'text-red-600' : 'text-gray-500'}`}>
                                   {task.priority} Priority
                                 </p>
                               )}
                             </div>
                           </td>
                           <td className="px-6 py-5 whitespace-nowrap">
-                            <span className="px-3 py-1 bg-purple-50 text-purple-700 text-[10px] font-bold rounded-lg border border-purple-100 uppercase tracking-wide">
+                            <span className="px-3 py-1 bg-purple-50 text-purple-700 text-[10px] font-medium rounded-lg border border-purple-100 uppercase tracking-wide">
                               {task.project_name || "General"}
                             </span>
                           </td>
@@ -533,7 +533,7 @@ const TasksPage = () => {
                               value={task.status}
                               onChange={(val) => handleStatusChange(task.id, val)}
                               options={statusOptions}
-                              className="text-xs font-bold"
+                              className="text-xs font-medium"
                             />
                           </td>
                           <td className="px-6 py-5 whitespace-nowrap">
@@ -615,8 +615,8 @@ const TasksPage = () => {
                   pinnedTasks.map(task => (
                     <div key={task.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-2xl border border-gray-100 hover:bg-white transition group shadow-xs">
                       <div className="overflow-hidden">
-                        <p className="font-bold text-gray-900 truncate">{task.name}</p>
-                        <p className="text-[10px] font-bold text-gray-400 uppercase">{task.project_name || "Project"}</p>
+                        <p className="font-medium text-gray-900 truncate">{task.name}</p>
+                        <p className="text-[10px] font-medium text-gray-400 uppercase">{task.project_name || "Project"}</p>
                       </div>
                       <div className="flex gap-2">
                         <button

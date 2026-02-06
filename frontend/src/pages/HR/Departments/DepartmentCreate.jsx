@@ -99,7 +99,7 @@ const DepartmentCreate = () => {
             </div>
             <div className="space-y-4">
               <div className="flex items-center justify-between">
-                <label className="text-sm font-semibold text-black">Services Offered</label>
+                <label className="text-sm font-medium text-black">Services Offered</label>
                 <button
                   type="button"
                   onClick={addServiceField}

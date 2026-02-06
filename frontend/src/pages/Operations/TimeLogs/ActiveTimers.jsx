@@ -1,6 +1,5 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import apiClient from "../../../helpers/apiClient";
-
 import LayoutComponents from "../../../components/LayoutComponents";
 import {
   MdFilterList,
@@ -8,14 +7,20 @@ import {
   MdClose,
   MdDownload,
   MdTimerOff,
+  MdTimer,
+  MdRefresh,
 } from "react-icons/md";
-import { FiSearch } from "react-icons/fi";
+import { FiSearch, FiArrowLeft } from "react-icons/fi";
 import { motion, AnimatePresence } from "framer-motion";
+import { Link } from "react-router-dom";
 import Input from "../../../components/Input";
+import Loading from "../../../components/Loading";
 
 const ActiveTimers = () => {
   const [search, setSearch] = useState("");
   const [filtersOpen, setFiltersOpen] = useState(false);
+  const [timers, setTimers] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   // Filters
   const [project, setProject] = useState("");
@@ -23,13 +28,7 @@ const ActiveTimers = () => {
   const [employee, setEmployee] = useState("");
   const [approved, setApproved] = useState("");
 
-  const activeFilterCount = [project, task, employee, approved].filter(
-    Boolean,
-  ).length;
-
-  const [projectsList, setProjectsList] = useState([]);
-  const [tasksList, setTasksList] = useState([]);
-  const [employeesList, setEmployeesList] = useState([]);
+  const activeFilterCount = [project, task, employee, approved].filter(Boolean).length;
 
   const resetFilters = () => {
     setProject("");
@@ -39,158 +38,183 @@ const ActiveTimers = () => {
     setSearch("");
   };
 
-  const [timers, setTimers] = useState([]);
-  const [loading, setLoading] = useState(true);
-
   const formatDuration = (seconds) => {
     const hrs = Math.floor(seconds / 3600);
     const mins = Math.floor((seconds % 3600) / 60);
     const secs = seconds % 60;
+    return `${hrs.toString().padStart(2, "0")}:${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
+  };
 
-    return `${hrs.toString().padStart(2, "0")}:${mins
-      .toString()
-      .padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
+  const fetchActiveTimers = async () => {
+    try {
+      setLoading(true);
+      const res = await apiClient.get("/hr/timer/active_sessions/");
+      const adaptedData = res.data.map((item) => ({
+        id: item.id,
+        task: item.task || "Operational Node",
+        project: item.project || "Internal System",
+        subTask: "Direct Execution",
+        employee: item.employee?.name?.trim() || item.employee?.username || "Anonymous Node",
+        startTime: new Date(item.start_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true }),
+        startDate: new Date(item.start_time).toLocaleDateString("en-GB"),
+        duration: item.duration_seconds,
+      }));
+      setTimers(adaptedData);
+    } catch (error) {
+      console.error("Active timers fetch failed", error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
-    const fetchActiveTimers = async () => {
-      try {
-        const res = await apiClient.get("/hr/timer/active_sessions/");
-        const adaptedData = res.data.map((item) => ({
-          id: item.id,
-          task: item.task || "-",
-          project: item.project || "-",
-          subTask: "-",
-
-          employee: item.employee?.name?.trim() || item.employee?.username || "-",
-
-          startTime: new Date(item.start_time).toLocaleString(), // DATE + TIME
-          hours: formatDuration(item.duration_seconds),
-          earnings: "₹0 (INR)",
-        }));
-
-        setTimers(adaptedData);
-      } catch (error) {
-        console.error("Active timers fetch failed", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchActiveTimers();
+    const interval = setInterval(() => {
+      setTimers(prev => prev.map(t => ({ ...t, duration: t.duration + 1 })));
+    }, 1000);
+    return () => clearInterval(interval);
   }, []);
 
-  
+  const filteredTimers = useMemo(() => {
+    if (!search.trim()) return timers;
+    const term = search.toLowerCase();
+    return timers.filter(t =>
+      (t.task?.toLowerCase().includes(term)) ||
+      (t.project?.toLowerCase().includes(term)) ||
+      (t.employee?.toLowerCase().includes(term))
+    );
+  }, [timers, search]);
+
+  const stats = useMemo(() => ({
+    activeNodes: filteredTimers.length,
+    peakDuration: filteredTimers.length ? formatDuration(Math.max(...filteredTimers.map(t => t.duration))) : "00:00:00",
+    involvedProjects: [...new Set(filteredTimers.map(t => t.project))].length,
+    activeAssociates: [...new Set(filteredTimers.map(t => t.employee))].length
+  }), [filteredTimers]);
+
+  if (loading && !timers.length) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-white whitespace-pre-wrap">
+        <Loading />
+      </div>
+    );
+  }
 
   return (
     <div className="p-6">
       <LayoutComponents
-        title="Active Timers"
-        subtitle="Track currently running employee timers"
+        title="Live Monitor"
+        subtitle="Real-time operational bandwidth and active session intercept"
         variant="table"
       >
-        {/* Search & Filter Bar */}
-        <div className="bg-white rounded-2xl shadow-sm p-6 mb-6 ">
+        {/* Navigation */}
+        <div className="mb-8">
+          <Link to="/operations/time-logs" className="group flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 hover:text-black transition-all">
+            <FiArrowLeft className="group-hover:-translate-x-1 transition-transform" /> Back to Timelines
+          </Link>
+        </div>
+
+        {/* Stats Registry */}
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 mb-8">
+          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-8">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-12 flex-1">
+              <div className="text-center">
+                <div className="text-4xl font-black text-black mb-2 flex items-center justify-center gap-3">
+                  <div className="w-2.5 h-2.5 bg-black rounded-full animate-pulse shadow-lg shadow-black/20"></div>
+                  {stats.activeNodes}
+                </div>
+                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Live Nodes</p>
+              </div>
+              <div className="text-center border-x border-gray-50">
+                <div className="text-4xl font-black text-black mb-2">{stats.peakDuration}</div>
+                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Max Session</p>
+              </div>
+              <div className="text-center border-r border-gray-50">
+                <div className="text-4xl font-black text-black mb-2">{stats.involvedProjects}</div>
+                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Active Units</p>
+              </div>
+              <div className="text-center">
+                <div className="text-4xl font-black text-black mb-2">{stats.activeAssociates}</div>
+                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Total Members</p>
+              </div>
+            </div>
+            <div className="flex gap-4">
+              <button
+                onClick={fetchActiveTimers}
+                className="p-5 bg-white border border-gray-100 rounded-2xl shadow-sm hover:shadow-md transition-all active:scale-95 group"
+              >
+                <MdRefresh className={`w-6 h-6 text-gray-400 group-hover:text-black transition-colors ${loading ? 'animate-spin' : ''}`} />
+              </button>
+              <button className="flex items-center gap-3 px-8 py-5 bg-black text-white rounded-2xl hover:opacity-90 transition-all font-bold text-xs uppercase tracking-[0.2em] shadow-2xl active:scale-95">
+                <MdTimer className="w-5 h-5" /> Initialize Node
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Search & Parameters */}
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-6">
           <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
             <div className="flex items-center gap-4 flex-1">
-              <div className="relative flex-1 max-w-2xl">
-                <FiSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 w-5 h-5" />
+              <div className="relative flex-1 max-w-2xl group">
+                <FiSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5 group-focus-within:text-black transition-colors" />
                 <input
                   type="text"
-                  placeholder="Search active timers..."
+                  placeholder="Intercept live data packets by task or associate..."
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-black outline-none"
+                  className="w-full pl-12 pr-4 py-4 border border-gray-200 rounded-xl focus:ring-2 focus:ring-black outline-none transition-all text-sm font-medium text-gray-800"
                 />
               </div>
 
               <button
                 onClick={() => setFiltersOpen(!filtersOpen)}
-                className="flex items-center gap-3 px-5 py-4 border border-gray-300 rounded-xl hover:bg-gray-50 font-semibold"
+                className="flex items-center gap-3 px-6 py-4 bg-white border border-gray-200 rounded-xl hover:border-black transition-all font-bold text-xs uppercase tracking-widest text-gray-600 shadow-xs"
               >
                 <MdFilterList className="w-5 h-5" />
-                Filters
+                Schema
                 {activeFilterCount > 0 && (
-                  <span className="bg-black text-white text-xs w-6 h-6 flex items-center justify-center rounded-full">
+                  <span className="ml-2 bg-black text-white text-[10px] font-black rounded-full w-6 h-6 flex items-center justify-center">
                     {activeFilterCount}
                   </span>
                 )}
-                <MdKeyboardArrowDown
-                  className={`w-5 h-5 transition-transform ${
-                    filtersOpen ? "rotate-180" : ""
-                  }`}
-                />
+                <MdKeyboardArrowDown className={`w-5 h-5 transition-transform ${filtersOpen ? "rotate-180" : ""}`} />
               </button>
             </div>
 
-            <button className="flex items-center gap-2 px-5 py-4 border border-gray-300 rounded-xl hover:bg-gray-100 font-semibold">
-              <MdDownload className="w-5 h-5" /> Export
+            <button className="flex items-center gap-2 px-6 py-4 bg-white border border-gray-200 rounded-xl hover:bg-black hover:text-white transition-all font-bold text-xs uppercase tracking-widest text-gray-600">
+              <MdDownload className="w-5 h-5" /> Export View
             </button>
           </div>
         </div>
 
-        {/* Collapsible Filters (HIDDEN BY DEFAULT) */}
+        {/* Advanced Filters */}
         <AnimatePresence>
           {filtersOpen && (
             <motion.div
               initial={{ height: 0, opacity: 0 }}
               animate={{ height: "auto", opacity: 1 }}
               exit={{ height: 0, opacity: 0 }}
-              transition={{ duration: 0.25 }}
               className="overflow-hidden mb-6"
             >
-              <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 ">
-                <div className="flex justify-between items-center mb-6">
-                  <h3 className="text-lg font-medium">Advanced Filters</h3>
-                  <button
-                    onClick={() => setFiltersOpen(false)}
-                    className="p-2 hover:bg-gray-100 rounded-lg"
-                  >
-                    <MdClose className="w-6 h-6 text-gray-600" />
+              <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-8">
+                <div className="flex justify-between items-center mb-8">
+                  <h3 className="text-xl font-black uppercase tracking-tighter text-black">Dimension Filters</h3>
+                  <button onClick={() => setFiltersOpen(false)} className="p-2 hover:bg-gray-100 rounded-xl">
+                    <MdClose className="w-7 h-7 text-gray-400 hover:text-black" />
                   </button>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
-                  <Input
-                    label="Project"
-                    type="select"
-                    value={project}
-                    onChange={setProject}
-                    options={[{ label: "All Projects", value: "" }]}
-                  />
-                  <Input
-                    label="Task"
-                    type="select"
-                    value={task}
-                    onChange={setTask}
-                    options={[{ label: "All Tasks", value: "" }]}
-                  />
-                  <Input
-                    label="Employee"
-                    type="select"
-                    value={employee}
-                    onChange={setEmployee}
-                    options={[{ label: "All Employees", value: "" }]}
-                  />
-                  <Input
-                    label="Approved"
-                    type="select"
-                    value={approved}
-                    onChange={setApproved}
-                    options={[
-                      { label: "All", value: "" },
-                      { label: "Approved", value: "approved" },
-                      { label: "Pending", value: "pending" },
-                    ]}
-                  />
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                  <Input label="Project Unit" type="select" value={project} onChange={setProject} options={[{ label: "Global Projects", value: "" }]} />
+                  <Input label="Operation Segment" type="select" value={task} onChange={setTask} options={[{ label: "All Segments", value: "" }]} />
+                  <Input label="Associate Node" type="select" value={employee} onChange={setEmployee} options={[{ label: "All Members", value: "" }]} />
+                  <Input label="Verification" type="select" value={approved} onChange={setApproved} options={[{ label: "All", value: "" }, { label: "Verified", value: "approved" }, { label: "Logged", value: "pending" }]} />
                 </div>
 
-                <div className="flex justify-end mt-8">
-                  <button
-                    onClick={resetFilters}
-                    className="px-6 py-3 border-2 border-gray-300 rounded-xl font-semibold hover:bg-gray-50"
-                  >
-                    Reset Filters
+                <div className="flex justify-end mt-10 pt-8 border-t border-gray-100">
+                  <button onClick={resetFilters} className="px-10 py-4 bg-white border-2 border-black text-black rounded-xl font-bold uppercase text-[10px] tracking-[0.2em] hover:bg-black hover:text-white transition-all active:scale-95 shadow-xl">
+                    Reset Filter Space
                   </button>
                 </div>
               </div>
@@ -198,74 +222,78 @@ const ActiveTimers = () => {
           )}
         </AnimatePresence>
 
-        {/* Table */}
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden ">
+        {/* Data Matrix */}
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
           <div className="overflow-x-auto">
-            {loading && (
-              <div className="p-6 text-center text-gray-500">
-                Loading active timers...
-              </div>
-            )}
-
-            <table className="w-full min-w-[1000px]">
+            <table className="w-full">
               <thead className="bg-gray-50 border-b border-gray-200">
                 <tr>
-                  <th className="px-6 py-4 text-left text-xs font-medium text-gray-600 uppercase">
-                    #
-                  </th>
-                  <th className="px-6 py-4 text-left text-xs font-medium text-gray-600 uppercase">
-                    Task
-                  </th>
-                  <th className="px-6 py-4 text-left text-xs font-medium text-gray-600 uppercase">
-                    Employee
-                  </th>
-                  <th className="px-6 py-4 text-left text-xs font-medium text-gray-600 uppercase">
-                    Start Time
-                  </th>
-                  <th className="px-6 py-4 text-left text-xs font-medium text-gray-600 uppercase">
-                    End Time
-                  </th>
-                  <th className="px-6 py-4 text-left text-xs font-medium text-gray-600 uppercase">
-                    Total Hours
-                  </th>
-                  <th className="px-6 py-4 text-left text-xs font-medium text-gray-600 uppercase">
-                    Earnings
-                  </th>
-                  <th className="px-6 py-4 text-right text-xs font-medium text-gray-600 uppercase">
-                    Action
-                  </th>
+                  <th className="px-8 py-6 text-left text-[11px] font-black text-gray-500 uppercase tracking-widest">#</th>
+                  <th className="px-8 py-6 text-left text-[11px] font-black text-gray-500 uppercase tracking-widest">Operational Task</th>
+                  <th className="px-8 py-6 text-left text-[11px] font-black text-gray-500 uppercase tracking-widest">Associate Node</th>
+                  <th className="px-8 py-6 text-left text-[11px] font-black text-gray-500 uppercase tracking-widest">Initialization</th>
+                  <th className="px-8 py-6 text-left text-[11px] font-black text-gray-500 uppercase tracking-widest">Live Duration</th>
+                  <th className="px-8 py-6 text-right text-[11px] font-black text-gray-500 uppercase tracking-widest">Termination</th>
                 </tr>
               </thead>
-
-              <tbody className="divide-y divide-gray-200">
-                {timers.map((t, i) => (
-                  <tr key={t.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-5">{i + 1}</td>
-                    <td className="px-6 py-5">
-                      <div className="font-medium">{t.task}</div>
-                      <div className="text-sm text-gray-500">
-                        {t.project} · {t.subTask}
+              <tbody className="divide-y divide-gray-100">
+                {filteredTimers.length === 0 ? (
+                  <tr>
+                    <td colSpan="6" className="px-8 py-32 text-center">
+                      <div className="flex flex-col items-center">
+                        <MdTimer className="w-16 h-16 text-gray-100 mb-4 animate-pulse" />
+                        <p className="text-xl font-black text-gray-300 uppercase tracking-tighter">Zero active threads detected</p>
+                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-2">The system is currently in standby mode</p>
                       </div>
                     </td>
-                    <td className="px-6 py-5">{t.employee}</td>
-                    <td className="px-6 py-5">{t.startTime}</td>
-                    <td className="px-6 py-5">
-                      <span className="px-3 py-1 text-xs rounded-full bg-green-100 text-green-700">
-                        Active
-                      </span>
-                    </td>
-                    <td className="px-6 py-5 text-green-600 font-medium">
-                      {t.hours}
-                    </td>
-                    <td className="px-6 py-5">{t.earnings}</td>
-                    <td className="px-6 py-5 text-right">
-                      <button className="px-4 py-2 border border-red-400 text-red-500 rounded-lg
-                                       hover:bg-red-50 flex items-center gap-2 ml-auto">
-                        <MdTimerOff /> Stop
-                      </button>
-                    </td>
                   </tr>
-                ))}
+                ) : (
+                  filteredTimers.map((t, i) => (
+                    <motion.tr
+                      key={t.id}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: i * 0.03 }}
+                      className="hover:bg-gray-50/50 transition-all group border-l-4 border-transparent hover:border-black"
+                    >
+                      <td className="px-8 py-8 text-xs font-black text-gray-400">#{t.id}</td>
+                      <td className="px-8 py-8">
+                        <div className="flex flex-col">
+                          <span className="text-sm font-black text-gray-900 group-hover:text-black uppercase tracking-tight">{t.task}</span>
+                          <span className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-0.5">{t.project}</span>
+                        </div>
+                      </td>
+                      <td className="px-8 py-8">
+                        <div className="flex items-center gap-4">
+                          <div className="w-10 h-10 rounded-2xl bg-black text-white flex items-center justify-center text-[11px] font-black shadow-lg">
+                            {t.employee[0]}
+                          </div>
+                          <span className="text-sm font-bold text-gray-800">{t.employee}</span>
+                        </div>
+                      </td>
+                      <td className="px-8 py-8">
+                        <div className="flex flex-col">
+                          <span className="text-xs font-black text-black uppercase">{t.startTime}</span>
+                          <span className="text-[10px] font-bold text-gray-400">{t.startDate}</span>
+                        </div>
+                      </td>
+                      <td className="px-8 py-8">
+                        <div className="flex flex-col">
+                          <span className="text-xl font-black text-black tabular-nums tracking-tighter">{formatDuration(t.duration)}</span>
+                          <span className="text-[9px] font-black text-emerald-500 uppercase flex items-center gap-2 mt-0.5">
+                            <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse"></span>
+                            Live Execution
+                          </span>
+                        </div>
+                      </td>
+                      <td className="px-8 py-8 text-right">
+                        <button className="p-4 bg-white border border-gray-100 text-gray-400 rounded-2xl hover:text-red-500 hover:border-red-100 hover:shadow-xl transition-all scale-90 hover:scale-100 shadow-sm opacity-0 group-hover:opacity-100">
+                          <MdTimerOff className="w-6 h-6" />
+                        </button>
+                      </td>
+                    </motion.tr>
+                  ))
+                )}
               </tbody>
             </table>
           </div>

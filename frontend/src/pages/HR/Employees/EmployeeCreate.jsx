@@ -231,10 +231,10 @@ const EmployeeCreate = () => {
 
         <form onSubmit={handleSubmit} className="space-y-8">
           <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-6">Personal Information</h3>
+            <h3 className="text-lg font-medium text-gray-900 mb-6">Personal Information</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               <div>
-                <label className="block text-sm font-semibold text-black mb-2">
+                <label className="block text-sm font-medium text-black mb-2">
                   Employee ID <span className="text-red-500">*</span>
                 </label>
                 <div className="px-4 py-3 bg-gray-100 border border-gray-300 rounded-lg font-mono text-gray-800">
@@ -270,7 +270,7 @@ const EmployeeCreate = () => {
             </div>
           </div>
           <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-6">Job Information</h3>
+            <h3 className="text-lg font-medium text-gray-900 mb-6">Job Information</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               <div>
                 <Input
@@ -299,7 +299,7 @@ const EmployeeCreate = () => {
 
 
           <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-6">Account Settings</h3>
+            <h3 className="text-lg font-medium text-gray-900 mb-6">Account Settings</h3>
             <div className="space-y-6">
               <div className="flex flex-wrap items-center gap-8">
                 <label className="flex items-center gap-3 cursor-pointer">
@@ -335,7 +335,7 @@ const EmployeeCreate = () => {
                     }}
                     className="w-5 h-5 rounded border-gray-400 text-black"
                   />
-                  <label className="font-semibold text-gray-800">
+                  <label className="font-medium text-gray-800">
                     Generate Random Password & Send via Email (Recommended)
                   </label>
                 </div>
@@ -380,7 +380,7 @@ const EmployeeCreate = () => {
             <button
               type="submit"
               disabled={loading || (!generatePassword && !customPassword.trim())}
-              className="flex items-center gap-3 px-6 py-3 bg-black text-white rounded-xl hover:bg-gray-900 transition text-sm font-semibold disabled:opacity-50"
+              className="flex items-center gap-3 px-6 py-3 bg-black text-white rounded-xl hover:bg-gray-900 transition text-sm font-medium disabled:opacity-50"
             >
               {loading ? "Creating Employee..." : "Create Employee"}
             </button>

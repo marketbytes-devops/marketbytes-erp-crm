@@ -149,13 +149,13 @@ const TaskBoardPage = () => {
           const name = a.name || a.username || "Unknown";
           const initial = name[0]?.toUpperCase() || "?";
           return (
-            <div key={i} className="w-6 h-6 rounded-full bg-linear-to-br from-blue-500 to-purple-600 border border-white flex items-center justify-center text-white text-[10px] font-bold shadow-xs">
+            <div key={i} className="w-6 h-6 rounded-full bg-linear-to-br from-blue-500 to-purple-600 border border-white flex items-center justify-center text-white text-[10px] font-medium shadow-xs">
               {initial}
             </div>
           );
         })}
         {memberCount > 3 && (
-          <div className="w-6 h-6 rounded-full bg-gray-600 border border-white flex items-center justify-center text-white text-[10px] font-bold shadow-xs">
+          <div className="w-6 h-6 rounded-full bg-gray-600 border border-white flex items-center justify-center text-white text-[10px] font-medium shadow-xs">
             +{memberCount - 3}
           </div>
         )}
@@ -181,29 +181,29 @@ const TaskBoardPage = () => {
             <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
               <div className="grid grid-cols-2 md:grid-cols-5 gap-8">
                 <div className="text-center">
-                  <div className="text-4xl font-bold text-black mb-2">{stats.total}</div>
+                  <div className="text-4xl font-medium text-black mb-2">{stats.total}</div>
                   <p className="text-sm text-gray-600">Total Tasks</p>
                 </div>
                 <div className="text-center">
-                  <div className="text-4xl font-bold text-blue-600 mb-2">{stats.todo}</div>
+                  <div className="text-4xl font-medium text-blue-600 mb-2">{stats.todo}</div>
                   <p className="text-sm text-gray-600">To Do</p>
                 </div>
                 <div className="text-center">
-                  <div className="text-4xl font-bold text-cyan-600 mb-2">{stats.inProgress}</div>
+                  <div className="text-4xl font-medium text-cyan-600 mb-2">{stats.inProgress}</div>
                   <p className="text-sm text-gray-600">In Progress</p>
                 </div>
                 <div className="text-center">
-                  <div className="text-4xl font-bold text-orange-600 mb-2">{stats.review}</div>
+                  <div className="text-4xl font-medium text-orange-600 mb-2">{stats.review}</div>
                   <p className="text-sm text-gray-600">Review</p>
                 </div>
                 <div className="text-center">
-                  <div className="text-4xl font-bold text-green-600 mb-2">{stats.done}</div>
+                  <div className="text-4xl font-medium text-green-600 mb-2">{stats.done}</div>
                   <p className="text-sm text-gray-600">Done</p>
                 </div>
               </div>
               <Link
                 to="/operations/tasks/newtask"
-                className="flex items-center gap-3 px-6 py-3 bg-black text-white rounded-xl hover:bg-gray-900 transition text-sm font-semibold"
+                className="flex items-center gap-3 px-6 py-3 bg-black text-white rounded-xl hover:bg-gray-900 transition text-sm font-medium"
               >
                 <MdAdd className="w-5 h-5" /> New Task
               </Link>
@@ -227,7 +227,7 @@ const TaskBoardPage = () => {
 
                 <button
                   onClick={() => setFiltersOpen(!filtersOpen)}
-                  className="flex items-center gap-3 px-5 py-4 border border-gray-300 rounded-xl hover:bg-gray-50 transition text-sm font-semibold whitespace-nowrap"
+                  className="flex items-center gap-3 px-5 py-4 border border-gray-300 rounded-xl hover:bg-gray-50 transition text-sm font-medium whitespace-nowrap"
                 >
                   <MdFilterList className="w-5 h-5" />
                   Filters
@@ -297,7 +297,7 @@ const TaskBoardPage = () => {
                   <div className="flex flex-col sm:flex-row gap-4 mt-8 pt-6 border-t border-gray-200">
                     <button
                       onClick={resetFilters}
-                      className="px-6 py-3.5 border-2 border-gray-300 text-gray-700 font-semibold rounded-xl hover:bg-gray-50 transition"
+                      className="px-6 py-3.5 border-2 border-gray-300 text-gray-700 font-medium rounded-xl hover:bg-gray-50 transition"
                     >
                       Reset All Filters
                     </button>
@@ -319,8 +319,8 @@ const TaskBoardPage = () => {
             ].map((column) => (
               <div key={column.id} className="flex flex-col h-full">
                 <div className={`flex items-center justify-between p-4 mb-4 rounded-xl ${column.styles.bg} border ${column.styles.border}`}>
-                  <h3 className={`font-bold ${column.styles.text}`}>{column.label}</h3>
-                  <span className={`bg-white px-2 py-1 rounded-lg text-xs font-bold ${column.styles.text} shadow-xs`}>
+                  <h3 className={`font-medium ${column.styles.text}`}>{column.label}</h3>
+                  <span className={`bg-white px-2 py-1 rounded-lg text-xs font-medium ${column.styles.text} shadow-xs`}>
                     {column.items.length}
                   </span>
                 </div>
@@ -341,14 +341,14 @@ const TaskBoardPage = () => {
                       >
                         <div className="flex justify-between items-start mb-2">
                           {task.project ? (
-                            <span className="px-2 py-1 bg-gray-50 text-gray-600 text-[10px] font-bold rounded-lg uppercase tracking-wider">
+                            <span className="px-2 py-1 bg-gray-50 text-gray-600 text-[10px] font-medium rounded-lg uppercase tracking-wider">
                               {task.project.name}
                             </span>
                           ) : <span />}
                           {task.priority && (
-                            <span className={`text-[10px] font-bold uppercase ${task.priority === 'critical' ? 'text-red-600' :
-                                task.priority === 'high' ? 'text-orange-600' :
-                                  'text-gray-400'
+                            <span className={`text-[10px] font-medium uppercase ${task.priority === 'critical' ? 'text-red-600' :
+                              task.priority === 'high' ? 'text-orange-600' :
+                                'text-gray-400'
                               }`}>
                               {task.priority}
                             </span>
@@ -356,7 +356,7 @@ const TaskBoardPage = () => {
                         </div>
 
                         <Link to={`/operations/tasks/edit/${task.id}`}>
-                          <h4 className="font-semibold text-gray-900 mb-2 leading-snug hover:text-blue-600 transition">
+                          <h4 className="font-medium text-gray-900 mb-2 leading-snug hover:text-blue-600 transition">
                             {task.name}
                           </h4>
                         </Link>

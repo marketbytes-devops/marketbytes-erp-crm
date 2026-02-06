@@ -99,11 +99,11 @@ const DepartmentView = () => {
               <table className="w-full min-w-[800px]">
                 <thead className="bg-gray-50 border-b border-gray-200">
                   <tr>
-                    <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">SL No</th>
-                    <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Department</th>
-                    <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Worksheet URL</th>
-                    <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Services</th>
-                    <th className="px-6 py-4 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">Actions</th>
+                    <th className="px-6 py-4 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">SL No</th>
+                    <th className="px-6 py-4 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Department</th>
+                    <th className="px-6 py-4 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Worksheet URL</th>
+                    <th className="px-6 py-4 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Services</th>
+                    <th className="px-6 py-4 text-center text-xs font-medium text-gray-600 uppercase tracking-wider">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200">
@@ -188,11 +188,11 @@ const DepartmentView = () => {
             <div className="space-y-6">
               <div>
                 <p className="text-sm text-gray-600">Department ID</p>
-                <p className="font-semibold text-lg">{selectedDept.id}</p>
+                <p className="font-medium text-lg">{selectedDept.id}</p>
               </div>
               <div>
                 <p className="text-sm text-gray-600">Department Name</p>
-                <p className="font-semibold text-lg">{selectedDept.name}</p>
+                <p className="font-medium text-lg">{selectedDept.name}</p>
               </div>
               {selectedDept.worksheet_url && (
                 <div>

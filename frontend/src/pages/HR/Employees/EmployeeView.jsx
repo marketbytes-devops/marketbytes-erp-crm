@@ -142,7 +142,7 @@ const EmployeeView = () => {
 
                 <button
                   onClick={() => setFiltersOpen(!filtersOpen)}
-                  className="flex items-center gap-3 px-5 py-4 border border-gray-300 rounded-xl hover:bg-gray-50 transition text-sm font-semibold whitespace-nowrap"
+                  className="flex items-center gap-3 px-5 py-4 border border-gray-300 rounded-xl hover:bg-gray-50 transition text-sm font-medium whitespace-nowrap"
                 >
                   <MdFilterList className="w-5 h-5" />
                   Filters
@@ -160,12 +160,12 @@ const EmployeeView = () => {
               </div>
 
               <div className="flex gap-3">
-                <button className="flex items-center gap-2 px-5 py-4 border border-gray-300 rounded-xl hover:bg-gray-50 transition text-sm font-semibold">
+                <button className="flex items-center gap-2 px-5 py-4 border border-gray-300 rounded-xl hover:bg-gray-50 transition text-sm font-medium">
                   <MdDownload className="w-5 h-5" /> Export
                 </button>
                 <Link
                   to="/hr/employees/create"
-                  className="flex items-center gap-3 px-6 py-3 bg-black text-white rounded-xl hover:bg-gray-900 transition text-sm font-semibold"
+                  className="flex items-center gap-3 px-6 py-3 bg-black text-white rounded-xl hover:bg-gray-900 transition text-sm font-medium"
                 >
                   <MdAdd className="w-5 h-5" /> Add Employee
                 </Link>
@@ -269,10 +269,10 @@ const EmployeeView = () => {
                   </div>
 
                   <div className="flex flex-col sm:flex-row gap-4 mt-8 pt-6 border-t border-gray-200">
-                    <button className="flex items-center justify-center gap-2 px-6 py-3.5 bg-black text-white font-semibold rounded-xl hover:bg-gray-900 transition">
+                    <button className="flex items-center justify-center gap-2 px-6 py-3.5 bg-black text-white font-medium rounded-xl hover:bg-gray-900 transition">
                       <FiCheck className="w-5 h-5" /> Apply Filters
                     </button>
-                    <button onClick={resetFilters} className="px-6 py-3.5 border-2 border-gray-300 text-gray-700 font-semibold rounded-xl hover:bg-gray-50 transition">
+                    <button onClick={resetFilters} className="px-6 py-3.5 border-2 border-gray-300 text-gray-700 font-medium rounded-xl hover:bg-gray-50 transition">
                       Reset All Filters
                     </button>
                   </div>
@@ -325,7 +325,7 @@ const EmployeeView = () => {
                           <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mb-5">
                             <MdFilterList className="w-10 h-10 text-gray-400" />
                           </div>
-                          <p className="text-xl font-semibold text-gray-700">No employees found</p>
+                          <p className="text-xl font-medium text-gray-700">No employees found</p>
                           <p className="text-gray-500 mt-2">Try adjusting your your search or filters</p>
                           {(search || activeCount > 0) && (
                             <button onClick={resetFilters} className="mt-5 px-6 py-3 bg-black text-white rounded-xl hover:bg-gray-900 transition font-medium">
@@ -349,7 +349,7 @@ const EmployeeView = () => {
                           <div className="flex items-center gap-4">
                             <img src={getImageUrl(emp)} alt={emp.name} className="w-12 h-12 rounded-full object-cover shadow-md" />
                             <div>
-                              <Link to={`/hr/employees/${emp.id}`} className="font-semibold text-gray-900 hover:text-blue-600 transition">
+                              <Link to={`/hr/employees/${emp.id}`} className="font-medium text-gray-900 hover:text-blue-600 transition">
                                 {emp.name}
                               </Link>
                               {emp.username && <p className="text-sm text-gray-500">@{emp.username}</p>}
@@ -363,14 +363,14 @@ const EmployeeView = () => {
                           </span>
                         </td>
                         <td className="px-6 py-5 whitespace-nowrap">
-                          <span className="px-3 py-1.5 bg-purple-100 text-purple-800 rounded-full text-xs font-semibold">
+                          <span className="px-3 py-1.5 bg-purple-100 text-purple-800 rounded-full text-xs font-medium">
                             {getRoleName(emp)}
                           </span>
                         </td>
                         <td className="px-6 py-5 whitespace-nowrap">
-                          <span className={`px-3 py-1.5 rounded-full text-xs font-semibold ${emp.status === "active" ? "bg-green-100 text-green-800" :
-                              emp.status === "inactive" ? "bg-yellow-100 text-yellow-800" :
-                                "bg-red-100 text-red-800"
+                          <span className={`px-3 py-1.5 rounded-full text-xs font-medium ${emp.status === "active" ? "bg-green-100 text-green-800" :
+                            emp.status === "inactive" ? "bg-yellow-100 text-yellow-800" :
+                              "bg-red-100 text-red-800"
                             }`}>
                             {emp.status || "active"}
                           </span>

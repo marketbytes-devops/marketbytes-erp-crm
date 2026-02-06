@@ -21,7 +21,7 @@ const AddTaskLabelPage = () => {
         <div className="bg-white rounded-xl shadow-sm overflow-hidden">
           {/* Header */}
           <div className="px-8 py-6 bg-gray-100 border-b border-gray-200">
-            <h2 className="text-xl font-bold text-gray-900">ADD TASK LABELS</h2>
+            <h2 className="text-xl font-medium text-gray-900">ADD TASK LABELS</h2>
           </div>
 
           <div className="p-8 max-w-3xl mx-auto space-y-8">
@@ -81,9 +81,8 @@ const AddTaskLabelPage = () => {
                   <button
                     key={color}
                     onClick={() => setSelectedColor(color)}
-                    className={`w-10 h-10 rounded border-2 transition-all ${
-                      selectedColor === color ? "border-gray-800 scale-110" : "border-gray-300"
-                    }`}
+                    className={`w-10 h-10 rounded border-2 transition-all ${selectedColor === color ? "border-gray-800 scale-110" : "border-gray-300"
+                      }`}
                     style={{ backgroundColor: color }}
                     aria-label={color}
                   />

@@ -228,8 +228,8 @@ const Customers = () => {
                   <stat.icon className="w-6 h-6" />
                 </div>
                 <div>
-                  <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">{stat.label}</p>
-                  <p className="text-2xl font-bold text-gray-900">{stat.value}</p>
+                  <p className="text-xs font-medium text-gray-400 uppercase tracking-widest">{stat.label}</p>
+                  <p className="text-2xl font-medium text-gray-900">{stat.value}</p>
                 </div>
               </div>
             </motion.div>
@@ -291,17 +291,17 @@ const Customers = () => {
                 <tr>
                   {activeTab === "companies" ? (
                     <>
-                      <th className="px-8 py-5 text-left text-[11px] font-bold text-gray-400 uppercase tracking-widest">Company Branding</th>
-                      <th className="px-8 py-5 text-left text-[11px] font-bold text-gray-400 uppercase tracking-widest">Industry & Reach</th>
-                      <th className="px-8 py-5 text-left text-[11px] font-bold text-gray-400 uppercase tracking-widest">Location</th>
-                      <th className="px-8 py-5 text-right text-[11px] font-bold text-gray-400 uppercase tracking-widest">Actions</th>
+                      <th className="px-8 py-5 text-left text-[11px] font-medium text-gray-400 uppercase tracking-widest">Company Branding</th>
+                      <th className="px-8 py-5 text-left text-[11px] font-medium text-gray-400 uppercase tracking-widest">Industry & Reach</th>
+                      <th className="px-8 py-5 text-left text-[11px] font-medium text-gray-400 uppercase tracking-widest">Location</th>
+                      <th className="px-8 py-5 text-right text-[11px] font-medium text-gray-400 uppercase tracking-widest">Actions</th>
                     </>
                   ) : (
                     <>
-                      <th className="px-8 py-5 text-left text-[11px] font-bold text-gray-400 uppercase tracking-widest">Persona Details</th>
-                      <th className="px-8 py-5 text-left text-[11px] font-bold text-gray-400 uppercase tracking-widest">Associated Company</th>
-                      <th className="px-8 py-5 text-left text-[11px] font-bold text-gray-400 uppercase tracking-widest">Reach Out</th>
-                      <th className="px-8 py-5 text-right text-[11px] font-bold text-gray-400 uppercase tracking-widest">Actions</th>
+                      <th className="px-8 py-5 text-left text-[11px] font-medium text-gray-400 uppercase tracking-widest">Persona Details</th>
+                      <th className="px-8 py-5 text-left text-[11px] font-medium text-gray-400 uppercase tracking-widest">Associated Company</th>
+                      <th className="px-8 py-5 text-left text-[11px] font-medium text-gray-400 uppercase tracking-widest">Reach Out</th>
+                      <th className="px-8 py-5 text-right text-[11px] font-medium text-gray-400 uppercase tracking-widest">Actions</th>
                     </>
                   )}
                 </tr>
@@ -336,11 +336,11 @@ const Customers = () => {
                           <>
                             <td className="px-8 py-6">
                               <div className="flex items-center gap-4">
-                                <div className="w-12 h-12 rounded-2xl bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-600 font-bold text-lg shadow-sm">
+                                <div className="w-12 h-12 rounded-2xl bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-600 font-medium text-lg shadow-sm">
                                   {item.name.charAt(0)}
                                 </div>
                                 <div>
-                                  <div className="font-bold text-gray-900 group-hover:text-black transition-colors">{item.name}</div>
+                                  <div className="font-medium text-gray-900 group-hover:text-black transition-colors">{item.name}</div>
                                   <div className="flex items-center gap-1.5 text-xs text-blue-600 font-medium mt-1">
                                     <FiGlobe className="w-3 h-3" />
                                     {item.website || "No website"}
@@ -349,7 +349,7 @@ const Customers = () => {
                               </div>
                             </td>
                             <td className="px-8 py-6">
-                              <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-slate-100 text-slate-600 rounded-full text-[10px] font-bold uppercase tracking-widest">
+                              <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-slate-100 text-slate-600 rounded-full text-[10px] font-medium uppercase tracking-widest">
                                 <MdCategory className="w-3.5 h-3.5" />
                                 {item.industry}
                               </div>
@@ -369,17 +369,17 @@ const Customers = () => {
                           <>
                             <td className="px-8 py-6">
                               <div className="flex items-center gap-4">
-                                <div className="w-12 h-12 rounded-full bg-emerald-50 border border-emerald-100 flex items-center justify-center text-emerald-600 font-bold text-lg shadow-sm">
+                                <div className="w-12 h-12 rounded-full bg-emerald-50 border border-emerald-100 flex items-center justify-center text-emerald-600 font-medium text-lg shadow-sm">
                                   {item.name.charAt(0)}
                                 </div>
                                 <div>
-                                  <div className="font-bold text-gray-900 group-hover:text-black transition-colors">{item.name}</div>
-                                  <div className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-1">Stakeholder</div>
+                                  <div className="font-medium text-gray-900 group-hover:text-black transition-colors">{item.name}</div>
+                                  <div className="text-[10px] text-gray-400 font-medium uppercase tracking-widest mt-1">Stakeholder</div>
                                 </div>
                               </div>
                             </td>
                             <td className="px-8 py-6">
-                              <div className="flex items-center gap-2 text-sm font-semibold text-blue-600 bg-blue-50/50 w-fit px-3 py-1.5 rounded-xl border border-blue-100/50">
+                              <div className="flex items-center gap-2 text-sm font-medium text-blue-600 bg-blue-50/50 w-fit px-3 py-1.5 rounded-xl border border-blue-100/50">
                                 <MdBusiness className="w-4 h-4" />
                                 {item.company_name || "Independent"}
                               </div>
@@ -434,7 +434,7 @@ const Customers = () => {
             <div className="space-y-8 max-h-[75vh] overflow-y-auto pr-2 custom-scrollbar">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="md:col-span-2">
-                  <h4 className="text-[10px] font-bold text-blue-600 uppercase tracking-widest mb-4">Core Information</h4>
+                  <h4 className="text-[10px] font-medium text-blue-600 uppercase tracking-widest mb-4">Core Information</h4>
                   <Input label="Company Entity Name *" placeholder="Enterprise Solutions Ltd" value={companyForm.name} onChange={(e) => setCompanyForm({ ...companyForm, name: e.target.value })} />
                 </div>
                 <Input label="Digital Portfolio" placeholder="https://example.com" value={companyForm.website} onChange={(e) => setCompanyForm({ ...companyForm, website: e.target.value })} />
@@ -447,7 +447,7 @@ const Customers = () => {
 
               <div className="p-1 bg-gray-50 rounded-4xl border border-gray-100 overflow-hidden">
                 <div className="p-6 space-y-6">
-                  <h4 className="text-[10px] font-bold text-purple-600 uppercase tracking-widest mb-2">Geo-Spatial Data</h4>
+                  <h4 className="text-[10px] font-medium text-purple-600 uppercase tracking-widest mb-2">Geo-Spatial Data</h4>
                   <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                     <Input label="City" value={companyForm.city} onChange={(e) => setCompanyForm({ ...companyForm, city: e.target.value })} />
                     <Input label="State" value={companyForm.state} onChange={(e) => setCompanyForm({ ...companyForm, state: e.target.value })} />
@@ -458,8 +458,8 @@ const Customers = () => {
               </div>
 
               <div className="flex justify-end gap-4 pt-6">
-                <button onClick={() => setShowCompanyModal(false)} className="px-8 py-4 text-sm font-bold text-gray-600 hover:text-black transition">Discard Changes</button>
-                <button onClick={handleSaveCompany} className="px-12 py-4 bg-black text-white rounded-2xl font-bold shadow-xl shadow-black/10 hover:translate-y-[-2px] transition-all">
+                <button onClick={() => setShowCompanyModal(false)} className="px-8 py-4 text-sm font-medium text-gray-600 hover:text-black transition">Discard Changes</button>
+                <button onClick={handleSaveCompany} className="px-12 py-4 bg-black text-white rounded-2xl font-medium shadow-xl shadow-black/10 hover:translate-y-[-2px] transition-all">
                   Commit Record
                 </button>
               </div>
@@ -478,13 +478,13 @@ const Customers = () => {
             <div className="space-y-8">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="md:col-span-2">
-                  <h4 className="text-[10px] font-bold text-emerald-600 uppercase tracking-widest mb-4">Stakeholder Profile</h4>
+                  <h4 className="text-[10px] font-medium text-emerald-600 uppercase tracking-widest mb-4">Stakeholder Profile</h4>
                 </div>
                 <Input label="Full Identity Name *" placeholder="Sarah Jenkins" value={clientForm.name} onChange={(e) => setClientForm({ ...clientForm, name: e.target.value })} />
                 <Input label="Secure Email Address *" type="email" placeholder="sarah@example.com" value={clientForm.email} onChange={(e) => setClientForm({ ...clientForm, email: e.target.value })} />
 
                 <div className="space-y-1">
-                  <label className="block text-sm font-bold text-gray-700 mb-[11px]">Primary Organizational Link</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-[11px]">Primary Organizational Link</label>
                   <select
                     value={clientForm.company}
                     onChange={(e) => setClientForm({ ...clientForm, company: e.target.value })}
@@ -501,8 +501,8 @@ const Customers = () => {
               </div>
 
               <div className="flex justify-end gap-4 pt-8">
-                <button onClick={() => setShowClientModal(false)} className="px-8 py-4 text-sm font-bold text-gray-600 hover:text-black transition">Cancel Outreach</button>
-                <button onClick={handleSaveClient} className="px-12 py-4 bg-emerald-600 text-white rounded-2xl font-bold shadow-xl shadow-emerald-600/10 hover:translate-y-[-2px] transition-all">
+                <button onClick={() => setShowClientModal(false)} className="px-8 py-4 text-sm font-medium text-gray-600 hover:text-black transition">Cancel Outreach</button>
+                <button onClick={handleSaveClient} className="px-12 py-4 bg-emerald-600 text-white rounded-2xl font-medium shadow-xl shadow-emerald-600/10 hover:translate-y-[-2px] transition-all">
                   {editingClient ? "Update Persona" : "Record Stakeholder"}
                 </button>
               </div>

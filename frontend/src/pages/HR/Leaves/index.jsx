@@ -132,14 +132,14 @@ const Leaves = () => {
                   key={status}
                   onClick={() => setFilter(status)}
                   className={`px-6 py-3 rounded-xl font-medium transition ${filter === status
-                      ? status === "all"
-                        ? "bg-black text-white"
-                        : status === "pending"
-                          ? "bg-yellow-500 text-white"
-                          : status === "approved"
-                            ? "bg-green-600 text-white"
-                            : "bg-red-600 text-white"
-                      : "bg-gray-100 hover:bg-gray-200 text-gray-700"
+                    ? status === "all"
+                      ? "bg-black text-white"
+                      : status === "pending"
+                        ? "bg-yellow-500 text-white"
+                        : status === "approved"
+                          ? "bg-green-600 text-white"
+                          : "bg-red-600 text-white"
+                    : "bg-gray-100 hover:bg-gray-200 text-gray-700"
                     }`}
                 >
                   {status.charAt(0).toUpperCase() + status.slice(1)}
@@ -156,7 +156,7 @@ const Leaves = () => {
               </button>
               <Link
                 to="/hr/leaves/assign"
-                className="flex items-center gap-3 px-6 py-3 bg-black text-white rounded-xl hover:bg-gray-900 transition font-semibold"
+                className="flex items-center gap-3 px-6 py-3 bg-black text-white rounded-xl hover:bg-gray-900 transition font-medium"
               >
                 <MdAdd className="w-5 h-5" />
                 Assign Leave
@@ -231,7 +231,7 @@ const Leaves = () => {
                   <div className="p-6">
                     <div className="flex items-start justify-between mb-4">
                       <div>
-                        <h4 className="text-lg font-semibold text-gray-900">
+                        <h4 className="text-lg font-medium text-gray-900">
                           {leave.employee?.name || "Unknown Employee"}
                         </h4>
                         <p className="text-sm text-gray-600 mt-1">
@@ -306,13 +306,13 @@ const Leaves = () => {
                               <div className="mt-4 flex gap-3">
                                 <button
                                   onClick={() => handleStatusUpdate(leave.id, "approved")}
-                                  className="flex-1 bg-green-600 text-white py-3 rounded-xl font-semibold hover:bg-green-700 transition"
+                                  className="flex-1 bg-green-600 text-white py-3 rounded-xl font-medium hover:bg-green-700 transition"
                                 >
                                   Approve
                                 </button>
                                 <button
                                   onClick={() => handleStatusUpdate(leave.id, "rejected")}
-                                  className="flex-1 bg-red-600 text-white py-3 rounded-xl font-semibold hover:bg-red-700 transition"
+                                  className="flex-1 bg-red-600 text-white py-3 rounded-xl font-medium hover:bg-red-700 transition"
                                 >
                                   Reject
                                 </button>
@@ -323,7 +323,7 @@ const Leaves = () => {
                       </div>
                     )}
                     {leave.status !== "pending" && (
-                      <div className={`mt-6 py-4 text-center font-bold text-lg rounded-xl ${config.color}`}>
+                      <div className={`mt-6 py-4 text-center font-medium text-lg rounded-xl ${config.color}`}>
                         {config.label.toUpperCase()}
                       </div>
                     )}

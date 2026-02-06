@@ -105,31 +105,31 @@ const Leads = () => {
     setFormData(
       lead
         ? {
-            company: lead.company || "",
-            company_name: lead.company_name || "",
-            client: lead.client || "",
-            client_name: lead.client_name || "",
-            client_email: lead.client_email || "",
-            lead_agent: lead.lead_agent || "",
-            lead_value: lead.lead_value || "",
-            next_follow_up: lead.next_follow_up || false,
-            follow_up_date: lead.follow_up_date || "",
-            notes: lead.notes || "",
-            status: lead.status || "new_lead",
-          }
+          company: lead.company || "",
+          company_name: lead.company_name || "",
+          client: lead.client || "",
+          client_name: lead.client_name || "",
+          client_email: lead.client_email || "",
+          lead_agent: lead.lead_agent || "",
+          lead_value: lead.lead_value || "",
+          next_follow_up: lead.next_follow_up || false,
+          follow_up_date: lead.follow_up_date || "",
+          notes: lead.notes || "",
+          status: lead.status || "new_lead",
+        }
         : {
-            company: "",
-            company_name: "",
-            client: "",
-            client_name: "",
-            client_email: "",
-            lead_agent: "",
-            lead_value: "",
-            next_follow_up: false,
-            follow_up_date: "",
-            notes: "",
-            status: "new_lead",
-          }
+          company: "",
+          company_name: "",
+          client: "",
+          client_name: "",
+          client_email: "",
+          lead_agent: "",
+          lead_value: "",
+          next_follow_up: false,
+          follow_up_date: "",
+          notes: "",
+          status: "new_lead",
+        }
     );
     setShowModal(true);
   };
@@ -186,11 +186,10 @@ const Leads = () => {
     };
     return (
       <span
-        className={`px-3 py-1 rounded-full text-xs font-medium ${
-          colors[status] || "bg-gray-100 text-gray-800"
-        }`}
+        className={`px-3 py-1 rounded-full text-xs font-medium ${colors[status] || "bg-gray-100 text-gray-800"
+          }`}
       >
-        {status?.replace("_", " ").toUpperCase() || "NEW LEAD"}
+        {status?.replace(/_/g, " ").toUpperCase() || "NEW LEAD"}
       </span>
     );
   };
@@ -212,7 +211,7 @@ const Leads = () => {
       l.lead_value || 0,
       l.follow_up_date || "—",
       agents.find((a) => a.id === l.lead_agent)?.name || "",
-      l.status?.replace("_", " ").toUpperCase() || "",
+      l.status?.replace(/_/g, " ").toUpperCase() || "",
     ]);
 
     const data = [headers, ...rows];
@@ -230,7 +229,7 @@ const Leads = () => {
       "Lead Value": l.lead_value || 0,
       "Next Follow Up": l.follow_up_date || "—",
       Agent: agents.find((a) => a.id === l.lead_agent)?.name || "",
-      Status: l.status?.replace("_", " ").toUpperCase() || "",
+      Status: l.status?.replace(/_/g, " ").toUpperCase() || "",
     }));
 
     const ws = XLSX.utils.json_to_sheet(rows);
@@ -262,7 +261,7 @@ const Leads = () => {
       l.lead_value || 0,
       l.follow_up_date || "—",
       agents.find((a) => a.id === l.lead_agent)?.name || "—",
-      l.status?.replace("_", " ").toUpperCase() || "—",
+      l.status?.replace(/_/g, " ").toUpperCase() || "—",
     ]);
 
     doc.autoTable({
@@ -645,8 +644,8 @@ const Leads = () => {
                   {formLoading
                     ? "Saving..."
                     : editingLead
-                    ? "Update Lead"
-                    : "Save Lead"}
+                      ? "Update Lead"
+                      : "Save Lead"}
                 </button>
               </div>
             </form>

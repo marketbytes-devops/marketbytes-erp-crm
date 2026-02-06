@@ -37,13 +37,13 @@ const TaskCalendarPage = () => {
         });
 
         if (isMounted) {
-      
+
           const data = Array.isArray(response.data)
             ? response.data
             : response.data?.results ||
-              response.data?.data ||
-              response.data?.tasks ||
-              [];
+            response.data?.data ||
+            response.data?.tasks ||
+            [];
 
           setTasks(data);
         }
@@ -83,25 +83,25 @@ const TaskCalendarPage = () => {
 
   const tasksByDay = Array.isArray(tasks)
     ? tasks.reduce((acc, task) => {
-        if (!task?.due_date) return acc;
-        const due = new Date(task.due_date);
-        if (due.getFullYear() !== currentYear || due.getMonth() + 1 !== currentMonth) {
-          return acc;
-        }
-        const day = due.getDate();
-        if (!acc[day]) acc[day] = [];
-        acc[day].push(task);
+      if (!task?.due_date) return acc;
+      const due = new Date(task.due_date);
+      if (due.getFullYear() !== currentYear || due.getMonth() + 1 !== currentMonth) {
         return acc;
-      }, {})
+      }
+      const day = due.getDate();
+      if (!acc[day]) acc[day] = [];
+      acc[day].push(task);
+      return acc;
+    }, {})
     : {};
 
- 
+
   return (
-    <div className="min-h-screen bg-gray-50 px-4 py-6 sm:px-6 lg:px-8">
+    <div className="min-h-screen p-6">
       {/* Header */}
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">Tasks Calendar</h1>
-       
+        <h1 className="text-2xl font-medium text-gray-900">Tasks Calendar</h1>
+
       </div>
 
       {/* Controls */}
@@ -156,7 +156,7 @@ const TaskCalendarPage = () => {
         {/* Weekday headers */}
         <div className="grid grid-cols-7 bg-gray-100">
           {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day) => (
-            <div key={day} className="py-3 text-center text-sm font-semibold text-gray-700">
+            <div key={day} className="py-3 text-center text-sm font-medium text-gray-700">
               {day}
             </div>
           ))}
@@ -164,7 +164,7 @@ const TaskCalendarPage = () => {
 
         {/* Days grid */}
         <div className="grid grid-cols-7 bg-gray-200">
-      
+
           {prevMonthPadding.map((_, i) => (
             <div key={`prev-${i}`} className="min-h-[110px] bg-gray-50 p-2" />
           ))}
@@ -177,11 +177,10 @@ const TaskCalendarPage = () => {
             return (
               <div
                 key={day}
-                className={`min-h-[110px] p-2 transition-colors ${
-                  hasTasks
-                    ? "bg-blue-50/60 border-l-4 border-blue-500"
-                    : "bg-white hover:bg-gray-50"
-                }`}
+                className={`min-h-[110px] p-2 transition-colors ${hasTasks
+                  ? "bg-blue-50/60 border-l-4 border-blue-500"
+                  : "bg-white hover:bg-gray-50"
+                  }`}
               >
                 <div className={`text-sm font-medium ${hasTasks ? "text-blue-800" : "text-gray-900"}`}>
                   {day}
@@ -208,7 +207,7 @@ const TaskCalendarPage = () => {
             );
           })}
 
-   
+
           {nextMonthPadding.map((_, i) => (
             <div key={`next-${i}`} className="min-h-[110px] bg-gray-50 p-2" />
           ))}

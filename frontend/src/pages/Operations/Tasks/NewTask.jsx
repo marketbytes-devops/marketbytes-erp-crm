@@ -159,7 +159,7 @@ const NewTaskPage = () => {
   }));
 
   return (
-    <div className="p-4 md:p-6 max-w-7xl mx-auto">
+    <div className="p-6 mx-auto">
       <LayoutComponents title="New Task" subtitle="Create a new task for a project" variant="card">
         <div className="mb-8">
           <Link

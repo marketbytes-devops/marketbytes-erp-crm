@@ -368,7 +368,7 @@ const CreateProjectPage = () => {
 
         <form onSubmit={handleSubmit} className="space-y-8">
           <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-6">Project Information</h3>
+            <h3 className="text-lg font-medium text-gray-900 mb-6">Project Information</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               <Input
                 label="Project Name"
@@ -379,7 +379,7 @@ const CreateProjectPage = () => {
               />
               <div className="relative top-0 sm:-top-1.5">
                 <div className="flex items-center gap-2 mb-2">
-                  <label className="text-sm font-semibold text-black">Project Category</label>
+                  <label className="text-sm font-medium text-black">Project Category</label>
                   <button
                     type="button"
                     onClick={() => setShowCategoryModal(true)}
@@ -397,7 +397,7 @@ const CreateProjectPage = () => {
               </div>
               <div className="relative top-0 sm:-top-1.5">
                 <div className="flex items-center gap-2 mb-2">
-                  <label className="text-sm font-semibold text-black">Department <span className="text-red-500">*</span></label>
+                  <label className="text-sm font-medium text-black">Department <span className="text-red-500">*</span></label>
                   <button
                     type="button"
                     onClick={() => setShowDepartmentModal(true)}
@@ -416,7 +416,7 @@ const CreateProjectPage = () => {
               </div>
               <Input label="Start Date" required type="date" value={formData.startDate} onChange={e => setFormData(prev => ({ ...prev, startDate: e.target.value }))} />
               <div>
-                <label className="text-sm font-semibold text-black mb-2 block">Deadline <span className="text-red-500">*</span></label>
+                <label className="text-sm font-medium text-black mb-2 block">Deadline <span className="text-red-500">*</span></label>
                 <div className=" items-center gap-4">
                   <input
                     type="date"
@@ -477,7 +477,7 @@ const CreateProjectPage = () => {
             )}
 
             <div className="mt-6">
-              <label className="text-sm font-semibold text-black mb-2 block">Project Members</label>
+              <label className="text-sm font-medium text-black mb-2 block">Project Members</label>
               <Input
                 type="select"
                 multiple
@@ -490,11 +490,11 @@ const CreateProjectPage = () => {
           </div>
 
           <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-6">Client Information</h3>
+            <h3 className="text-lg font-medium text-gray-900 mb-6">Client Information</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <div className="flex items-center gap-2 mb-2">
-                  <label className="text-sm font-semibold text-black">Client</label>
+                  <label className="text-sm font-medium text-black">Client</label>
                   <button
                     type="button"
                     onClick={() => setShowClientModal(true)}
@@ -526,7 +526,7 @@ const CreateProjectPage = () => {
           </div>
 
           <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-6">Budget & Status</h3>
+            <h3 className="text-lg font-medium text-gray-900 mb-6">Budget & Status</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               <Input label="Budget" type="number" placeholder="0.00" value={formData.budget} onChange={e => setFormData(prev => ({ ...prev, budget: e.target.value }))} />
               <Input
@@ -538,7 +538,7 @@ const CreateProjectPage = () => {
               />
               <div className="relative top-0 sm:-top-1.5">
                 <div className="flex items-center gap-2 mb-2">
-                  <label className="text-sm font-semibold text-black">Status</label>
+                  <label className="text-sm font-medium text-black">Status</label>
                   <button type="button" onClick={() => setShowStatusModal(true)} className="p-1 rounded-full border border-green-600 text-green-600 hover:bg-green-600 hover:text-white transition">
                     <MdAdd className="w-4 h-4" />
                   </button>
@@ -552,7 +552,7 @@ const CreateProjectPage = () => {
               </div>
               <div className="relative top-0 sm:-top-1.5">
                 <div className="flex items-center gap-2 mb-2">
-                  <label className="text-sm font-semibold text-black">Stage</label>
+                  <label className="text-sm font-medium text-black">Stage</label>
                   <button type="button" onClick={() => setShowStageModal(true)} className="p-1 rounded-full border border-green-600 text-green-600 hover:bg-green-600 hover:text-white transition">
                     <MdAdd className="w-4 h-4" />
                   </button>
@@ -568,7 +568,7 @@ const CreateProjectPage = () => {
           </div>
 
           <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-6">Attachments</h3>
+            <h3 className="text-lg font-medium text-gray-900 mb-6">Attachments</h3>
             <div className="border-2 border-dashed border-gray-300 rounded-2xl p-12 text-center">
               <input
                 type="file"
@@ -594,7 +594,7 @@ const CreateProjectPage = () => {
           </div>
 
           <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-6">Project Summary</h3>
+            <h3 className="text-lg font-medium text-gray-900 mb-6">Project Summary</h3>
             <textarea
               rows={6}
               placeholder="Enter project summary..."
@@ -605,7 +605,7 @@ const CreateProjectPage = () => {
           </div>
 
           <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-6">Internal Note</h3>
+            <h3 className="text-lg font-medium text-gray-900 mb-6">Internal Note</h3>
             <textarea
               rows={5}
               placeholder="Add internal notes..."
@@ -637,7 +637,7 @@ const CreateProjectPage = () => {
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full max-h-[80vh] overflow-y-auto">
             <div className="flex justify-between items-center p-6 border-b border-gray-200">
-              <h3 className="text-xl font-semibold">Manage Categories</h3>
+              <h3 className="text-xl font-medium">Manage Categories</h3>
               <button onClick={() => setShowCategoryModal(false)} className="p-2 hover:bg-gray-100 rounded-lg">
                 <MdClose className="w-6 h-6" />
               </button>
@@ -671,7 +671,7 @@ const CreateProjectPage = () => {
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full max-h-[80vh] overflow-y-auto">
             <div className="flex justify-between items-center p-6 border-b border-gray-200">
-              <h3 className="text-xl font-semibold">Manage Departments</h3>
+              <h3 className="text-xl font-medium">Manage Departments</h3>
               <button onClick={() => setShowDepartmentModal(false)} className="p-2 hover:bg-gray-100 rounded-lg">
                 <MdClose className="w-6 h-6" />
               </button>
@@ -705,7 +705,7 @@ const CreateProjectPage = () => {
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full max-h-[80vh] overflow-y-auto">
             <div className="flex justify-between items-center p-6 border-b border-gray-200">
-              <h3 className="text-xl font-semibold">Manage Clients</h3>
+              <h3 className="text-xl font-medium">Manage Clients</h3>
               <button onClick={() => setShowClientModal(false)} className="p-2 hover:bg-gray-100 rounded-lg">
                 <MdClose className="w-6 h-6" />
               </button>
@@ -726,7 +726,7 @@ const CreateProjectPage = () => {
                 <Input label="Client Name" required value={newClientData.name} onChange={e => setNewClientData(prev => ({ ...prev, name: e.target.value }))} />
                 <Input label="Email" type="email" required value={newClientData.email} onChange={e => setNewClientData(prev => ({ ...prev, email: e.target.value }))} />
                 <div>
-                  <label className="text-sm font-semibold text-black mb-2 block">Password <span className="text-red-500">*</span></label>
+                  <label className="text-sm font-medium text-black mb-2 block">Password <span className="text-red-500">*</span></label>
                   <div className="relative">
                     <input
                       type={showPassword ? "text" : "password"}
@@ -757,7 +757,7 @@ const CreateProjectPage = () => {
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full">
             <div className="flex justify-between items-center p-6 border-b border-gray-200">
-              <h3 className="text-xl font-semibold">Add New Status</h3>
+              <h3 className="text-xl font-medium">Add New Status</h3>
               <button onClick={() => setShowStatusModal(false)} className="p-2 hover:bg-gray-100 rounded-lg">
                 <MdClose className="w-6 h-6" />
               </button>
@@ -782,7 +782,7 @@ const CreateProjectPage = () => {
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full">
             <div className="flex justify-between items-center p-6 border-b border-gray-200">
-              <h3 className="text-xl font-semibold">Add New Stage</h3>
+              <h3 className="text-xl font-medium">Add New Stage</h3>
               <button onClick={() => setShowStageModal(false)} className="p-2 hover:bg-gray-100 rounded-lg">
                 <MdClose className="w-6 h-6" />
               </button>

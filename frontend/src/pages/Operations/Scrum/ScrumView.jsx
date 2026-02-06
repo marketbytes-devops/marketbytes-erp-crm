@@ -121,7 +121,7 @@ const Scrum = () => {
             try {
               const parsed = JSON.parse(saved);
               if (Array.isArray(parsed)) setScrumData(parsed);
-            } catch {}
+            } catch { }
           }
         }
       } catch (err) {
@@ -200,7 +200,7 @@ const Scrum = () => {
         task_id: createForm.task || "",
         employee_name: selectedEmployee
           ? `${selectedEmployee.first_name || ""} ${selectedEmployee.last_name || selectedEmployee.username || ""}`.trim() ||
-            "—"
+          "—"
           : "—",
         employee_id: createForm.employeeName || "",
         task: {
@@ -311,21 +311,21 @@ const Scrum = () => {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-12">
               <div className="text-center">
-                <div className="text-4xl font-bold text-gray-900 mb-2">
+                <div className="text-4xl font-medium text-gray-900 mb-2">
                   {totalTasks}
                 </div>
                 <div className="text-sm text-gray-600">Total Scrums</div>
               </div>
 
               <div className="text-center">
-                <div className="text-4xl font-bold text-blue-600 mb-2">
+                <div className="text-4xl font-medium text-blue-600 mb-2">
                   {filteredScrumData.filter((s) => s.status === "todo").length}
                 </div>
                 <div className="text-sm text-gray-600">To Do</div>
               </div>
 
               <div className="text-center">
-                <div className="text-4xl font-bold text-orange-600 mb-2">
+                <div className="text-4xl font-medium text-orange-600 mb-2">
                   {
                     filteredScrumData.filter((s) => s.status === "in_progress")
                       .length
@@ -335,7 +335,7 @@ const Scrum = () => {
               </div>
 
               <div className="text-center">
-                <div className="text-4xl font-bold text-green-600 mb-2">
+                <div className="text-4xl font-medium text-green-600 mb-2">
                   {filteredScrumData.filter((s) => s.status === "done").length}
                 </div>
                 <div className="text-sm text-gray-600">Completed</div>
@@ -358,7 +358,7 @@ const Scrum = () => {
               <div className="w-8 h-8 rounded-full bg-black text-white flex items-center justify-center">
                 <span className="text-xl">+</span>
               </div>
-              <h3 className="text-2xl font-semibold text-gray-900">CREATE</h3>
+              <h3 className="text-2xl font-medium text-gray-900">CREATE</h3>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
@@ -541,9 +541,8 @@ const Scrum = () => {
               <MdFilterList className="w-5 h-5" />
               Filters
               <svg
-                className={`w-4 h-4 transition-transform ${
-                  showAdvancedFilters ? "rotate-180" : ""
-                }`}
+                className={`w-4 h-4 transition-transform ${showAdvancedFilters ? "rotate-180" : ""
+                  }`}
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -592,7 +591,7 @@ const Scrum = () => {
         {showAdvancedFilters && (
           <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-8 mb-6">
             <div className="flex items-center justify-between mb-6">
-              <h3 className="text-2xl font-semibold text-gray-900">
+              <h3 className="text-2xl font-medium text-gray-900">
                 Advanced Filters
               </h3>
               <button
@@ -707,31 +706,31 @@ const Scrum = () => {
             <table className="w-full">
               <thead>
                 <tr className="border-b border-gray-200">
-                  <th className="text-left px-6 py-4 text-sm font-semibold text-gray-700 uppercase tracking-wider">
+                  <th className="text-left px-6 py-4 text-sm font-medium text-gray-700 uppercase tracking-wider">
                     #
                   </th>
-                  <th className="text-left px-6 py-4 text-sm font-semibold text-gray-700 uppercase tracking-wider">
+                  <th className="text-left px-6 py-4 text-sm font-medium text-gray-700 uppercase tracking-wider">
                     PROJECT
                   </th>
-                  <th className="text-left px-6 py-4 text-sm font-semibold text-gray-700 uppercase tracking-wider">
+                  <th className="text-left px-6 py-4 text-sm font-medium text-gray-700 uppercase tracking-wider">
                     TASK
                   </th>
-                  <th className="text-left px-6 py-4 text-sm font-semibold text-gray-700 uppercase tracking-wider">
+                  <th className="text-left px-6 py-4 text-sm font-medium text-gray-700 uppercase tracking-wider">
                     MEMBERS
                   </th>
-                  <th className="text-left px-6 py-4 text-sm font-semibold text-gray-700 uppercase tracking-wider">
-                    START DATE 
+                  <th className="text-left px-6 py-4 text-sm font-medium text-gray-700 uppercase tracking-wider">
+                    START DATE
                   </th>
-                  <th className="text-left px-6 py-4 text-sm font-semibold text-gray-700 uppercase tracking-wider">
+                  <th className="text-left px-6 py-4 text-sm font-medium text-gray-700 uppercase tracking-wider">
                     MORNING MEMO
                   </th>
-                  <th className="text-left px-6 py-4 text-sm font-semibold text-gray-700 uppercase tracking-wider">
+                  <th className="text-left px-6 py-4 text-sm font-medium text-gray-700 uppercase tracking-wider">
                     EVENING MEMO
                   </th>
-                  <th className="text-left px-6 py-4 text-sm font-semibold text-gray-700 uppercase tracking-wider">
+                  <th className="text-left px-6 py-4 text-sm font-medium text-gray-700 uppercase tracking-wider">
                     STATUS
                   </th>
-                  <th className="text-left px-6 py-4 text-sm font-semibold text-gray-700 uppercase tracking-wider">
+                  <th className="text-left px-6 py-4 text-sm font-medium text-gray-700 uppercase tracking-wider">
                     ACTIONS
                   </th>
                 </tr>
@@ -770,7 +769,7 @@ const Scrum = () => {
                       <td className="px-6 py-6">
                         {item.employee_name ? (
                           <div className="relative group">
-                            <div className="flex items-center justify-center w-10 h-10 rounded-full bg-indigo-500 text-white font-semibold cursor-pointer">
+                            <div className="flex items-center justify-center w-10 h-10 rounded-full bg-indigo-500 text-white font-medium cursor-pointer">
                               {item.employee_name.charAt(0)}
                             </div>
                             <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 px-3 py-2 bg-gray-900 text-white text-sm rounded-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 whitespace-nowrap z-10">
@@ -786,7 +785,7 @@ const Scrum = () => {
                         {item.date
                           ? new Date(item.date).toISOString().split("T")[0]
                           : "—"}{" "}
-                        
+
                       </td>
                       <td className="px-6 py-6">
                         <div className="text-sm text-gray-700">
@@ -794,7 +793,7 @@ const Scrum = () => {
                         </div>
                       </td>
                       <td className="px-1 py-1">
-                        <textarea 
+                        <textarea
                           value={item.evening_memo || ""}
                           onChange={(e) => {
                             const newValue = e.target.value;
@@ -855,7 +854,7 @@ const Scrum = () => {
                                 "Could not save evening memo – check console",
                               );
 
-                            
+
                               setScrumData((prev) =>
                                 prev.map((s) =>
                                   s.id === item.id

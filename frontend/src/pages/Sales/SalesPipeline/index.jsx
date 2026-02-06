@@ -147,11 +147,11 @@ const Pipeline = () => {
                   <stat.icon className="w-6 h-6" />
                 </div>
                 <div className="text-right">
-                  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{stat.label}</p>
-                  <p className="text-2xl font-bold text-gray-900">{stat.value}</p>
+                  <p className="text-[10px] font-medium text-gray-400 uppercase tracking-widest">{stat.label}</p>
+                  <p className="text-2xl font-medium text-gray-900">{stat.value}</p>
                 </div>
               </div>
-              <p className="text-xs font-bold text-gray-400 mt-2 flex items-center gap-1">
+              <p className="text-xs font-medium text-gray-400 mt-2 flex items-center gap-1">
                 <span className={stat.value.toString().startsWith('+') ? 'text-emerald-600' : 'text-gray-400'}>{stat.sub}</span>
               </p>
             </motion.div>
@@ -212,13 +212,13 @@ const Pipeline = () => {
                         <column.icon className="w-4 h-4" />
                       </div>
                       <div>
-                        <h3 className="font-bold text-gray-900 text-sm">{column.title}</h3>
-                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{columns[column.id]?.length || 0} Records</p>
+                        <h3 className="font-medium text-gray-900 text-sm">{column.title}</h3>
+                        <p className="text-[10px] font-medium text-gray-400 uppercase tracking-widest">{columns[column.id]?.length || 0} Records</p>
                       </div>
                     </div>
                     <div className="text-right">
-                      <p className="text-xs font-bold text-gray-900">₹{columns[column.id]?.reduce((sum, l) => sum + (parseFloat(l.lead_value) || 0), 0).toLocaleString()}</p>
-                      <p className="text-[9px] font-bold text-gray-400">STAGE VALUE</p>
+                      <p className="text-xs font-medium text-gray-900">₹{columns[column.id]?.reduce((sum, l) => sum + (parseFloat(l.lead_value) || 0), 0).toLocaleString()}</p>
+                      <p className="text-[9px] font-medium text-gray-400">STAGE VALUE</p>
                     </div>
                   </div>
                 </div>
@@ -250,11 +250,11 @@ const Pipeline = () => {
                               >
                                 <div className="flex justify-between items-start mb-4">
                                   <div className="flex-1 pr-4">
-                                    <h4 className="font-bold text-gray-900 leading-tight group-hover:text-indigo-600 transition-colors">
+                                    <h4 className="font-medium text-gray-900 leading-tight group-hover:text-indigo-600 transition-colors">
                                       {lead.client_name || "Confidential Client"}
                                     </h4>
                                     <div className="flex items-center gap-2 mt-1">
-                                      <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest leading-none">
+                                      <span className="text-[10px] font-medium text-gray-400 uppercase tracking-widest leading-none">
                                         {lead.company_name || "Independent"}
                                       </span>
                                     </div>
@@ -269,16 +269,16 @@ const Pipeline = () => {
                                     </div>
                                     <div className="flex items-center gap-1.5 px-2 py-1 bg-slate-50 border border-slate-100 rounded-lg">
                                       <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></div>
-                                      <span className="text-[9px] font-bold text-slate-500 uppercase tracking-wider">Active</span>
+                                      <span className="text-[9px] font-medium text-slate-500 uppercase tracking-wider">Active</span>
                                     </div>
                                   </div>
 
                                   <div className="flex items-center justify-between pt-4 border-t border-slate-50">
                                     <div className="flex items-center gap-2">
-                                      <div className="w-7 h-7 rounded-full bg-indigo-50 border border-indigo-100 flex items-center justify-center text-[10px] font-bold text-indigo-600 shadow-sm">
+                                      <div className="w-7 h-7 rounded-full bg-indigo-50 border border-indigo-100 flex items-center justify-center text-[10px] font-medium text-indigo-600 shadow-sm">
                                         {getAgentName(lead.lead_agent).charAt(0)}
                                       </div>
-                                      <span className="text-[11px] font-bold text-slate-600">
+                                      <span className="text-[11px] font-medium text-slate-600">
                                         {getAgentName(lead.lead_agent)}
                                       </span>
                                     </div>
@@ -296,7 +296,7 @@ const Pipeline = () => {
                                   {lead.follow_up_date && (
                                     <div className="flex items-center gap-2 px-3 py-2 bg-rose-50/50 border border-rose-100 rounded-xl">
                                       <FiCalendar className="w-3 h-3 text-rose-500" />
-                                      <p className="text-[10px] text-rose-600 font-bold uppercase tracking-wider">
+                                      <p className="text-[10px] text-rose-600 font-medium uppercase tracking-wider">
                                         Follow up: {lead.follow_up_date}
                                       </p>
                                     </div>
@@ -312,7 +312,7 @@ const Pipeline = () => {
                       {(!columns[column.id] || columns[column.id].length === 0) && !snapshot.isDraggingOver && (
                         <div className="flex flex-col items-center justify-center py-24 opacity-20 filter grayscale select-none">
                           <MdLayers className="w-12 h-12 mb-3" />
-                          <p className="text-xs font-bold uppercase tracking-widest">Stage Inactive</p>
+                          <p className="text-xs font-medium uppercase tracking-widest">Stage Inactive</p>
                         </div>
                       )}
                     </div>

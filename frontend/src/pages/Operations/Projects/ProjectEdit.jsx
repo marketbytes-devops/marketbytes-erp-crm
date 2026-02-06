@@ -286,7 +286,7 @@ const EditProjectPage = () => {
                 <form onSubmit={handleSubmit} className="space-y-8">
                     {/* Project Information Section */}
                     <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
-                        <h3 className="text-lg font-semibold text-gray-900 mb-6">Project Information</h3>
+                        <h3 className="text-lg font-medium text-gray-900 mb-6">Project Information</h3>
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                             <Input
                                 label="Project Name"
@@ -296,7 +296,7 @@ const EditProjectPage = () => {
                             />
                             <div className="relative top-0 sm:-top-1.5">
                                 <div className="flex items-center gap-2 mb-2">
-                                    <label className="text-sm font-semibold text-black">Project Category</label>
+                                    <label className="text-sm font-medium text-black">Project Category</label>
                                     <button type="button" onClick={() => setShowCategoryModal(true)} className="p-1 rounded-full border border-green-600 text-green-600 hover:bg-green-600 hover:text-white transition">
                                         <MdAdd className="w-4 h-4" />
                                     </button>
@@ -310,7 +310,7 @@ const EditProjectPage = () => {
                             </div>
                             <div className="relative top-0 sm:-top-1.5">
                                 <div className="flex items-center gap-2 mb-2">
-                                    <label className="text-sm font-semibold text-black">Department <span className="text-red-500">*</span></label>
+                                    <label className="text-sm font-medium text-black">Department <span className="text-red-500">*</span></label>
                                     <button type="button" onClick={() => setShowDepartmentModal(true)} className="p-1 rounded-full border border-green-600 text-green-600 hover:bg-green-600 hover:text-white transition">
                                         <MdAdd className="w-4 h-4" />
                                     </button>
@@ -325,7 +325,7 @@ const EditProjectPage = () => {
                             </div>
                             <Input label="Start Date" required type="date" value={formData.startDate} onChange={e => setFormData({ ...formData, startDate: e.target.value })} />
                             <div>
-                                <label className="text-sm font-semibold text-black mb-2 block">Deadline</label>
+                                <label className="text-sm font-medium text-black mb-2 block">Deadline</label>
                                 <input
                                     type="date"
                                     disabled={formData.noDeadline}
@@ -362,7 +362,7 @@ const EditProjectPage = () => {
                         </div>
 
                         <div className="mt-6">
-                            <label className="text-sm font-semibold text-black mb-2 block">Project Members</label>
+                            <label className="text-sm font-medium text-black mb-2 block">Project Members</label>
                             <Input
                                 type="select"
                                 multiple
@@ -375,11 +375,11 @@ const EditProjectPage = () => {
 
                     {/* Client Information Section */}
                     <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
-                        <h3 className="text-lg font-semibold text-gray-900 mb-6">Client Information</h3>
+                        <h3 className="text-lg font-medium text-gray-900 mb-6">Client Information</h3>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                             <div>
                                 <div className="flex items-center gap-2 mb-2">
-                                    <label className="text-sm font-semibold text-black">Client</label>
+                                    <label className="text-sm font-medium text-black">Client</label>
                                     <button type="button" onClick={() => setShowClientModal(true)} className="p-1 rounded-full border border-green-600 text-green-600 hover:bg-green-600 hover:text-white transition">
                                         <MdAdd className="w-4 h-4" />
                                     </button>
@@ -408,7 +408,7 @@ const EditProjectPage = () => {
 
                     {/* Budget & Status Section */}
                     <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
-                        <h3 className="text-lg font-semibold text-gray-900 mb-6">Budget & Status</h3>
+                        <h3 className="text-lg font-medium text-gray-900 mb-6">Budget & Status</h3>
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                             <Input label="Budget" type="number" value={formData.budget} onChange={e => setFormData({ ...formData, budget: e.target.value })} />
                             <Input
@@ -420,7 +420,7 @@ const EditProjectPage = () => {
                             />
                             <div className="relative top-0 sm:-top-1.5">
                                 <div className="flex items-center gap-2 mb-2">
-                                    <label className="text-sm font-semibold text-black">Status</label>
+                                    <label className="text-sm font-medium text-black">Status</label>
                                     <button type="button" onClick={() => setShowStatusModal(true)} className="p-1 rounded-full border border-green-600 text-green-600 hover:bg-green-600 hover:text-white transition">
                                         <MdAdd className="w-4 h-4" />
                                     </button>
@@ -434,7 +434,7 @@ const EditProjectPage = () => {
                             </div>
                             <div className="relative top-0 sm:-top-1.5">
                                 <div className="flex items-center gap-2 mb-2">
-                                    <label className="text-sm font-semibold text-black">Stage</label>
+                                    <label className="text-sm font-medium text-black">Stage</label>
                                     <button type="button" onClick={() => setShowStageModal(true)} className="p-1 rounded-full border border-green-600 text-green-600 hover:bg-green-600 hover:text-white transition">
                                         <MdAdd className="w-4 h-4" />
                                     </button>
@@ -451,13 +451,13 @@ const EditProjectPage = () => {
 
                     {/* Attachments Section */}
                     <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
-                        <h3 className="text-lg font-semibold text-gray-900 mb-6">File Attachments</h3>
+                        <h3 className="text-lg font-medium text-gray-900 mb-6">File Attachments</h3>
                         {existingFiles.length > 0 && (
                             <div className="mb-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                                 {existingFiles.map((file, i) => (
                                     <div key={i} className="flex items-center justify-between p-3 bg-gray-50 rounded-xl border border-gray-100">
                                         <span className="text-sm font-medium text-gray-700 truncate">{file.original_name}</span>
-                                        <a href={file.file} target="_blank" rel="noopener noreferrer" className="text-blue-600 text-xs font-bold hover:underline">View</a>
+                                        <a href={file.file} target="_blank" rel="noopener noreferrer" className="text-blue-600 text-xs font-medium hover:underline">View</a>
                                     </div>
                                 ))}
                             </div>
@@ -465,27 +465,27 @@ const EditProjectPage = () => {
                         <div className="border-2 border-dashed border-gray-300 rounded-3xl p-10 text-center hover:bg-gray-50 transition cursor-pointer relative">
                             <input type="file" multiple className="absolute inset-0 opacity-0 cursor-pointer" onChange={e => setFiles(Array.from(e.target.files))} />
                             <p className="text-gray-500 font-medium">Click or drag new files here to upload</p>
-                            {files.length > 0 && <p className="mt-2 text-indigo-600 font-bold">{files.length} new files selected</p>}
+                            {files.length > 0 && <p className="mt-2 text-indigo-600 font-medium">{files.length} new files selected</p>}
                         </div>
                     </div>
 
                     <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
-                        <h3 className="text-lg font-semibold text-gray-900 mb-6">Summary & Notes</h3>
+                        <h3 className="text-lg font-medium text-gray-900 mb-6">Summary & Notes</h3>
                         <div className="space-y-6">
                             <div className="space-y-2">
-                                <label className="text-sm font-semibold text-gray-700">Project Summary</label>
+                                <label className="text-sm font-medium text-gray-700">Project Summary</label>
                                 <textarea rows={4} value={formData.summary} onChange={e => setFormData({ ...formData, summary: e.target.value })} className="w-full p-4 border border-gray-300 rounded-xl focus:ring-2 focus:ring-black outline-none resize-none" />
                             </div>
                             <div className="space-y-2">
-                                <label className="text-sm font-semibold text-gray-700">Internal Notes</label>
+                                <label className="text-sm font-medium text-gray-700">Internal Notes</label>
                                 <textarea rows={4} value={formData.note} onChange={e => setFormData({ ...formData, note: e.target.value })} className="w-full p-4 border border-gray-300 rounded-xl focus:ring-2 focus:ring-black outline-none resize-none" />
                             </div>
                         </div>
                     </div>
 
                     <div className="flex justify-end gap-5">
-                        <button type="button" onClick={() => navigate("/operations/projects")} className="px-8 py-3.5 border-2 border-gray-300 rounded-2xl font-bold text-gray-700 hover:bg-gray-100 transition">Cancel</button>
-                        <button type="submit" disabled={submitting} className="px-10 py-3.5 bg-black text-white rounded-2xl font-bold hover:bg-gray-800 transition disabled:bg-gray-400">
+                        <button type="button" onClick={() => navigate("/operations/projects")} className="px-8 py-3.5 border-2 border-gray-300 rounded-2xl font-medium text-gray-700 hover:bg-gray-100 transition">Cancel</button>
+                        <button type="submit" disabled={submitting} className="px-10 py-3.5 bg-black text-white rounded-2xl font-medium hover:bg-gray-800 transition disabled:bg-gray-400">
                             {submitting ? "Updating..." : "Update Project"}
                         </button>
                     </div>
@@ -497,7 +497,7 @@ const EditProjectPage = () => {
                 <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
                     <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full">
                         <div className="flex justify-between items-center p-6 border-b border-gray-200">
-                            <h3 className="text-xl font-semibold">Add New Status</h3>
+                            <h3 className="text-xl font-medium">Add New Status</h3>
                             <button onClick={() => setShowStatusModal(false)} className="p-2 hover:bg-gray-100 rounded-lg">
                                 <MdClose className="w-6 h-6" />
                             </button>
@@ -520,7 +520,7 @@ const EditProjectPage = () => {
                 <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
                     <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full">
                         <div className="flex justify-between items-center p-6 border-b border-gray-200">
-                            <h3 className="text-xl font-semibold">Add New Stage</h3>
+                            <h3 className="text-xl font-medium">Add New Stage</h3>
                             <button onClick={() => setShowStageModal(false)} className="p-2 hover:bg-gray-100 rounded-lg">
                                 <MdClose className="w-6 h-6" />
                             </button>
@@ -544,7 +544,7 @@ const EditProjectPage = () => {
                 <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
                     <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full">
                         <div className="flex justify-between items-center p-6 border-b border-gray-200">
-                            <h3 className="text-xl font-semibold">Add Category</h3>
+                            <h3 className="text-xl font-medium">Add Category</h3>
                             <button onClick={() => setShowCategoryModal(false)} className="p-2 hover:bg-gray-100 rounded-lg">
                                 <MdClose className="w-6 h-6" />
                             </button>
@@ -562,7 +562,7 @@ const EditProjectPage = () => {
                 <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
                     <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full">
                         <div className="flex justify-between items-center p-6 border-b border-gray-200">
-                            <h3 className="text-xl font-semibold">Add Department</h3>
+                            <h3 className="text-xl font-medium">Add Department</h3>
                             <button onClick={() => setShowDepartmentModal(false)} className="p-2 hover:bg-gray-100 rounded-lg">
                                 <MdClose className="w-6 h-6" />
                             </button>
@@ -580,7 +580,7 @@ const EditProjectPage = () => {
                 <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
                     <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full">
                         <div className="flex justify-between items-center p-6 border-b border-gray-200">
-                            <h3 className="text-xl font-semibold">Add Client</h3>
+                            <h3 className="text-xl font-medium">Add Client</h3>
                             <button onClick={() => setShowClientModal(false)} className="p-2 hover:bg-gray-100 rounded-lg">
                                 <MdClose className="w-6 h-6" />
                             </button>

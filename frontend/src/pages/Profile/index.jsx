@@ -180,7 +180,7 @@ const Profile = () => {
                 </div>
 
                 <h1 className="text-2xl font-black text-black tracking-tight mb-1">{profile.name || 'Account Owner'}</h1>
-                <p className="text-gray-400 font-bold text-[10px] uppercase tracking-widest mb-4">@{profile.username || 'user'}</p>
+                <p className="text-gray-400 font-medium text-[10px] uppercase tracking-widest mb-4">@{profile.username || 'user'}</p>
 
                 <div className="flex flex-col gap-3 text-left pt-6 border-t border-gray-50">
                   <div className="flex items-center gap-3 text-gray-500">
@@ -215,7 +215,7 @@ const Profile = () => {
                 <div className="w-12 h-12 rounded-2xl bg-white/10 flex items-center justify-center mb-6">
                   <ShieldCheck className="w-6 h-6" />
                 </div>
-                <h3 className="text-lg font-bold mb-2">Verified Profile</h3>
+                <h3 className="text-lg font-medium mb-2">Verified Profile</h3>
                 <p className="text-gray-400 text-xs leading-relaxed">Your account is secured with high-level encryption and internal role protocols.</p>
               </div>
             </div>
@@ -235,8 +235,8 @@ const Profile = () => {
                     <UserCircle className="w-5 h-5 text-black" />
                   </div>
                   <div>
-                    <h2 className="text-lg font-bold text-black leading-none mb-1">Personal Details</h2>
-                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Identification & Presence</p>
+                    <h2 className="text-lg font-medium text-black leading-none mb-1">Personal Details</h2>
+                    <p className="text-[10px] font-medium text-gray-400 uppercase tracking-widest">Identification & Presence</p>
                   </div>
                 </div>
               </div>
@@ -284,7 +284,7 @@ const Profile = () => {
                     whileTap={{ scale: 0.98 }}
                     type="submit"
                     disabled={isUpdatingProfile}
-                    className="px-8 py-4 bg-black text-white rounded-2xl font-bold text-sm shadow-xl shadow-black/10 hover:shadow-black/20 flex items-center justify-center gap-3 transition-all disabled:opacity-50"
+                    className="px-8 py-4 bg-black text-white rounded-2xl font-medium text-sm shadow-xl shadow-black/10 hover:shadow-black/20 flex items-center justify-center gap-3 transition-all disabled:opacity-50"
                   >
                     {isUpdatingProfile ? 'Processing...' : 'Apply Modifications'}
                   </motion.button>
@@ -300,8 +300,8 @@ const Profile = () => {
                     <Settings className="w-5 h-5 text-black" />
                   </div>
                   <div>
-                    <h2 className="text-lg font-bold text-black leading-none mb-1">Security Update</h2>
-                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Authentication Keys</p>
+                    <h2 className="text-lg font-medium text-black leading-none mb-1">Security Update</h2>
+                    <p className="text-[10px] font-medium text-gray-400 uppercase tracking-widest">Authentication Keys</p>
                   </div>
                 </div>
               </div>
@@ -334,7 +334,7 @@ const Profile = () => {
                     whileTap={{ scale: 0.98 }}
                     type="submit"
                     disabled={isChangingPassword}
-                    className="px-8 py-4 bg-white text-black border-2 border-black rounded-2xl font-bold text-sm hover:bg-black hover:text-white transition-all disabled:opacity-50"
+                    className="px-8 py-4 bg-white text-black border-2 border-black rounded-2xl font-medium text-sm hover:bg-black hover:text-white transition-all disabled:opacity-50"
                   >
                     {isChangingPassword ? 'Securing...' : 'Renew Password'}
                   </motion.button>

@@ -241,7 +241,7 @@ const ProjectsView = () => {
           const initial = name[0]?.toUpperCase() || "?";
           return (
             <div key={member.id || i} className="relative group">
-              <div className="w-10 h-10 rounded-full bg-linear-to-br from-blue-500 to-purple-600 border-2 border-white flex items-center justify-center text-white text-sm font-bold shadow-md">
+              <div className="w-10 h-10 rounded-full bg-linear-to-br from-blue-500 to-purple-600 border-2 border-white flex items-center justify-center text-white text-sm font-medium shadow-md">
                 {initial}
               </div>
               <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-black text-white text-xs rounded-lg whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
@@ -252,7 +252,7 @@ const ProjectsView = () => {
           );
         })}
         {memberCount > 3 && (
-          <div className="w-10 h-10 rounded-full bg-gray-600 border-2 border-white flex items-center justify-center text-white text-sm font-bold shadow-md">
+          <div className="w-10 h-10 rounded-full bg-gray-600 border-2 border-white flex items-center justify-center text-white text-sm font-medium shadow-md">
             +{memberCount - 3}
           </div>
         )}
@@ -277,25 +277,25 @@ const ProjectsView = () => {
             <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
               <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
                 <div className="text-center">
-                  <div className="text-4xl font-bold text-black mb-2">{stats.total}</div>
+                  <div className="text-4xl font-medium text-black mb-2">{stats.total}</div>
                   <p className="text-sm text-gray-600">Total Projects</p>
                 </div>
                 <div className="text-center">
-                  <div className="text-4xl font-bold text-red-600 mb-2">{stats.overdue}</div>
+                  <div className="text-4xl font-medium text-red-600 mb-2">{stats.overdue}</div>
                   <p className="text-sm text-gray-600">Overdue</p>
                 </div>
                 <div className="text-center">
-                  <div className="text-4xl font-bold text-gray-600 mb-2">{stats.notStarted}</div>
+                  <div className="text-4xl font-medium text-gray-600 mb-2">{stats.notStarted}</div>
                   <p className="text-sm text-gray-600">Not Started</p>
                 </div>
                 <div className="text-center">
-                  <div className="text-4xl font-bold text-green-600 mb-2">{stats.completed}</div>
+                  <div className="text-4xl font-medium text-green-600 mb-2">{stats.completed}</div>
                   <p className="text-sm text-gray-600">Completed</p>
                 </div>
               </div>
               <Link
                 to="/operations/projects/projectcreate"
-                className="flex items-center gap-3 px-6 py-3 bg-black text-white rounded-xl hover:bg-gray-900 transition text-sm font-semibold"
+                className="flex items-center gap-3 px-6 py-3 bg-black text-white rounded-xl hover:bg-gray-900 transition text-sm font-medium"
               >
                 <MdAdd className="w-5 h-5" /> Add New Project
               </Link>
@@ -319,7 +319,7 @@ const ProjectsView = () => {
 
                 <button
                   onClick={() => setFiltersOpen(!filtersOpen)}
-                  className="flex items-center gap-3 px-5 py-4 border border-gray-300 rounded-xl hover:bg-gray-50 transition text-sm font-semibold whitespace-nowrap"
+                  className="flex items-center gap-3 px-5 py-4 border border-gray-300 rounded-xl hover:bg-gray-50 transition text-sm font-medium whitespace-nowrap"
                 >
                   <MdFilterList className="w-5 h-5" />
                   Filters
@@ -341,18 +341,18 @@ const ProjectsView = () => {
               <div className="flex gap-3">
                 <button
                   onClick={() => setIsPinnedModalOpen(true)}
-                  className="flex items-center gap-2 px-5 py-4 border border-gray-300 rounded-xl hover:bg-gray-50 transition text-sm font-semibold"
+                  className="flex items-center gap-2 px-5 py-4 border border-gray-300 rounded-xl hover:bg-gray-50 transition text-sm font-medium"
                 >
                   <MdPushPin className="w-5 h-5" />
                   Pinned ({pinnedProjects.length})
                 </button>
                 <button
                   onClick={() => navigate("/operations/projects/projectarchive")}
-                  className="px-5 py-4 border border-gray-300 rounded-xl hover:bg-gray-50 transition text-sm font-semibold"
+                  className="px-5 py-4 border border-gray-300 rounded-xl hover:bg-gray-50 transition text-sm font-medium"
                 >
                   View Archive
                 </button>
-                <button className="flex items-center gap-2 px-5 py-4 border border-gray-300 rounded-xl hover:bg-gray-50 transition text-sm font-semibold">
+                <button className="flex items-center gap-2 px-5 py-4 border border-gray-300 rounded-xl hover:bg-gray-50 transition text-sm font-medium">
                   <MdDownload className="w-5 h-5" /> Export
                 </button>
               </div>
@@ -426,7 +426,7 @@ const ProjectsView = () => {
                   <div className="flex flex-col sm:flex-row gap-4 mt-8 pt-6 border-t border-gray-200">
                     <button
                       onClick={resetFilters}
-                      className="px-6 py-3.5 border-2 border-gray-300 text-gray-700 font-semibold rounded-xl hover:bg-gray-50 transition"
+                      className="px-6 py-3.5 border-2 border-gray-300 text-gray-700 font-medium rounded-xl hover:bg-gray-50 transition"
                     >
                       Reset All Filters
                     </button>
@@ -499,7 +499,7 @@ const ProjectsView = () => {
                             className="flex items-center justify-between p-4 bg-gray-50 rounded-xl"
                           >
                             <div>
-                              <p className="font-semibold text-gray-900">{project.name}</p>
+                              <p className="font-medium text-gray-900">{project.name}</p>
                               {project.summary && <p className="text-sm text-gray-500">{project.summary}</p>}
                             </div>
                             <button
@@ -541,7 +541,7 @@ const ProjectsView = () => {
                           <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mb-5">
                             <MdFilterList className="w-10 h-10 text-gray-400" />
                           </div>
-                          <p className="text-xl font-semibold text-gray-700">No projects found</p>
+                          <p className="text-xl font-medium text-gray-700">No projects found</p>
                           <p className="text-gray-500 mt-2">Try adjusting your search or filters</p>
                           {(search || activeFilterCount > 0) && (
                             <button
@@ -573,7 +573,7 @@ const ProjectsView = () => {
                             <div>
                               <Link
                                 to={`/operations/projects/${project.id}`}
-                                className="font-semibold text-gray-900 hover:text-blue-600 transition"
+                                className="font-medium text-gray-900 hover:text-blue-600 transition"
                               >
                                 {project.name}
                               </Link>
@@ -588,8 +588,8 @@ const ProjectsView = () => {
                           </td>
                           <td className="px-6 py-5">
                             <div className="flex flex-col gap-1">
-                              <div className="text-sm font-bold text-gray-900">0%</div>
-                              <div className="text-[10px] font-bold text-red-500 uppercase">Loss: ₹0</div>
+                              <div className="text-sm font-medium text-gray-900">0%</div>
+                              <div className="text-[10px] font-medium text-red-500 uppercase">Loss: ₹0</div>
                             </div>
                           </td>
                           <td className="px-6 py-5 whitespace-nowrap min-w-[180px]">
@@ -603,7 +603,7 @@ const ProjectsView = () => {
                                   .filter(s => s.name.toLowerCase() !== "not started")
                                   .map((s) => ({ label: s.name, value: s.id.toString() })),
                               ]}
-                              className="text-xs font-bold"
+                              className="text-xs font-medium"
                             />
                           </td>
                           <td className="px-6 py-5 whitespace-nowrap">

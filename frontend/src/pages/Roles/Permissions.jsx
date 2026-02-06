@@ -172,7 +172,7 @@ const Permissions = () => {
     <div className="p-6 min-h-screen">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
         <div>
-          <h1 className="text-2xl font-semibold text-gray-900">Permissions Management</h1>
+          <h1 className="text-2xl font-medium text-gray-900">Permissions Management</h1>
           <p className="text-sm text-gray-500">Manage individual user access control and overrides</p>
         </div>
         <div className="relative">
@@ -197,17 +197,17 @@ const Permissions = () => {
             className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition-shadow relative overflow-hidden group"
           >
             <div className="absolute top-0 right-0 p-4">
-              <span className="bg-blue-50 text-[#50728c] text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wider">
+              <span className="bg-blue-50 text-[#50728c] text-[10px] font-medium px-3 py-1 rounded-full uppercase tracking-wider">
                 {user.role?.name || "No Role"}
               </span>
             </div>
 
             <div className="flex items-start gap-4 mb-6 pt-2">
-              <div className="w-14 h-14 rounded-xl bg-gray-100 flex items-center justify-center text-xl font-bold text-gray-400 border border-gray-200 uppercase">
+              <div className="w-14 h-14 rounded-xl bg-gray-100 flex items-center justify-center text-xl font-medium text-gray-400 border border-gray-200 uppercase">
                 {user.name?.charAt(0) || "U"}
               </div>
               <div className="flex-1 min-w-0">
-                <h3 className="text-lg font-bold text-gray-900 truncate pr-20">{user.name}</h3>
+                <h3 className="text-lg font-medium text-gray-900 truncate pr-20">{user.name}</h3>
                 <p className="text-sm text-gray-500 truncate">{user.email}</p>
               </div>
             </div>
@@ -216,7 +216,7 @@ const Permissions = () => {
               <span className="text-xs font-medium text-gray-400 uppercase tracking-widest">Access Control</span>
               <button
                 onClick={() => openOverridesModal(user)}
-                className="flex items-center gap-2 text-sm font-semibold text-gray-700 hover:text-black transition-colors"
+                className="flex items-center gap-2 text-sm font-medium text-gray-700 hover:text-black transition-colors"
               >
                 Manage <ChevronRight className="w-4 h-4" />
               </button>
@@ -243,7 +243,7 @@ const Permissions = () => {
             >
               {/* Modal Header */}
               <div className="p-8 pb-4 flex items-center justify-between border-b border-gray-100">
-                <h2 className="text-2xl font-bold text-[#4a627a]">Permissions Overrides: {selectedUser.name}</h2>
+                <h2 className="text-2xl font-medium text-[#4a627a]">Permissions Overrides: {selectedUser.name}</h2>
                 <button
                   onClick={() => setSelectedUser(null)}
                   className="p-2 transition-colors hover:bg-gray-100 rounded-full text-red-400"
@@ -259,7 +259,7 @@ const Permissions = () => {
                     <Lock className="w-5 h-5 text-[#d97706]" />
                   </div>
                   <div>
-                    <h4 className="font-bold text-[#d97706]">Individual Overrides</h4>
+                    <h4 className="font-medium text-[#d97706]">Individual Overrides</h4>
                     <p className="text-sm text-[#d97706] opacity-80 leading-relaxed">
                       These settings will override the default permissions assigned to the user's role.
                     </p>
@@ -270,19 +270,19 @@ const Permissions = () => {
                 <div className="bg-gray-50/80 rounded-3xl p-6 border border-gray-100 shadow-inner">
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                     <div>
-                      <h4 className="font-bold text-gray-900 uppercase tracking-tighter text-lg">Select All Permissions</h4>
+                      <h4 className="font-medium text-gray-900 uppercase tracking-tighter text-lg">Select All Permissions</h4>
                       <p className="text-xs text-gray-500">Quickly enable or disable all access rights across all modules</p>
                     </div>
                     <div className="flex gap-2 bg-white p-1.5 rounded-2xl shadow-sm border border-gray-100">
                       <button
                         onClick={() => handleBulkAction('deselectAll')}
-                        className="px-6 py-2 rounded-xl text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-colors whitespace-nowrap"
+                        className="px-6 py-2 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors whitespace-nowrap"
                       >
                         Deselect All
                       </button>
                       <button
                         onClick={() => handleBulkAction('selectAll')}
-                        className="px-6 py-2 rounded-xl text-sm font-semibold bg-[#50728c] text-white transition-opacity hover:opacity-90 whitespace-nowrap"
+                        className="px-6 py-2 rounded-xl text-sm font-medium bg-[#50728c] text-white transition-opacity hover:opacity-90 whitespace-nowrap"
                       >
                         Select All
                       </button>
@@ -295,9 +295,9 @@ const Permissions = () => {
                   <table className="w-full text-left border-collapse">
                     <thead className="bg-[#fafbff]">
                       <tr>
-                        <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest pl-8">Module / Page</th>
+                        <th className="px-6 py-4 text-xs font-medium text-gray-400 uppercase tracking-widest pl-8">Module / Page</th>
                         {["view", "add", "edit", "delete"].map(action => (
-                          <th key={action} className="px-4 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest text-center">{action}</th>
+                          <th key={action} className="px-4 py-4 text-xs font-medium text-gray-400 uppercase tracking-widest text-center">{action}</th>
                         ))}
                       </tr>
                     </thead>
@@ -306,7 +306,7 @@ const Permissions = () => {
                         <tr key={key} className="hover:bg-gray-50/50 group transition-colors">
                           <td className="px-6 py-5 pl-8">
                             <div className="flex flex-col">
-                              <span className="font-bold text-gray-900 leading-none mb-1">{pageNameMap[key].displayName}</span>
+                              <span className="font-medium text-gray-900 leading-none mb-1">{pageNameMap[key].displayName}</span>
                               <span className="text-[10px] text-gray-400 font-mono tracking-tight">{pageNameMap[key].route}</span>
                             </div>
                           </td>
@@ -331,14 +331,14 @@ const Permissions = () => {
               <div className="p-8 bg-gray-50 border-t border-gray-100 flex justify-end gap-3 rounded-b-[2.5rem]">
                 <button
                   onClick={() => setSelectedUser(null)}
-                  className="px-8 py-3.5 rounded-2xl font-bold bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 transition-colors shadow-sm"
+                  className="px-8 py-3.5 rounded-2xl font-medium bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 transition-colors shadow-sm"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={handleSavePermissions}
                   disabled={isSaving}
-                  className="px-10 py-3.5 rounded-2xl font-bold bg-[#50728c] text-white shadow-xl shadow-blue-900/10 hover:opacity-90 transition-all active:scale-95 flex items-center gap-3"
+                  className="px-10 py-3.5 rounded-2xl font-medium bg-[#50728c] text-white shadow-xl shadow-blue-900/10 hover:opacity-90 transition-all active:scale-95 flex items-center gap-3"
                 >
                   {isSaving ? <Loader2 className="w-5 h-5 animate-spin" /> : "Save Changes"}
                 </button>

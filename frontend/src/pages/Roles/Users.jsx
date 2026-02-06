@@ -362,7 +362,7 @@ const Users = () => {
                 <button
                   type="submit"
                   disabled={isCreating}
-                  className="inline-flex items-center gap-4 px-10 py-4 bg-black text-sm text-white rounded-2xl font-bold shadow-2xl hover:bg-gray-800 transition-all disabled:opacity-70"
+                  className="inline-flex items-center gap-4 px-10 py-4 bg-black text-sm text-white rounded-2xl font-medium shadow-2xl hover:bg-gray-800 transition-all disabled:opacity-70"
                 >
                   {isCreating && <Loader2 className="w-5 h-5 animate-spin" />}
                   {isCreating ? "Creating..." : "Create User"}
@@ -400,9 +400,9 @@ const Users = () => {
             <table className="w-full">
               <thead className="bg-gray-50">
                 <tr>
-                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">User / Identity</th>
-                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">Assigned Role</th>
-                  <th className="px-6 py-4 text-right text-sm font-semibold text-gray-700">Actions</th>
+                  <th className="px-6 py-4 text-left text-sm font-medium text-gray-700">User / Identity</th>
+                  <th className="px-6 py-4 text-left text-sm font-medium text-gray-700">Assigned Role</th>
+                  <th className="px-6 py-4 text-right text-sm font-medium text-gray-700">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
@@ -417,12 +417,12 @@ const Users = () => {
                     <tr key={user.id} className="hover:bg-gray-50/50 group transition-colors">
                       <td className="px-6 py-4">
                         <div className="flex flex-col">
-                          <span className="font-bold text-black">{user.name || "Unnamed User"}</span>
+                          <span className="font-medium text-black">{user.name || "Unnamed User"}</span>
                           <span className="text-sm text-gray-500">{user.email}</span>
                         </div>
                       </td>
                       <td className="px-6 py-4">
-                        <span className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider
+                        <span className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium uppercase tracking-wider
                           ${user.role?.name === 'Superadmin' ? 'bg-purple-100 text-purple-700' : 'bg-gray-100 text-gray-700'}`}>
                           <Shield className="w-3.5 h-3.5" />
                           {user.role?.name || "DIRECT ONLY"}
@@ -482,7 +482,7 @@ const Users = () => {
               >
                 <div className="p-8 border-b border-gray-100 sticky top-0 bg-white z-10 flex items-center justify-between">
                   <div>
-                    <h2 className="text-3xl font-bold text-black tracking-tight">Edit Permissions</h2>
+                    <h2 className="text-3xl font-medium text-black tracking-tight">Edit Permissions</h2>
                     <p className="text-gray-500 font-medium">{editUser.email}</p>
                   </div>
                   <button onClick={() => setEditUser(null)} className="p-2 hover:bg-gray-100 rounded-full transition-colors">
@@ -512,7 +512,7 @@ const Users = () => {
                   <div className="space-y-6">
                     <div className="flex items-center gap-2 text-black">
                       <Shield className="w-6 h-6" />
-                      <h4 className="text-xl font-bold">Direct Permissions</h4>
+                      <h4 className="text-xl font-medium">Direct Permissions</h4>
                     </div>
                     <PermissionMatrix
                       permissions={editDirectPerms}
@@ -528,7 +528,7 @@ const Users = () => {
                   <div className="space-y-6">
                     <div className="flex items-center gap-2 text-red-600">
                       <ShieldAlert className="w-6 h-6" />
-                      <h4 className="text-xl font-bold">Permission Blocks (Overrides)</h4>
+                      <h4 className="text-xl font-medium">Permission Blocks (Overrides)</h4>
                     </div>
                     <PermissionMatrix
                       permissions={editOverrides}
@@ -545,7 +545,7 @@ const Users = () => {
                     <div className="bg-gray-50 rounded-2xl p-6 border border-gray-200">
                       <div className="flex items-center gap-2 text-green-700 mb-6">
                         <CheckCircle className="w-6 h-6" />
-                        <h4 className="text-xl font-bold">Effective Permissions (Live)</h4>
+                        <h4 className="text-xl font-medium">Effective Permissions (Live)</h4>
                       </div>
                       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
                         {Object.keys(pageNameMap).map(key => {
@@ -573,14 +573,14 @@ const Users = () => {
                     <button
                       type="button"
                       onClick={() => setEditUser(null)}
-                      className="px-8 py-3 bg-gray-100 text-gray-700 rounded-2xl hover:bg-gray-200 font-bold transition-colors"
+                      className="px-8 py-3 bg-gray-100 text-gray-700 rounded-2xl hover:bg-gray-200 font-medium transition-colors"
                     >
                       Cancel
                     </button>
                     <button
                       type="submit"
                       disabled={isEditing}
-                      className="px-12 py-3 bg-black text-white rounded-2xl font-bold shadow-xl hover:bg-gray-800 transition-all disabled:opacity-70 flex items-center gap-3"
+                      className="px-12 py-3 bg-black text-white rounded-2xl font-medium shadow-xl hover:bg-gray-800 transition-all disabled:opacity-70 flex items-center gap-3"
                     >
                       {isEditing && <Loader2 className="w-5 h-5 animate-spin" />}
                       {isEditing ? "Saving Changes..." : "Apply Permissions"}

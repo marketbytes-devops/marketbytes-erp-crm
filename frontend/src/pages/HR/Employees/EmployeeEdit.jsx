@@ -206,7 +206,7 @@ const EmployeeEdit = () => {
 
         <form onSubmit={handleSubmit} className="space-y-8">
           <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-6">Personal Information</h3>
+            <h3 className="text-lg font-medium text-gray-900 mb-6">Personal Information</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               <Input label="Full Name" required value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} />
               <Input label="Username" required value={formData.username} onChange={e => setFormData({ ...formData, username: e.target.value })} />
@@ -234,7 +234,7 @@ const EmployeeEdit = () => {
             </div>
           </div>
           <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-6">Job & Role Information</h3>
+            <h3 className="text-lg font-medium text-gray-900 mb-6">Job & Role Information</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               <Input
                 label="Role (Optional)"
@@ -272,7 +272,7 @@ const EmployeeEdit = () => {
 
 
           <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-6">Account & Access Settings</h3>
+            <h3 className="text-lg font-medium text-gray-900 mb-6">Account & Access Settings</h3>
             <div className="space-y-7">
               <div className="flex flex-wrap items-center gap-8">
                 <label className="flex items-center gap-3 cursor-pointer">
@@ -309,7 +309,7 @@ const EmployeeEdit = () => {
                     }}
                     className="w-5 h-5 rounded border-gray-400 text-black"
                   />
-                  <label className="font-semibold text-gray-800">
+                  <label className="font-medium text-gray-800">
                     Generate New Random Password & Send via Email
                   </label>
                 </div>
@@ -354,7 +354,7 @@ const EmployeeEdit = () => {
             <button
               type="submit"
               disabled={submitLoading}
-              className="flex items-center gap-3 px-6 py-3 bg-black text-white rounded-xl hover:bg-gray-900 transition text-sm font-semibold disabled:opacity-50"
+              className="flex items-center gap-3 px-6 py-3 bg-black text-white rounded-xl hover:bg-gray-900 transition text-sm font-medium disabled:opacity-50"
             >
               {submitLoading ? "Updating..." : "Update Employee"}
             </button>

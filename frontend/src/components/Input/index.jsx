@@ -198,7 +198,7 @@ const Input = forwardRef(
           {label && (
             <label
               htmlFor={id}
-              className="block text-sm font-semibold text-black"
+              className="block text-sm font-medium text-black"
             >
               {label}
               {required && <span className="text-red-500 ml-1">*</span>}
@@ -237,7 +237,7 @@ const Input = forwardRef(
         {label && (
           <label
             htmlFor={id}
-            className="block text-sm font-semibold text-black"
+            className="block text-sm font-medium text-black"
           >
             {label}
             {required && <span className="text-red-500 ml-1">*</span>}

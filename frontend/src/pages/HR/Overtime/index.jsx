@@ -106,11 +106,11 @@ const Overtime = () => {
             <div className="absolute -right-2 -top-2 text-gray-100 group-hover:text-black/5 transition-colors">
               <Clock size={80} />
             </div>
-            <p className="text-gray-600 text-[10px] font-bold uppercase tracking-widest mb-1">Total Hours</p>
+            <p className="text-gray-600 text-[10px] font-medium uppercase tracking-widest mb-1">Total Hours</p>
             <p className="text-3xl font-medium text-black font-syne group-hover:scale-110 transition-transform origin-left">{totalOvertimeHours.toFixed(2)}h</p>
             <div className="mt-4 flex items-center gap-2 text-emerald-600">
               <MdTrendingUp className="text-lg" />
-              <span className="text-[10px] font-bold uppercase">Efficiency Bonus</span>
+              <span className="text-[10px] font-medium uppercase">Efficiency Bonus</span>
             </div>
           </div>
 
@@ -118,7 +118,7 @@ const Overtime = () => {
             <div className="absolute -right-2 -top-2 text-gray-100 group-hover:text-black/5 transition-colors">
               <Zap size={80} />
             </div>
-            <p className="text-gray-600 text-[10px] font-bold uppercase tracking-widest mb-1">Total Records</p>
+            <p className="text-gray-600 text-[10px] font-medium uppercase tracking-widest mb-1">Total Records</p>
             <p className="text-3xl font-medium text-black font-syne">{overtime.length}</p>
             <p className="text-[10px] text-gray-500 mt-4 font-medium uppercase tracking-tight">Across {month}/{year}</p>
           </div>
@@ -127,7 +127,7 @@ const Overtime = () => {
             <div className="absolute inset-0 bg-linear-to-br from-white/10 to-transparent" />
             <div className="relative z-10 flex flex-col h-full justify-between">
               <div>
-                <p className="text-gray-400 text-[10px] font-bold uppercase tracking-widest mb-1">Productivity Standard</p>
+                <p className="text-gray-400 text-[10px] font-medium uppercase tracking-widest mb-1">Productivity Standard</p>
                 <h3 className="text-white text-xl font-medium font-syne">8-Hour Productive Window</h3>
               </div>
               <p className="text-gray-400 text-xs leading-relaxed max-w-sm mt-4">
@@ -189,7 +189,7 @@ const Overtime = () => {
               ) : (
                 <MdCalculate className="text-xl" />
               )}
-              <span className="text-[11px] font-bold uppercase tracking-widest">Calculate Sync</span>
+              <span className="text-[11px] font-medium uppercase tracking-widest">Calculate Sync</span>
             </button>
           </div>
         </div>
@@ -201,7 +201,7 @@ const Overtime = () => {
               <div className="w-16 h-1 bg-gray-100 rounded-full overflow-hidden relative mb-4">
                 <div className="absolute inset-0 bg-black animate-progress" />
               </div>
-              <p className="text-[10px] font-bold uppercase text-gray-400 tracking-[0.2em]">Synchronizing Records...</p>
+              <p className="text-[10px] font-medium uppercase text-gray-400 tracking-[0.2em]">Synchronizing Records...</p>
             </div>
           ) : filteredOvertime.length === 0 ? (
             <div className="p-24 text-center">
@@ -216,10 +216,10 @@ const Overtime = () => {
               <table className="w-full border-collapse">
                 <thead>
                   <tr className="bg-gray-50/50 border-b border-gray-100">
-                    <th className="px-10 py-8 text-left text-[10px] font-bold text-gray-400 uppercase tracking-widest w-64">Stakeholder</th>
-                    <th className="px-10 py-8 text-left text-[10px] font-bold text-gray-400 uppercase tracking-widest">Temporal Context</th>
-                    <th className="px-10 py-8 text-left text-[10px] font-bold text-gray-400 uppercase tracking-widest">Project/Effort</th>
-                    <th className="px-10 py-8 text-right text-[10px] font-bold text-gray-400 uppercase tracking-widest w-48">Impact Value</th>
+                    <th className="px-10 py-8 text-left text-[10px] font-medium text-gray-400 uppercase tracking-widest w-64">Stakeholder</th>
+                    <th className="px-10 py-8 text-left text-[10px] font-medium text-gray-400 uppercase tracking-widest">Temporal Context</th>
+                    <th className="px-10 py-8 text-left text-[10px] font-medium text-gray-400 uppercase tracking-widest">Project/Effort</th>
+                    <th className="px-10 py-8 text-right text-[10px] font-medium text-gray-400 uppercase tracking-widest w-48">Impact Value</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-50">
@@ -243,7 +243,7 @@ const Overtime = () => {
                               )}
                             </div>
                             <div className="flex flex-col">
-                              <span className="text-sm font-semibold text-black font-syne">{ot.employee?.name || "Anonymous"}</span>
+                              <span className="text-sm font-medium text-black font-syne">{ot.employee?.name || "Anonymous"}</span>
                               <span className="text-[10px] text-gray-500 font-medium uppercase tracking-tighter mt-0.5">{ot.employee?.designation?.name || "Platform Contributor"}</span>
                             </div>
                           </div>
@@ -252,18 +252,18 @@ const Overtime = () => {
                           <div className="flex flex-col gap-1">
                             <div className="flex items-center gap-2 text-black">
                               <Calendar size={14} className="text-gray-300" />
-                              <span className="text-xs font-bold uppercase tracking-wide">
+                              <span className="text-xs font-medium uppercase tracking-wide">
                                 {ot.date ? new Date(ot.date).toLocaleDateString("en-GB", { day: '2-digit', month: 'short', year: 'numeric' }) : "--"}
                               </span>
                             </div>
-                            <span className="text-[10px] text-gray-400 font-bold uppercase ml-6">{ot.date ? new Date(ot.date).toLocaleDateString("en-GB", { weekday: 'long' }) : ""}</span>
+                            <span className="text-[10px] text-gray-400 font-medium uppercase ml-6">{ot.date ? new Date(ot.date).toLocaleDateString("en-GB", { weekday: 'long' }) : ""}</span>
                           </div>
                         </td>
                         <td className="px-10 py-8">
                           <div className="max-w-md">
                             <div className="flex items-center gap-2 mb-2">
                               <Briefcase size={14} className="text-gray-300" />
-                              <span className="text-xs font-bold text-black uppercase tracking-widest">{ot.project || "General Operations"}</span>
+                              <span className="text-xs font-medium text-black uppercase tracking-widest">{ot.project || "General Operations"}</span>
                             </div>
                             <p className="text-[11px] text-gray-500 line-clamp-2 leading-relaxed font-medium bg-gray-50/50 p-3 rounded-2xl group-hover:bg-white group-hover:shadow-sm transition-all border border-transparent group-hover:border-gray-100 whitespace-pre-wrap">
                               {ot.effort || "No execution details specified."}
@@ -272,10 +272,10 @@ const Overtime = () => {
                         </td>
                         <td className="px-10 py-8 text-right">
                           <div className="flex flex-col items-end gap-1">
-                            <span className="inline-flex px-5 py-2.5 bg-black text-white rounded-full text-[13px] font-bold tracking-tighter shadow-lg shadow-black/10 group-hover:scale-110 transition-transform">
+                            <span className="inline-flex px-5 py-2.5 bg-black text-white rounded-full text-[13px] font-medium tracking-tighter shadow-lg shadow-black/10 group-hover:scale-110 transition-transform">
                               +{parseFloat(ot.hours || 0).toFixed(2)}h
                             </span>
-                            <span className="text-[9px] text-gray-400 font-bold uppercase tracking-widest mt-1">Confirmed Units</span>
+                            <span className="text-[9px] text-gray-400 font-medium uppercase tracking-widest mt-1">Confirmed Units</span>
                           </div>
                         </td>
                       </motion.tr>
@@ -304,10 +304,10 @@ const Overtime = () => {
             </p>
           </div>
           <div className="flex gap-4 relative z-10">
-            <button className="flex items-center gap-3 px-6 py-3 bg-white border border-gray-200 text-black text-[10px] font-bold uppercase tracking-widest rounded-2xl hover:bg-gray-100 transition shadow-xs active:scale-95">
+            <button className="flex items-center gap-3 px-6 py-3 bg-white border border-gray-200 text-black text-[10px] font-medium uppercase tracking-widest rounded-2xl hover:bg-gray-100 transition shadow-xs active:scale-95">
               <MdDownload /> Export Ledger
             </button>
-            <button className="flex items-center gap-3 px-6 py-3 bg-black text-white text-[10px] font-bold uppercase tracking-widest rounded-2xl hover:bg-gray-800 transition shadow-xl shadow-black/10 active:scale-95">
+            <button className="flex items-center gap-3 px-6 py-3 bg-black text-white text-[10px] font-medium uppercase tracking-widest rounded-2xl hover:bg-gray-800 transition shadow-xl shadow-black/10 active:scale-95">
               <ChevronRight size={14} /> Audit History
             </button>
           </div>

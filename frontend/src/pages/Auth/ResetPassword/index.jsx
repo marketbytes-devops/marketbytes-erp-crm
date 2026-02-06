@@ -73,13 +73,13 @@ const ResetPassword = () => {
             type="email"
             placeholder="you@example.com"
             {...emailForm.register('email')}
-            error={emailForm.formState.errors.email?.message}  
+            error={emailForm.formState.errors.email?.message}
           />
 
           <button
             type="submit"
             disabled={emailForm.formState.isSubmitting}
-            className="w-full bg-black text-white font-semibold py-3 rounded-lg hover:bg-gray-100 hover:text-black border transition duration-300 disabled:opacity-70 shadow-md"
+            className="w-full bg-black text-white font-medium py-3 rounded-lg hover:bg-gray-100 hover:text-black border transition duration-300 disabled:opacity-70 shadow-md"
           >
             {emailForm.formState.isSubmitting ? 'Sending OTP...' : 'Send OTP'}
           </button>
@@ -95,7 +95,7 @@ const ResetPassword = () => {
             placeholder="000000"
             className="text-center text-2xl tracking-widest font-mono letter-spacing-4"
             {...resetForm.register('otp')}
-            error={resetForm.formState.errors.otp?.message}  
+            error={resetForm.formState.errors.otp?.message}
           />
 
           <Input
@@ -104,13 +104,13 @@ const ResetPassword = () => {
             type="password"
             placeholder="Enter strong password"
             {...resetForm.register('newPassword')}
-            error={resetForm.formState.errors.newPassword?.message}   
+            error={resetForm.formState.errors.newPassword?.message}
           />
 
           <button
             type="submit"
             disabled={resetForm.formState.isSubmitting}
-            className="w-full bg-black text-white font-semibold py-3 rounded-lg hover:bg-gray-100 hover:text-black border transition duration-300 disabled:opacity-70 shadow-md"
+            className="w-full bg-black text-white font-medium py-3 rounded-lg hover:bg-gray-100 hover:text-black border transition duration-300 disabled:opacity-70 shadow-md"
           >
             {resetForm.formState.isSubmitting ? 'Resetting...' : 'Reset Password'}
           </button>

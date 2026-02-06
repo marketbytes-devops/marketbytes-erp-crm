@@ -9,7 +9,6 @@ import {
   MdTimer,
   MdCalendarToday,
   MdPerson,
-  MdMoreVert,
   MdEdit,
   MdDelete,
   MdVisibility
@@ -21,7 +20,6 @@ import { Link } from "react-router-dom";
 import apiClient from "../../../helpers/apiClient";
 import toast from "react-hot-toast";
 import Loading from "../../../components/Loading";
-
 
 const TimeLogs = () => {
   const [loading, setLoading] = useState(true);
@@ -104,11 +102,7 @@ const TimeLogs = () => {
       const endpoint = viewMode === "daily" ? `/hr/attendance/${id}/` : `/hr/work-sessions/${id}/`;
       await apiClient.delete(endpoint);
       toast.success("Log deleted successfully");
-      if (viewMode === "daily") {
-        setTimeEntries(prev => prev.filter(e => e.id !== id));
-      } else {
-        setDetailedEntries(prev => prev.filter(e => e.id !== id));
-      }
+      fetchData();
     } catch (err) {
       toast.error("Failed to delete log");
     }
@@ -157,6 +151,16 @@ const TimeLogs = () => {
     return result;
   }, [timeEntries, detailedEntries, search, filters, projects, viewMode]);
 
+  const stats = useMemo(() => {
+    const activeData = filteredEntries;
+    return {
+      total: activeData.length,
+      productive: activeData.reduce((acc, curr) => acc + parseFloat(curr.productive_hours || 0), 0).toFixed(1),
+      billable: activeData.filter(e => e.is_billable).length,
+      totalHours: activeData.reduce((acc, curr) => acc + parseFloat(curr.total_hours || 0), 0).toFixed(1),
+    };
+  }, [filteredEntries]);
+
   const formatDate = (dateStr) => {
     if (!dateStr) return "";
     const date = new Date(dateStr);
@@ -178,126 +182,138 @@ const TimeLogs = () => {
   };
 
   if (loading) {
-    return <div className="min-h-screen flex items-center justify-center"><Loading /></div>;
+    return <div className="min-h-screen flex items-center justify-center bg-white"><Loading /></div>;
   }
 
   return (
     <div className="p-6">
       <LayoutComponents
         title="Time Logs"
-        subtitle="Daily aggregated employee time entries"
+        subtitle="Manage and analyze employee operational time distribution"
         variant="table"
       >
-        {/* Top Action Buttons */}
-        <div className="bg-white rounded-2xl shadow-sm p-8 mb-8 flex flex-wrap justify-between items-center gap-6">
-          <div className="flex flex-wrap gap-4">
-            <Link to="/operations/time-logs/active-timers" >
-              <button className="flex items-center gap-3 px-6 py-3 cursor-pointer bg-black text-white rounded-xl hover:bg-gray-900 transition font-semibold">
-                <MdTimer className="w-5 h-5" />Active Timers
+        {/* Navigation & Action Header */}
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 mb-8">
+          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-8">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-12 flex-1">
+              <div className="text-center">
+                <div className="text-4xl font-medium text-black mb-2">{stats.total}</div>
+                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Total Entries</p>
+              </div>
+              <div className="text-center border-x border-gray-50">
+                <div className="text-4xl font-medium text-black mb-2">{stats.productive}h</div>
+                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Productive</p>
+              </div>
+              <div className="text-center border-r border-gray-50">
+                <div className="text-4xl font-medium text-black mb-2">{stats.billable}</div>
+                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Billable</p>
+              </div>
+              <div className="text-center">
+                <div className="text-4xl font-medium text-black mb-2">{stats.totalHours}h</div>
+                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Total Hours</p>
+              </div>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-4">
+              <Link to="/operations/time-logs/active-timers">
+                <button className="flex items-center gap-3 px-6 py-4 bg-white border-2 border-black text-black rounded-xl hover:bg-black hover:text-white transition-all font-bold text-xs uppercase tracking-widest active:scale-95 shadow-xs">
+                  <MdTimer className="w-5 h-5" /> Active Nodes
+                </button>
+              </Link>
+              <button className="flex items-center gap-3 px-6 py-4 bg-black text-white rounded-xl hover:opacity-90 transition-all font-bold text-xs uppercase tracking-widest active:scale-95 shadow-xl">
+                <MdAdd className="w-5 h-5" /> New Log
               </button>
-            </Link>
-            <Link to="/operations/time-logs/calendar-view">
-              <button className="flex items-center gap-3 px-6 py-3 cursor-pointer bg-black text-white rounded-xl hover:bg-gray-900 transition font-semibold">
-                < MdCalendarToday className="w-5 h-5" />Calendar View
-              </button>
-            </Link>
-            <Link to='/operations/time-logs/emplyees-time'>
-              <button className="flex items-center gap-3 px-6 py-3 cursor-pointer bg-black text-white rounded-xl hover:bg-gray-900 transition font-semibold">
-                <MdPerson className="w-5 h-5" />Employee Time Logs
-              </button>
-            </Link>
-            <button className="flex items-center gap-3 px-6 py-3 cursor-pointer bg-black text-white rounded-xl hover:bg-gray-900 transition font-semibold">
-              <MdTimer className="w-5 h-5" /> Log Time
-            </button>
+            </div>
           </div>
         </div>
 
-        {/* View Mode Toggle */}
-        <div className="flex items-center gap-1 bg-gray-100 p-1.5 rounded-2xl w-fit mb-8 border border-gray-200 shadow-inner">
-          <button
-            onClick={() => setViewMode("daily")}
-            className={`px-6 py-2.5 rounded-xl text-sm font-bold transition-all duration-300 ${viewMode === "daily"
-                ? "bg-white text-black shadow-md translate-y-[-1px]"
-                : "text-gray-500 hover:text-gray-900 hover:bg-white/50"
-              }`}
-          >
-            Daily Summary
-          </button>
-          <button
-            onClick={() => setViewMode("detailed")}
-            className={`px-6 py-2.5 rounded-xl text-sm font-bold transition-all duration-300 ${viewMode === "detailed"
-                ? "bg-white text-black shadow-md translate-y-[-1px]"
-                : "text-gray-500 hover:text-gray-900 hover:bg-white/50"
-              }`}
-          >
-            Detailed History
-          </button>
+        {/* View Mode & Secondary Links */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8">
+          <div className="flex items-center gap-1 bg-gray-50 p-1.5 rounded-2xl border border-gray-100 shadow-inner">
+            <button
+              onClick={() => setViewMode("daily")}
+              className={`px-8 py-3 rounded-xl text-xs font-bold transition-all duration-300 ${viewMode === "daily"
+                ? "bg-white text-black shadow-md"
+                : "text-gray-400 hover:text-gray-800"
+                }`}
+            >
+              Daily Summary
+            </button>
+            <button
+              onClick={() => setViewMode("detailed")}
+              className={`px-8 py-3 rounded-xl text-xs font-bold transition-all duration-300 ${viewMode === "detailed"
+                ? "bg-white text-black shadow-md"
+                : "text-gray-400 hover:text-gray-800"
+                }`}
+            >
+              Detailed Thread
+            </button>
+          </div>
+
+          <div className="flex items-center gap-4">
+            <Link to="/operations/time-logs/calendar-view" className="flex items-center gap-2 px-6 py-3 bg-white border border-gray-100 text-gray-800 rounded-xl hover:border-black transition-all font-bold text-[10px] uppercase tracking-widest">
+              <MdCalendarToday className="w-4 h-4" /> Calendar
+            </Link>
+            <Link to="/operations/time-logs/emplyees-time" className="flex items-center gap-2 px-6 py-3 bg-white border border-gray-100 text-gray-800 rounded-xl hover:border-black transition-all font-bold text-[10px] uppercase tracking-widest">
+              <MdPerson className="w-4 h-4" /> Associate Registry
+            </Link>
+          </div>
         </div>
 
-        {/* Search & Filters Bar */}
-        <div className="bg-white rounded-2xl shadow-sm p-6 mb-6">
+        {/* Search & Utility Bar */}
+        <div className="bg-white rounded-2xl shadow-sm p-6 mb-6 border border-gray-100">
           <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
             <div className="flex items-center gap-4 flex-1">
-              <div className="relative flex-1 max-w-2xl">
-                <FiSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 w-5 h-5" />
+              <div className="relative flex-1 max-w-2xl group">
+                <FiSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5 group-focus-within:text-black transition-colors" />
                 <input
                   type="text"
-                  placeholder={viewMode === "daily" ? "Search by date, task, employee..." : "Search by task, project, memo..."}
+                  placeholder={viewMode === "daily" ? "Filter by task, employee, or date..." : "Search granular history thread..."}
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-black outline-none transition"
+                  className="w-full pl-12 pr-4 py-4 border border-gray-200 rounded-xl focus:ring-2 focus:ring-black outline-none transition-all text-sm font-medium text-gray-800"
                 />
               </div>
 
               <button
                 onClick={() => setFiltersOpen(!filtersOpen)}
-                className="flex items-center gap-3 px-5 py-4 border border-gray-300 rounded-xl hover:bg-gray-50 transition font-semibold whitespace-nowrap"
+                className="flex items-center gap-3 px-6 py-4 bg-white border border-gray-200 rounded-xl hover:border-black transition-all font-bold text-xs uppercase tracking-widest text-gray-600"
               >
                 <MdFilterList className="w-5 h-5" />
-                Filters
+                Parameters
                 {activeFilterCount > 0 && (
-                  <span className="ml-2 bg-black text-white text-xs font-medium rounded-full w-6 h-6 flex items-center justify-center">
+                  <span className="ml-2 bg-black text-white text-[10px] font-bold rounded-full w-5 h-5 flex items-center justify-center">
                     {activeFilterCount}
                   </span>
                 )}
                 <MdKeyboardArrowDown className={`w-5 h-5 transition-transform ${filtersOpen ? "rotate-180" : ""}`} />
               </button>
-
-              <span className="text-sm font-medium text-gray-600 hidden lg:block">
-                Showing {filteredEntries.length} entries
-              </span>
             </div>
 
-            <div className="flex flex-wrap items-center gap-3">
-              <button className="flex items-center gap-2 px-5 py-4 border border-gray-300 rounded-xl hover:bg-gray-100 transition font-semibold">
-                <MdDownload className="w-5 h-5" /> Export
-              </button>
-            </div>
+            <button className="flex items-center gap-3 px-6 py-4 bg-white border border-gray-200 rounded-xl hover:bg-black hover:text-white transition-all font-bold text-xs uppercase tracking-widest text-gray-600">
+              <MdDownload className="w-5 h-5" /> Export Data
+            </button>
           </div>
         </div>
 
-        {/* Collapsible Advanced Filters */}
+        {/* Filter Panel */}
         <AnimatePresence>
           {filtersOpen && (
             <motion.div
               initial={{ height: 0, opacity: 0 }}
               animate={{ height: "auto", opacity: 1 }}
               exit={{ height: 0, opacity: 0 }}
-              transition={{ duration: 0.3 }}
               className="overflow-hidden mb-6"
             >
-              <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
-                <div className="flex items-center justify-between mb-6">
-                  <h3 className="text-xl font-medium text-gray-900">Advanced Filters</h3>
-                  <button
-                    onClick={() => setFiltersOpen(false)}
-                    className="p-2 hover:bg-gray-100 rounded-lg transition"
-                  >
+              <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-8">
+                <div className="flex items-center justify-between mb-8">
+                  <h3 className="text-xl font-medium text-gray-900">Advanced Parameters</h3>
+                  <button onClick={() => setFiltersOpen(false)} className="p-2 hover:bg-gray-100 rounded-lg transition">
                     <MdClose className="w-6 h-6 text-gray-600" />
                   </button>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                   <Input
                     label="Project"
                     type="select"
@@ -319,24 +335,24 @@ const TimeLogs = () => {
                     ]}
                   />
                   <Input
-                    label="Approved Status"
+                    label="Verification"
                     type="select"
                     value={filters.status}
                     onChange={(v) => handleFilterChange("status", v)}
                     options={[
-                      { label: "All", value: "" },
-                      { label: "Approved", value: "approved" },
+                      { label: "All Logs", value: "" },
+                      { label: "Verified", value: "approved" },
                       { label: "Pending", value: "pending" },
                     ]}
                   />
                 </div>
 
-                <div className="flex justify-end gap-4 mt-8 pt-6 border-t border-gray-200">
+                <div className="flex justify-end mt-8 pt-8 border-t border-gray-100">
                   <button
                     onClick={resetFilters}
-                    className="px-6 py-3.5 border-2 border-gray-300 text-gray-700 font-semibold rounded-xl hover:bg-gray-50 transition"
+                    className="px-8 py-3.5 border-2 border-gray-200 text-gray-600 font-bold rounded-xl hover:bg-gray-50 transition uppercase text-[10px] tracking-widest"
                   >
-                    Reset All Filters
+                    Clear All Filters
                   </button>
                 </div>
               </div>
@@ -344,28 +360,31 @@ const TimeLogs = () => {
           )}
         </AnimatePresence>
 
-        {/* Table */}
+        {/* Table Container */}
         <div className="bg-white rounded-2xl shadow-sm overflow-hidden border border-gray-200">
           <div className="overflow-x-auto">
             <table className="w-full min-w-[1200px]">
               <thead className="bg-gray-50 border-b border-gray-200">
                 <tr>
-                  <th className="px-6 py-5 text-left text-xs font-medium text-gray-700 uppercase tracking-wider whitespace-nowrap">Sl No</th>
-                  <th className="px-6 py-5 text-left text-xs font-medium text-gray-700 uppercase tracking-wider whitespace-nowrap">Task / Projects</th>
-                  <th className="px-6 py-5 text-left text-xs font-medium text-gray-700 uppercase tracking-wider whitespace-nowrap">Employee</th>
-                  <th className="px-6 py-5 text-left text-xs font-medium text-gray-700 uppercase tracking-wider whitespace-nowrap">Start Time</th>
-                  <th className="px-6 py-5 text-left text-xs font-medium text-gray-700 uppercase tracking-wider whitespace-nowrap">End Time</th>
-                  <th className="px-6 py-5 text-left text-xs font-medium text-gray-700 uppercase tracking-wider whitespace-nowrap">Total Hours</th>
-                  <th className="px-6 py-5 text-left text-xs font-medium text-gray-700 uppercase tracking-wider whitespace-nowrap">Productive Hours</th>
-                  <th className="px-6 py-5 text-left text-xs font-medium text-gray-700 uppercase tracking-wider whitespace-nowrap">Billable</th>
-                  <th className="px-6 py-5 text-right text-xs font-medium text-gray-700 uppercase tracking-wider whitespace-nowrap">Actions</th>
+                  <th className="px-8 py-5 text-left text-[11px] font-bold text-gray-600 uppercase tracking-[0.2em] whitespace-nowrap">ID</th>
+                  <th className="px-8 py-5 text-left text-[11px] font-bold text-gray-600 uppercase tracking-[0.2em] whitespace-nowrap">Operational Node</th>
+                  <th className="px-8 py-5 text-left text-[11px] font-bold text-gray-600 uppercase tracking-[0.2em] whitespace-nowrap">Associate</th>
+                  <th className="px-8 py-5 text-left text-[11px] font-bold text-gray-600 uppercase tracking-[0.2em] whitespace-nowrap">Initialization</th>
+                  <th className="px-8 py-5 text-left text-[11px] font-bold text-gray-600 uppercase tracking-[0.2em] whitespace-nowrap">Termination</th>
+                  <th className="px-8 py-5 text-left text-[11px] font-bold text-gray-600 uppercase tracking-[0.2em] whitespace-nowrap">Yield Rate</th>
+                  <th className="px-8 py-5 text-left text-[11px] font-bold text-gray-600 uppercase tracking-[0.2em] whitespace-nowrap">Log Status</th>
+                  <th className="px-8 py-5 text-right text-[11px] font-bold text-gray-600 uppercase tracking-[0.2em] whitespace-nowrap">Control</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-200">
+              <tbody className="divide-y divide-gray-100">
                 {filteredEntries.length === 0 ? (
                   <tr>
-                    <td colSpan="9" className="px-6 py-12 text-center text-gray-500 font-medium">
-                      No logs found for the selected mode.
+                    <td colSpan="8" className="px-8 py-32 text-center text-gray-400">
+                      <div className="flex flex-col items-center">
+                        <MdTimer className="w-12 h-12 mb-4 opacity-20" />
+                        <p className="text-xl font-medium text-gray-500">Zero operational logs recorded</p>
+                        <p className="text-xs font-bold uppercase tracking-widest mt-2">Adjust search parameters to intercept data</p>
+                      </div>
                     </td>
                   </tr>
                 ) : (
@@ -374,80 +393,76 @@ const TimeLogs = () => {
                       key={entry.id}
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: i * 0.05 }}
-                      className="hover:bg-gray-50 transition group"
+                      transition={{ delay: i * 0.02 }}
+                      className="hover:bg-gray-50/50 transition-all duration-200 group border-l-4 border-transparent hover:border-black"
                     >
-                      <td className="px-6 py-5 text-sm font-medium text-gray-900 whitespace-nowrap">{i + 1}</td>
-                      <td className="px-6 py-5">
+                      <td className="px-8 py-6 text-xs font-bold text-gray-400 whitespace-nowrap">#{entry.id}</td>
+                      <td className="px-8 py-6">
                         <div className="flex flex-col">
-                          <span className="text-sm font-semibold text-gray-900 line-clamp-1">
-                            {viewMode === "daily" ? entry.tasks : (entry.task_name || "Daily Work")}
+                          <span className="text-sm font-bold text-gray-900 line-clamp-1">
+                            {viewMode === "daily" ? entry.tasks : (entry.task_name || "Internal Mission")}
                           </span>
-                          <span className="text-[10px] text-gray-500 uppercase font-bold tracking-tight">
-                            {viewMode === "daily" ? entry.projects : (entry.project_name || "General")}
+                          <span className="text-[10px] text-gray-400 uppercase font-black tracking-tight mt-0.5">
+                            {viewMode === "daily" ? entry.projects : (entry.project_name || "Internal Hub")}
                           </span>
                         </div>
                       </td>
-                      <td className="px-6 py-5 whitespace-nowrap">
+                      <td className="px-8 py-6 whitespace-nowrap">
                         <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-700 font-bold text-xs shadow-sm shadow-blue-500/10">
-                            {entry.employee?.name?.[0]?.toUpperCase() || "E"}
+                          <div className="w-9 h-9 rounded-xl bg-black text-white flex items-center justify-center text-[11px] font-black group-hover:scale-110 transition-transform">
+                            {entry.employee?.name?.[0]?.toUpperCase() || "N"}
                           </div>
-                          <span className="text-sm text-gray-900 font-medium">{entry.employee?.name || entry.employee?.email}</span>
+                          <span className="text-[13px] font-bold text-gray-800">{entry.employee?.name || entry.employee?.email}</span>
                         </div>
                       </td>
-                      <td className="px-6 py-5 text-sm text-gray-700 whitespace-nowrap">
+                      <td className="px-8 py-6 text-sm text-gray-700 whitespace-nowrap">
                         <div className="flex flex-col">
-                          <span className="font-medium">
+                          <span className="font-bold text-gray-400 text-[10px] uppercase">
                             {formatDate(viewMode === "daily" ? entry.date : entry.start_time)}
                           </span>
-                          <span className="text-xs text-blue-600 font-bold uppercase">
+                          <span className="font-black text-blue-600 uppercase text-[11px]">
                             {viewMode === "daily" ? (entry.first_clock_in || "N/A") : formatTime(entry.start_time)}
                           </span>
                         </div>
                       </td>
-                      <td className="px-6 py-5 text-sm text-gray-700 whitespace-nowrap">
+                      <td className="px-8 py-6 text-sm text-gray-700 whitespace-nowrap">
                         <div className="flex flex-col">
-                          <span className="font-medium">
+                          <span className="font-bold text-gray-400 text-[10px] uppercase">
                             {formatDate(viewMode === "daily" ? entry.date : (entry.end_time || entry.start_time))}
                           </span>
-                          <span className="text-xs text-amber-600 font-bold uppercase">
-                            {viewMode === "daily" ? (entry.last_clock_out || "Running...") : formatTime(entry.end_time)}
+                          <span className="font-black text-amber-600 uppercase text-[11px]">
+                            {viewMode === "daily" ? (entry.last_clock_out || "Active") : formatTime(entry.end_time)}
                           </span>
                         </div>
                       </td>
-                      <td className="px-6 py-5 whitespace-nowrap">
-                        <span className="px-3 py-1 bg-green-50 text-green-700 rounded-full text-xs font-bold border border-green-100 shadow-sm">
-                          {entry.total_hours} hrs
-                        </span>
+                      <td className="px-8 py-6 whitespace-nowrap">
+                        <div className="flex flex-col">
+                          <span className="text-[16px] font-black text-black tabular-nums">{entry.total_hours}h</span>
+                          <span className="text-[9px] font-black text-gray-400 uppercase tracking-widest mt-0.5">Yielded Time</span>
+                        </div>
                       </td>
-                      <td className="px-6 py-5 whitespace-nowrap">
-                        <span className="text-sm font-bold text-gray-900">
-                          {entry.productive_hours} hrs
-                        </span>
-                      </td>
-                      <td className="px-6 py-5 whitespace-nowrap">
+                      <td className="px-8 py-6 whitespace-nowrap">
                         {entry.is_billable ? (
-                          <span className="px-3 py-1 bg-blue-50 text-blue-700 rounded-full text-[10px] uppercase font-black border border-blue-100 italic tracking-wider">Billable</span>
+                          <span className="px-4 py-1.5 bg-black text-white rounded-lg text-[9px] font-black uppercase tracking-widest border border-black shadow-lg">Billable Node</span>
                         ) : (
-                          <span className="px-3 py-1 bg-gray-50 text-gray-400 rounded-full text-[10px] uppercase font-bold border border-gray-100 italic tracking-wider">Non-Billable</span>
+                          <span className="px-4 py-1.5 bg-white text-gray-400 rounded-lg text-[9px] font-black uppercase tracking-widest border border-gray-100 shadow-xs">Internal Node</span>
                         )}
                       </td>
-                      <td className="px-6 py-5 text-right whitespace-nowrap">
-                        <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <td className="px-8 py-6 text-right whitespace-nowrap">
+                        <div className="flex justify-end gap-3 opacity-0 group-hover:opacity-100 transition-all">
                           {viewMode === "daily" && (
                             <button
                               onClick={() => handleView(entry)}
-                              className="p-2 hover:bg-white hover:shadow-md rounded-lg transition text-gray-600 hover:text-blue-600"
-                              title="View Day Details"
+                              className="p-3 bg-white border border-gray-100 text-gray-400 rounded-xl hover:text-blue-600 hover:shadow-lg transition-all scale-90 hover:scale-100"
+                              title="Detailed Analysis"
                             >
                               <MdVisibility className="w-5 h-5" />
                             </button>
                           )}
                           <button
                             onClick={() => handleDelete(entry.id)}
-                            className="p-2 hover:bg-white hover:shadow-md rounded-lg transition text-gray-600 hover:text-red-600"
-                            title="Delete Entry"
+                            className="p-3 bg-white border border-gray-100 text-gray-400 rounded-xl hover:text-red-600 hover:shadow-lg transition-all scale-90 hover:scale-100"
+                            title="Purge Log"
                           >
                             <MdDelete className="w-5 h-5" />
                           </button>
@@ -459,76 +474,86 @@ const TimeLogs = () => {
               </tbody>
             </table>
           </div>
+
+          {filteredEntries.length > 0 && (
+            <div className="px-8 py-6 bg-gray-50 border-t border-gray-100 flex justify-between items-center text-[11px] font-bold text-gray-400 uppercase tracking-widest">
+              <span>Showing {filteredEntries.length} of {viewMode === "daily" ? timeEntries.length : detailedEntries.length} operational segments</span>
+              <div className="flex items-center gap-8">
+                <span className="flex items-center gap-2">
+                  <div className="w-2 h-2 bg-blue-600 rounded-full"></div>
+                  Aggregate Productive: {stats.productive}h
+                </span>
+                <span className="flex items-center gap-2">
+                  <div className="w-2 h-2 bg-black rounded-full"></div>
+                  Total Resource Allocation: {stats.totalHours}h
+                </span>
+              </div>
+            </div>
+          )}
         </div>
       </LayoutComponents>
 
-      {/* View Detail Modal */}
+      {/* Detailed Modal */}
       <AnimatePresence>
         {isViewModalOpen && selectedEntry && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
-          >
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-black/60 backdrop-blur-sm">
             <motion.div
-              initial={{ scale: 0.9, opacity: 0, y: 20 }}
-              animate={{ scale: 1, opacity: 1, y: 0 }}
-              exit={{ scale: 0.9, opacity: 0, y: 20 }}
-              className="bg-white rounded-3xl shadow-2xl w-full max-w-2xl overflow-hidden"
+              initial={{ opacity: 0, scale: 0.95, y: 30 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 30 }}
+              className="bg-white rounded-4xl shadow-2xl w-full max-w-2xl overflow-hidden border border-gray-100"
               onClick={(e) => e.stopPropagation()}
             >
-              <div className="p-8 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
+              <div className="p-10 border-b border-gray-100 flex justify-between items-center">
                 <div>
-                  <h2 className="text-2xl font-bold text-gray-900">Time Log Details</h2>
-                  <p className="text-gray-500 font-medium">{formatDate(selectedEntry.date)}</p>
+                  <h2 className="text-[28px] font-black uppercase tracking-tighter text-black">Section Analysis</h2>
+                  <p className="text-[11px] font-bold text-gray-400 uppercase tracking-widest mt-1">Operational Timeline: {formatDate(selectedEntry.date)}</p>
                 </div>
                 <button
                   onClick={() => setIsViewModalOpen(false)}
-                  className="p-3 hover:bg-white hover:shadow-md rounded-xl transition text-gray-400 hover:text-gray-900"
+                  className="p-3 bg-gray-50 border border-transparent hover:border-black rounded-2xl transition-all text-gray-400 hover:text-black"
                 >
                   <MdClose className="w-6 h-6" />
                 </button>
               </div>
 
-              <div className="p-8 max-h-[70vh] overflow-y-auto">
-                <div className="grid grid-cols-2 gap-8 mb-8">
-                  <div className="bg-blue-50/50 p-6 rounded-2xl border border-blue-100/50">
-                    <p className="text-sm font-bold text-blue-600 uppercase tracking-widest mb-1">Employee</p>
-                    <p className="text-lg font-bold text-gray-900">{selectedEntry.employee?.name}</p>
-                    <p className="text-sm text-gray-500">{selectedEntry.employee?.email}</p>
+              <div className="p-10 max-h-[70vh] overflow-y-auto space-y-12">
+                <div className="grid grid-cols-2 gap-8">
+                  <div className="bg-black p-8 rounded-3xl text-white shadow-2xl shadow-black/10">
+                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">Associate Node</p>
+                    <p className="text-xl font-black">{selectedEntry.employee?.name}</p>
+                    <p className="text-xs text-gray-500 mt-1 uppercase font-bold">{selectedEntry.employee?.email}</p>
                   </div>
-                  <div className="bg-green-50/50 p-6 rounded-2xl border border-green-100/50">
-                    <p className="text-sm font-bold text-green-600 uppercase tracking-widest mb-1">Total Time</p>
-                    <p className="text-2xl font-black text-gray-900">{selectedEntry.total_hours} <span className="text-sm font-bold text-gray-500">hrs</span></p>
-                    <p className="text-xs text-green-600 font-bold uppercase mt-1">Productive: {selectedEntry.productive_hours} hrs</p>
+                  <div className="bg-white border-2 border-black p-8 rounded-3xl shadow-xl">
+                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">Segment Total</p>
+                    <p className="text-4xl font-black text-black">{selectedEntry.total_hours}<span className="text-sm ml-1">h</span></p>
+                    <div className="mt-3 flex items-center gap-3">
+                      <span className="px-2 py-0.5 bg-blue-50 text-blue-600 rounded-md text-[9px] font-black uppercase">{selectedEntry.productive_hours}h Productive</span>
+                    </div>
                   </div>
                 </div>
 
                 <div className="space-y-6">
-                  <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
-                    <div className="w-2 h-6 bg-black rounded-full"></div>
-                    Session History
-                  </h3>
+                  <h3 className="text-sm font-black text-black uppercase tracking-[0.2em] border-l-4 border-black pl-5">Interaction Matrix</h3>
 
                   {selectedEntry.check_in_out_history && selectedEntry.check_in_out_history.length > 0 ? (
-                    <div className="border border-gray-100 rounded-2xl overflow-hidden shadow-sm">
-                      <table className="w-full text-sm">
-                        <thead className="bg-gray-50 text-gray-600 border-b border-gray-100">
+                    <div className="border border-gray-100 rounded-3xl overflow-hidden shadow-sm">
+                      <table className="w-full text-xs">
+                        <thead className="bg-black text-white">
                           <tr>
-                            <th className="px-4 py-4 text-left font-bold border-r border-gray-100/50">Check In</th>
-                            <th className="px-4 py-4 text-left font-bold border-r border-gray-100/50">Check Out</th>
-                            <th className="px-4 py-4 text-left font-bold">Project/Task</th>
+                            <th className="px-6 py-5 text-left font-black uppercase tracking-widest">InBound</th>
+                            <th className="px-6 py-5 text-left font-black uppercase tracking-widest">OutBound</th>
+                            <th className="px-6 py-5 text-left font-black uppercase tracking-widest">Operation Segment</th>
                           </tr>
                         </thead>
-                        <tbody className="divide-y divide-gray-100">
+                        <tbody className="divide-y divide-gray-50">
                           {selectedEntry.check_in_out_history.map((hist, idx) => (
-                            <tr key={idx} className="hover:bg-gray-50 transition">
-                              <td className="px-4 py-4 font-bold text-blue-600 border-r border-gray-100/50 whitespace-nowrap uppercase">{hist.check_in}</td>
-                              <td className="px-4 py-4 font-bold text-amber-600 border-r border-gray-100/50 whitespace-nowrap uppercase">{hist.check_out}</td>
-                              <td className="px-4 py-4">
-                                <p className="font-bold text-gray-900 leading-tight">{hist.task || "Daily Work"}</p>
-                                <p className="text-[10px] text-gray-500 font-black uppercase mt-0.5">{hist.project || "General"}</p>
+                            <tr key={idx} className="hover:bg-gray-50 transition-colors">
+                              <td className="px-6 py-6 font-black text-blue-600 uppercase tabular-nums">{hist.check_in}</td>
+                              <td className="px-6 py-6 font-black text-amber-600 uppercase tabular-nums">{hist.check_out}</td>
+                              <td className="px-6 py-6">
+                                <p className="font-black text-gray-900 uppercase tracking-tight">{hist.task || "Universal Node"}</p>
+                                <p className="text-[9px] text-gray-400 font-bold uppercase mt-1 italic">{hist.project || "General Hub"}</p>
                               </td>
                             </tr>
                           ))}
@@ -536,23 +561,23 @@ const TimeLogs = () => {
                       </table>
                     </div>
                   ) : (
-                    <div className="p-8 text-center bg-gray-50 rounded-2xl border-2 border-dashed border-gray-200">
-                      <p className="text-gray-400 font-bold uppercase tracking-widest">No detailed history available</p>
+                    <div className="p-16 text-center bg-gray-50 rounded-4xl border-2 border-dashed border-gray-100">
+                      <p className="text-gray-400 font-black uppercase tracking-widest text-[10px]">Matrix empty: zero granular data clusters identified</p>
                     </div>
                   )}
                 </div>
               </div>
 
-              <div className="p-8 bg-gray-50 border-t border-gray-100 flex justify-end">
+              <div className="p-10 bg-white border-t border-gray-100 flex justify-end">
                 <button
                   onClick={() => setIsViewModalOpen(false)}
-                  className="px-8 py-3.5 bg-black text-white rounded-xl font-bold hover:bg-gray-900 transition shadow-lg shadow-black/10 active:scale-95"
+                  className="px-10 py-4 bg-black text-white rounded-2xl font-black uppercase tracking-widest text-xs hover:opacity-90 transition-all shadow-2xl shadow-black/20 active:scale-95"
                 >
-                  Close Details
+                  Exit Detail
                 </button>
               </div>
             </motion.div>
-          </motion.div>
+          </div>
         )}
       </AnimatePresence>
     </div>

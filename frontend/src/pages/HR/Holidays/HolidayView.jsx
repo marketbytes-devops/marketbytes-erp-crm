@@ -13,7 +13,7 @@ import {
 } from "date-fns";
 import LayoutComponents from "../../../components/LayoutComponents";
 import apiClient from "../../../helpers/apiClient";
-import Input from "../../../components/Input"; 
+import Input from "../../../components/Input";
 import {
   MdAdd,
   MdDownload,
@@ -191,7 +191,7 @@ const HolidayView = () => {
             >
               <MdChevronLeft className="w-5 h-5" />
             </button>
-            <h3 className="text-xl font-semibold">
+            <h3 className="text-xl font-medium">
               {months[selectedMonth]} {selectedYear}
             </h3>
             <button
@@ -252,7 +252,7 @@ const HolidayView = () => {
 
     return (
       <div key={monthIndex} className="mb-12">
-        <h3 className="text-lg font-semibold mb-4">
+        <h3 className="text-lg font-medium mb-4">
           {months[monthIndex]} {selectedYear}
         </h3>
         <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
@@ -385,7 +385,7 @@ const HolidayView = () => {
                   setNewHoliday({ date: "", occasion: "", is_default: false });
                   setIsAddModalOpen(true);
                 }}
-                className="flex items-center gap-3 px-6 py-3 bg-black text-white rounded-xl hover:bg-gray-900 transition font-semibold"
+                className="flex items-center gap-3 px-6 py-3 bg-black text-white rounded-xl hover:bg-gray-900 transition font-medium"
               >
                 <MdAdd className="w-5 h-5" />
                 Add Holiday
@@ -428,7 +428,7 @@ const HolidayView = () => {
                 className="bg-white rounded-2xl shadow-xl w-full max-w-md p-6"
               >
                 <div className="flex justify-between items-center mb-6">
-                  <h3 className="text-xl font-semibold">Add New Holiday</h3>
+                  <h3 className="text-xl font-medium">Add New Holiday</h3>
                   <button
                     onClick={() => setIsAddModalOpen(false)}
                     className="p-2 hover:bg-gray-100 rounded-lg transition"
@@ -478,7 +478,7 @@ const HolidayView = () => {
                   </button>
                   <button
                     onClick={handleAddHoliday}
-                    className="px-6 py-3 bg-black text-white font-semibold rounded-xl hover:bg-gray-900 transition"
+                    className="px-6 py-3 bg-black text-white font-medium rounded-xl hover:bg-gray-900 transition"
                   >
                     Save Holiday
                   </button>
@@ -504,7 +504,7 @@ const HolidayView = () => {
                 className="bg-white rounded-2xl shadow-xl w-full max-w-md p-6"
               >
                 <div className="flex justify-between items-center mb-6">
-                  <h3 className="text-xl font-semibold">Edit Holiday</h3>
+                  <h3 className="text-xl font-medium">Edit Holiday</h3>
                   <button
                     onClick={() => {
                       setIsEditModalOpen(false);
@@ -559,7 +559,7 @@ const HolidayView = () => {
                   </button>
                   <button
                     onClick={handleEditHoliday}
-                    className="px-6 py-3 bg-black text-white font-semibold rounded-xl hover:bg-gray-900 transition"
+                    className="px-6 py-3 bg-black text-white font-medium rounded-xl hover:bg-gray-900 transition"
                   >
                     Update Holiday
                   </button>

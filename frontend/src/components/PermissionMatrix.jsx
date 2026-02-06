@@ -20,12 +20,12 @@ const PermissionMatrix = ({ permissions, onChange, pageNameMap, type = "direct" 
       <table className="w-full text-left border-collapse">
         <thead>
           <tr className={getHeaderStyle()}>
-            <th className="px-6 py-4 text-sm font-bold uppercase tracking-wider flex items-center gap-2">
+            <th className="px-6 py-4 text-sm font-medium uppercase tracking-wider flex items-center gap-2">
               {getIcon()}
               Module
             </th>
             {actions.map(action => (
-              <th key={action} className="px-4 py-4 text-sm font-bold uppercase tracking-wider text-center">
+              <th key={action} className="px-4 py-4 text-sm font-medium uppercase tracking-wider text-center">
                 {action}
               </th>
             ))}
@@ -36,7 +36,7 @@ const PermissionMatrix = ({ permissions, onChange, pageNameMap, type = "direct" 
             <tr key={pageKey} className="hover:bg-gray-50/50 transition-colors">
               <td className="px-6 py-4">
                 <div className="flex flex-col">
-                  <span className="font-bold text-gray-900">{pageNameMap[pageKey].displayName}</span>
+                  <span className="font-medium text-gray-900">{pageNameMap[pageKey].displayName}</span>
                   <span className="text-[10px] text-gray-400 font-mono tracking-tight">{pageNameMap[pageKey].apiName}</span>
                 </div>
               </td>

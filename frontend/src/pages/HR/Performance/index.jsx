@@ -116,11 +116,11 @@ const Performance = () => {
             <div className="absolute -right-2 -top-2 text-gray-100 group-hover:text-black/5 transition-colors">
               <Award size={80} />
             </div>
-            <p className="text-gray-600 text-[10px] font-bold uppercase tracking-widest mb-1">Portfolio Rating</p>
+            <p className="text-gray-600 text-[10px] font-medium uppercase tracking-widest mb-1">Portfolio Rating</p>
             <p className="text-3xl font-medium text-black font-syne group-hover:scale-110 transition-transform origin-left">{avgRating}/5.0</p>
             <div className="mt-4 flex items-center gap-2 text-indigo-600">
               <MdTrendingUp className="text-lg" />
-              <span className="text-[10px] font-bold uppercase text-indigo-600">Median Output: {medianRating}</span>
+              <span className="text-[10px] font-medium uppercase text-indigo-600">Median Output: {medianRating}</span>
             </div>
           </div>
 
@@ -128,7 +128,7 @@ const Performance = () => {
             <div className="absolute -right-2 -top-2 text-gray-100 group-hover:text-black/5 transition-colors">
               <BarChart3 size={80} />
             </div>
-            <p className="text-gray-600 text-[10px] font-bold uppercase tracking-widest mb-1">Total Audits</p>
+            <p className="text-gray-600 text-[10px] font-medium uppercase tracking-widest mb-1">Total Audits</p>
             <p className="text-3xl font-medium text-black font-syne">{reviews.length}</p>
             <p className="text-[10px] text-gray-500 mt-4 font-medium uppercase tracking-tight">Active Cycle</p>
           </div>
@@ -137,7 +137,7 @@ const Performance = () => {
             <div className="absolute -right-2 -top-2 text-white/10 group-hover:text-white/20 transition-colors">
               <Award size={80} />
             </div>
-            <p className="text-emerald-100 text-[10px] font-bold uppercase tracking-widest mb-1">Elite Talent</p>
+            <p className="text-emerald-100 text-[10px] font-medium uppercase tracking-widest mb-1">Elite Talent</p>
             <p className="text-3xl font-medium font-syne">{counts.elite}</p>
             <p className="text-[10px] text-emerald-100/80 mt-4 font-medium uppercase tracking-tight">Rating {">"} 4.5</p>
           </div>
@@ -146,7 +146,7 @@ const Performance = () => {
             <div className="absolute -right-2 -top-2 text-white/10 group-hover:text-white/20 transition-colors">
               <BarChart3 size={80} />
             </div>
-            <p className="text-gray-400 text-[10px] font-bold uppercase tracking-widest mb-1">Strong Impact</p>
+            <p className="text-gray-400 text-[10px] font-medium uppercase tracking-widest mb-1">Strong Impact</p>
             <p className="text-3xl font-medium font-syne">{counts.strong}</p>
             <p className="text-[10px] text-gray-400 mt-4 font-medium uppercase tracking-tight">Rating 3.5 - 4.5</p>
           </div>
@@ -159,7 +159,7 @@ const Performance = () => {
             <div className="flex items-center justify-between mb-8">
               <div>
                 <h3 className="text-xl font-medium font-syne text-black uppercase tracking-tighter">Departmental Velocity</h3>
-                <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest mt-1">Cross-unit performance synchronization</p>
+                <p className="text-[10px] text-gray-500 font-medium uppercase tracking-widest mt-1">Cross-unit performance synchronization</p>
               </div>
               <div className="p-3 bg-gray-50 rounded-2xl">
                 <BarChart3 className="text-black w-6 h-6" />
@@ -168,13 +168,13 @@ const Performance = () => {
 
             <div className="space-y-6">
               {chartData.length === 0 ? (
-                <div className="py-20 text-center text-gray-400 text-xs font-bold uppercase tracking-widest">Awaiting unit metrics...</div>
+                <div className="py-20 text-center text-gray-400 text-xs font-medium uppercase tracking-widest">Awaiting unit metrics...</div>
               ) : (
                 chartData.map((data, idx) => (
                   <div key={data.name} className="group">
                     <div className="flex justify-between items-center mb-2">
-                      <span className="text-[10px] font-bold text-black uppercase tracking-widest">{data.name}</span>
-                      <span className="text-[11px] font-syne font-bold text-indigo-600">{data.avg} / 5.0</span>
+                      <span className="text-[10px] font-medium text-black uppercase tracking-widest">{data.name}</span>
+                      <span className="text-[11px] font-syne font-medium text-indigo-600">{data.avg} / 5.0</span>
                     </div>
                     <div className="h-2 w-full bg-gray-50 rounded-full overflow-hidden relative">
                       <motion.div
@@ -197,7 +197,7 @@ const Performance = () => {
             </div>
             <div className="relative z-10 flex flex-col h-full">
               <div className="mb-auto">
-                <div className="inline-flex px-3 py-1 rounded-full bg-white/10 text-[9px] font-bold uppercase tracking-widest text-emerald-400 mb-6">
+                <div className="inline-flex px-3 py-1 rounded-full bg-white/10 text-[9px] font-medium uppercase tracking-widest text-emerald-400 mb-6">
                   Sales Impact Report
                 </div>
                 <h3 className="text-2xl font-medium font-syne leading-tight mb-2">Pipeline Accuracy</h3>
@@ -208,17 +208,17 @@ const Performance = () => {
 
               <div className="mt-8 space-y-6">
                 <div className="flex justify-between items-center border-b border-white/10 pb-4">
-                  <span className="text-[10px] text-gray-500 font-bold uppercase tracking-widest">Active Leads</span>
+                  <span className="text-[10px] text-gray-500 font-medium uppercase tracking-widest">Active Leads</span>
                   <span className="text-xl font-syne font-medium text-white">{salesStats?.total_leads || 0}</span>
                 </div>
                 <div className="flex justify-between items-center border-b border-white/10 pb-4">
-                  <span className="text-[10px] text-gray-500 font-bold uppercase tracking-widest">Closed Wins</span>
+                  <span className="text-[10px] text-gray-500 font-medium uppercase tracking-widest">Closed Wins</span>
                   <span className="text-xl font-syne font-medium text-emerald-400">
                     {salesStats?.leads_by_status?.find(s => s.status === 'closed_won')?.count || 0}
                   </span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-[10px] text-gray-500 font-bold uppercase tracking-widest">Pipeline Value</span>
+                  <span className="text-[10px] text-gray-500 font-medium uppercase tracking-widest">Pipeline Value</span>
                   <span className="text-xl font-syne font-medium text-white">${(salesStats?.total_value || 0).toLocaleString()}</span>
                 </div>
               </div>
@@ -240,10 +240,10 @@ const Performance = () => {
             </p>
           </div>
           <div className="flex gap-4 relative z-10">
-            <button className="flex items-center gap-3 px-6 py-3 bg-white border border-gray-200 text-black text-[10px] font-bold uppercase tracking-widest rounded-2xl hover:bg-gray-100 transition shadow-xs active:scale-95">
+            <button className="flex items-center gap-3 px-6 py-3 bg-white border border-gray-200 text-black text-[10px] font-medium uppercase tracking-widest rounded-2xl hover:bg-gray-100 transition shadow-xs active:scale-95">
               <MdRefresh /> Resync Cycle
             </button>
-            <button className="flex items-center gap-3 px-6 py-3 bg-black text-white text-[10px] font-bold uppercase tracking-widest rounded-2xl hover:bg-gray-800 transition shadow-xl shadow-black/10 active:scale-95">
+            <button className="flex items-center gap-3 px-6 py-3 bg-black text-white text-[10px] font-medium uppercase tracking-widest rounded-2xl hover:bg-gray-800 transition shadow-xl shadow-black/10 active:scale-95">
               <ChevronRight size={14} /> Audit History
             </button>
           </div>

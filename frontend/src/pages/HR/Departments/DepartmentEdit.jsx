@@ -14,7 +14,7 @@ const DepartmentEdit = () => {
   const [formData, setFormData] = useState({
     name: "",
     worksheet_url: "",
-    services: [], 
+    services: [],
   });
   const [loading, setLoading] = useState(false);
   const [fetching, setFetching] = useState(true);
@@ -124,7 +124,7 @@ const DepartmentEdit = () => {
             </div>
             <div className="space-y-4">
               <div className="flex items-center justify-between">
-                <label className="text-sm font-semibold text-black">Services Offered</label>
+                <label className="text-sm font-medium text-black">Services Offered</label>
                 <button
                   type="button"
                   onClick={addServiceField}

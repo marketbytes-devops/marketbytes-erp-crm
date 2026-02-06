@@ -131,7 +131,7 @@ const AssignLeave = () => {
 
         <form onSubmit={handleSubmit} className="space-y-8">
           <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 md:p-8">
-            <h3 className="text-lg font-semibold text-gray-900 mb-6">Leave Details</h3>
+            <h3 className="text-lg font-medium text-gray-900 mb-6">Leave Details</h3>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {/* Employee */}
@@ -148,7 +148,7 @@ const AssignLeave = () => {
               {/* Leave Type */}
               <div>
                 <div className="flex items-center justify-between mb-2">
-                  <label className="text-sm font-semibold text-black">
+                  <label className="text-sm font-medium text-black">
                     Leave Type <span className="text-red-500">*</span>
                   </label>
                   <button
@@ -181,7 +181,7 @@ const AssignLeave = () => {
 
             {/* Duration Selection */}
             <div className="mt-8">
-              <label className="block text-sm font-semibold text-black mb-4">Duration</label>
+              <label className="block text-sm font-medium text-black mb-4">Duration</label>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <label className="flex items-center gap-3 cursor-pointer">
                   <input
@@ -231,7 +231,7 @@ const AssignLeave = () => {
                 />
                 {form.duration === "half_day" && (
                   <div className="mt-6">
-                    <label className="block text-sm font-semibold text-black mb-4">
+                    <label className="block text-sm font-medium text-black mb-4">
                       Half Day Period
                     </label>
                     <div className="flex gap-8">
@@ -307,7 +307,7 @@ const AssignLeave = () => {
             <button
               type="submit"
               disabled={loading}
-              className="px-6 py-3 bg-black text-white font-semibold rounded-xl hover:bg-gray-900 transition disabled:opacity-50"
+              className="px-6 py-3 bg-black text-white font-medium rounded-xl hover:bg-gray-900 transition disabled:opacity-50"
             >
               {loading ? "Assigning Leave..." : "Assign Leave"}
             </button>
@@ -320,7 +320,7 @@ const AssignLeave = () => {
         <div className="fixed inset-0 backdrop-brightness-50 flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-6">
             <div className="flex justify-between items-center mb-6">
-              <h3 className="text-xl font-semibold">Add New Leave Type</h3>
+              <h3 className="text-xl font-medium">Add New Leave Type</h3>
               <button
                 onClick={() => setShowAddTypeModal(false)}
                 className="p-2 hover:bg-gray-100 rounded-lg transition"
@@ -347,7 +347,7 @@ const AssignLeave = () => {
               </button>
               <button
                 onClick={addLeaveType}
-                className="px-6 py-3 bg-black text-white font-semibold rounded-xl hover:bg-gray-900 transition"
+                className="px-6 py-3 bg-black text-white font-medium rounded-xl hover:bg-gray-900 transition"
               >
                 Add Type
               </button>

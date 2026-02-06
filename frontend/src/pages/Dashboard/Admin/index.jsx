@@ -90,9 +90,9 @@ const AdminDashboard = () => {
   };
 
   return (
-    <div className="p-8 space-y-12 max-w-7xl mx-auto min-h-screen">
+    <div className="p-8 space-y-6 mx-auto min-h-screen">
       {/* Black & White Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-8">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div className="space-y-3">
           <div className="flex items-center gap-2">
             <span className="w-12 h-[2px] bg-black" />
@@ -119,7 +119,7 @@ const AdminDashboard = () => {
       </div>
 
       {/* Monochrome Metrics */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         <StatCard
           title="Pipeline Value"
           value={formatCurrency(leadStats?.total_value || 0)}
@@ -153,9 +153,9 @@ const AdminDashboard = () => {
         />
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Left Content (Black & White Variants) */}
-        <div className="lg:col-span-8 space-y-12">
+        <div className="lg:col-span-8 space-y-6">
 
           {/* Enhanced Pipeline View */}
           {hasPermission('leads') && (
@@ -260,7 +260,7 @@ const AdminDashboard = () => {
                             ? 'bg-gray-50 text-gray-600 border-gray-100 group-hover:bg-white/10 group-hover:text-white group-hover:border-white/10'
                             : 'bg-black text-white border-black group-hover:bg-white group-hover:text-black group-hover:border-white'
                             }`}>
-                            {task.status.replace('_', ' ')}
+                            {task.status.replace(/_/g, ' ')}
                           </span>
                         </td>
                       </tr>
@@ -280,7 +280,7 @@ const AdminDashboard = () => {
         </div>
 
         {/* Right Navigation & Control */}
-        <div className="lg:col-span-4 space-y-12">
+        <div className="lg:col-span-4 space-y-6">
 
           {/* Studio Navigation Hub */}
           <div className="bg-white rounded-xl p-12 shadow-2xl space-y-10">

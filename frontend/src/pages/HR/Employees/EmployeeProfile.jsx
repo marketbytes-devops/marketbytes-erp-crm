@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link, useParams } from "react-router";
-import { motion,  AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import LayoutComponents from "../../../components/LayoutComponents";
 import {
   MdEdit, MdArrowBack, MdWork, MdEmail, MdPhone, MdCalendarToday,
@@ -246,7 +246,7 @@ const EmployeeProfile = () => {
                     </div>
                     <div>
                       <p className="text-sm text-gray-500">{stat.label}</p>
-                      <p className="font-semibold">{stat.value}</p>
+                      <p className="font-medium">{stat.value}</p>
                     </div>
                   </div>
                 </motion.div>
@@ -304,7 +304,7 @@ const EmployeeProfile = () => {
                           </div>
                           <div className="flex-1">
                             <p className="text-sm text-gray-500 mb-1">Username</p>
-                            <p className="font-semibold">@{employee.username || "—"}</p>
+                            <p className="font-medium">@{employee.username || "—"}</p>
                           </div>
                         </div>
 
@@ -314,7 +314,7 @@ const EmployeeProfile = () => {
                           </div>
                           <div className="flex-1">
                             <p className="text-sm text-gray-500 mb-1">Date of Birth</p>
-                            <p className="font-semibold">{formatDate(employee.dob)}</p>
+                            <p className="font-medium">{formatDate(employee.dob)}</p>
                           </div>
                         </div>
 
@@ -324,7 +324,7 @@ const EmployeeProfile = () => {
                           </div>
                           <div className="flex-1">
                             <p className="text-sm text-gray-500 mb-1">Gender</p>
-                            <p className="font-semibold capitalize">{employee.gender || "—"}</p>
+                            <p className="font-medium capitalize">{employee.gender || "—"}</p>
                           </div>
                         </div>
                       </div>
@@ -336,7 +336,7 @@ const EmployeeProfile = () => {
                           </div>
                           <div className="flex-1">
                             <p className="text-sm text-gray-500 mb-1">Address</p>
-                            <p className="font-semibold">{employee.address || "—"}</p>
+                            <p className="font-medium">{employee.address || "—"}</p>
                           </div>
                         </div>
 
@@ -366,7 +366,7 @@ const EmployeeProfile = () => {
                           </div>
                           <div className="flex-1">
                             <p className="text-sm text-gray-500 mb-1">Country Code</p>
-                            <p className="font-semibold">{employee.country_code || "+91"}</p>
+                            <p className="font-medium">{employee.country_code || "+91"}</p>
                           </div>
                         </div>
                       </div>
@@ -404,7 +404,7 @@ const EmployeeProfile = () => {
                           </div>
                           <div className="flex-1">
                             <p className="text-sm text-gray-500 mb-1">Probation Period</p>
-                            <p className="font-semibold">
+                            <p className="font-medium">
                               {employee.probation_period ? `${employee.probation_period} months` : "—"}
                             </p>
                           </div>
@@ -416,7 +416,7 @@ const EmployeeProfile = () => {
                           </div>
                           <div className="flex-1">
                             <p className="text-sm text-gray-500 mb-1">Reports To</p>
-                            <p className="font-semibold">{employee.reports_to?.name || "None (Top Level)"}</p>
+                            <p className="font-medium">{employee.reports_to?.name || "None (Top Level)"}</p>
                           </div>
                         </div>
                       </div>
@@ -453,7 +453,7 @@ const EmployeeProfile = () => {
                           <div className="flex-1">
                             <p className="text-sm text-gray-500 mb-1">Account Status</p>
                             <div className="flex items-center gap-3">
-                              <span className={`font-semibold ${employee.login_enabled ? "text-green-600" : "text-red-600"}`}>
+                              <span className={`font-medium ${employee.login_enabled ? "text-green-600" : "text-red-600"}`}>
                                 {employee.login_enabled ? "Login Enabled" : "Login Disabled"}
                               </span>
                               {employee.login_enabled ? (
@@ -515,20 +515,20 @@ const EmployeeProfile = () => {
                             <div key={r.id || i} className="p-6 rounded-3xl border border-gray-100 bg-gray-50/50 hover:bg-white hover:shadow-xl hover:shadow-gray-200/50 transition-all group">
                               <div className="flex flex-wrap justify-between items-start gap-4">
                                 <div className="flex gap-4">
-                                  <div className={`w-14 h-14 rounded-2xl ${meta.bg} flex items-center justify-center ${meta.text} font-bold text-lg shadow-sm group-hover:scale-110 transition-transform`}>
+                                  <div className={`w-14 h-14 rounded-2xl ${meta.bg} flex items-center justify-center ${meta.text} font-medium text-lg shadow-sm group-hover:scale-110 transition-transform`}>
                                     {(parseFloat(r.rating) || 0).toFixed(1)}
                                   </div>
                                   <div>
-                                    <h4 className="font-bold text-black uppercase tracking-widest text-xs mb-1">{r.review_period || "Monthly Review"}</h4>
+                                    <h4 className="font-medium text-black uppercase tracking-widest text-xs mb-1">{r.review_period || "Monthly Review"}</h4>
                                     <div className="flex items-center gap-2">
-                                      <span className={`px-3 py-1 rounded-full ${meta.bg} ${meta.text} text-[10px] font-bold uppercase tracking-widest`}>{meta.label}</span>
+                                      <span className={`px-3 py-1 rounded-full ${meta.bg} ${meta.text} text-[10px] font-medium uppercase tracking-widest`}>{meta.label}</span>
                                       <span className="text-[10px] text-gray-400 font-medium">{formatDate(r.created_at)}</span>
                                     </div>
                                   </div>
                                 </div>
                                 <div className="text-right">
                                   <p className="text-xs text-gray-500 font-medium">Audited by</p>
-                                  <p className="text-sm font-bold text-black font-syne uppercase tracking-tighter">
+                                  <p className="text-sm font-medium text-black font-syne uppercase tracking-tighter">
                                     {r.reviewed_by?.name || "System Executive"}
                                   </p>
                                 </div>

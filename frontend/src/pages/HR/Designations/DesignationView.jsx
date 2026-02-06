@@ -89,11 +89,11 @@ const DesignationView = () => {
               <table className="w-full">
                 <thead className="bg-gray-50 border-b border-gray-200">
                   <tr>
-                    <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">SL No</th>
-                    <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Designation Name</th>
-                    <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Designation Description</th>
-                    <th className="px-6 py-4 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">Members</th>
-                    <th className="px-6 py-4 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">Actions</th>
+                    <th className="px-6 py-4 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">SL No</th>
+                    <th className="px-6 py-4 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Designation Name</th>
+                    <th className="px-6 py-4 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Designation Description</th>
+                    <th className="px-6 py-4 text-center text-xs font-medium text-gray-600 uppercase tracking-wider">Members</th>
+                    <th className="px-6 py-4 text-center text-xs font-medium text-gray-600 uppercase tracking-wider">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200">
@@ -167,15 +167,15 @@ const DesignationView = () => {
             <div className="space-y-6">
               <div>
                 <p className="text-sm text-gray-600">Designation ID</p>
-                <p className="font-semibold text-lg">#{selectedDes.id}</p>
+                <p className="font-medium text-lg">#{selectedDes.id}</p>
               </div>
               <div>
                 <p className="text-sm text-gray-600">Designation Name</p>
-                <p className="font-semibold text-lg">{selectedDes.name}</p>
+                <p className="font-medium text-lg">{selectedDes.name}</p>
               </div>
               <div>
                 <p className="text-sm text-gray-600">Total Members</p>
-                <p className="font-semibold text-lg text-blue-600">
+                <p className="font-medium text-lg text-blue-600">
                   <MdPeople className="inline w-6 h-6 mr-2" />
                   {selectedDes.member_count || 0}
                 </p>

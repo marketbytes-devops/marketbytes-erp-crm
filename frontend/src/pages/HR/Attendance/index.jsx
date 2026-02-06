@@ -59,7 +59,7 @@ const AttendanceModal = ({ record, date, onClose }) => {
 
         <div className="p-8 space-y-8">
           <div className="text-center">
-            <h4 className="text-2xl font-semibold">{formatDate(date)}</h4>
+            <h4 className="text-2xl font-medium">{formatDate(date)}</h4>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 text-sm">
@@ -70,15 +70,15 @@ const AttendanceModal = ({ record, date, onClose }) => {
               </div>
               <div className="flex justify-between">
                 <span className="font-medium text-gray-600">Status</span>
-                <span className="capitalize font-medium">{record.status.replace("_", " ")}</span>
+                <span className="capitalize font-medium">{record.status.replace(/_/g, " ")}</span>
               </div>
               <div className="flex justify-between">
                 <span className="font-medium text-gray-600">First Clock In</span>
-                <span className="font-mono text-green-600 font-semibold">{formatTime(firstCheckIn)}</span>
+                <span className="font-mono text-green-600 font-medium">{formatTime(firstCheckIn)}</span>
               </div>
               <div className="flex justify-between">
                 <span className="font-medium text-gray-600">Last Clock Out</span>
-                <span className="font-mono text-red-600 font-semibold">
+                <span className="font-mono text-red-600 font-medium">
                   {lastCheckOut ? formatTime(lastCheckOut) : "Still Working"}
                 </span>
               </div>
@@ -91,7 +91,7 @@ const AttendanceModal = ({ record, date, onClose }) => {
               </div>
               <div className="flex justify-between">
                 <span className="font-medium text-gray-600">Productive Hours</span>
-                <span className="font-mono text-blue-600 font-semibold">{formatHours(record.productive_hours)}</span>
+                <span className="font-mono text-blue-600 font-medium">{formatHours(record.productive_hours)}</span>
               </div>
               <div className="flex justify-between">
                 <span className="font-medium text-gray-600">Break Hours</span>
@@ -99,7 +99,7 @@ const AttendanceModal = ({ record, date, onClose }) => {
               </div>
               <div className="flex justify-between">
                 <span className="font-medium text-gray-600">Work From</span>
-                <span className={record.working_from !== "Office" ? "text-indigo-600 font-semibold" : ""}>
+                <span className={record.working_from !== "Office" ? "text-indigo-600 font-medium" : ""}>
                   {record.working_from || "Office"}
                 </span>
               </div>
@@ -117,7 +117,7 @@ const AttendanceModal = ({ record, date, onClose }) => {
           {/* History Table */}
           {hasHistory && (
             <div className="mt-8">
-              <h4 className="text-lg font-semibold mb-4 flex items-center justify-center gap-2">
+              <h4 className="text-lg font-medium mb-4 flex items-center justify-center gap-2">
                 <MdAccessTime className="w-5 h-5" />
                 Check-In & Check-Out History
               </h4>
@@ -406,7 +406,7 @@ const Attendance = () => {
                                 ${getDay(date) === 0 || getDay(date) === 6 ? "bg-gray-50" : ""}
                               `}
                             >
-                              <div className={`text-sm font-semibold ${!isCurrentMonth ? "text-gray-400" : "text-gray-800"}`}>
+                              <div className={`text-sm font-medium ${!isCurrentMonth ? "text-gray-400" : "text-gray-800"}`}>
                                 {format(date, "d")}
                               </div>
                               {record && (

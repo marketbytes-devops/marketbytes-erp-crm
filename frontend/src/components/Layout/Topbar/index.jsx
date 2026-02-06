@@ -81,7 +81,7 @@ const Topbar = ({
       className="flex items-center space-x-3 px-4 py-2 rounded-xl cursor-pointer group hover:bg-linear-to-r hover:from-gray-50 hover:to-indigo-50 transition-all duration-300 relative overflow-hidden"
     >
       <div className="text-right leading-tight hidden sm:block">
-        <p className="text-sm font-semibold text-gray-900 group-hover:text-black transition-colors">
+        <p className="text-sm font-medium text-gray-900 group-hover:text-black transition-colors">
           {displayName}
         </p>
         {displayUsername && (

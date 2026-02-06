@@ -161,7 +161,7 @@ const Recruitment = () => {
     };
     return (
       <span className={`px-3 py-1 rounded-full text-xs font-medium ${colors[status] || "bg-gray-100 text-gray-800"}`}>
-        {status?.replace("_", " ").toUpperCase() || "SCREENING"}
+        {status?.replace(/_/g, " ").toUpperCase() || "SCREENING"}
       </span>
     );
   };
@@ -175,7 +175,7 @@ const Recruitment = () => {
       c.mobile || "",
       c.designation || "",
       departments.find(d => d.id === c.department)?.name || "",
-      c.status?.replace("_", " ").toUpperCase() || "",
+      c.status?.replace(/_/g, " ").toUpperCase() || "",
       c.round || 1,
     ]);
 
@@ -193,7 +193,7 @@ const Recruitment = () => {
       Mobile: c.mobile || "",
       Designation: c.designation || "",
       Department: departments.find(d => d.id === c.department)?.name || "",
-      Status: c.status?.replace("_", " ").toUpperCase() || "",
+      Status: c.status?.replace(/_/g, " ").toUpperCase() || "",
       Round: c.round || 1,
     }));
 
@@ -217,7 +217,7 @@ const Recruitment = () => {
       c.mobile || "—",
       c.designation || "—",
       departments.find(d => d.id === c.department)?.name || "—",
-      c.status?.replace("_", " ").toUpperCase() || "—",
+      c.status?.replace(/_/g, " ").toUpperCase() || "—",
       c.round || 1,
     ]);
 
@@ -334,7 +334,7 @@ const Recruitment = () => {
                         <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mb-5">
                           <MdVisibility className="w-10 h-10 text-gray-400" />
                         </div>
-                        <p className="text-xl font-semibold text-gray-700">No candidates found</p>
+                        <p className="text-xl font-medium text-gray-700">No candidates found</p>
                         <p className="text-gray-500 mt-2">Try adjusting your search or filters</p>
                       </div>
                     </td>

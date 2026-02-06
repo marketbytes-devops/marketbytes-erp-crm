@@ -50,7 +50,7 @@ const AddNewTemplatePage = () => {
         <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
             <div>
-              <label className="block text-sm font-semibold text-black mb-2">
+              <label className="block text-sm font-medium text-black mb-2">
                 Template Name <span className="text-red-500">*</span>
               </label>
               <Input
@@ -61,7 +61,7 @@ const AddNewTemplatePage = () => {
             </div>
 
             <div>
-              <label className="block text-sm font-semibold text-black mb-2">
+              <label className="block text-sm font-medium text-black mb-2">
                 Template Members
               </label>
               <div className="flex flex-col gap-3">
@@ -93,13 +93,13 @@ const AddNewTemplatePage = () => {
             </div>
 
             <div>
-              <label className="block text-sm font-semibold text-black mb-2">
+              <label className="block text-sm font-medium text-black mb-2">
                 Category
               </label>
               <div className="flex items-center gap-4">
                 <button
                   type="button"
-                  className="text-2xl font-bold text-black hover:text-gray-800"
+                  className="text-2xl font-medium text-black hover:text-gray-800"
                 >
                   +
                 </button>
