@@ -263,11 +263,26 @@ class AttendanceViewSet(viewsets.ModelViewSet):
         start_date = request.query_params.get('start_date')   
         end_date   = request.query_params.get('end_date')
         queryset = Attendance.objects.filter(clock_in__isnull=False)
+        project_id = request.query_params.get('project')
+        task_id    = request.query_params.get('task')
+        employee_id = request.query_params.get('employee')
 
         if start_date:
            queryset = queryset.filter(date__gte=start_date)
         if end_date:
            queryset = queryset.filter(date__lte=end_date)
+        if employee_id:
+           queryset = queryset.filter(employee_id=employee_id)
+
+        if project_id:
+           queryset = queryset.filter(
+               worksession__project_id=project_id
+            )
+
+        if task_id:
+            queryset = queryset.filter(
+                worksession__task_id=task_id
+        )
 
         from authapp.models import CustomUser
         active_employees = CustomUser.objects.filter(status='active')

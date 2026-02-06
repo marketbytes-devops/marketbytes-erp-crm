@@ -201,7 +201,7 @@ const TimeLogs = () => {
                 < MdCalendarToday className="w-5 h-5" />Calendar View
               </button>
             </Link>
-            <Link to='/operations/timelogs/emplyees-time'>
+            <Link to='/operations/time-logs/emplyees-time'>
               <button className="flex items-center gap-3 px-6 py-3 cursor-pointer bg-black text-white rounded-xl hover:bg-gray-900 transition font-semibold">
                 <MdPerson className="w-5 h-5" />Employee Time Logs
               </button>
