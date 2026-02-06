@@ -24,7 +24,7 @@ const pageNameMap = {
   // Operations
   projects: { apiName: "Projects", displayName: "Projects", route: "/operations/projects" },
   tasks: { apiName: "Tasks", displayName: "Tasks", route: "/operations/tasks" },
-  taskboard: { apiName: "Task Board", displayName: "Task Board", route: "/operations/taskboard" },
+  taskboard: { apiName: "Task Board", displayName: "Task Board", route: "/operations/task-board" },
 
   // Sales
   leads: { apiName: "leads", displayName: "Leads", route: "/sales/leads" },

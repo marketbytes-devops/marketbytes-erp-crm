@@ -170,7 +170,7 @@ const Sidebar = ({ toggleSidebar }) => {
           action: "view",
         },
         {
-          to: "/operations/taskboard",
+          to: "/operations/task-board",
           label: "Task Board",
           icon: <MdViewKanban className="w-5 h-5" />,
           page: "task board",
@@ -184,7 +184,7 @@ const Sidebar = ({ toggleSidebar }) => {
           action: "view",
         },
         {
-          to: "/operations/taskcalendar",
+          to: "/operations/task-calendar",
           label: "Task Calendar",
           icon: <MdCalendarToday className="w-5 h-5" />,
           page: "Task Calendar",

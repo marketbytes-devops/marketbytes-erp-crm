@@ -347,7 +347,7 @@ const ProjectsView = () => {
                   Pinned ({pinnedProjects.length})
                 </button>
                 <button
-                  onClick={() => navigate("/operations/projects/projectarchive")}
+                  onClick={() => navigate("/operations/projects/project-archive")}
                   className="px-5 py-4 border border-gray-300 rounded-xl hover:bg-gray-50 transition text-sm font-medium"
                 >
                   View Archive

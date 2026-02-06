@@ -30,7 +30,7 @@ const LayoutComponents = ({
     return (
       <>
         {toaster}
-        <div className="w-full p-6">
+        <div >
           <div className="bg-white rounded-3xl border border-gray-100 shadow-xl shadow-gray-200/50 overflow-hidden">
             <div className="p-8 border-b border-gray-50 bg-linear-to-r from-white to-gray-50/50">
               <h2 className="text-3xl font-medium text-black tracking-tight font-syne mb-1">{title}</h2>

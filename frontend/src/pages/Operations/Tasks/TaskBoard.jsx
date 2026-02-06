@@ -202,7 +202,7 @@ const TaskBoardPage = () => {
                 </div>
               </div>
               <Link
-                to="/operations/tasks/newtask"
+                to="/operations/tasks/new-task"
                 className="flex items-center gap-3 px-6 py-3 bg-black text-white rounded-xl hover:bg-gray-900 transition text-sm font-medium"
               >
                 <MdAdd className="w-5 h-5" /> New Task

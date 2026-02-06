@@ -27,7 +27,7 @@ const AddNewTemplatePage = () => {
       return;
     }
     alert("Template saved successfully!");
-    navigate("/operations/projects/projecttemplateadd");
+    navigate("/operations/projects/project-template-add");
   };
 
   return (

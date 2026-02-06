@@ -30,17 +30,17 @@ import DesignationCreate from "./pages/HR/Designations/DesignationCreate";
 import AssignLeave from "./pages/HR/Leaves/AssignLeave";
 import Projects from "./pages/Operations/Projects/ProjectView";
 import ProjectCreate from "./pages/Operations/Projects/ProjectCreate";
-import ProjectTemplate from "./pages/Operations/Projects/ProjectTemplate";
-import ProjectTemplateAdd from "./pages/Operations/Projects/ProjectTemplateAdd";
-import ProjectArchive from "./pages/Operations/Projects/ProjectArchive";
+import ProjectTemplate from "./pages/Operations/projects/ProjectTemplate";
+import ProjectTemplateAdd from "./pages/Operations/projects/ProjectTemplateAdd";
+import ProjectArchive from "./pages/Operations/projects/ProjectArchive";
 import ProjectEdit from "./pages/Operations/Projects/ProjectEdit";
 import ProjectDetails from "./pages/Operations/Projects/ProjectDetails";
 import TaskView from "./pages/Operations/Tasks/TaskView";
-import TaskLabel from "./pages/Operations/Tasks/TaskLabel";
-import CreateTaskLabel from "./pages/Operations/Tasks/CreateTaskLabel";
+import TaskLabel from "./pages/Operations/tasks/TaskLabel";
+import CreateTaskLabel from "./pages/Operations/tasks/CreateTaskLabel";
 import TaskEdit from "./pages/Operations/Tasks/TaskEdit";
 import TaskBoard from "./pages/Operations/Tasks/TaskBoard";
-import NewTask from "./pages/Operations/Tasks/NewTask";
+import NewTask from "./pages/operations/tasks/NewTask";
 import ScrumView from "./pages/Operations/Scrum/ScrumView";
 import Leads from "./pages/Sales/Leads";
 import Invoice from "./pages/Sales/Invoice";
@@ -53,6 +53,7 @@ import EmployeeTimeLogs from "./pages/Operations/TimeLogs/EmployeeTimeLogs";
 import CalendarView from "./pages/Operations/TimeLogs/CalendarView";
 import ActiveTimers from "./pages/Operations/TimeLogs/ActiveTimers";
 import TaskCalendarPage from "./pages/Operations/Tasks/TaskCalendar";
+import EditScrumPage from "./pages/Operations/Scrum/EditScrum";
 
 const ProtectedRoute = ({
   children,
@@ -493,7 +494,7 @@ function App() {
         },
 
         {
-          path: "/operations/projects/projecttemplate",
+          path: "/operations/projects/project-template",
           element: (
             <ProtectedRoute
               isAuthenticated={isAuthenticated}
@@ -506,7 +507,7 @@ function App() {
         },
 
         {
-          path: "/operations/projects/projecttemplateadd",
+          path: "/operations/projects/project-template-add",
           element: (
             <ProtectedRoute
               isAuthenticated={isAuthenticated}
@@ -519,7 +520,7 @@ function App() {
         },
 
         {
-          path: "/operations/projects/projectarchive",
+          path: "/operations/projects/project-archive",
           element: (
             <ProtectedRoute
               isAuthenticated={isAuthenticated}
@@ -543,7 +544,7 @@ function App() {
           ),
         },
         {
-          path: "/operations/tasks/tasklabel",
+          path: "/operations/tasks/task-label",
           element: (
             <ProtectedRoute
               isAuthenticated={isAuthenticated}
@@ -555,7 +556,7 @@ function App() {
           ),
         },
         {
-          path: "/operations/tasks/createtasklabel",
+          path: "/operations/tasks/task-label-create",
           element: (
             <ProtectedRoute
               isAuthenticated={isAuthenticated}
@@ -567,7 +568,7 @@ function App() {
           ),
         },
         {
-          path: "/operations/tasks/newtask",
+          path: "/operations/tasks/new-task",
           element: (
             <ProtectedRoute
               isAuthenticated={isAuthenticated}
@@ -591,7 +592,7 @@ function App() {
           ),
         },
         {
-          path: "/operations/taskboard",
+          path: "/operations/task-board",
           element: (
             <ProtectedRoute
               isAuthenticated={isAuthenticated}
@@ -651,7 +652,7 @@ function App() {
           ),
         },
         {
-          path: "/operations/taskcalendar",
+          path: "/operations/task-calendar",
           element: (
             <ProtectedRoute
               isAuthenticated={isAuthenticated}
@@ -662,7 +663,7 @@ function App() {
             </ProtectedRoute>
           ),
         },
-         {
+        {
           path: "/operations/scrum",
           element: (
             <ProtectedRoute
@@ -671,6 +672,18 @@ function App() {
               requiredAction="view"
             >
               <ScrumView />
+            </ProtectedRoute>
+          ),
+        },
+        {
+          path: "/operations/scrum/edit/:id",
+          element: (
+            <ProtectedRoute
+              isAuthenticated={isAuthenticated}
+              requiredPage="permissions"
+              requiredAction="view"
+            >
+              <EditScrumPage />
             </ProtectedRoute>
           ),
         },
@@ -718,4 +731,3 @@ function App() {
 }
 
 export default App;
-

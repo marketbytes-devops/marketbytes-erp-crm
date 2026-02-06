@@ -4,7 +4,7 @@ import { useNavigate } from "react-router";
 const TaskLabelsPage = () => {
   const navigate = useNavigate();
   const handleClick = () => {
-    navigate("/operations/tasks/createtasklabel")
+    navigate("/operations/tasks/task-label-create")
   }
   return (
     <div className="p-6">

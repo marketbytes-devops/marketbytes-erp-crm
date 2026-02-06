@@ -373,10 +373,19 @@ class TaskSerializer(serializers.ModelSerializer):
 class ScrumSerializer(serializers.ModelSerializer):
     task_name = serializers.CharField(source='task.name', read_only=True)
     project_name = serializers.CharField(source='task.project.name', read_only=True, allow_null=True)
+    project = serializers.PrimaryKeyRelatedField(source='task.project', read_only=True)
     
     employee = ProfileSerializer(read_only=True, allow_null=True)
+    employee_id = serializers.PrimaryKeyRelatedField(
+        queryset=CustomUser.objects.all(),
+        source='employee',
+        write_only=True,
+        required=False,
+        allow_null=True
+    )
+    
     employee_name = serializers.CharField(
-        source='employee.get_full_name', 
+        source='employee.name', 
         read_only=True, 
         default="Unassigned"
     )
@@ -401,9 +410,11 @@ class ScrumSerializer(serializers.ModelSerializer):
             'id',
             'task',
             'task_name',
+            'project',
             'project_name',
             'date',
             'employee',
+            'employee_id',
             'employee_name',
             'reported_status',
             'status_display',

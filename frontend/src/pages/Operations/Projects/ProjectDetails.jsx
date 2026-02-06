@@ -209,7 +209,7 @@ const ProjectDetails = () => {
                                     <MdCheckCircle className="w-6 h-6 text-blue-500" /> Project Tasks
                                 </h3>
                                 <Link
-                                    to="/operations/tasks/newtask"
+                                    to="/operations/tasks/new-task"
                                     state={{ projectId: id }}
                                     className="px-4 py-2 bg-blue-50 text-blue-700 rounded-xl hover:bg-blue-100 transition text-sm font-medium flex items-center gap-1"
                                 >
