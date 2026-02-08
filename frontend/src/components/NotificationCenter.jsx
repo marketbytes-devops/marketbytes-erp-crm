@@ -169,7 +169,7 @@ const NotificationCenter = () => {
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         exit={{ opacity: 0, y: 20, scale: 0.95 }}
                         transition={{ type: "spring", stiffness: 300, damping: 25 }}
-                        className="absolute right-0 mt-4 w-[420px] max-h-[600px] bg-white rounded-[32px] shadow-[0_20px_50px_rgba(0,0,0,0.15)] border border-gray-100 overflow-hidden z-[100] flex flex-col"
+                        className="absolute right-0 mt-4 w-[420px] max-h-[600px] bg-white rounded-[32px] shadow-[0_20px_50px_rgba(0,0,0,0.15)] border border-gray-100 overflow-hidden z-100 flex flex-col"
                     >
                         {/* Header */}
                         <div className="p-6 pb-2">
