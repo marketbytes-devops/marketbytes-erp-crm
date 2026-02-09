@@ -9,8 +9,6 @@ import {
     MdTimerOff,
     MdTimer,
     MdRefresh,
-    MdGroup,
-    MdFolder
 } from "react-icons/md";
 import { FiSearch, FiArrowLeft } from "react-icons/fi";
 import { motion, AnimatePresence } from "framer-motion";
@@ -24,19 +22,24 @@ const ActiveTimers = () => {
     const [timers, setTimers] = useState([]);
     const [loading, setLoading] = useState(true);
 
-    // Filters
+    // Filters Data
+    const [projectsList, setProjectsList] = useState([]);
+    const [tasksList, setTasksList] = useState([]);
+    const [employeesList, setEmployeesList] = useState([]);
+
+    // Filter States
     const [project, setProject] = useState("");
     const [task, setTask] = useState("");
     const [employee, setEmployee] = useState("");
-    const [approved, setApproved] = useState("");
+    const [status, setStatus] = useState("");
 
-    const activeFilterCount = [project, task, employee, approved].filter(Boolean).length;
+    const activeFilterCount = [project, task, employee, status].filter(Boolean).length;
 
     const resetFilters = () => {
         setProject("");
         setTask("");
         setEmployee("");
-        setApproved("");
+        setStatus("");
         setSearch("");
     };
 
@@ -47,21 +50,37 @@ const ActiveTimers = () => {
         return `${hrs.toString().padStart(2, "0")}:${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
     };
 
-    const fetchActiveTimers = async () => {
+    const fetchData = async () => {
         try {
             setLoading(true);
-            const res = await apiClient.get("/hr/timer/active_sessions/");
-            const adaptedData = res.data.map((item) => ({
+            const [timersRes, projectsRes, tasksRes, employeesRes] = await Promise.all([
+                apiClient.get("/hr/timer/active_sessions/"),
+                apiClient.get("/operation/projects/"),
+                apiClient.get("/operation/tasks/"),
+                apiClient.get("/auth/users/")
+            ]);
+
+            const extract = (d) => (Array.isArray(d) ? d : d.results || []);
+
+            const adaptedTimers = timersRes.data.map((item) => ({
                 id: item.id,
                 task: item.task || "Other Task",
+                taskId: item.task_id,
+                taskStatus: item.task_status,
                 project: item.project || "Internal",
+                projectId: item.project_id,
                 subTask: "Direct Execution",
                 employee: item.employee?.name?.trim() || item.employee?.username || "Unknown",
+                employeeId: item.employee?.id,
                 startTime: new Date(item.start_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true }),
                 startDate: new Date(item.start_time).toLocaleDateString("en-GB"),
                 duration: item.duration_seconds,
             }));
-            setTimers(adaptedData);
+
+            setTimers(adaptedTimers);
+            setProjectsList(extract(projectsRes.data));
+            setTasksList(extract(tasksRes.data));
+            setEmployeesList(extract(employeesRes.data));
         } catch (error) {
             console.error("Active timers fetch failed", error);
         } finally {
@@ -70,7 +89,7 @@ const ActiveTimers = () => {
     };
 
     useEffect(() => {
-        fetchActiveTimers();
+        fetchData();
         const interval = setInterval(() => {
             setTimers(prev => prev.map(t => ({ ...t, duration: t.duration + 1 })));
         }, 1000);
@@ -78,14 +97,35 @@ const ActiveTimers = () => {
     }, []);
 
     const filteredTimers = useMemo(() => {
-        if (!search.trim()) return timers;
-        const term = search.toLowerCase();
-        return timers.filter(t =>
-            (t.task?.toLowerCase().includes(term)) ||
-            (t.project?.toLowerCase().includes(term)) ||
-            (t.employee?.toLowerCase().includes(term))
-        );
-    }, [timers, search]);
+        let result = timers;
+
+        if (search.trim()) {
+            const term = search.toLowerCase();
+            result = result.filter(t =>
+                (t.task?.toLowerCase().includes(term)) ||
+                (t.project?.toLowerCase().includes(term)) ||
+                (t.employee?.toLowerCase().includes(term))
+            );
+        }
+
+        if (project) {
+            result = result.filter(t => t.projectId === parseInt(project));
+        }
+
+        if (task) {
+            result = result.filter(t => t.taskId === parseInt(task));
+        }
+
+        if (employee) {
+            result = result.filter(t => t.employeeId === parseInt(employee));
+        }
+
+        if (status) {
+            result = result.filter(t => t.taskStatus === status);
+        }
+
+        return result;
+    }, [timers, search, project, task, employee, status]);
 
     const stats = useMemo(() => ({
         activeNodes: filteredTimers.length,
@@ -93,6 +133,18 @@ const ActiveTimers = () => {
         involvedProjects: [...new Set(filteredTimers.map(t => t.project))].length,
         activeAssociates: [...new Set(filteredTimers.map(t => t.employee))].length
     }), [filteredTimers]);
+
+    const handleStop = async (id) => {
+        if (!window.confirm("Are you sure you want to stop this timer?")) return;
+        try {
+            await apiClient.patch(`/hr/work-sessions/${id}/`, {
+                end_time: new Date().toISOString()
+            });
+            fetchData();
+        } catch (error) {
+            console.error("Failed to stop timer", error);
+        }
+    };
 
     if (loading && !timers.length) {
         return (
@@ -120,7 +172,7 @@ const ActiveTimers = () => {
                     {/* Stats Row */}
                     <div className="bg-white rounded-2xl shadow-sm p-6 mb-6">
                         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
-                            <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-8 w-full">
                                 <div className="text-center">
                                     <div className="text-4xl font-medium text-black mb-2 flex items-center justify-center gap-3">
                                         <div className="w-2.5 h-2.5 bg-green-500 rounded-full animate-pulse shadow-lg shadow-green-500/20"></div>
@@ -143,14 +195,11 @@ const ActiveTimers = () => {
                             </div>
                             <div className="flex gap-3">
                                 <button
-                                    onClick={fetchActiveTimers}
+                                    onClick={fetchData}
                                     className="p-3 bg-white border border-gray-300 rounded-xl hover:bg-gray-50 transition active:scale-95 text-gray-600"
                                     title="Refresh"
                                 >
                                     <MdRefresh className={`w-5 h-5 ${loading ? 'animate-spin' : ''}`} />
-                                </button>
-                                <button className="flex items-center gap-2 px-6 py-3 bg-black text-white rounded-xl hover:bg-gray-900 transition text-sm font-medium whitespace-nowrap active:scale-95">
-                                    <MdTimer className="w-5 h-5" /> Start Timer
                                 </button>
                             </div>
                         </div>
@@ -217,10 +266,49 @@ const ActiveTimers = () => {
                                     </div>
 
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
-                                        <Input label="Project" type="select" value={project} onChange={setProject} options={[{ label: "All Projects", value: "" }]} />
-                                        <Input label="Task" type="select" value={task} onChange={setTask} options={[{ label: "All Tasks", value: "" }]} />
-                                        <Input label="Employee" type="select" value={employee} onChange={setEmployee} options={[{ label: "All Employees", value: "" }]} />
-                                        <Input label="Status" type="select" value={approved} onChange={setApproved} options={[{ label: "All", value: "" }, { label: "Verified", value: "approved" }, { label: "Pending", value: "pending" }]} />
+                                        <Input
+                                            label="Project"
+                                            type="select"
+                                            value={project}
+                                            onChange={setProject}
+                                            options={[
+                                                { label: "All Projects", value: "" },
+                                                ...projectsList.map(p => ({ label: p.name, value: p.id }))
+                                            ]}
+                                        />
+                                        <Input
+                                            label="Task"
+                                            type="select"
+                                            value={task}
+                                            onChange={setTask}
+                                            options={[
+                                                { label: "All Tasks", value: "" },
+                                                ...tasksList.map(t => ({ label: t.name, value: t.id }))
+                                            ]}
+                                        />
+                                        <Input
+                                            label="Employee"
+                                            type="select"
+                                            value={employee}
+                                            onChange={setEmployee}
+                                            options={[
+                                                { label: "All Employees", value: "" },
+                                                ...employeesList.map(e => ({ label: e.name || e.email, value: e.id }))
+                                            ]}
+                                        />
+                                        <Input
+                                            label="Status"
+                                            type="select"
+                                            value={status}
+                                            onChange={setStatus}
+                                            options={[
+                                                { label: "All Statuses", value: "" },
+                                                { label: "To Do", value: "todo" },
+                                                { label: "In Progress", value: "in_progress" },
+                                                { label: "Review", value: "review" },
+                                                { label: "Done", value: "done" }
+                                            ]}
+                                        />
                                     </div>
 
                                     <div className="flex justify-end mt-8 pt-6 border-t border-gray-200">
@@ -275,7 +363,19 @@ const ActiveTimers = () => {
                                                 <td className="px-6 py-5 text-sm font-medium text-gray-500">#{t.id}</td>
                                                 <td className="px-6 py-5">
                                                     <div className="flex flex-col">
-                                                        <span className="font-medium text-gray-900">{t.task}</span>
+                                                        <div className="flex items-center gap-2">
+                                                            <span className="font-medium text-gray-900">{t.task}</span>
+                                                            {t.taskStatus && (
+                                                                <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${
+                                                                    t.taskStatus === 'todo' ? 'bg-gray-100 text-gray-600' :
+                                                                    t.taskStatus === 'in_progress' ? 'bg-blue-100 text-blue-600' :
+                                                                    t.taskStatus === 'review' ? 'bg-yellow-100 text-yellow-600' :
+                                                                    'bg-green-100 text-green-600'
+                                                                }`}>
+                                                                    {t.taskStatus.replace('_', ' ')}
+                                                                </span>
+                                                            )}
+                                                        </div>
                                                         <span className="text-xs text-gray-500 mt-0.5">{t.project}</span>
                                                     </div>
                                                 </td>
@@ -301,6 +401,7 @@ const ActiveTimers = () => {
                                                 </td>
                                                 <td className="px-6 py-5">
                                                     <button
+                                                        onClick={() => handleStop(t.id)}
                                                         className="p-2 border border-gray-200 text-gray-500 rounded-lg hover:text-red-600 hover:border-red-200 hover:bg-red-50 transition"
                                                         title="Stop Timer"
                                                     >

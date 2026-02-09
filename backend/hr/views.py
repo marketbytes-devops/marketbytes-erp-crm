@@ -5,7 +5,7 @@ from rest_framework.permissions import IsAuthenticated
 from authapp.permissions import HasPermission
 from django.utils import timezone
 from datetime import timedelta, datetime, time, timezone as dt_timezone
-from django.db.models import Q
+from django.db.models import Q, Count, Exists, OuterRef
 from .models import Attendance, Holiday, LeaveType, Leave, Overtime, Candidate, Performance, Project, Task, WorkSession, BreakSession
 from .serializers import *
 
@@ -274,20 +274,60 @@ class AttendanceViewSet(viewsets.ModelViewSet):
         if employee_id:
            queryset = queryset.filter(employee_id=employee_id)
 
-        if project_id:
-           queryset = queryset.filter(
-               worksession__project_id=project_id
-            )
+        if project_id or task_id:
+             ws_qs = WorkSession.objects.all()
+             
+             if project_id:
+                 ws_qs = ws_qs.filter(project_id=project_id)
+             if task_id:
+                 ws_qs = ws_qs.filter(task_id=task_id)
+             
+             # Apply date limits if present to optimize
+             current_tz = timezone.get_current_timezone()
+             if start_date:
+                  try:
+                      sd = datetime.strptime(start_date, '%Y-%m-%d')
+                      sd_aware = timezone.make_aware(sd, current_tz)
+                      ws_qs = ws_qs.filter(start_time__gte=sd_aware)
+                  except ValueError:
+                      pass
+                      
+             if end_date:
+                  try:
+                      ed = datetime.strptime(end_date, '%Y-%m-%d')
+                      # End of day
+                      ed = ed + timedelta(days=1) - timedelta(microseconds=1)
+                      ed_aware = timezone.make_aware(ed, current_tz)
+                      ws_qs = ws_qs.filter(start_time__lte=ed_aware)
+                  except ValueError:
+                      pass
 
-        if task_id:
-            queryset = queryset.filter(
-                worksession__task_id=task_id
-        )
+             # Fetch only needed fields
+             sessions_data = ws_qs.values_list('employee_id', 'start_time')
+             
+             # Build valid (employee, date) pairs
+             valid_pairs = set()
+             for emp_id, start_time in sessions_data:
+                  if not emp_id or not start_time: continue
+                  local_dt = timezone.localtime(start_time).date()
+                  valid_pairs.add((emp_id, local_dt))
+             
+             if not valid_pairs:
+                  # Force empty result if no matching sessions
+                  queryset = queryset.none()
+             else:
+                  # Construct Q filter
+                  # Q(employee=e1, date=d1) | Q(employee=e2, date=d2) ...
+                  q_filter = Q()
+                  for emp_id, dt in valid_pairs:
+                       q_filter |= Q(employee_id=emp_id, date=dt)
+                  
+                  queryset = queryset.filter(q_filter)
 
         from authapp.models import CustomUser
         active_employees = CustomUser.objects.filter(status='active')
 
-        from django.db.models import Count
+
         result = (
         queryset
         .values('employee')                          # group by employee
@@ -627,12 +667,37 @@ class WorkSessionViewSet(viewsets.ModelViewSet):
         employee_id = self.request.query_params.get('employee')
         status = self.request.query_params.get('status')
         
+        task_id = self.request.query_params.get('task')
+        start_date = self.request.query_params.get('start_date')
+        end_date = self.request.query_params.get('end_date')
+
         if project_id:
             queryset = queryset.filter(project_id=project_id)
+        if task_id:
+            queryset = queryset.filter(task_id=task_id)
         if employee_id:
             queryset = queryset.filter(employee_id=employee_id)
         if status:
             queryset = queryset.filter(status=status)
+        if start_date:
+            try:
+                current_tz = timezone.get_current_timezone()
+                sd = datetime.strptime(start_date, '%Y-%m-%d')
+                sd_aware = timezone.make_aware(sd, current_tz)
+                queryset = queryset.filter(start_time__gte=sd_aware)
+            except ValueError:
+                pass
+
+        if end_date:
+            try:
+                current_tz = timezone.get_current_timezone()
+                ed = datetime.strptime(end_date, '%Y-%m-%d')
+                # End of day
+                ed = ed + timedelta(days=1) - timedelta(microseconds=1)
+                ed_aware = timezone.make_aware(ed, current_tz)
+                queryset = queryset.filter(start_time__lte=ed_aware)
+            except ValueError:
+                pass
 
         if user.is_superuser or (getattr(user, 'role', None) and user.role.name == "Superadmin"):
             return queryset
