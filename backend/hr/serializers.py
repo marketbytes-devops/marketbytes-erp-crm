@@ -305,7 +305,10 @@ class BreakSessionSerializer(serializers.ModelSerializer):
 class ActiveWorkSessionSerializer(serializers.ModelSerializer):
     employee = UserSerializer(read_only=True)
     project = serializers.CharField(source='project.name', read_only=True)
+    project_id = serializers.PrimaryKeyRelatedField(read_only=True, source='project')
     task = serializers.CharField(source='task.name', read_only=True)
+    task_id = serializers.PrimaryKeyRelatedField(read_only=True, source='task')
+    task_status = serializers.CharField(source='task.status', read_only=True)
     start_time = serializers.DateTimeField()  
     duration_seconds = serializers.SerializerMethodField()
     status = serializers.SerializerMethodField()
@@ -316,7 +319,10 @@ class ActiveWorkSessionSerializer(serializers.ModelSerializer):
             'id',
             'employee',
             'project',
+            'project_id',
             'task',
+            'task_id',
+            'task_status',
             'start_time',
             'duration_seconds',
             'status'

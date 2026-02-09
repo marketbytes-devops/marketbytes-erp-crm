@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo } from "react";
+import React, { useEffect, useState, useMemo, useRef } from "react";
 import apiClient from "../../../helpers/apiClient";
 import LayoutComponents from "../../../components/LayoutComponents";
 import {
@@ -9,13 +9,17 @@ import {
   MdRefresh,
   MdPerson,
   MdAttachMoney,
-  MdAccessTime
+  MdAccessTime,
+  MdDelete
 } from "react-icons/md";
 import { FiArrowLeft, FiSearch } from "react-icons/fi";
 import { motion, AnimatePresence } from "framer-motion";
 import Input from "../../../components/Input";
 import Loading from "../../../components/Loading";
 import { Link } from "react-router-dom";
+import { jsPDF } from "jspdf";
+import autoTable from "jspdf-autotable";
+import * as XLSX from "xlsx";
 
 const EmployeeTimeLogs = () => {
   const [employees, setEmployees] = useState([]);
@@ -34,6 +38,15 @@ const EmployeeTimeLogs = () => {
   const [projects, setProjects] = useState([]);
   const [tasks, setTasks] = useState([]);
   const [allEmployees, setAllEmployees] = useState([]);
+
+  // Expanded Row State
+  const [expandedEmployeeId, setExpandedEmployeeId] = useState(null);
+  const [sessions, setSessions] = useState([]);
+  const [sessionsLoading, setSessionsLoading] = useState(false);
+  
+  // Export dropdown state
+  const [exportDropdownOpen, setExportDropdownOpen] = useState(false);
+  const exportDropdownRef = useRef(null);
 
   // Fetch data when component loads OR filters change
   useEffect(() => {
@@ -103,6 +116,159 @@ const EmployeeTimeLogs = () => {
   const resetFilters = () => {
     setFilters({ from: "", to: "", project: "", task: "", employee: "" });
     setSearch("");
+    setExpandedEmployeeId(null);
+    setSessions([]);
+  };
+
+  const handleDeleteSession = async (sessionId) => {
+    if (!window.confirm("Are you sure you want to delete this work session?")) return;
+    try {
+      await apiClient.delete(`/hr/work-sessions/${sessionId}/`);
+      setSessions(prev => prev.filter(s => s.id !== sessionId));
+      // Optionally refresh parent stats
+      fetchClockinCounts();
+    } catch (error) {
+      console.error("Error deleting session:", error);
+      alert("Failed to delete session");
+    }
+  };
+
+  const handleExportPDF = () => {
+    const doc = new jsPDF();
+    
+    // Add title
+    doc.setFontSize(18);
+    doc.text("Employee Time Logs Report", 14, 20);
+    
+    // Add filters info
+    doc.setFontSize(10);
+    let yPos = 30;
+    if (filters.from || filters.to) {
+      doc.text(`Date Range: ${filters.from || 'N/A'} to ${filters.to || 'N/A'}`, 14, yPos);
+      yPos += 6;
+    }
+    if (filters.project) {
+      const proj = projects.find(p => p.id.toString() === filters.project);
+      doc.text(`Project: ${proj?.name || 'N/A'}`, 14, yPos);
+      yPos += 6;
+    }
+    if (filters.task) {
+      const task = tasks.find(t => t.id.toString() === filters.task);
+      doc.text(`Task: ${task?.name || 'N/A'}`, 14, yPos);
+      yPos += 6;
+    }
+    
+    // Prepare table data
+    const tableData = filteredEmployees.map(emp => [
+      emp.name || 'Unknown',
+      emp.role || 'Employee',
+      `${emp.clockin_count} Sessions`,
+      `₹${emp.earnings || 0}`
+    ]);
+    
+    // Add table
+    doc.autoTable({
+      startY: yPos + 5,
+      head: [['Employee', 'Role', 'Work Frequency', 'Est. Earnings']],
+      body: tableData,
+      theme: 'grid',
+      headStyles: { fillColor: [0, 0, 0] },
+      styles: { fontSize: 9 }
+    });
+    
+    // Add footer
+    const pageCount = doc.internal.getNumberOfPages();
+    for (let i = 1; i <= pageCount; i++) {
+      doc.setPage(i);
+      doc.setFontSize(8);
+      doc.text(
+        `Page ${i} of ${pageCount} | Generated on ${new Date().toLocaleString()}`,
+        14,
+        doc.internal.pageSize.height - 10
+      );
+    }
+    
+    doc.save(`employee-time-logs-${new Date().toISOString().split('T')[0]}.pdf`);
+    setExportDropdownOpen(false);
+  };
+
+  const handleExportExcel = () => {
+    // Prepare data
+    const data = filteredEmployees.map(emp => ({
+      'Employee Name': emp.name || 'Unknown',
+      'Email': emp.email || 'No Email',
+      'Role': emp.role || 'Employee',
+      'Work Frequency': `${emp.clockin_count} Sessions`,
+      'Est. Earnings': `₹${emp.earnings || 0}`
+    }));
+    
+    // Create worksheet
+    const ws = XLSX.utils.json_to_sheet(data);
+    
+    // Set column widths
+    ws['!cols'] = [
+      { wch: 20 }, // Employee Name
+      { wch: 25 }, // Email
+      { wch: 15 }, // Role
+      { wch: 18 }, // Work Frequency
+      { wch: 15 }  // Est. Earnings
+    ];
+    
+    // Create workbook
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Employee Time Logs');
+    
+    // Save file
+    XLSX.writeFile(wb, `employee-time-logs-${new Date().toISOString().split('T')[0]}.xlsx`);
+    setExportDropdownOpen(false);
+  };
+
+  // Close export dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (exportDropdownRef.current && !exportDropdownRef.current.contains(event.target)) {
+        setExportDropdownOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const handleExpand = async (employeeId) => {
+    if (expandedEmployeeId === employeeId) {
+      setExpandedEmployeeId(null);
+      setSessions([]);
+      return;
+    }
+
+    setExpandedEmployeeId(employeeId);
+    setSessionsLoading(true);
+    try {
+      const params = { employee: employeeId };
+      if (filters.from) params.start_date = filters.from;
+      if (filters.to) params.end_date = filters.to;
+      if (filters.project) params.project = filters.project;
+      if (filters.task) params.task = filters.task;
+
+      const response = await apiClient.get("/hr/work-sessions/", { params });
+      setSessions(response.data.results || []);
+    } catch (error) {
+      console.error("Error fetching sessions:", error);
+    } finally {
+      setSessionsLoading(false);
+    }
+  };
+
+  const formatTimeRange = (start, end) => {
+      if (!start) return "-";
+      const startDate = new Date(start);
+      const endDate = end ? new Date(end) : null;
+      
+      const timeStr = startDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      if (!endDate) return `${timeStr} - Active`;
+      
+      const endTimeStr = endDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      return `${timeStr} - ${endTimeStr}`;
   };
 
   // Filter employees based on search
@@ -185,9 +351,33 @@ const EmployeeTimeLogs = () => {
                 >
                   <MdRefresh className={`w-5 h-5 ${loading ? 'animate-spin' : ''}`} />
                 </button>
-                <button className="flex items-center gap-2 px-6 py-3 bg-black text-white rounded-xl hover:bg-gray-900 transition text-sm font-medium whitespace-nowrap">
-                  <MdDownload className="w-5 h-5" /> Export Report
-                </button>
+                <div className="relative" ref={exportDropdownRef}>
+                  <button 
+                    onClick={() => setExportDropdownOpen(!exportDropdownOpen)}
+                    className="flex items-center gap-2 px-6 py-3 bg-black text-white rounded-xl hover:bg-gray-900 transition text-sm font-medium whitespace-nowrap"
+                  >
+                    <MdDownload className="w-5 h-5" /> Export Report
+                    <MdKeyboardArrowDown className={`w-4 h-4 transition-transform ${exportDropdownOpen ? 'rotate-180' : ''}`} />
+                  </button>
+                  {exportDropdownOpen && (
+                    <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg border border-gray-200 py-2 z-50">
+                      <button
+                        onClick={handleExportPDF}
+                        className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 transition flex items-center gap-2"
+                      >
+                        <MdDownload className="w-4 h-4" />
+                        Export as PDF
+                      </button>
+                      <button
+                        onClick={handleExportExcel}
+                        className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 transition flex items-center gap-2"
+                      >
+                        <MdDownload className="w-4 h-4" />
+                        Export as Excel
+                      </button>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           </div>
@@ -343,12 +533,12 @@ const EmployeeTimeLogs = () => {
                     </tr>
                   ) : (
                     filteredEmployees.map((emp, i) => (
+                      <React.Fragment key={emp.id}>
                       <motion.tr
-                        key={emp.id}
                         initial={{ opacity: 0, y: 15 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: i * 0.03 }}
-                        className="hover:bg-gray-50 transition font-medium"
+                        className={`hover:bg-gray-50 transition font-medium ${expandedEmployeeId === emp.id ? "bg-gray-50" : ""}`}
                       >
                         <td className="px-6 py-5 whitespace-nowrap">
                           <div className="flex items-center gap-4">
@@ -377,11 +567,75 @@ const EmployeeTimeLogs = () => {
                           </div>
                         </td>
                         <td className="px-6 py-5 whitespace-nowrap text-right">
-                          <button className="text-sm font-medium text-blue-600 hover:text-blue-800 transition">
-                            View Details
+                          <button 
+                            onClick={() => handleExpand(emp.id)}
+                            className="p-2 rounded-full hover:bg-gray-200 transition text-gray-600"
+                          >
+                             {expandedEmployeeId === emp.id ? <MdClose className="w-5 h-5" /> : <span className="text-xl font-bold">+</span>}
                           </button>
                         </td>
                       </motion.tr>
+                      {expandedEmployeeId === emp.id && (
+                        <tr>
+                          <td colSpan="5" className="p-0 border-b border-gray-200 bg-gray-50/50">
+                            <motion.div
+                              initial={{ opacity: 0, height: 0 }}
+                              animate={{ opacity: 1, height: "auto" }}
+                              exit={{ opacity: 0, height: 0 }}
+                              className="p-6 pl-20"
+                            >
+                                {sessionsLoading ? (
+                                    <div className="flex justify-center py-4"><div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div></div>
+                                ) : sessions.length === 0 ? (
+                                    <p className="text-sm text-gray-500 text-center py-4">No detailed sessions found for this filter.</p>
+                                ) : (
+                                    <table className="w-full text-sm">
+                                        <thead>
+                                            <tr className="text-gray-500 border-b border-gray-200">
+                                                <th className="text-left font-medium py-2 uppercase text-xs tracking-wider">Date</th>
+                                                <th className="text-left font-medium py-2 uppercase text-xs tracking-wider">Task</th>
+                                                <th className="text-left font-medium py-2 uppercase text-xs tracking-wider">Time</th>
+                                                <th className="text-left font-medium py-2 uppercase text-xs tracking-wider">Total Hours</th>
+                                                <th className="text-left font-medium py-2 uppercase text-xs tracking-wider">Earnings</th>
+                                                <th className="text-right font-medium py-2 uppercase text-xs tracking-wider">Action</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody className="divide-y divide-gray-100">
+                                            {sessions.slice(0, 5).map((session) => (
+                                                <tr key={session.id}>
+                                                    <td className="py-3 text-gray-600 font-medium">
+                                                        {new Date(session.start_time).toLocaleDateString()}
+                                                    </td>
+                                                    <td className="py-3 text-gray-900 font-medium">
+                                                      <div>
+                                                        <p className="text-sm font-semibold">{session.project_name || "No Project"}</p>
+                                                        <p className="text-xs text-gray-500">{session.task_name || session.memo || "No Task"}</p>
+                                                      </div>
+                                                    </td>
+                                                    <td className="py-3 text-gray-600">{formatTimeRange(session.start_time, session.end_time)}</td>
+                                                    <td className="py-3 text-gray-600">{session.duration || "-"}</td>
+                                                    <td className="py-3 text-green-600 font-medium">₹0</td>
+                                                    <td className="py-3 text-right">
+                                                        <div className="flex items-center justify-end gap-2">
+                                                            <button 
+                                                                onClick={() => handleDeleteSession(session.id)}
+                                                                className="p-1 text-red-600 hover:bg-red-50 rounded transition"
+                                                                title="Delete"
+                                                            >
+                                                                <MdDelete className="w-4 h-4" />
+                                                            </button>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                )}
+                            </motion.div>
+                          </td>
+                        </tr>
+                      )}
+                      </React.Fragment>
                     ))
                   )}
                 </tbody>
