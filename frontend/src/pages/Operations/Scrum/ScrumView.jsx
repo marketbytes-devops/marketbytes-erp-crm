@@ -386,7 +386,7 @@ const Scrum = () => {
                       options={[{ label: "All Tasks", value: "" }, ...tasks.map(t => ({ label: t.name, value: String(t.id) }))]}
                     />
                     <Input label="Employee" type="select" value={filters.employees} onChange={(v) => handleFilterChange("employees", v)}
-                      options={[{ label: "All Members", value: "" }, ...employees.map(e => ({ label: e.name || "Unknown", value: String(e.id) }))]}
+                      options={[{ label: "All Members", value: "" }, ...employees.map(e => ({ label: [e.first_name || "", e.last_name || ""].join(" ").trim() || e.username || "Unknown", value: String(e.id) }))]}
                     />
                   </div>
 
@@ -596,7 +596,13 @@ const Scrum = () => {
                 </div>
 
                 <Input label="Employee" type="select" value={formData.employeeName} onChange={(v) => handleFormChange("employeeName", v)}
-                  options={[{ label: "Select Employee", value: "" }, ...employees.map(e => ({ label: e.name || "Unknown", value: String(e.id) }))]}
+                 options={[
+  { label: "Select Employee", value: "" },
+  ...employees.map(e => ({
+    label: [e.first_name || "", e.last_name || ""].join(" ").trim() || e.username || "Unknown",
+    value: String(e.id),        
+  }))
+]}
                 />
 
                 <div className="space-y-1">
