@@ -16,6 +16,9 @@ class AttendanceSerializer(serializers.ModelSerializer):
     tasks = serializers.SerializerMethodField()
     projects = serializers.SerializerMethodField()
     is_billable = serializers.SerializerMethodField()
+    productive_hours = serializers.SerializerMethodField()
+    break_hours = serializers.SerializerMethodField()
+    check_in_out_history = serializers.SerializerMethodField()
 
     
     class Meta:
@@ -126,33 +129,50 @@ class AttendanceSerializer(serializers.ModelSerializer):
         return history
     
     def get_total_hours(self, obj):
-        """Calculate total hours from first check-in to last check-out"""
+        """Calculate total hours from first check-in to last check-out (or now if active)"""
         work_sessions = self._get_work_sessions_for_date(obj)
         first_session = work_sessions.first()
         
-        completed_sessions = work_sessions.filter(end_time__isnull=False)
-        last_session = completed_sessions.last()
+        now = timezone.now()
         
-        if first_session and last_session and last_session.end_time:
-            total_seconds = (last_session.end_time - first_session.start_time).total_seconds()
-            return round(total_seconds / 3600, 2)
+        # If we have sessions, prioritize using their range
+        if first_session:
+            end_time = now
+            if obj.clock_out:
+                # If checked out, use the actual clock out time
+                clock_out_dt = datetime.combine(obj.date, obj.clock_out)
+                clock_out_dt = clock_out_dt.replace(tzinfo=dt_timezone.utc)
+                end_time = clock_out_dt
+            
+            total_seconds = (end_time - first_session.start_time).total_seconds()
+            return round(max(0, total_seconds / 3600), 2)
         
-        return obj.calculate_hours()
+        # Fallback to attendance record clock-in/out
+        if obj.clock_in:
+            clock_in_dt = datetime.combine(obj.date, obj.clock_in)
+            clock_in_dt = clock_in_dt.replace(tzinfo=dt_timezone.utc)
+            
+            if obj.clock_out:
+                clock_out_dt = datetime.combine(obj.date, obj.clock_out)
+                clock_out_dt = clock_out_dt.replace(tzinfo=dt_timezone.utc)
+                end_time = clock_out_dt
+            elif obj.date == now.date():
+                end_time = now
+            else:
+                return 0
+                
+            total_seconds = (end_time - clock_in_dt).total_seconds()
+            return round(max(0, total_seconds / 3600), 2)
+            
+        return 0
     
     def get_productive_hours(self, obj):
-        """Calculate productive hours from work sessions (excluding breaks)"""
-        work_sessions = self._get_work_sessions_for_date(obj)
+        """Calculate productive hours (Total Hours - Break Hours)"""
+        total_hours = self.get_total_hours(obj)
+        break_hours = self.get_break_hours(obj)
         
-        total_seconds = 0
-        now = timezone.now()
-        for session in work_sessions:
-            if session.end_time:
-                total_seconds += (session.end_time - session.start_time).total_seconds()
-            elif obj.date == now.date():
-                total_seconds += (now - session.start_time).total_seconds()
-                
-        hours = total_seconds / 3600
-        return round(hours, 2)
+        productive = total_hours - break_hours
+        return round(max(0, productive), 2)
     
     def get_break_hours(self, obj):
         """Calculate break hours from break sessions"""
@@ -289,12 +309,14 @@ class WorkSessionSerializer(serializers.ModelSerializer):
     def get_total_hours(self, obj):
         if obj.duration_seconds:
             return round(obj.duration_seconds / 3600, 2)
+        if obj.start_time and not obj.end_time:
+            now = timezone.now()
+            duration_seconds = (now - obj.start_time).total_seconds()
+            return round(max(0, duration_seconds / 3600), 2)
         return 0
 
     def get_productive_hours(self, obj):
-        if obj.duration_seconds:
-            return round(obj.duration_seconds / 3600, 2)
-        return 0
+        return self.get_total_hours(obj)
 
 
 class BreakSessionSerializer(serializers.ModelSerializer):

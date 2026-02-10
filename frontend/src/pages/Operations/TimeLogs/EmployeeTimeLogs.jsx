@@ -166,8 +166,8 @@ const EmployeeTimeLogs = () => {
       `₹${emp.earnings || 0}`
     ]);
     
-    // Add table
-    doc.autoTable({
+    // Add table using autoTable
+    autoTable(doc, {
       startY: yPos + 5,
       head: [['Employee', 'Role', 'Work Frequency', 'Est. Earnings']],
       body: tableData,
