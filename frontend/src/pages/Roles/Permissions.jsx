@@ -29,6 +29,7 @@ const pageNameMap = {
   timelogs: { apiName: "timelogs", displayName: "Time Log", route: "/operations/time-logs" },
   task_calendar: { apiName: "task_calendar", displayName: "Task Calendar", route: "/operations/task-calendar" },
   scrum: { apiName: "scrum", displayName: "Scrum", route: "/operations/scrum" },
+  contracts: { apiName: "contracts", displayName: "Contracts", route: "/operations/contracts" },
 
   // Sales
   leads: { apiName: "leads", displayName: "Leads", route: "/sales/leads" },

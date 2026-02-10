@@ -55,6 +55,8 @@ import CalendarView from "./pages/Operations/TimeLogs/CalendarView";
 import ActiveTimers from "./pages/Operations/TimeLogs/ActiveTimers";
 import TaskCalendarPage from "./pages/Operations/Tasks/TaskCalendar";
 import EditScrumPage from "./pages/Operations/Scrum/EditScrum";
+import ContractsList from "./pages/Operations/Contracts/ContractsList";
+import ContractCreate from "./pages/Operations/Contracts/ContractCreate";
 
 const ProtectedRoute = ({
   children,
@@ -442,7 +444,6 @@ function App() {
             </ProtectedRoute>
           ),
         },
-
         {
           path: "/operations/projects",
           element: (
@@ -685,6 +686,30 @@ function App() {
               requiredAction="view"
             >
               <EditScrumPage />
+            </ProtectedRoute>
+          ),
+        },
+        {
+          path: "/operations/contracts",
+          element: (
+            <ProtectedRoute
+              isAuthenticated={isAuthenticated}
+              requiredPage="contracts"
+              requiredAction="view"
+            >
+              <ContractsList />
+            </ProtectedRoute>
+          ),
+        },
+        {
+          path: "/operations/contracts/create",
+          element: (
+            <ProtectedRoute
+              isAuthenticated={isAuthenticated}
+              requiredPage="contracts"
+              requiredAction="add"
+            >
+              <ContractCreate />
             </ProtectedRoute>
           ),
         },
