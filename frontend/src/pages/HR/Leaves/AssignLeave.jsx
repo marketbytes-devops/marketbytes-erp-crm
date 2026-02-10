@@ -29,16 +29,23 @@ const AssignLeave = () => {
     fetchLeaveTypes();
   }, []);
 
-  const fetchEmployees = async () => {
-    try {
-      const res = await apiClient.get("/auth/users/");
-      const data = res.data.results || res.data || [];
-      const sorted = data.sort((a, b) => a.name.localeCompare(b.name));
-      setEmployees(sorted);
-    } catch (err) {
-      console.error("Failed to load employees:", err);
-    }
-  };
+const fetchEmployees = async () => {
+  try {
+    const res = await apiClient.get("/auth/users/");
+    const data = res.data.results || res.data || [];
+
+    const formatted = data.map(emp => ({
+      ...emp,
+      name: emp.name || `${emp.first_name || ""} ${emp.last_name || ""}`.trim()
+    }));
+
+    formatted.sort((a, b) => a.name.localeCompare(b.name));
+
+    setEmployees(formatted);
+  } catch (err) {
+    console.error("Failed to load employees:", err);
+  }
+};
 
   const fetchLeaveTypes = async () => {
     try {

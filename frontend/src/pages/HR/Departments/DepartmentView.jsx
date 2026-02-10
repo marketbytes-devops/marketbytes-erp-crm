@@ -7,6 +7,10 @@ import LayoutComponents from "../../../components/LayoutComponents";
 import apiClient from "../../../helpers/apiClient";
 import Loading from "../../../components/Loading";
 import toast from "react-hot-toast";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
+import * as XLSX from "xlsx";
+
 
 const DepartmentView = () => {
   const [departments, setDepartments] = useState([]);
@@ -15,6 +19,7 @@ const DepartmentView = () => {
   const [selectedDept, setSelectedDept] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(null);
+const [showExportMenu, setShowExportMenu] = useState(false);
 
   useEffect(() => {
     fetchDepartments();
@@ -48,6 +53,57 @@ const DepartmentView = () => {
     setSelectedDept(dept);
     setShowModal(true);
   };
+const exportPDF = () => {
+  const doc = new jsPDF("landscape");
+
+  doc.setFontSize(18);
+  doc.text("Departments Report", 14, 15);
+
+  autoTable(doc, {
+    startY: 25,
+    head: [["SL No", "Department", "Worksheet URL", "Services"]],
+    body: filteredDepartments.map((dept, i) => [
+      i + 1,
+      dept.name,
+      dept.worksheet_url || "—",
+      dept.services || "—",
+    ]),
+    styles: { fontSize: 10 },
+    headStyles: { fillColor: [0, 0, 0] },
+  });
+
+  doc.save("departments.pdf");
+};
+const exportCSV = () => {
+  const worksheet = XLSX.utils.json_to_sheet(
+    filteredDepartments.map((d, i) => ({
+      "SL No": i + 1,
+      Department: d.name,
+      "Worksheet URL": d.worksheet_url || "",
+      Services: d.services || "",
+    }))
+  );
+
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, worksheet, "Departments");
+
+  XLSX.writeFile(workbook, "departments.csv");
+};
+const exportExcel = () => {
+  const worksheet = XLSX.utils.json_to_sheet(
+    filteredDepartments.map((d, i) => ({
+      "SL No": i + 1,
+      Department: d.name,
+      "Worksheet URL": d.worksheet_url || "",
+      Services: d.services || "",
+    }))
+  );
+
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, worksheet, "Departments");
+
+  XLSX.writeFile(workbook, "departments.xlsx");
+};
 
   const filteredDepartments = departments.filter((dept) =>
     dept.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -81,9 +137,50 @@ const DepartmentView = () => {
               <span className="text-sm text-gray-600">{filteredDepartments.length} departments</span>
             </div>
             <div className="flex gap-3">
-              <button className="flex items-center gap-2 px-6 py-3 border border-gray-300 rounded-xl hover:bg-gray-50 transition-all">
-                <MdDownload /> <span className="hidden sm:inline">Export CSV</span>
-              </button>
+             <div className="relative">
+  <button
+    onClick={() => setShowExportMenu(!showExportMenu)}
+    className="flex items-center gap-2 px-6 py-3 border border-gray-300 rounded-xl hover:bg-gray-50 transition-all"
+  >
+    <MdDownload />
+    <span className="hidden sm:inline">Export</span>
+  </button>
+
+  {showExportMenu && (
+    <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-xl shadow-lg z-50">
+      <button
+        onClick={() => {
+          exportPDF();
+          setShowExportMenu(false);
+        }}
+        className="w-full text-left px-4 py-3 hover:bg-gray-50"
+      >
+         Export PDF
+      </button>
+
+      <button
+        onClick={() => {
+          exportCSV();
+          setShowExportMenu(false);
+        }}
+        className="w-full text-left px-4 py-3 hover:bg-gray-50"
+      >
+         Export CSV
+      </button>
+
+      <button
+        onClick={() => {
+          exportExcel();
+          setShowExportMenu(false);
+        }}
+        className="w-full text-left px-4 py-3 hover:bg-gray-50"
+      >
+         Export Excel
+      </button>
+    </div>
+  )}
+</div>
+
               <Link
                 to="/hr/departments/create"
                 className="flex items-center gap-3 px-6 py-3 bg-black text-white rounded-xl hover:bg-gray-800 transition-all shadow-md"
