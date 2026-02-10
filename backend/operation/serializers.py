@@ -10,6 +10,8 @@ from .models import (
     Currency,
     Task,
     Scrum,
+    ContractType,
+    Contract,
 )
 from authapp.serializers import ProfileSerializer, DepartmentSerializer
 from authapp.models import CustomUser, Department
@@ -460,3 +462,31 @@ class ScrumSerializer(serializers.ModelSerializer):
                 validated_data['date'] = validated_data['date'].date()
 
         return super().update(instance, validated_data)
+
+
+class ContractTypeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ContractType
+        fields = ['id', 'name', 'description', 'created_at']
+
+
+class ContractSerializer(serializers.ModelSerializer):
+    client_name = serializers.CharField(source='client.name', read_only=True)
+    contract_type_name = serializers.CharField(
+        source='contract_type.name', read_only=True)
+    client_id = serializers.PrimaryKeyRelatedField(
+        queryset=Client.objects.all(), source='client')
+    contract_type_id = serializers.PrimaryKeyRelatedField(
+        queryset=ContractType.objects.all(), source='contract_type', required=False, allow_null=True)
+
+    class Meta:
+        model = Contract
+        fields = [
+            'id', 'subject', 'client_id', 'client_name',
+            'amount', 'no_value', 'contract_type_id', 'contract_type_name',
+            'start_date', 'end_date', 'no_end_date', 'contract_name',
+            'alternate_address', 'city', 'state', 'country', 'postal_code',
+            'cell', 'office_phone_number', 'notes', 'company_logo',
+            'created_at', 'updated_at'
+        ]
+        read_only_fields = ['id', 'created_at', 'updated_at']

@@ -34,6 +34,9 @@ const Leads = () => {
   const [companies, setCompanies] = useState([]);
   const [clients, setClients] = useState([]);
   const [agents, setAgents] = useState([]);
+  const [sources, setSources] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [teams, setTeams] = useState([]);
 
   const [showModal, setShowModal] = useState(false);
   const [editingLead, setEditingLead] = useState(null);
@@ -45,6 +48,9 @@ const Leads = () => {
     client_name: "",
     client_email: "",
     lead_agent: "",
+    lead_source: "",
+    lead_category: "",
+    lead_team: "",
     lead_value: "",
     next_follow_up: false,
     follow_up_date: "",
@@ -56,11 +62,14 @@ const Leads = () => {
     const fetchData = async () => {
       try {
         setLoading(true);
-        const [leadsRes, compRes, clientRes, agentRes] = await Promise.all([
+        const [leadsRes, compRes, clientRes, agentRes, sourceRes, catRes, teamRes] = await Promise.all([
           apiClient.get("/sales/leads/"),
           apiClient.get("/sales/companies/"),
           apiClient.get("/sales/clients/"),
           apiClient.get("/auth/users/"),
+          apiClient.get("/sales/lead-sources/"),
+          apiClient.get("/sales/lead-categories/"),
+          apiClient.get("/sales/lead-teams/"),
         ]);
 
         const extract = (data) =>
@@ -70,6 +79,9 @@ const Leads = () => {
         setCompanies(extract(compRes.data));
         setClients(extract(clientRes.data));
         setAgents(extract(agentRes.data));
+        setSources(extract(sourceRes.data));
+        setCategories(extract(catRes.data));
+        setTeams(extract(teamRes.data));
       } catch (err) {
         toast.error("Failed to load leads data");
       } finally {
@@ -111,6 +123,9 @@ const Leads = () => {
           client_name: lead.client_name || "",
           client_email: lead.client_email || "",
           lead_agent: lead.lead_agent || "",
+          lead_source: lead.lead_source || "",
+          lead_category: lead.lead_category || "",
+          lead_team: lead.lead_team || "",
           lead_value: lead.lead_value || "",
           next_follow_up: lead.next_follow_up || false,
           follow_up_date: lead.follow_up_date || "",
@@ -124,6 +139,9 @@ const Leads = () => {
           client_name: "",
           client_email: "",
           lead_agent: "",
+          lead_source: "",
+          lead_category: "",
+          lead_team: "",
           lead_value: "",
           next_follow_up: false,
           follow_up_date: "",
@@ -492,10 +510,11 @@ const Leads = () => {
                     Company *
                   </label>
                   <select
-                    // value={clientForm.company}
-                    // onChange={(e) =>
-                    //   setClientForm({ ...clientForm, company: e.target.value })
-                    // }
+                    value={formData.company}
+                    onChange={(e) => {
+                      const selected = companies.find(c => c.id === parseInt(e.target.value));
+                      setFormData({ ...formData, company: e.target.value, company_name: selected?.name || "" })
+                    }}
                     className="w-full px-5 py-3.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-black outline-none"
                     required
                   >
@@ -586,6 +605,33 @@ const Leads = () => {
                     Next Follow Up
                   </label>
                 </div>
+
+                <Input
+                  label="Lead Source"
+                  type="select"
+                  value={formData.lead_source}
+                  onChange={(v) => setFormData({ ...formData, lead_source: v })}
+                  options={sources.map(s => ({ value: s.id, label: s.name }))}
+                  placeholder="Select source"
+                />
+
+                <Input
+                  label="Lead Category"
+                  type="select"
+                  value={formData.lead_category}
+                  onChange={(v) => setFormData({ ...formData, lead_category: v })}
+                  options={categories.map(c => ({ value: c.id, label: c.name }))}
+                  placeholder="Select category"
+                />
+
+                <Input
+                  label="Lead Team"
+                  type="select"
+                  value={formData.lead_team}
+                  onChange={(v) => setFormData({ ...formData, lead_team: v })}
+                  options={teams.map(t => ({ value: t.id, label: t.name }))}
+                  placeholder="Select team"
+                />
 
                 {formData.next_follow_up && (
                   <Input

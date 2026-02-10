@@ -11,6 +11,13 @@ from rest_framework.permissions import IsAuthenticated
 from django_filters.rest_framework import DjangoFilterBackend
 from django.db.models import Q
 import datetime
+import csv
+from django.http import HttpResponse
+from openpyxl import Workbook
+from reportlab.lib.pagesizes import letter, landscape
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph
+from reportlab.lib.styles import getSampleStyleSheet
+from reportlab.lib import colors
 from .models import Scrum
 from .models import (
     Project,
@@ -20,7 +27,9 @@ from .models import (
     Client,
     Currency,
     Task,
-    Scrum
+    Scrum,
+    ContractType,
+    Contract,
 )
 from .serializers import (
     ProjectSerializer,
@@ -30,7 +39,9 @@ from .serializers import (
     ClientSerializer,
     CurrencySerializer,
     TaskSerializer,
-    ScrumSerializer
+    ScrumSerializer,
+    ContractTypeSerializer,
+    ContractSerializer,
 )
 
 
@@ -595,3 +606,128 @@ class ScrumViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(scrums, many=True)
         return Response(serializer.data)
 
+
+class ContractTypeViewSet(viewsets.ModelViewSet):
+    queryset = ContractType.objects.all()
+    serializer_class = ContractTypeSerializer
+    permission_classes = [IsAuthenticated]
+    filter_backends = [filters.SearchFilter]
+    search_fields = ['name']
+
+
+class ContractViewSet(viewsets.ModelViewSet):
+    queryset = Contract.objects.all()
+    serializer_class = ContractSerializer
+    permission_classes = [IsAuthenticated]
+    filter_backends = [DjangoFilterBackend,
+                       filters.SearchFilter, filters.OrderingFilter]
+    search_fields = ['subject', 'client__name', 'contract_name']
+    filterset_fields = {
+        'client': ['exact'],
+        'contract_type': ['exact'],
+        'start_date': ['exact', 'gte', 'lte'],
+        'end_date': ['exact', 'gte', 'lte'],
+    }
+    ordering_fields = ['created_at', 'start_date', 'end_date', 'amount']
+    ordering = ['-created_at']
+
+    @action(detail=False, methods=['get'])
+    def stats(self, request):
+        today = datetime.date.today()
+        total = self.get_queryset().count()
+        about_to_expire = self.get_queryset().filter(
+            end_date__range=[today, today + datetime.timedelta(days=30)]
+        ).count()
+        expired = self.get_queryset().filter(end_date__lt=today).count()
+
+        return Response({
+            'total_contracts': total,
+            'about_to_expire': about_to_expire,
+            'expired': expired
+        })
+
+    @action(detail=False, methods=['get'])
+    def export_csv(self, request):
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = 'attachment; filename="contracts.csv"'
+        
+        writer = csv.writer(response)
+        writer.writerow(['ID', 'Subject', 'Client', 'Amount', 'Start Date', 'End Date', 'Contract Name'])
+        
+        contracts = self.get_queryset()
+        for contract in contracts:
+            writer.writerow([
+                contract.id,
+                contract.subject,
+                contract.client.name,
+                contract.amount if not contract.no_value else 'No Value',
+                contract.start_date,
+                contract.end_date if not contract.no_end_date else 'No End Date',
+                contract.contract_name
+            ])
+        return response
+
+    @action(detail=False, methods=['get'])
+    def export_excel(self, request):
+        wb = Workbook()
+        ws = wb.active
+        ws.title = "Contracts"
+        
+        columns = ['ID', 'Subject', 'Client', 'Amount', 'Start Date', 'End Date', 'Contract Name']
+        ws.append(columns)
+        
+        contracts = self.get_queryset()
+        for contract in contracts:
+            ws.append([
+                contract.id,
+                contract.subject,
+                contract.client.name,
+                float(contract.amount) if contract.amount and not contract.no_value else 'No Value',
+                str(contract.start_date),
+                str(contract.end_date) if not contract.no_end_date else 'No End Date',
+                contract.contract_name
+            ])
+            
+        response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+        response['Content-Disposition'] = 'attachment; filename="contracts.xlsx"'
+        wb.save(response)
+        return response
+
+    @action(detail=False, methods=['get'])
+    def export_pdf(self, request):
+        response = HttpResponse(content_type='application/pdf')
+        response['Content-Disposition'] = 'attachment; filename="contracts.pdf"'
+        
+        doc = SimpleDocTemplate(response, pagesize=landscape(letter))
+        elements = []
+        
+        styles = getSampleStyleSheet()
+        elements.append(Paragraph("Contracts Report", styles['Title']))
+        
+        data = [['ID', 'Subject', 'Client', 'Amount', 'Start Date', 'End Date']]
+        contracts = self.get_queryset()
+        
+        for contract in contracts:
+            data.append([
+                str(contract.id),
+                contract.subject[:30],
+                contract.client.name[:20],
+                str(contract.amount) if not contract.no_value else 'No Value',
+                str(contract.start_date),
+                str(contract.end_date) if not contract.no_end_date else 'No End Date'
+            ])
+            
+        table = Table(data)
+        table.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
+            ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+            ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+            ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+            ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
+            ('GRID', (0, 0), (-1, -1), 1, colors.black)
+        ]))
+        
+        elements.append(table)
+        doc.build(elements)
+        return response

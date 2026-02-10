@@ -21,10 +21,12 @@ const pageNameMap = {
   recruitment: { apiName: "recruitment", displayName: "Recruitment", route: "/hr/recruitment" },
   performance: { apiName: "performance", displayName: "Performance", route: "/hr/performance" },
 
-  // Operations
-  projects: { apiName: "Projects", displayName: "Projects", route: "/operations/projects" },
-  tasks: { apiName: "Tasks", displayName: "Tasks", route: "/operations/tasks" },
-  taskboard: { apiName: "Task Board", displayName: "Task Board", route: "/operations/task-board" },
+  projects: { apiName: "projects", displayName: "Projects", route: "/operations/projects" },
+  tasks: { apiName: "tasks", displayName: "Tasks", route: "/operations/tasks" },
+  taskboard: { apiName: "task_board", displayName: "Task Board", route: "/operations/task-board" },
+  timelogs: { apiName: "timelogs", displayName: "Time Log", route: "/operations/time-logs" },
+  task_calendar: { apiName: "task_calendar", displayName: "Task Calendar", route: "/operations/task-calendar" },
+  scrum: { apiName: "scrum", displayName: "Scrum", route: "/operations/scrum" },
 
   // Sales
   leads: { apiName: "leads", displayName: "Leads", route: "/sales/leads" },
@@ -50,8 +52,8 @@ const Users = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [isSuperadmin, setIsSuperadmin] = useState(false);
-  const [permissionsData, setPermissionsData] = useState([]);
-  const [isLoadingPermissions, setIsLoadingPermissions] = useState(true);
+  const [effectivePermissions, setEffectivePermissions] = useState({});
+  const [isLoadingProfile, setIsLoadingProfile] = useState(true);
 
   // Form States (Manual Control)
   const [createFormValues, setCreateFormValues] = useState({
@@ -88,17 +90,13 @@ const Users = () => {
         const response = await apiClient.get("/auth/profile/");
         const user = response.data;
         setIsSuperadmin(user.is_superuser || user.role?.name === "Superadmin");
-        const roleId = user.role?.id;
-        if (roleId) {
-          const res = await apiClient.get(`/auth/roles/${roleId}/`);
-          setPermissionsData(res.data.permissions || []);
-        }
+        setEffectivePermissions(user.effective_permissions || {});
       } catch (err) {
         console.error(err);
-        setPermissionsData([]);
+        setEffectivePermissions({});
         setIsSuperadmin(false);
       } finally {
-        setIsLoadingPermissions(false);
+        setIsLoadingProfile(false);
       }
     };
     fetchProfile();
@@ -108,8 +106,8 @@ const Users = () => {
 
   const hasPermission = (page, action) => {
     if (isSuperadmin) return true;
-    const perm = permissionsData.find((p) => p.page === page);
-    return perm && perm[`can_${action}`];
+    const pagePerms = effectivePermissions[page];
+    return pagePerms && pagePerms[`can_${action}`];
   };
 
   const fetchUsers = async () => {
@@ -274,13 +272,15 @@ const Users = () => {
     setEditOverrides(initialPermissions); // Reset overrides on open
   };
 
-  const filteredUsers = users.filter(
-    (u) =>
-      u.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      u.email.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredUsers = users.filter((u) => {
+    const matchesSearch = u.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      u.email.toLowerCase().includes(searchQuery.toLowerCase());
 
-  if (isLoading || isLoadingPermissions) {
+    if (!isSuperadmin && (u.is_superuser || (u.role && u.role.name === "Superadmin"))) return false;
+    return matchesSearch;
+  });
+
+  if (isLoading || isLoadingProfile) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen">
         <Loader2 className="w-12 h-12 animate-spin text-gray-600" />
@@ -289,7 +289,12 @@ const Users = () => {
     );
   }
 
-  const roleOptions = [{ value: "", label: "None (Direct Permissions Only)" }, ...roles.map((r) => ({ value: r.id, label: r.name }))];
+  const roleOptions = [
+    { value: "", label: "None (Direct Permissions Only)" },
+    ...roles
+      .filter(r => isSuperadmin || r.name !== "Superadmin")
+      .map((r) => ({ value: r.id, label: r.name }))
+  ];
 
   return (
     <motion.div

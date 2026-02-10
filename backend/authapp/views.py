@@ -108,6 +108,8 @@ class RoleView(APIView):
     
     def get(self, request):
         roles = Role.objects.all().annotate(member_count=Count('users'))
+        if not (request.user.is_superuser or (request.user.role and request.user.role.name == 'Superadmin')):
+            roles = roles.exclude(name='Superadmin')
         serializer = RoleSerializer(roles, many=True)
         return Response(serializer.data)
     
@@ -126,6 +128,9 @@ class RoleDetailView(APIView):
     def get(self, request, pk):
         try:
             role = Role.objects.get(pk=pk)
+            is_super = request.user.is_superuser or (request.user.role and request.user.role.name == 'Superadmin')
+            if role.name == 'Superadmin' and not is_super:
+                return Response({'error': 'Forbidden'}, status=status.HTTP_403_FORBIDDEN)
             if role != request.user.role and not has_permission(request.user, 'roles', 'view'):
                 return Response({'error': 'Forbidden'}, status=status.HTTP_403_FORBIDDEN)
             return Response(RoleSerializer(role).data)
@@ -137,6 +142,9 @@ class RoleDetailView(APIView):
             return Response({'error': 'Forbidden'}, status=status.HTTP_403_FORBIDDEN)
         try:
             role = Role.objects.get(pk=pk)
+            is_super = request.user.is_superuser or (request.user.role and request.user.role.name == 'Superadmin')
+            if role.name == 'Superadmin' and not is_super:
+                return Response({'error': 'Forbidden'}, status=status.HTTP_403_FORBIDDEN)
             serializer = RoleSerializer(role, data=request.data, partial=True)
             if serializer.is_valid():
                 serializer.save()
@@ -150,6 +158,9 @@ class RoleDetailView(APIView):
             return Response({'error': 'Forbidden'}, status=status.HTTP_403_FORBIDDEN)
         try:
             role = Role.objects.get(pk=pk)
+            is_super = request.user.is_superuser or (request.user.role and request.user.role.name == 'Superadmin')
+            if role.name == 'Superadmin': # Even superadmins probably shouldn't delete it through API normally, but definitely block non-supers
+                return Response({'error': 'Superadmin role cannot be deleted.'}, status=status.HTTP_403_FORBIDDEN)
             role.delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
         except Role.DoesNotExist:
@@ -206,6 +217,8 @@ class UserManagementView(APIView):
     
     def get(self, request):
         users = CustomUser.objects.all().select_related('role', 'department', 'reports_to')
+        if not (request.user.is_superuser or (request.user.role and request.user.role.name == 'Superadmin')):
+            users = users.exclude(role__name='Superadmin').exclude(is_superuser=True)
         serializer = ProfileSerializer(users, many=True, context={'request': request})
         return Response(serializer.data)
     
@@ -226,6 +239,10 @@ class UserDetailView(APIView):
     def get_object(self, pk, request_user):
         try:
             user = CustomUser.objects.get(pk=pk)
+            is_requesting_super = request_user.is_superuser or (request_user.role and request_user.role.name == 'Superadmin')
+            # Hide Superadmin users from non-superadmins
+            if (user.is_superuser or (user.role and user.role.name == 'Superadmin')) and not is_requesting_super:
+                return None
             if user.id != request_user.id and not has_permission(request_user, 'users', 'view'):
                 return None
             return user

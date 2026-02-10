@@ -9,7 +9,9 @@ from .views import (
     ClientViewSet,
     CurrencyViewSet,
     TaskViewSet,
-    ScrumViewSet
+    ScrumViewSet,
+    ContractTypeViewSet,
+    ContractViewSet,
 )
 
 router = DefaultRouter()
@@ -21,6 +23,8 @@ router.register(r'clients', ClientViewSet, basename='client')
 router.register(r'currencies', CurrencyViewSet, basename='currency')
 router.register(r'tasks', TaskViewSet, basename='task')
 router.register(r'scrum', ScrumViewSet, basename='scrum')
+router.register(r'contract-types', ContractTypeViewSet, basename='contract-type')
+router.register(r'contracts', ContractViewSet, basename='contract')
 urlpatterns = [
     path('', include(router.urls)),
 ]

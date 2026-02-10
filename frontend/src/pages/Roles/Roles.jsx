@@ -21,8 +21,8 @@ const Roles = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [isSuperadmin, setIsSuperadmin] = useState(false);
-  const [permissionsData, setPermissionsData] = useState([]);
-  const [isLoadingPermissions, setIsLoadingPermissions] = useState(true);
+  const [effectivePermissions, setEffectivePermissions] = useState({});
+  const [isLoadingProfile, setIsLoadingProfile] = useState(true);
 
   const {
     register: registerCreate,
@@ -49,17 +49,13 @@ const Roles = () => {
         const response = await apiClient.get("/auth/profile/");
         const user = response.data;
         setIsSuperadmin(user.is_superuser || user.role?.name === "Superadmin");
-        const roleId = user.role?.id;
-        if (roleId) {
-          const res = await apiClient.get(`/auth/roles/${roleId}/`);
-          setPermissionsData(res.data.permissions || []);
-        }
+        setEffectivePermissions(user.effective_permissions || {});
       } catch (error) {
         console.error("Unable to fetch user profile:", error);
-        setPermissionsData([]);
+        setEffectivePermissions({});
         setIsSuperadmin(false);
       } finally {
-        setIsLoadingPermissions(false);
+        setIsLoadingProfile(false);
       }
     };
     fetchProfile();
@@ -68,8 +64,8 @@ const Roles = () => {
 
   const hasPermission = (page, action) => {
     if (isSuperadmin) return true;
-    const perm = permissionsData.find((p) => p.page === page);
-    return perm && perm[`can_${action}`];
+    const pagePerms = effectivePermissions[page];
+    return pagePerms && pagePerms[`can_${action}`];
   };
 
   const fetchRoles = async () => {
@@ -148,12 +144,15 @@ const Roles = () => {
     setValue("description", role.description || "");
   };
 
-  const filteredRoles = roles.filter((role) =>
-    role.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    (role.description && role.description.toLowerCase().includes(searchQuery.toLowerCase()))
-  );
+  const filteredRoles = roles.filter((role) => {
+    const matchesSearch = role.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (role.description && role.description.toLowerCase().includes(searchQuery.toLowerCase()));
 
-  if (isLoading || isLoadingPermissions) {
+    if (!isSuperadmin && role.name === "Superadmin") return false;
+    return matchesSearch;
+  });
+
+  if (isLoading || isLoadingProfile) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <Loading />

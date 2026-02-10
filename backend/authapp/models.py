@@ -217,32 +217,27 @@ def set_default_permissions(sender, instance, created, **kwargs):
     if created:
         default_pages = [
             {"page": "admin", "can_view": True, "can_add": False, "can_edit": False, "can_delete": False},
-            {"page": "employees", "can_view": True, "can_add": False, "can_edit": False, "can_delete": False},
-            {"page": "departments", "can_view": True, "can_add": False, "can_edit": False, "can_delete": False},
-            {"page": "designations", "can_view": True, "can_add": False, "can_edit": False, "can_delete": False},
-            {"page": "attendance", "can_view": True, "can_add": False, "can_edit": False, "can_delete": False},
-            {"page": "holidays", "can_view": True, "can_add": False, "can_edit": False, "can_delete": False},
-            {"page": "leaves", "can_view": True, "can_add": False, "can_edit": False, "can_delete": False},
-            {"page": "overtime", "can_view": True, "can_add": False, "can_edit": False, "can_delete": False},
-            {"page": "recruitment", "can_view": True, "can_add": False, "can_edit": False, "can_delete": False},
-            {"page": "performance", "can_view": True, "can_add": False, "can_edit": False, "can_delete": False},
-            {"page": "projects", "can_view": True, "can_add": False, "can_edit": False, "can_delete": False},
-            {"page": "tasks", "can_view": True, "can_add": False, "can_edit": False, "can_delete": False},
-            {"page": "task board", "can_view": True, "can_add": False, "can_edit": False, "can_delete": False},
-            {"page": "leads", "can_view": True, "can_add": False, "can_edit": False, "can_delete": False},
-            {"page": "pipeline", "can_view": True, "can_add": False, "can_edit": False, "can_delete": False},
-            {"page": "communication_tools", "can_view": True, "can_add": False, "can_edit": False, "can_delete": False},
-            {"page": "invoices", "can_view": True, "can_add": False, "can_edit": False, "can_delete": False},
-            {"page": "reports", "can_view": True, "can_add": False, "can_edit": False, "can_delete": False},
-            {"page": "customer", "can_view": True, "can_add": False, "can_edit": False, "can_delete": False},
             {"page": "profile", "can_view": True, "can_add": False, "can_edit": False, "can_delete": False},
-            {"page": "users", "can_view": True, "can_add": False, "can_edit": False, "can_delete": False},
-            {"page": "roles", "can_view": True, "can_add": False, "can_edit": False, "can_delete": False},
-            {"page": "permissions", "can_view": True, "can_add": False, "can_edit": False, "can_delete": False}
         ]
         for page in default_pages:
             Permission.objects.get_or_create(
                 role=instance,
                 page=page["page"],
+                defaults={
+                    "can_view": page["can_view"],
+                    "can_add": page["can_add"],
+                    "can_edit": page["can_edit"],
+                    "can_delete": page["can_delete"]
+                }
+            )
+
+@receiver(post_save, sender=CustomUser)
+def set_default_user_permissions(sender, instance, created, **kwargs):
+    if created:
+        default_pages = ["admin", "profile"]
+        for page in default_pages:
+            UserPermission.objects.get_or_create(
+                user=instance,
+                page=page,
                 defaults={"can_view": True}
             )

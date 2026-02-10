@@ -282,3 +282,49 @@ class Scrum(models.Model):
         if self.evening_memo and self.evening_memo.strip():
             return "Pending"
         return "No"
+
+
+class ContractType(models.Model):
+    name = models.CharField(max_length=100, unique=True)
+    description = models.TextField(blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        verbose_name_plural = "Contract Types"
+        ordering = ['name']
+
+
+class Contract(models.Model):
+    subject = models.CharField(max_length=255)
+    client = models.ForeignKey(
+        Client, on_delete=models.CASCADE, related_name='contracts')
+    amount = models.DecimalField(
+        max_digits=12, decimal_places=2, null=True, blank=True)
+    no_value = models.BooleanField(default=False)
+    contract_type = models.ForeignKey(
+        ContractType, on_delete=models.SET_NULL, null=True, blank=True, related_name='contracts')
+    start_date = models.DateField()
+    end_date = models.DateField(null=True, blank=True)
+    no_end_date = models.BooleanField(default=False)
+    contract_name = models.CharField(max_length=255, blank=True, null=True)
+    alternate_address = models.TextField(blank=True, null=True)
+    city = models.CharField(max_length=100, blank=True, null=True)
+    state = models.CharField(max_length=100, blank=True, null=True)
+    country = models.CharField(max_length=100, blank=True, null=True)
+    postal_code = models.CharField(max_length=20, blank=True, null=True)
+    cell = models.CharField(max_length=20, blank=True, null=True)
+    office_phone_number = models.CharField(max_length=20, blank=True, null=True)
+    notes = models.TextField(blank=True, null=True)
+    company_logo = models.ImageField(
+        upload_to='contract_logos/%Y/%m/%d/', blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.subject} - {self.client.name}"
+
+    class Meta:
+        ordering = ['-created_at']
