@@ -702,4 +702,95 @@ class WorkSessionViewSet(viewsets.ModelViewSet):
         if user.is_superuser or (getattr(user, 'role', None) and user.role.name == "Superadmin"):
             return queryset
         return queryset.filter(employee=user)
+    
+    @action(detail=False, methods=['get'], url_path='daily-productive-hours')
+    def daily_productive_hours(self, request):
+        """
+        Get aggregated productive hours by date across all employees.
+        Returns total productive hours (sum of all employees) for each date in the range.
+        
+        Query Parameters:
+        - start_date (required): Start date in YYYY-MM-DD format
+        - end_date (required): End date in YYYY-MM-DD format
+        
+        Response:
+        {
+            "results": [
+                {
+                    "date": "2026-02-10",
+                    "total_productive_hours": 24.5,
+                    "employee_count": 3
+                }
+            ]
+        }
+        """
+        start_date = request.query_params.get('start_date')
+        end_date = request.query_params.get('end_date')
+        
+        if not start_date or not end_date:
+            return Response(
+                {"error": "Both start_date and end_date are required"},
+                status=400
+            )
+        
+        try:
+            current_tz = timezone.get_current_timezone()
+            
+            # Parse dates
+            sd = datetime.strptime(start_date, '%Y-%m-%d')
+            ed = datetime.strptime(end_date, '%Y-%m-%d')
+            
+            # Make timezone aware
+            sd_aware = timezone.make_aware(sd, current_tz)
+            ed_aware = timezone.make_aware(ed + timedelta(days=1) - timedelta(microseconds=1), current_tz)
+            
+            # Get all work sessions in the date range with end_time (completed sessions)
+            work_sessions = WorkSession.objects.filter(
+                start_time__gte=sd_aware,
+                start_time__lte=ed_aware,
+                end_time__isnull=False
+            ).select_related('employee')
+            
+            # Group by date and calculate productive hours
+            date_hours = {}
+            date_employees = {}
+            
+            for session in work_sessions:
+                # Convert to local date
+                local_date = timezone.localtime(session.start_time).date()
+                date_str = local_date.strftime('%Y-%m-%d')
+                
+                # Calculate duration in hours
+                duration_seconds = (session.end_time - session.start_time).total_seconds()
+                duration_hours = duration_seconds / 3600
+                
+                # Aggregate
+                if date_str not in date_hours:
+                    date_hours[date_str] = 0
+                    date_employees[date_str] = set()
+                
+                date_hours[date_str] += duration_hours
+                date_employees[date_str].add(session.employee_id)
+            
+            # Format results
+            results = []
+            for date_str in sorted(date_hours.keys()):
+                results.append({
+                    'date': date_str,
+                    'total_productive_hours': round(date_hours[date_str], 2),
+                    'employee_count': len(date_employees[date_str])
+                })
+            
+            return Response({'results': results})
+            
+        except ValueError as e:
+            return Response(
+                {"error": f"Invalid date format. Use YYYY-MM-DD. {str(e)}"},
+                status=400
+            )
+        except Exception as e:
+            return Response(
+                {"error": f"An error occurred: {str(e)}"},
+                status=500
+            )
 

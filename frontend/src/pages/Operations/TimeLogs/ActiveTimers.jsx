@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useRef } from "react";
 import apiClient from "../../../helpers/apiClient";
 import LayoutComponents from "../../../components/LayoutComponents";
 import {
@@ -15,6 +15,9 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Link } from "react-router-dom";
 import Input from "../../../components/Input";
 import Loading from "../../../components/Loading";
+import { jsPDF } from "jspdf";
+import autoTable from "jspdf-autotable";
+import * as XLSX from "xlsx";
 
 const ActiveTimers = () => {
     const [search, setSearch] = useState("");
@@ -32,6 +35,10 @@ const ActiveTimers = () => {
     const [task, setTask] = useState("");
     const [employee, setEmployee] = useState("");
     const [status, setStatus] = useState("");
+    
+    // Export dropdown state
+    const [exportDropdownOpen, setExportDropdownOpen] = useState(false);
+    const exportDropdownRef = useRef(null);
 
     const activeFilterCount = [project, task, employee, status].filter(Boolean).length;
 
@@ -95,6 +102,17 @@ const ActiveTimers = () => {
         }, 1000);
         return () => clearInterval(interval);
     }, []);
+    
+    // Close export dropdown when clicking outside
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (exportDropdownRef.current && !exportDropdownRef.current.contains(event.target)) {
+                setExportDropdownOpen(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
 
     const filteredTimers = useMemo(() => {
         let result = timers;
@@ -144,6 +162,105 @@ const ActiveTimers = () => {
         } catch (error) {
             console.error("Failed to stop timer", error);
         }
+    };
+    
+    const handleExportPDF = () => {
+        const doc = new jsPDF();
+        
+        // Add title
+        doc.setFontSize(18);
+        doc.text("Active Timers Report", 14, 20);
+        
+        // Add filters info
+        doc.setFontSize(10);
+        let yPos = 30;
+        if (project) {
+            const proj = projectsList.find(p => p.id.toString() === project);
+            doc.text(`Project: ${proj?.name || 'N/A'}`, 14, yPos);
+            yPos += 6;
+        }
+        if (task) {
+            const t = tasksList.find(t => t.id.toString() === task);
+            doc.text(`Task: ${t?.name || 'N/A'}`, 14, yPos);
+            yPos += 6;
+        }
+        if (employee) {
+            const emp = employeesList.find(e => e.id.toString() === employee);
+            doc.text(`Employee: ${emp?.name || emp?.email || 'N/A'}`, 14, yPos);
+            yPos += 6;
+        }
+        
+        // Prepare table data
+        const tableData = filteredTimers.map(timer => [
+            `#${timer.id}`,
+            timer.task || 'N/A',
+            timer.project || 'N/A',
+            timer.employee || 'Unknown',
+            `${timer.startDate} ${timer.startTime}`,
+            formatDuration(timer.duration)
+        ]);
+        
+        // Add table using autoTable
+        autoTable(doc, {
+            startY: yPos + 5,
+            head: [['ID', 'Task', 'Project', 'Employee', 'Start Time', 'Duration']],
+            body: tableData,
+            theme: 'grid',
+            headStyles: { fillColor: [0, 0, 0] },
+            styles: { fontSize: 9 }
+        });
+        
+        // Add footer
+        const pageCount = doc.internal.getNumberOfPages();
+        for (let i = 1; i <= pageCount; i++) {
+            doc.setPage(i);
+            doc.setFontSize(8);
+            doc.text(
+                `Page ${i} of ${pageCount} | Generated on ${new Date().toLocaleString()}`,
+                14,
+                doc.internal.pageSize.height - 10
+            );
+        }
+        
+        doc.save(`active-timers-${new Date().toISOString().split('T')[0]}.pdf`);
+        setExportDropdownOpen(false);
+    };
+    
+    const handleExportExcel = () => {
+        // Prepare data
+        const data = filteredTimers.map(timer => ({
+            'ID': `#${timer.id}`,
+            'Task': timer.task || 'N/A',
+            'Project': timer.project || 'N/A',
+            'Employee': timer.employee || 'Unknown',
+            'Start Date': timer.startDate,
+            'Start Time': timer.startTime,
+            'Duration': formatDuration(timer.duration),
+            'Status': timer.taskStatus || 'N/A'
+        }));
+        
+        // Create worksheet
+        const ws = XLSX.utils.json_to_sheet(data);
+        
+        // Set column widths
+        ws['!cols'] = [
+            { wch: 8 },  // ID
+            { wch: 25 }, // Task
+            { wch: 20 }, // Project
+            { wch: 20 }, // Employee
+            { wch: 12 }, // Start Date
+            { wch: 12 }, // Start Time
+            { wch: 12 }, // Duration
+            { wch: 15 }  // Status
+        ];
+        
+        // Create workbook
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, 'Active Timers');
+        
+        // Save file
+        XLSX.writeFile(wb, `active-timers-${new Date().toISOString().split('T')[0]}.xlsx`);
+        setExportDropdownOpen(false);
     };
 
     if (loading && !timers.length) {
@@ -241,9 +358,33 @@ const ActiveTimers = () => {
                                 </span>
                             </div>
 
-                            <button className="flex items-center gap-2 px-5 py-3 border border-gray-300 rounded-xl hover:bg-gray-50 transition text-sm font-medium">
-                                <MdDownload className="w-5 h-5" /> Export
-                            </button>
+                            <div className="relative" ref={exportDropdownRef}>
+                                <button 
+                                    onClick={() => setExportDropdownOpen(!exportDropdownOpen)}
+                                    className="flex items-center gap-2 px-5 py-3 border border-gray-300 rounded-xl hover:bg-gray-50 transition text-sm font-medium"
+                                >
+                                    <MdDownload className="w-5 h-5" /> Export
+                                    <MdKeyboardArrowDown className={`w-4 h-4 transition-transform ${exportDropdownOpen ? 'rotate-180' : ''}`} />
+                                </button>
+                                {exportDropdownOpen && (
+                                    <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg border border-gray-200 py-2 z-50">
+                                        <button
+                                            onClick={handleExportPDF}
+                                            className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 transition flex items-center gap-2"
+                                        >
+                                            <MdDownload className="w-4 h-4" />
+                                            Export as PDF
+                                        </button>
+                                        <button
+                                            onClick={handleExportExcel}
+                                            className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 transition flex items-center gap-2"
+                                        >
+                                            <MdDownload className="w-4 h-4" />
+                                            Export as Excel
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
                         </div>
                     </div>
 

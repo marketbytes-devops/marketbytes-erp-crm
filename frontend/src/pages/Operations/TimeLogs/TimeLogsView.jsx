@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import LayoutComponents from '../../../components/LayoutComponents';
 import {
     MdFilterList,
@@ -20,6 +20,9 @@ import { Link } from "react-router-dom";
 import apiClient from "../../../helpers/apiClient";
 import toast from "react-hot-toast";
 import Loading from "../../../components/Loading";
+import { jsPDF } from "jspdf";
+import autoTable from "jspdf-autotable";
+import * as XLSX from "xlsx";
 
 const TimeLogs = () => {
     const [loading, setLoading] = useState(true);
@@ -44,6 +47,10 @@ const TimeLogs = () => {
 
     const [selectedEntry, setSelectedEntry] = useState(null);
     const [isViewModalOpen, setIsViewModalOpen] = useState(false);
+    
+    // Export dropdown state
+    const [exportDropdownOpen, setExportDropdownOpen] = useState(false);
+    const exportDropdownRef = useRef(null);
 
     const activeFilterCount = Object.values(filters).filter(Boolean).length;
 
@@ -95,6 +102,17 @@ const TimeLogs = () => {
     useEffect(() => {
         fetchData();
     }, []);
+    
+    // Close export dropdown when clicking outside
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (exportDropdownRef.current && !exportDropdownRef.current.contains(event.target)) {
+                setExportDropdownOpen(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
 
     const handleDelete = async (id) => {
         if (!window.confirm("Are you sure you want to delete this log?")) return;
@@ -111,6 +129,130 @@ const TimeLogs = () => {
     const handleView = (entry) => {
         setSelectedEntry(entry);
         setIsViewModalOpen(true);
+    };
+    
+    const handleExportPDF = () => {
+        const doc = new jsPDF();
+        
+        // Add title
+        doc.setFontSize(18);
+        doc.text(`Time Logs Report - ${viewMode === 'daily' ? 'Daily Summary' : 'Detailed Logs'}`, 14, 20);
+        
+        // Add filters info
+        doc.setFontSize(10);
+        let yPos = 30;
+        if (filters.project) {
+            const proj = projects.find(p => p.id.toString() === filters.project);
+            doc.text(`Project: ${proj?.name || 'N/A'}`, 14, yPos);
+            yPos += 6;
+        }
+        if (filters.employee) {
+            const emp = employees.find(e => e.id.toString() === filters.employee);
+            doc.text(`Employee: ${emp?.name || emp?.email || 'N/A'}`, 14, yPos);
+            yPos += 6;
+        }
+        
+        // Prepare table data based on view mode
+        let tableData, headers;
+        if (viewMode === 'daily') {
+            headers = ['ID', 'Employee', 'Date', 'First Check-in', 'Last Check-out', 'Total Hours', 'Productive Hours'];
+            tableData = filteredEntries.map(entry => [
+                `#${entry.id}`,
+                entry.employee?.name || 'Unknown',
+                formatDate(entry.date),
+                entry.first_clock_in || 'N/A',
+                entry.last_clock_out || 'Active',
+                `${entry.total_hours}h`,
+                `${entry.productive_hours}h`
+            ]);
+        } else {
+            headers = ['ID', 'Task/Project', 'Employee', 'Start Time', 'End Time', 'Duration'];
+            tableData = filteredEntries.map(entry => [
+                `#${entry.id}`,
+                `${entry.task_name || 'Internal'} / ${entry.project_name || 'General'}`,
+                entry.employee?.name || 'Unknown',
+                formatTime(entry.start_time),
+                formatTime(entry.end_time),
+                `${entry.total_hours}h`
+            ]);
+        }
+        
+        // Add table using autoTable
+        autoTable(doc, {
+            startY: yPos + 5,
+            head: [headers],
+            body: tableData,
+            theme: 'grid',
+            headStyles: { fillColor: [0, 0, 0] },
+            styles: { fontSize: 9 }
+        });
+        
+        // Add footer
+        const pageCount = doc.internal.getNumberOfPages();
+        for (let i = 1; i <= pageCount; i++) {
+            doc.setPage(i);
+            doc.setFontSize(8);
+            doc.text(
+                `Page ${i} of ${pageCount} | Generated on ${new Date().toLocaleString()}`,
+                14,
+                doc.internal.pageSize.height - 10
+            );
+        }
+        
+        doc.save(`time-logs-${viewMode}-${new Date().toISOString().split('T')[0]}.pdf`);
+        setExportDropdownOpen(false);
+    };
+    
+    const handleExportExcel = () => {
+        // Prepare data based on view mode
+        let data;
+        if (viewMode === 'daily') {
+            data = filteredEntries.map(entry => ({
+                'ID': `#${entry.id}`,
+                'Employee': entry.employee?.name || 'Unknown',
+                'Email': entry.employee?.email || 'N/A',
+                'Date': formatDate(entry.date),
+                'First Check-in': entry.first_clock_in || 'N/A',
+                'Last Check-out': entry.last_clock_out || 'Active',
+                'Total Hours': `${entry.total_hours}h`,
+                'Productive Hours': `${entry.productive_hours}h`,
+                'Tasks': entry.tasks || 'N/A',
+                'Projects': entry.projects || 'N/A',
+                'Type': entry.is_billable ? 'Billable' : 'Internal'
+            }));
+        } else {
+            data = filteredEntries.map(entry => ({
+                'ID': `#${entry.id}`,
+                'Task': entry.task_name || 'Internal',
+                'Project': entry.project_name || 'General',
+                'Employee': entry.employee?.name || 'Unknown',
+                'Email': entry.employee?.email || 'N/A',
+                'Start Time': formatTime(entry.start_time),
+                'Start Date': formatDate(entry.start_time),
+                'End Time': formatTime(entry.end_time),
+                'End Date': formatDate(entry.end_time || entry.start_time),
+                'Duration': `${entry.total_hours}h`,
+                'Memo': entry.memo || 'N/A',
+                'Type': entry.is_billable ? 'Billable' : 'Internal'
+            }));
+        }
+        
+        // Create worksheet
+        const ws = XLSX.utils.json_to_sheet(data);
+        
+        // Set column widths
+        const colWidths = viewMode === 'daily' 
+            ? [{ wch: 8 }, { wch: 20 }, { wch: 25 }, { wch: 12 }, { wch: 15 }, { wch: 15 }, { wch: 12 }, { wch: 15 }, { wch: 30 }, { wch: 30 }, { wch: 12 }]
+            : [{ wch: 8 }, { wch: 25 }, { wch: 20 }, { wch: 20 }, { wch: 25 }, { wch: 12 }, { wch: 12 }, { wch: 12 }, { wch: 12 }, { wch: 12 }, { wch: 30 }, { wch: 12 }];
+        ws['!cols'] = colWidths;
+        
+        // Create workbook
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, viewMode === 'daily' ? 'Daily Summary' : 'Detailed Logs');
+        
+        // Save file
+        XLSX.writeFile(wb, `time-logs-${viewMode}-${new Date().toISOString().split('T')[0]}.xlsx`);
+        setExportDropdownOpen(false);
     };
 
     const filteredEntries = useMemo(() => {
@@ -300,9 +442,33 @@ const TimeLogs = () => {
                                 </span>
                             </div>
 
-                            <button className="flex items-center gap-2 px-5 py-3 border border-gray-300 rounded-xl hover:bg-gray-50 transition text-sm font-medium">
-                                <MdDownload className="w-5 h-5" /> Export
-                            </button>
+                            <div className="relative" ref={exportDropdownRef}>
+                                <button 
+                                    onClick={() => setExportDropdownOpen(!exportDropdownOpen)}
+                                    className="flex items-center gap-2 px-5 py-3 border border-gray-300 rounded-xl hover:bg-gray-50 transition text-sm font-medium"
+                                >
+                                    <MdDownload className="w-5 h-5" /> Export
+                                    <MdKeyboardArrowDown className={`w-4 h-4 transition-transform ${exportDropdownOpen ? 'rotate-180' : ''}`} />
+                                </button>
+                                {exportDropdownOpen && (
+                                    <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg border border-gray-200 py-2 z-50">
+                                        <button
+                                            onClick={handleExportPDF}
+                                            className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 transition flex items-center gap-2"
+                                        >
+                                            <MdDownload className="w-4 h-4" />
+                                            Export as PDF
+                                        </button>
+                                        <button
+                                            onClick={handleExportExcel}
+                                            className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 transition flex items-center gap-2"
+                                        >
+                                            <MdDownload className="w-4 h-4" />
+                                            Export as Excel
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
                         </div>
                     </div>
 
@@ -389,6 +555,7 @@ const TimeLogs = () => {
                                         <th className="px-6 py-5 text-left text-xs font-medium text-gray-700 uppercase tracking-wider whitespace-nowrap">Start Time</th>
                                         <th className="px-6 py-5 text-left text-xs font-medium text-gray-700 uppercase tracking-wider whitespace-nowrap">End Time</th>
                                         <th className="px-6 py-5 text-left text-xs font-medium text-gray-700 uppercase tracking-wider whitespace-nowrap">Duration</th>
+                                        <th className="px-6 py-5 text-left text-xs font-medium text-gray-700 uppercase tracking-wider whitespace-nowrap">Productive Hours</th>
                                         <th className="px-6 py-5 text-left text-xs font-medium text-gray-700 uppercase tracking-wider whitespace-nowrap">Type</th>
                                         <th className="px-6 py-5 text-right text-xs font-medium text-gray-700 uppercase tracking-wider whitespace-nowrap">Actions</th>
                                     </tr>
@@ -396,7 +563,7 @@ const TimeLogs = () => {
                                 <tbody className="divide-y divide-gray-200">
                                     {filteredEntries.length === 0 ? (
                                         <tr>
-                                            <td colSpan="8" className="text-center py-24">
+                                            <td colSpan="9" className="text-center py-24">
                                                 <div className="flex flex-col items-center">
                                                     <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mb-5">
                                                         <MdTimer className="w-10 h-10 text-gray-400" />
@@ -464,6 +631,9 @@ const TimeLogs = () => {
                                                 </td>
                                                 <td className="px-6 py-5 whitespace-nowrap">
                                                     <span className="text-sm font-medium text-gray-900">{entry.total_hours}h</span>
+                                                </td>
+                                                <td className="px-6 py-5 whitespace-nowrap">
+                                                    <span className="text-sm font-medium text-blue-600">{entry.productive_hours || 0}h</span>
                                                 </td>
                                                 <td className="px-6 py-5 whitespace-nowrap">
                                                     {entry.is_billable ? (
