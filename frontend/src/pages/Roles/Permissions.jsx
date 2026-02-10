@@ -25,7 +25,10 @@ const pageNameMap = {
   // Operations
   projects: { apiName: "projects", displayName: "Projects", route: "/operations/projects" },
   tasks: { apiName: "tasks", displayName: "Tasks", route: "/operations/tasks" },
-  taskboard: { apiName: "task board", displayName: "Task Board", route: "/operations/task-board" },
+  taskboard: { apiName: "task_board", displayName: "Task Board", route: "/operations/task-board" },
+  timelogs: { apiName: "timelogs", displayName: "Time Log", route: "/operations/time-logs" },
+  task_calendar: { apiName: "task_calendar", displayName: "Task Calendar", route: "/operations/task-calendar" },
+  scrum: { apiName: "scrum", displayName: "Scrum", route: "/operations/scrum" },
 
   // Sales
   leads: { apiName: "leads", displayName: "Leads", route: "/sales/leads" },
@@ -51,10 +54,33 @@ const Permissions = () => {
   const [isSaving, setIsSaving] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
+  const [isSuperadmin, setIsSuperadmin] = useState(false);
+  const [effectivePermissions, setEffectivePermissions] = useState({});
 
   useEffect(() => {
-    fetchUsers();
+    const fetchInitialData = async () => {
+      try {
+        setIsLoading(true);
+        const profileRes = await apiClient.get("/auth/profile/");
+        const user = profileRes.data;
+        setIsSuperadmin(user.is_superuser || user.role?.name === "Superadmin");
+        setEffectivePermissions(user.effective_permissions || {});
+
+        await fetchUsers();
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchInitialData();
   }, []);
+
+  const hasPermission = (page, action) => {
+    if (isSuperadmin) return true;
+    const pagePerms = effectivePermissions[page];
+    return pagePerms && pagePerms[`can_${action}`];
+  };
 
   const fetchUsers = async () => {
     try {
@@ -64,7 +90,7 @@ const Permissions = () => {
     } catch (error) {
       toast.error("Failed to fetch users.");
     } finally {
-      setIsLoading(false);
+      // setIsLoading handled by fetchInitialData on mount
     }
   };
 
@@ -151,20 +177,26 @@ const Permissions = () => {
         user_permissions: permsArray
       });
 
-      toast.success(`Permissions updated for ${selectedUser.name}!`);
-      fetchUsers();
+      toast.success(`Permissions updated successfully for ${selectedUser.name}!`);
+      // Update local state immediately to avoid refresh lag
+      setUsers(prev => prev.map(u => u.id === selectedUser.id ? { ...u, direct_permissions: permsArray } : u));
       setSelectedUser(null);
     } catch (error) {
+      console.error(error);
       toast.error("Failed to update permissions.");
     } finally {
       setIsSaving(false);
     }
   };
 
-  const filteredUsers = users.filter(u =>
-    u.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    u.email?.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+
+  const filteredUsers = users.filter(u => {
+    const matchesSearch = u.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      u.email?.toLowerCase().includes(searchQuery.toLowerCase());
+
+    if (!isSuperadmin && (u.is_superuser || (u.role && u.role.name === "Superadmin"))) return false;
+    return matchesSearch;
+  });
 
   if (isLoading) return <div className="p-6"><Loading /></div>;
 
