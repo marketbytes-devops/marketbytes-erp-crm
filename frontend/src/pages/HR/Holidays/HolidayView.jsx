@@ -26,8 +26,10 @@ import {
   MdChevronRight,
   MdClose,
 } from "react-icons/md";
+import { usePermission } from "../../../context/PermissionContext";
 
 const HolidayView = () => {
+  const { hasPermission } = usePermission();
   const [holidays, setHolidays] = useState([]);
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth());
@@ -305,29 +307,35 @@ const HolidayView = () => {
                     </td>
                     <td className="px-6 py-5 text-right">
                       <div className="flex items-center justify-end gap-3">
-                        <button
-                          onClick={() => toggleDefaultStatus(holiday.id)}
-                          className="p-2 hover:bg-yellow-50 rounded-lg transition group"
-                          title={holiday.is_default ? "Remove default" : "Set as default"}
-                        >
-                          {holiday.is_default ? (
-                            <MdStar className="w-5 h-5 text-yellow-600 group-hover:text-yellow-700" />
-                          ) : (
-                            <MdStarBorder className="w-5 h-5 text-gray-500 group-hover:text-yellow-600" />
-                          )}
-                        </button>
-                        <button
-                          onClick={() => openEditModal(holiday)}
-                          className="p-2 hover:bg-amber-50 rounded-lg transition group"
-                        >
-                          <MdOutlineEdit className="w-5 h-5 text-gray-600 group-hover:text-amber-600" />
-                        </button>
-                        <button
-                          onClick={() => deleteHoliday(holiday.id)}
-                          className="p-2 hover:bg-red-50 rounded-lg transition group"
-                        >
-                          <MdOutlineDelete className="w-5 h-5 text-gray-600 group-hover:text-red-600" />
-                        </button>
+                        {hasPermission("holidays", "edit") && (
+                          <button
+                            onClick={() => toggleDefaultStatus(holiday.id)}
+                            className="p-2 hover:bg-yellow-50 rounded-lg transition group"
+                            title={holiday.is_default ? "Remove default" : "Set as default"}
+                          >
+                            {holiday.is_default ? (
+                              <MdStar className="w-5 h-5 text-yellow-600 group-hover:text-yellow-700" />
+                            ) : (
+                              <MdStarBorder className="w-5 h-5 text-gray-500 group-hover:text-yellow-600" />
+                            )}
+                          </button>
+                        )}
+                        {hasPermission("holidays", "edit") && (
+                          <button
+                            onClick={() => openEditModal(holiday)}
+                            className="p-2 hover:bg-amber-50 rounded-lg transition group"
+                          >
+                            <MdOutlineEdit className="w-5 h-5 text-gray-600 group-hover:text-amber-600" />
+                          </button>
+                        )}
+                        {hasPermission("holidays", "delete") && (
+                          <button
+                            onClick={() => deleteHoliday(holiday.id)}
+                            className="p-2 hover:bg-red-50 rounded-lg transition group"
+                          >
+                            <MdOutlineDelete className="w-5 h-5 text-gray-600 group-hover:text-red-600" />
+                          </button>
+                        )}
                       </div>
                     </td>
                   </motion.tr>
@@ -380,16 +388,18 @@ const HolidayView = () => {
                 <MdDownload className="w-5 h-5" />
                 Export
               </button>
-              <button
-                onClick={() => {
-                  setNewHoliday({ date: "", occasion: "", is_default: false });
-                  setIsAddModalOpen(true);
-                }}
-                className="flex items-center gap-3 px-6 py-3 bg-black text-white rounded-xl hover:bg-gray-900 transition font-medium"
-              >
-                <MdAdd className="w-5 h-5" />
-                Add Holiday
-              </button>
+              {hasPermission("holidays", "add") && (
+                <button
+                  onClick={() => {
+                    setNewHoliday({ date: "", occasion: "", is_default: false });
+                    setIsAddModalOpen(true);
+                  }}
+                  className="flex items-center gap-3 px-6 py-3 bg-black text-white rounded-xl hover:bg-gray-900 transition font-medium"
+                >
+                  <MdAdd className="w-5 h-5" />
+                  Add Holiday
+                </button>
+              )}
             </div>
           </div>
         </div>

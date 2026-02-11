@@ -9,6 +9,7 @@ import ResetPassword from "./pages/Auth/ResetPassword";
 import Profile from "./pages/Profile";
 import Users from "./pages/Roles/Users";
 import Roles from "./pages/Roles/Roles";
+import Permissions from "./pages/Roles/Permissions"; // ✅ ADD THIS LINE
 import Loading from "./components/Loading";
 import { PermissionProvider, usePermission } from "./context/PermissionContext";
 import EmployeeView from "./pages/HR/Employees/EmployeeView";
@@ -57,6 +58,8 @@ import TaskCalendarPage from "./pages/Operations/Tasks/TaskCalendar";
 import EditScrumPage from "./pages/Operations/Scrum/EditScrum";
 import ContractsList from "./pages/Operations/Contracts/ContractsList";
 import ContractCreate from "./pages/Operations/Contracts/ContractCreate";
+
+
 
 const ProtectedRoute = ({
   children,

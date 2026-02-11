@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Link } from "react-router-dom";
 import { MdAdd, MdDownload, MdEdit, MdDelete, MdClose, MdKeyboardArrowDown, MdVisibility } from "react-icons/md";
 import { FiSearch, FiCheck } from "react-icons/fi";
+import { usePermission } from "../../../context/PermissionContext";
 import LayoutComponents from "../../../components/LayoutComponents";
 import Input from "../../../components/Input";
 import apiClient from "../../../helpers/apiClient";
@@ -14,6 +15,7 @@ import "jspdf-autotable";
 import * as XLSX from "xlsx";
 
 const Recruitment = () => {
+  const { hasPermission } = usePermission();
   const [candidates, setCandidates] = useState([]);
   const [filtered, setFiltered] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -301,12 +303,14 @@ const Recruitment = () => {
                 </div>
               </div>
 
-              <button
-                onClick={() => openModal()}
-                className="flex items-center gap-3 px-6 py-3.5 bg-black text-white rounded-xl hover:bg-gray-900 transition font-medium"
-              >
-                <MdAdd className="w-5 h-5" /> Add Candidate
-              </button>
+              {hasPermission("recruitment", "add") && (
+                <button
+                  onClick={() => openModal()}
+                  className="flex items-center gap-3 px-6 py-3.5 bg-black text-white rounded-xl hover:bg-gray-900 transition font-medium"
+                >
+                  <MdAdd className="w-5 h-5" /> Add Candidate
+                </button>
+              )}
             </div>
           </div>
         </div>
@@ -361,20 +365,24 @@ const Recruitment = () => {
                       <td className="px-6 py-5 text-center font-medium">{c.round || 1}</td>
                       <td className="px-6 py-5">
                         <div className="flex items-center justify-center gap-3">
-                          <button
-                            onClick={() => openModal(c)}
-                            className="p-2 hover:bg-amber-50 rounded-lg transition group"
-                            title="Edit"
-                          >
-                            <MdEdit className="w-5 h-5 text-gray-600 group-hover:text-amber-600" />
-                          </button>
-                          <button
-                            onClick={() => handleDelete(c.id)}
-                            className="p-2 hover:bg-red-50 rounded-lg transition group"
-                            title="Delete"
-                          >
-                            <MdDelete className="w-5 h-5 text-gray-600 group-hover:text-red-600" />
-                          </button>
+                          {hasPermission("recruitment", "edit") && (
+                            <button
+                              onClick={() => openModal(c)}
+                              className="p-2 hover:bg-amber-50 rounded-lg transition group"
+                              title="Edit"
+                            >
+                              <MdEdit className="w-5 h-5 text-gray-600 group-hover:text-amber-600" />
+                            </button>
+                          )}
+                          {hasPermission("recruitment", "delete") && (
+                            <button
+                              onClick={() => handleDelete(c.id)}
+                              className="p-2 hover:bg-red-50 rounded-lg transition group"
+                              title="Delete"
+                            >
+                              <MdDelete className="w-5 h-5 text-gray-600 group-hover:text-red-600" />
+                            </button>
+                          )}
                         </div>
                       </td>
                     </motion.tr>

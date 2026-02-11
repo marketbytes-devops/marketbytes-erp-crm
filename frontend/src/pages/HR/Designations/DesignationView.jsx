@@ -7,8 +7,10 @@ import LayoutComponents from "../../../components/LayoutComponents";
 import apiClient from "../../../helpers/apiClient";
 import Loading from "../../../components/Loading";
 import toast from "react-hot-toast";
+import { usePermission } from "../../../context/PermissionContext";
 
 const DesignationView = () => {
+  const { hasPermission } = usePermission();
   const [designations, setDesignations] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(true);
@@ -75,13 +77,15 @@ const DesignationView = () => {
               <span className="text-sm text-gray-600">{filtered.length} designations</span>
             </div>
 
-            <Link
-              to="/hr/designations/create"
-              className="flex items-center gap-3 px-6 py-3 bg-black text-white rounded-xl hover:bg-gray-800 transition-all shadow-md"
-            >
-              <MdAdd className="w-5 h-5" />
-              Add Designation
-            </Link>
+            {hasPermission("designations", "add") && (
+              <Link
+                to="/hr/designations/create"
+                className="flex items-center gap-3 px-6 py-3 bg-black text-white rounded-xl hover:bg-gray-800 transition-all shadow-md"
+              >
+                <MdAdd className="w-5 h-5" />
+                Add Designation
+              </Link>
+            )}
           </div>
 
           <div className="bg-white rounded-xl rounded-t-none border border-gray-200 overflow-hidden">
@@ -134,20 +138,24 @@ const DesignationView = () => {
                             >
                               <MdVisibility className="w-5 h-5 text-gray-600 group-hover:text-blue-600" />
                             </button>
-                            <Link
-                              to={`/hr/designations/${des.id}/edit`}
-                              className="p-2 hover:bg-gray-100 rounded-lg group"
-                              title="Edit"
-                            >
-                              <MdEdit className="w-5 h-5 text-gray-600 group-hover:text-black" />
-                            </Link>
-                            <button
-                              onClick={() => setShowDeleteConfirm(des.id)}
-                              className="p-2 hover:bg-red-50 rounded-lg group"
-                              title="Delete"
-                            >
-                              <MdDelete className="w-5 h-5 text-gray-600 group-hover:text-red-600" />
-                            </button>
+                            {hasPermission("designations", "edit") && (
+                              <Link
+                                to={`/hr/designations/${des.id}/edit`}
+                                className="p-2 hover:bg-gray-100 rounded-lg group"
+                                title="Edit"
+                              >
+                                <MdEdit className="w-5 h-5 text-gray-600 group-hover:text-black" />
+                              </Link>
+                            )}
+                            {hasPermission("designations", "delete") && (
+                              <button
+                                onClick={() => setShowDeleteConfirm(des.id)}
+                                className="p-2 hover:bg-red-50 rounded-lg group"
+                                title="Delete"
+                              >
+                                <MdDelete className="w-5 h-5 text-gray-600 group-hover:text-red-600" />
+                              </button>
+                            )}
                           </div>
                         </td>
                       </motion.tr>

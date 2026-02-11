@@ -23,8 +23,10 @@ import {
 } from "lucide-react";
 import Input from "../../../components/Input";
 import toast from "react-hot-toast";
+import { usePermission } from "../../../context/PermissionContext";
 
 const Overtime = () => {
+  const { hasPermission } = usePermission();
   const [overtime, setOvertime] = useState([]);
   const [loading, setLoading] = useState(true);
   const [month, setMonth] = useState(new Date().getMonth() + 1);
@@ -178,18 +180,20 @@ const Overtime = () => {
                 className="w-full pl-12 pr-4 py-3.5 bg-gray-50/50 border border-gray-200 rounded-2xl text-sm focus:ring-4 focus:ring-black/5 focus:border-black outline-none transition-all placeholder:text-gray-400 font-medium"
               />
             </div>
-            <button
-              onClick={calculateOvertime}
-              disabled={calculating}
-              className="flex items-center gap-3 px-8 py-3.5 bg-black text-white rounded-2xl hover:bg-gray-800 transition shadow-xl shadow-black/10 active:scale-95 disabled:opacity-50"
-            >
-              {calculating ? (
-                <div className="animate-spin rounded-full h-5 w-5 border-2 border-white/20 border-t-white"></div>
-              ) : (
-                <MdCalculate className="text-xl" />
-              )}
-              <span className="text-[11px] font-medium uppercase tracking-widest">Calculate Sync</span>
-            </button>
+            {hasPermission("overtime", "edit") && (
+              <button
+                onClick={calculateOvertime}
+                disabled={calculating}
+                className="flex items-center gap-3 px-8 py-3.5 bg-black text-white rounded-2xl hover:bg-gray-800 transition shadow-xl shadow-black/10 active:scale-95 disabled:opacity-50"
+              >
+                {calculating ? (
+                  <div className="animate-spin rounded-full h-5 w-5 border-2 border-white/20 border-t-white"></div>
+                ) : (
+                  <MdCalculate className="text-xl" />
+                )}
+                <span className="text-[11px] font-medium uppercase tracking-widest">Calculate Sync</span>
+              </button>
+            )}
           </div>
         </div>
 

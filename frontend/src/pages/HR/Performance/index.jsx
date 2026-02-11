@@ -20,8 +20,10 @@ import {
   ChevronRight
 } from "lucide-react";
 import toast from "react-hot-toast";
+import { usePermission } from "../../../context/PermissionContext";
 
 const Performance = () => {
+  const { hasPermission } = usePermission();
   const [reviews, setReviews] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
@@ -240,9 +242,14 @@ const Performance = () => {
             </p>
           </div>
           <div className="flex gap-4 relative z-10">
-            <button className="flex items-center gap-3 px-6 py-3 bg-white border border-gray-200 text-black text-[10px] font-medium uppercase tracking-widest rounded-2xl hover:bg-gray-100 transition shadow-xs active:scale-95">
-              <MdRefresh /> Resync Cycle
-            </button>
+            {hasPermission("performance", "edit") && (
+              <button
+                onClick={fetchReviews}
+                className="flex items-center gap-3 px-6 py-3 bg-white border border-gray-200 text-black text-[10px] font-medium uppercase tracking-widest rounded-2xl hover:bg-gray-100 transition shadow-xs active:scale-95"
+              >
+                <MdRefresh /> Resync Cycle
+              </button>
+            )}
             <button className="flex items-center gap-3 px-6 py-3 bg-black text-white text-[10px] font-medium uppercase tracking-widest rounded-2xl hover:bg-gray-800 transition shadow-xl shadow-black/10 active:scale-95">
               <ChevronRight size={14} /> Audit History
             </button>
