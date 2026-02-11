@@ -70,11 +70,10 @@ const Overtime = () => {
   };
 
   const calculateOvertime = () => {
-    const today = new Date().toISOString().split('T')[0];
     setCalculating(true);
 
     apiClient
-      .post("/hr/overtime/calculate_from_sessions/", { date: today })
+      .post("/hr/overtime/calculate_from_sessions/", { month, year })
       .then((res) => {
         toast.success(res.data.message);
         fetchOvertime();
@@ -216,10 +215,11 @@ const Overtime = () => {
               <table className="w-full border-collapse">
                 <thead>
                   <tr className="bg-gray-50/50 border-b border-gray-100">
-                    <th className="px-10 py-8 text-left text-[10px] font-medium text-gray-400 uppercase tracking-widest w-64">Stakeholder</th>
-                    <th className="px-10 py-8 text-left text-[10px] font-medium text-gray-400 uppercase tracking-widest">Temporal Context</th>
-                    <th className="px-10 py-8 text-left text-[10px] font-medium text-gray-400 uppercase tracking-widest">Project/Effort</th>
-                    <th className="px-10 py-8 text-right text-[10px] font-medium text-gray-400 uppercase tracking-widest w-48">Impact Value</th>
+                    <th className="px-10 py-8 text-left text-[10px] font-medium text-gray-400 uppercase tracking-widest w-24">ID</th>
+                    <th className="px-10 py-8 text-left text-[10px] font-medium text-gray-400 uppercase tracking-widest w-64">Employee Name</th>
+                    <th className="px-10 py-8 text-left text-[10px] font-medium text-gray-400 uppercase tracking-widest">Date</th>
+                    <th className="px-10 py-8 text-left text-[10px] font-medium text-gray-400 uppercase tracking-widest">Project</th>
+                    <th className="px-10 py-8 text-right text-[10px] font-medium text-gray-400 uppercase tracking-widest w-48">Hours</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-50">
@@ -233,6 +233,9 @@ const Overtime = () => {
                         transition={{ delay: i * 0.03 }}
                         className="group hover:bg-gray-50/80 transition-all duration-300"
                       >
+                        <td className="px-10 py-8">
+                          <span className="text-xs font-medium text-gray-400 font-mono">#{ot.id || i + 1}</span>
+                        </td>
                         <td className="px-10 py-8">
                           <div className="flex items-center gap-4">
                             <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center text-gray-400 group-hover:bg-black group-hover:text-white transition-all duration-500 overflow-hidden">
@@ -275,7 +278,6 @@ const Overtime = () => {
                             <span className="inline-flex px-5 py-2.5 bg-black text-white rounded-full text-[13px] font-medium tracking-tighter shadow-lg shadow-black/10 group-hover:scale-110 transition-transform">
                               +{parseFloat(ot.hours || 0).toFixed(2)}h
                             </span>
-                            <span className="text-[9px] text-gray-400 font-medium uppercase tracking-widest mt-1">Confirmed Units</span>
                           </div>
                         </td>
                       </motion.tr>
