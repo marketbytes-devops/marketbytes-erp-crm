@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import LayoutComponents from "../../../components/LayoutComponents";
 import apiClient from "../../../helpers/apiClient";
 import { MdDownload, MdRefresh, MdClose, MdAccessTime } from "react-icons/md";
+import { usePermission } from "../../../context/PermissionContext";
 import {
   format,
   startOfMonth,
@@ -168,6 +169,7 @@ const AttendanceModal = ({ record, date, onClose }) => {
 };
 
 const Attendance = () => {
+  const { hasPermission } = usePermission();
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [attendances, setAttendances] = useState([]);
   const [summary, setSummary] = useState({
@@ -334,19 +336,21 @@ const Attendance = () => {
                 <MdRefresh className="w-5 h-5" />
                 Refresh
               </button>
-              <Dropdown
-                trigger={
-                  <button className="flex items-center gap-3 px-6 py-3.5 border border-gray-400 rounded-xl hover:bg-gray-50 transition font-medium">
-                    <MdDownload className="w-5 h-5" /> Export
-                  </button>
-                }
-                dropdownId="export-attendance"
-                align="right"
-              >
-                <Dropdown.Item onClick={() => exportData("CSV")}>Export as CSV</Dropdown.Item>
-                <Dropdown.Item onClick={() => exportData("Excel")}>Export as Excel</Dropdown.Item>
-                <Dropdown.Item onClick={() => exportData("PDF")}>Export as PDF</Dropdown.Item>
-              </Dropdown>
+              {hasPermission("attendance", "view") && (
+                <Dropdown
+                  trigger={
+                    <button className="flex items-center gap-3 px-6 py-3.5 border border-gray-400 rounded-xl hover:bg-gray-50 transition font-medium">
+                      <MdDownload className="w-5 h-5" /> Export
+                    </button>
+                  }
+                  dropdownId="export-attendance"
+                  align="right"
+                >
+                  <Dropdown.Item onClick={() => exportData("CSV")}>Export as CSV</Dropdown.Item>
+                  <Dropdown.Item onClick={() => exportData("Excel")}>Export as Excel</Dropdown.Item>
+                  <Dropdown.Item onClick={() => exportData("PDF")}>Export as PDF</Dropdown.Item>
+                </Dropdown>
+              )}
             </div>
           </div>
         </div>

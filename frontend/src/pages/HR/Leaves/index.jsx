@@ -14,8 +14,10 @@ import {
   MdKeyboardArrowUp,
 } from "react-icons/md";
 import { format } from "date-fns";
+import { usePermission } from "../../../context/PermissionContext";
 
 const Leaves = () => {
+  const { hasPermission } = usePermission();
   const [leaves, setLeaves] = useState([]);
   const [filter, setFilter] = useState("all");
   const [loading, setLoading] = useState(true);
@@ -154,13 +156,15 @@ const Leaves = () => {
                 <MdDownload className="w-5 h-5" />
                 Export
               </button>
-              <Link
-                to="/hr/leaves/assign"
-                className="flex items-center gap-3 px-6 py-3 bg-black text-white rounded-xl hover:bg-gray-900 transition font-medium"
-              >
-                <MdAdd className="w-5 h-5" />
-                Assign Leave
-              </Link>
+              {hasPermission("leaves", "add") && (
+                <Link
+                  to="/hr/leaves/assign"
+                  className="flex items-center gap-3 px-6 py-3 bg-black text-white rounded-xl hover:bg-gray-900 transition font-medium"
+                >
+                  <MdAdd className="w-5 h-5" />
+                  Assign Leave
+                </Link>
+              )}
             </div>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -304,18 +308,22 @@ const Leaves = () => {
                               className="overflow-hidden"
                             >
                               <div className="mt-4 flex gap-3">
-                                <button
-                                  onClick={() => handleStatusUpdate(leave.id, "approved")}
-                                  className="flex-1 bg-green-600 text-white py-3 rounded-xl font-medium hover:bg-green-700 transition"
-                                >
-                                  Approve
-                                </button>
-                                <button
-                                  onClick={() => handleStatusUpdate(leave.id, "rejected")}
-                                  className="flex-1 bg-red-600 text-white py-3 rounded-xl font-medium hover:bg-red-700 transition"
-                                >
-                                  Reject
-                                </button>
+                                {hasPermission("leaves", "edit") && (
+                                  <>
+                                    <button
+                                      onClick={() => handleStatusUpdate(leave.id, "approved")}
+                                      className="flex-1 bg-green-600 text-white py-3 rounded-xl font-medium hover:bg-green-700 transition"
+                                    >
+                                      Approve
+                                    </button>
+                                    <button
+                                      onClick={() => handleStatusUpdate(leave.id, "rejected")}
+                                      className="flex-1 bg-red-600 text-white py-3 rounded-xl font-medium hover:bg-red-700 transition"
+                                    >
+                                      Reject
+                                    </button>
+                                  </>
+                                )}
                               </div>
                             </motion.div>
                           )}

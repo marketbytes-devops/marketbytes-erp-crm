@@ -3,7 +3,6 @@ import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "react-hot-toast";
 import { Search, Loader2, X, Shield, Lock, ChevronRight, AlertCircle } from "lucide-react";
 import apiClient from "../../helpers/apiClient";
-import Toggle from "../../components/Toggle";
 import { usePermission } from "../../context/PermissionContext";
 
 const pageNameMap = {
@@ -70,7 +69,7 @@ const Permissions = () => {
     } catch (error) {
       toast.error("Failed to fetch users.");
     } finally {
-      // setIsLoading handled by fetchInitialData on mount
+      setIsLoading(false);
     }
   };
 
@@ -331,10 +330,18 @@ const Permissions = () => {
                           {["view", "add", "edit", "delete"].map((action) => (
                             <td key={action} className="px-4 py-5 text-center">
                               <div className="flex justify-center">
-                                <Toggle
-                                  enabled={userPermissions[key]?.[action] || false}
-                                  onChange={(val) => handleToggleChange(key, action, val)}
-                                />
+                                <button
+                                  type="button"
+                                  onClick={() => handleToggleChange(key, action, !userPermissions[key]?.[action])}
+                                  className={`${userPermissions[key]?.[action] ? 'bg-[#50728c]' : 'bg-gray-300'
+                                    } relative inline-flex h-7 w-12 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-0`}
+                                >
+                                  <span
+                                    aria-hidden="true"
+                                    className={`${userPermissions[key]?.[action] ? 'translate-x-5' : 'translate-x-0'
+                                      } pointer-events-none inline-block h-6 w-6 transform rounded-full bg-white shadow-sm ring-0 transition duration-200 ease-in-out`}
+                                  />
+                                </button>
                               </div>
                             </td>
                           ))}

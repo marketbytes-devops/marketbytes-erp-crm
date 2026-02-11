@@ -19,25 +19,44 @@ const generateStrongPassword = () => {
 };
 
 const pageNameMap = {
+  // Common / Home
   admin: { apiName: "admin", displayName: "Dashboard", route: "/Dashboard" },
-  enquiries: { apiName: "enquiries", displayName: "Enquiries", route: "/enquiries" },
-  new_enquiries: { apiName: "new_enquiries", displayName: "New Assigned Enquiries", route: "/new_enquiries" },
-  follow_ups: { apiName: "follow_ups", displayName: "Follow Ups", route: "/follow_ups" },
-  processing_enquiries: { apiName: "processing_enquiries", displayName: "Processing Enquiries", route: "/processing_enquiries" },
-  survey: { apiName: "survey", displayName: "Survey", route: "/survey" },
-  quotation: { apiName: "quotation", displayName: "Quotation", route: "/quotation" },
-  booking: { apiName: "booking", displayName: "Booking", route: "/booking" },
-  operations: { apiName: "operations", displayName: "Operations", route: "/operations" },
-  accounts: { apiName: "accounts", displayName: "Accounts", route: "/accounts" },
-  hr: { apiName: "hr", displayName: "HR", route: "/hr" },
+
+  // HR Management
   employees: { apiName: "employees", displayName: "Employees", route: "/hr/employees" },
   departments: { apiName: "departments", displayName: "Departments", route: "/hr/departments" },
-  reports: { apiName: "reports", displayName: "Reports", route: "/reports" },
-  users: { apiName: "users", displayName: "Users", route: "/roles/users" },
-  roles: { apiName: "roles", displayName: "Roles", route: "/roles/roles" },
-  permissions: { apiName: "permissions", displayName: "Permissions", route: "/roles/permissions" },
-  settings: { apiName: "settings", displayName: "Settings", route: "/settings" },
-  profile: { apiName: "profile", displayName: "Profile", route: "/profile" }
+  designations: { apiName: "designations", displayName: "Designations", route: "/hr/designations" },
+  attendance: { apiName: "attendance", displayName: "Attendance", route: "/hr/attendance" },
+  holidays: { apiName: "holidays", displayName: "Holidays", route: "/hr/holidays" },
+  leaves: { apiName: "leaves", displayName: "Leaves", route: "/hr/leaves" },
+  overtime: { apiName: "overtime", displayName: "Overtime", route: "/hr/overtime" },
+  recruitment: { apiName: "recruitment", displayName: "Recruitment", route: "/hr/recruitment" },
+  performance: { apiName: "performance", displayName: "Performance", route: "/hr/performance" },
+
+  // Operations
+  projects: { apiName: "projects", displayName: "Projects", route: "/operations/projects" },
+  tasks: { apiName: "tasks", displayName: "Tasks", route: "/operations/tasks" },
+  task_board: { apiName: "task_board", displayName: "Task Board", route: "/operations/task-board" },
+  timelogs: { apiName: "timelogs", displayName: "Time Log", route: "/operations/time-logs" },
+  task_calendar: { apiName: "task_calendar", displayName: "Task Calendar", route: "/operations/task-calendar" },
+  scrum: { apiName: "scrum", displayName: "Scrum", route: "/operations/scrum" },
+  contracts: { apiName: "contracts", displayName: "Contracts", route: "/operations/contracts" },
+
+  // Sales
+  leads: { apiName: "leads", displayName: "Leads", route: "/sales/leads" },
+  pipeline: { apiName: "pipeline", displayName: "Pipeline", route: "/sales/pipeline" },
+  communication_tools: { apiName: "communication_tools", displayName: "Communication Tools", route: "/sales/communication-tools" },
+  invoices: { apiName: "invoices", displayName: "Invoices", route: "/sales/invoices" },
+  reports: { apiName: "reports", displayName: "Reports", route: "/sales/reports" },
+  customer: { apiName: "customer", displayName: "Clients & Companies", route: "/sales/customer" },
+
+  // User Roles
+  roles: { apiName: "roles", displayName: "Roles", route: "/user-roles/roles" },
+  users: { apiName: "users", displayName: "Users", route: "/user-roles/users" },
+  permissions: { apiName: "permissions", displayName: "Permissions", route: "/user-roles/permissions" },
+
+  // Profile
+  profile: { apiName: "profile", displayName: "Profile", route: "/profile" },
 };
 
 const EmployeeCreate = () => {
@@ -52,6 +71,14 @@ const EmployeeCreate = () => {
   const [departments, setDepartments] = useState([]);
   const [designations, setDesignations] = useState([]);
   const [employees, setEmployees] = useState([]);
+
+  const [directPermissions, setDirectPermissions] = useState(() => {
+    const initialPerms = {};
+    Object.keys(pageNameMap).forEach(key => {
+      initialPerms[key] = { view: false, add: false, edit: false, delete: false };
+    });
+    return initialPerms;
+  });
 
   const [formData, setFormData] = useState({
     name: "",
@@ -176,6 +203,16 @@ const EmployeeCreate = () => {
       formDataToSend.append('send_password_email', 'true');
     }
 
+    // Add direct permissions
+    const permsArray = Object.keys(directPermissions).map(key => ({
+      page: pageNameMap[key].apiName,
+      can_view: directPermissions[key].view,
+      can_add: directPermissions[key].add,
+      can_edit: directPermissions[key].edit,
+      can_delete: directPermissions[key].delete
+    }));
+    formDataToSend.append('user_permissions', JSON.stringify(permsArray));
+
     try {
       await apiClient.post("/auth/users/", formDataToSend);
       toast.success("Employee created successfully!");
@@ -297,7 +334,6 @@ const EmployeeCreate = () => {
             </div>
           </div>
 
-
           <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
             <h3 className="text-lg font-medium text-gray-900 mb-6">Account Settings</h3>
             <div className="space-y-6">
@@ -370,6 +406,84 @@ const EmployeeCreate = () => {
               </div>
             </div>
           </div>
+
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
+            <div className="p-8 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
+              <div>
+                <h3 className="text-xl font-medium text-gray-900">Direct Permissions</h3>
+                <p className="text-sm text-gray-500 mt-1">Set individual access overrides for this employee</p>
+              </div>
+              <div className="flex gap-2 p-1.5 bg-white rounded-2xl shadow-sm border border-gray-100">
+                <button
+                  type="button"
+                  onClick={() => {
+                    const reset = {};
+                    Object.keys(pageNameMap).forEach(k => { reset[k] = { view: false, add: false, edit: false, delete: false }; });
+                    setDirectPermissions(reset);
+                  }}
+                  className="px-6 py-2 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+                >
+                  Clear All
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const all = {};
+                    Object.keys(pageNameMap).forEach(k => { all[k] = { view: true, add: true, edit: true, delete: true }; });
+                    setDirectPermissions(all);
+                  }}
+                  className="px-6 py-2 rounded-xl text-sm font-medium bg-black text-white hover:bg-gray-800 transition-colors"
+                >
+                  Select All
+                </button>
+              </div>
+            </div>
+
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse">
+                <thead className="bg-[#fafbff]">
+                  <tr>
+                    <th className="px-8 py-5 text-xs font-medium text-gray-400 uppercase tracking-widest">Module / Page</th>
+                    {["view", "add", "edit", "delete"].map(action => (
+                      <th key={action} className="px-4 py-5 text-xs font-medium text-gray-400 uppercase tracking-widest text-center">{action}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-50">
+                  {Object.keys(pageNameMap).map((key) => (
+                    <tr key={key} className="hover:bg-gray-50/50 group transition-colors">
+                      <td className="px-8 py-5">
+                        <div className="flex flex-col">
+                          <span className="font-medium text-gray-900 leading-none mb-1">{pageNameMap[key].displayName}</span>
+                          <span className="text-[10px] text-gray-400 font-mono tracking-tight">{pageNameMap[key].apiName}</span>
+                        </div>
+                      </td>
+                      {["view", "add", "edit", "delete"].map((action) => (
+                        <td key={action} className="px-4 py-5 text-center">
+                          <div className="flex justify-center">
+                            <button
+                              type="button"
+                              onClick={() => setDirectPermissions(prev => ({
+                                ...prev,
+                                [key]: { ...prev[key], [action]: !prev[key][action] }
+                              }))}
+                              className={`${directPermissions[key]?.[action] ? 'bg-[#50728c]' : 'bg-gray-200'
+                                } relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none`}
+                            >
+                              <span
+                                className={`${directPermissions[key]?.[action] ? 'translate-x-5' : 'translate-x-0'
+                                  } pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-sm transition duration-200 ease-in-out mt-0.1`}
+                              />
+                            </button>
+                          </div>
+                        </td>
+                      ))}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
           <div className="flex justify-end gap-4">
             <Link
               to="/hr/employees"
@@ -387,7 +501,7 @@ const EmployeeCreate = () => {
           </div>
         </form>
       </LayoutComponents>
-    </div>
+    </div >
   );
 };
 

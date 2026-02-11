@@ -81,7 +81,7 @@ class AttendanceViewSet(viewsets.ModelViewSet):
         
         return Response(summary)
     
-    @action(detail=False, methods=['post'])
+    @action(detail=False, methods=['post'], permission_classes=[IsAuthenticated])
     def check_in_out(self, request):
         serializer = AttendanceCheckInOutSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -392,7 +392,7 @@ class OvertimeViewSet(viewsets.ModelViewSet):
             return queryset
         return queryset.filter(employee=user)
     
-    @action(detail=False, methods=['post'])
+    @action(detail=False, methods=['post'], permission_classes=[IsAuthenticated])
     def calculate_from_sessions(self, request):
         """Calculate overtime based on productive hours > 8 hours"""
         date_str = request.data.get('date')

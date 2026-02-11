@@ -164,14 +164,12 @@ class UserCreateSerializer(serializers.ModelSerializer):
     )
     password = serializers.CharField(write_only=True, required=False)
     send_password_email = serializers.BooleanField(write_only=True, default=False)
-    user_permissions = serializers.ListField(
-        child=serializers.DictField(),
+    user_permissions = serializers.JSONField(
         write_only=True,
         required=False,
         help_text="List of permissions: [{page: 'employees', can_view: True, can_add: False, ...}]"
     )
-    permission_overrides = serializers.ListField(
-        child=serializers.DictField(),
+    permission_overrides = serializers.JSONField(
         write_only=True,
         required=False,
         help_text="List of overrides: [{page: 'employees', action: 'can_view', is_blocked: True}]"
@@ -306,13 +304,11 @@ class UserUpdateSerializer(serializers.ModelSerializer):
             'send_password_email', 'user_permissions', 'permission_overrides'
         ]
     
-    user_permissions = serializers.ListField(
-        child=serializers.DictField(),
+    user_permissions = serializers.JSONField(
         write_only=True,
         required=False
     )
-    permission_overrides = serializers.ListField(
-        child=serializers.DictField(),
+    permission_overrides = serializers.JSONField(
         write_only=True,
         required=False
     )

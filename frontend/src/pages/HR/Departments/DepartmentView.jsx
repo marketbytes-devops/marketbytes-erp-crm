@@ -10,16 +10,18 @@ import toast from "react-hot-toast";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import * as XLSX from "xlsx";
+import { usePermission } from "../../../context/PermissionContext";
 
 
 const DepartmentView = () => {
+  const { hasPermission } = usePermission();
   const [departments, setDepartments] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(true);
   const [selectedDept, setSelectedDept] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(null);
-const [showExportMenu, setShowExportMenu] = useState(false);
+  const [showExportMenu, setShowExportMenu] = useState(false);
 
   useEffect(() => {
     fetchDepartments();
@@ -53,57 +55,57 @@ const [showExportMenu, setShowExportMenu] = useState(false);
     setSelectedDept(dept);
     setShowModal(true);
   };
-const exportPDF = () => {
-  const doc = new jsPDF("landscape");
+  const exportPDF = () => {
+    const doc = new jsPDF("landscape");
 
-  doc.setFontSize(18);
-  doc.text("Departments Report", 14, 15);
+    doc.setFontSize(18);
+    doc.text("Departments Report", 14, 15);
 
-  autoTable(doc, {
-    startY: 25,
-    head: [["SL No", "Department", "Worksheet URL", "Services"]],
-    body: filteredDepartments.map((dept, i) => [
-      i + 1,
-      dept.name,
-      dept.worksheet_url || "—",
-      dept.services || "—",
-    ]),
-    styles: { fontSize: 10 },
-    headStyles: { fillColor: [0, 0, 0] },
-  });
+    autoTable(doc, {
+      startY: 25,
+      head: [["SL No", "Department", "Worksheet URL", "Services"]],
+      body: filteredDepartments.map((dept, i) => [
+        i + 1,
+        dept.name,
+        dept.worksheet_url || "—",
+        dept.services || "—",
+      ]),
+      styles: { fontSize: 10 },
+      headStyles: { fillColor: [0, 0, 0] },
+    });
 
-  doc.save("departments.pdf");
-};
-const exportCSV = () => {
-  const worksheet = XLSX.utils.json_to_sheet(
-    filteredDepartments.map((d, i) => ({
-      "SL No": i + 1,
-      Department: d.name,
-      "Worksheet URL": d.worksheet_url || "",
-      Services: d.services || "",
-    }))
-  );
+    doc.save("departments.pdf");
+  };
+  const exportCSV = () => {
+    const worksheet = XLSX.utils.json_to_sheet(
+      filteredDepartments.map((d, i) => ({
+        "SL No": i + 1,
+        Department: d.name,
+        "Worksheet URL": d.worksheet_url || "",
+        Services: d.services || "",
+      }))
+    );
 
-  const workbook = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(workbook, worksheet, "Departments");
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Departments");
 
-  XLSX.writeFile(workbook, "departments.csv");
-};
-const exportExcel = () => {
-  const worksheet = XLSX.utils.json_to_sheet(
-    filteredDepartments.map((d, i) => ({
-      "SL No": i + 1,
-      Department: d.name,
-      "Worksheet URL": d.worksheet_url || "",
-      Services: d.services || "",
-    }))
-  );
+    XLSX.writeFile(workbook, "departments.csv");
+  };
+  const exportExcel = () => {
+    const worksheet = XLSX.utils.json_to_sheet(
+      filteredDepartments.map((d, i) => ({
+        "SL No": i + 1,
+        Department: d.name,
+        "Worksheet URL": d.worksheet_url || "",
+        Services: d.services || "",
+      }))
+    );
 
-  const workbook = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(workbook, worksheet, "Departments");
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Departments");
 
-  XLSX.writeFile(workbook, "departments.xlsx");
-};
+    XLSX.writeFile(workbook, "departments.xlsx");
+  };
 
   const filteredDepartments = departments.filter((dept) =>
     dept.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -137,57 +139,59 @@ const exportExcel = () => {
               <span className="text-sm text-gray-600">{filteredDepartments.length} departments</span>
             </div>
             <div className="flex gap-3">
-             <div className="relative">
-  <button
-    onClick={() => setShowExportMenu(!showExportMenu)}
-    className="flex items-center gap-2 px-6 py-3 border border-gray-300 rounded-xl hover:bg-gray-50 transition-all"
-  >
-    <MdDownload />
-    <span className="hidden sm:inline">Export</span>
-  </button>
+              <div className="relative">
+                <button
+                  onClick={() => setShowExportMenu(!showExportMenu)}
+                  className="flex items-center gap-2 px-6 py-3 border border-gray-300 rounded-xl hover:bg-gray-50 transition-all"
+                >
+                  <MdDownload />
+                  <span className="hidden sm:inline">Export</span>
+                </button>
 
-  {showExportMenu && (
-    <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-xl shadow-lg z-50">
-      <button
-        onClick={() => {
-          exportPDF();
-          setShowExportMenu(false);
-        }}
-        className="w-full text-left px-4 py-3 hover:bg-gray-50"
-      >
-         Export PDF
-      </button>
+                {showExportMenu && (
+                  <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-xl shadow-lg z-50">
+                    <button
+                      onClick={() => {
+                        exportPDF();
+                        setShowExportMenu(false);
+                      }}
+                      className="w-full text-left px-4 py-3 hover:bg-gray-50"
+                    >
+                      Export PDF
+                    </button>
 
-      <button
-        onClick={() => {
-          exportCSV();
-          setShowExportMenu(false);
-        }}
-        className="w-full text-left px-4 py-3 hover:bg-gray-50"
-      >
-         Export CSV
-      </button>
+                    <button
+                      onClick={() => {
+                        exportCSV();
+                        setShowExportMenu(false);
+                      }}
+                      className="w-full text-left px-4 py-3 hover:bg-gray-50"
+                    >
+                      Export CSV
+                    </button>
 
-      <button
-        onClick={() => {
-          exportExcel();
-          setShowExportMenu(false);
-        }}
-        className="w-full text-left px-4 py-3 hover:bg-gray-50"
-      >
-         Export Excel
-      </button>
-    </div>
-  )}
-</div>
+                    <button
+                      onClick={() => {
+                        exportExcel();
+                        setShowExportMenu(false);
+                      }}
+                      className="w-full text-left px-4 py-3 hover:bg-gray-50"
+                    >
+                      Export Excel
+                    </button>
+                  </div>
+                )}
+              </div>
 
-              <Link
-                to="/hr/departments/create"
-                className="flex items-center gap-3 px-6 py-3 bg-black text-white rounded-xl hover:bg-gray-800 transition-all shadow-md"
-              >
-                <MdAdd className="w-5 h-5" />
-                Add Department
-              </Link>
+              {hasPermission("departments", "add") && (
+                <Link
+                  to="/hr/departments/create"
+                  className="flex items-center gap-3 px-6 py-3 bg-black text-white rounded-xl hover:bg-gray-800 transition-all shadow-md"
+                >
+                  <MdAdd className="w-5 h-5" />
+                  Add Department
+                </Link>
+              )}
             </div>
           </div>
 
@@ -252,20 +256,24 @@ const exportExcel = () => {
                             >
                               <MdVisibility className="w-5 h-5 text-gray-600 group-hover:text-blue-600" />
                             </button>
-                            <Link
-                              to={`/hr/departments/${dept.id}/edit`}
-                              className="p-2 hover:bg-gray-100 rounded-lg transition-all group"
-                              title="Edit"
-                            >
-                              <MdEdit className="w-5 h-5 text-gray-600 group-hover:text-black" />
-                            </Link>
-                            <button
-                              onClick={() => setShowDeleteConfirm(dept.id)}
-                              className="p-2 hover:bg-red-50 rounded-lg transition-all group"
-                              title="Delete"
-                            >
-                              <MdDelete className="w-5 h-5 text-gray-600 group-hover:text-red-600" />
-                            </button>
+                            {hasPermission("departments", "edit") && (
+                              <Link
+                                to={`/hr/departments/${dept.id}/edit`}
+                                className="p-2 hover:bg-gray-100 rounded-lg transition-all group"
+                                title="Edit"
+                              >
+                                <MdEdit className="w-5 h-5 text-gray-600 group-hover:text-black" />
+                              </Link>
+                            )}
+                            {hasPermission("departments", "delete") && (
+                              <button
+                                onClick={() => setShowDeleteConfirm(dept.id)}
+                                className="p-2 hover:bg-red-50 rounded-lg transition-all group"
+                                title="Delete"
+                              >
+                                <MdDelete className="w-5 h-5 text-gray-600 group-hover:text-red-600" />
+                              </button>
+                            )}
                           </div>
                         </td>
                       </motion.tr>

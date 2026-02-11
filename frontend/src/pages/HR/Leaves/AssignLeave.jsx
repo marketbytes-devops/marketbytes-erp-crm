@@ -4,8 +4,10 @@ import { MdArrowBack, MdClose } from "react-icons/md";
 import LayoutComponents from "../../../components/LayoutComponents";
 import Input from "../../../components/Input";
 import apiClient from "../../../helpers/apiClient";
+import { usePermission } from "../../../context/PermissionContext";
 
 const AssignLeave = () => {
+  const { hasPermission } = usePermission();
   const [employees, setEmployees] = useState([]);
   const [leaveTypes, setLeaveTypes] = useState([]);
   const [showAddTypeModal, setShowAddTypeModal] = useState(false);
@@ -29,23 +31,23 @@ const AssignLeave = () => {
     fetchLeaveTypes();
   }, []);
 
-const fetchEmployees = async () => {
-  try {
-    const res = await apiClient.get("/auth/users/");
-    const data = res.data.results || res.data || [];
+  const fetchEmployees = async () => {
+    try {
+      const res = await apiClient.get("/auth/users/");
+      const data = res.data.results || res.data || [];
 
-    const formatted = data.map(emp => ({
-      ...emp,
-      name: emp.name || `${emp.first_name || ""} ${emp.last_name || ""}`.trim()
-    }));
+      const formatted = data.map(emp => ({
+        ...emp,
+        name: emp.name || `${emp.first_name || ""} ${emp.last_name || ""}`.trim()
+      }));
 
-    formatted.sort((a, b) => a.name.localeCompare(b.name));
+      formatted.sort((a, b) => a.name.localeCompare(b.name));
 
-    setEmployees(formatted);
-  } catch (err) {
-    console.error("Failed to load employees:", err);
-  }
-};
+      setEmployees(formatted);
+    } catch (err) {
+      console.error("Failed to load employees:", err);
+    }
+  };
 
   const fetchLeaveTypes = async () => {
     try {
@@ -158,13 +160,15 @@ const fetchEmployees = async () => {
                   <label className="text-sm font-medium text-black">
                     Leave Type <span className="text-red-500">*</span>
                   </label>
-                  <button
-                    type="button"
-                    onClick={() => setShowAddTypeModal(true)}
-                    className="text-sm font-medium text-black hover:text-gray-700 underline"
-                  >
-                    + Add New Type
-                  </button>
+                  {hasPermission("leaves", "add") && (
+                    <button
+                      type="button"
+                      onClick={() => setShowAddTypeModal(true)}
+                      className="text-sm font-medium text-black hover:text-gray-700 underline"
+                    >
+                      + Add New Type
+                    </button>
+                  )}
                 </div>
                 <Input
                   type="select"
@@ -311,13 +315,15 @@ const fetchEmployees = async () => {
             >
               Cancel
             </button>
-            <button
-              type="submit"
-              disabled={loading}
-              className="px-6 py-3 bg-black text-white font-medium rounded-xl hover:bg-gray-900 transition disabled:opacity-50"
-            >
-              {loading ? "Assigning Leave..." : "Assign Leave"}
-            </button>
+            {hasPermission("leaves", "add") && (
+              <button
+                type="submit"
+                disabled={loading}
+                className="px-6 py-3 bg-black text-white font-medium rounded-xl hover:bg-gray-900 transition disabled:opacity-50"
+              >
+                {loading ? "Assigning Leave..." : "Assign Leave"}
+              </button>
+            )}
           </div>
         </form>
       </LayoutComponents>
