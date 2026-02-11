@@ -396,60 +396,107 @@ class OvertimeViewSet(viewsets.ModelViewSet):
     def calculate_from_sessions(self, request):
         """Calculate overtime based on productive hours > 8 hours"""
         date_str = request.data.get('date')
+        month = request.data.get('month')
+        year = request.data.get('year')
         employee_id = request.data.get('employee_id')
         
-        if not date_str:
-            return Response({"error": "Date is required"}, status=400)
+        is_admin = request.user.is_superuser or (getattr(request.user, 'role', None) and request.user.role.name == "Superadmin")
         
-        target_date = datetime.strptime(date_str, '%Y-%m-%d').date()
-        
-        if employee_id and (request.user.is_superuser or 
-                           (getattr(request.user, 'role', None) and request.user.role.name == "Superadmin")):
-            employee = CustomUser.objects.get(id=employee_id)
+        # Determine date range
+        date_list = []
+        if date_str:
+            date_list = [datetime.strptime(date_str, '%Y-%m-%d').date()]
+        elif month and year:
+            import calendar
+            _, last_day = calendar.monthrange(int(year), int(month))
+            date_list = [datetime(int(year), int(month), d).date() for d in range(1, last_day + 1)]
         else:
-            employee = request.user
-        
-        work_sessions = WorkSession.objects.filter(
-            employee=employee,
-            start_time__date=target_date,
-            end_time__isnull=False
-        )
-        
-        total_seconds = sum(
-            (session.end_time - session.start_time).total_seconds()
-            for session in work_sessions
-        )
-        
-        productive_hours = total_seconds / 3600
-        
-        if productive_hours > 8:
-            overtime_hours = productive_hours - 8
+            return Response({"error": "Date or Month/Year is required"}, status=400)
             
-            projects = list(set([ws.project.name for ws in work_sessions if ws.project]))
-            tasks = list(set([ws.task.name for ws in work_sessions if ws.task]))
-            
-            effort = f"Projects: {', '.join(projects) if projects else 'N/A'}\n"
-            effort += f"Tasks: {', '.join(tasks) if tasks else 'N/A'}"
-            
-            overtime, created = Overtime.objects.update_or_create(
-                employee=employee,
-                date=target_date,
-                defaults={
-                    'hours': round(overtime_hours, 2),
-                    'project': projects[0] if projects else 'Multiple Projects',
-                    'effort': effort
-                }
-            )
-            
-            return Response({
-                "message": "Overtime calculated successfully",
-                "data": OvertimeSerializer(overtime).data
-            })
+        employees_to_process = []
+        if employee_id and is_admin:
+            try:
+                emp = CustomUser.objects.get(id=employee_id)
+                employees_to_process = [emp]
+            except CustomUser.DoesNotExist:
+                return Response({"error": "Employee not found"}, status=404)
+        elif is_admin and not employee_id:
+            employees_to_process = CustomUser.objects.filter(status='active')
         else:
-            return Response({
-                "message": "No overtime. Productive hours less than 8 hours.",
-                "productive_hours": round(productive_hours, 2)
-            })
+            employees_to_process = [request.user]
+
+        count_updated = 0
+        now = timezone.now()
+        
+        for target_date in date_list:
+            # Skip future dates
+            if target_date > now.date():
+                continue
+                
+            # Define local boundaries for the target date
+            current_tz = timezone.get_current_timezone()
+            start_of_day = datetime.combine(target_date, datetime.min.time())
+            end_of_day = datetime.combine(target_date, datetime.max.time())
+            
+            # Make them aware of the current timezone (e.g., Asia/Kolkata)
+            start_of_day_aware = timezone.make_aware(start_of_day, current_tz)
+            end_of_day_aware = timezone.make_aware(end_of_day, current_tz)
+                
+            for employee in employees_to_process:
+                # Get finished work sessions within the local day range
+                work_sessions = WorkSession.objects.filter(
+                    employee=employee,
+                    start_time__range=(start_of_day_aware, end_of_day_aware),
+                    end_time__isnull=False
+                )
+                
+                total_seconds = sum(
+                    (session.end_time - session.start_time).total_seconds()
+                    for session in work_sessions
+                )
+                
+                # Check for an active session started today
+                if target_date == now.date():
+                    active_session = WorkSession.objects.filter(
+                        employee=employee,
+                        start_time__range=(start_of_day_aware, end_of_day_aware),
+                        end_time__isnull=True
+                    ).first()
+                    if active_session:
+                        total_seconds += (now - active_session.start_time).total_seconds()
+                
+                productive_hours = total_seconds / 3600
+                
+                if productive_hours > 8:
+                    overtime_hours = productive_hours - 8
+                    
+                    # Fetching names for record summary
+                    ws_for_info = WorkSession.objects.filter(
+                        employee=employee, 
+                        start_time__range=(start_of_day_aware, end_of_day_aware)
+                    )
+                    projects = list(set([ws.project.name for ws in ws_for_info if ws.project]))
+                    tasks = list(set([ws.task.name for ws in ws_for_info if ws.task]))
+                    
+                    effort = f"Projects: {', '.join(projects) if projects else 'N/A'}\n"
+                    effort += f"Tasks: {', '.join(tasks) if tasks else 'N/A'}"
+                    
+                    Overtime.objects.update_or_create(
+                        employee=employee,
+                        date=target_date,
+                        defaults={
+                            'hours': round(overtime_hours, 2),
+                            'project': projects[0] if projects else 'Multiple Projects',
+                            'effort': effort
+                        }
+                    )
+                    count_updated += 1
+                else:
+                    # If overtime existed but now it's <= 8 (e.g. data correction), remove it
+                    Overtime.objects.filter(employee=employee, date=target_date).delete()
+        
+        message = f"Overtime sync complete for {len(date_list)} day(s). Found {count_updated} overtime record(s)."
+        return Response({"message": message, "updated_count": count_updated})
 
 class CandidateViewSet(viewsets.ModelViewSet):
     queryset = Candidate.objects.all().select_related('department')
@@ -702,6 +749,25 @@ class WorkSessionViewSet(viewsets.ModelViewSet):
         if user.is_superuser or (getattr(user, 'role', None) and user.role.name == "Superadmin"):
             return queryset
         return queryset.filter(employee=user)
+
+    def perform_update(self, serializer):
+        """When stopping a timer from the admin view, also clock out the employee"""
+        instance = serializer.save()
+        
+        # If the session was just closed (has end_time now)
+        if instance.end_time:
+            # Also clock out the employee for that day to reset their 'Check In' button
+            local_dt = timezone.localtime(instance.start_time)
+            attendance = Attendance.objects.filter(
+                employee=instance.employee,
+                date=local_dt.date()
+            ).first()
+            
+            if attendance and not attendance.clock_out:
+                # Set clock_out to the session's end time
+                end_time_local = timezone.localtime(instance.end_time)
+                attendance.clock_out = end_time_local.time()
+                attendance.save()
     
     @action(detail=False, methods=['get'], url_path='daily-productive-hours')
     def daily_productive_hours(self, request):

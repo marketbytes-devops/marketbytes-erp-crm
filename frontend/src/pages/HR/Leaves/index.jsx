@@ -15,6 +15,8 @@ import {
 } from "react-icons/md";
 import { format } from "date-fns";
 import { usePermission } from "../../../context/PermissionContext";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
 
 const Leaves = () => {
   const { hasPermission } = usePermission();
@@ -25,6 +27,7 @@ const Leaves = () => {
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
   const [expandedId, setExpandedId] = useState(null);
+  const [showExportMenu, setShowExportMenu] = useState(false);
 
   const navigate = useNavigate();
 
@@ -117,6 +120,79 @@ const Leaves = () => {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+    setShowExportMenu(false);
+  };
+
+  const handleExportPDF = () => {
+    if (filteredLeaves.length === 0) {
+      alert("No leave records to export.");
+      return;
+    }
+
+    const doc = new jsPDF();
+
+    // Optional: Add title
+    doc.setFontSize(18);
+    doc.text("Leave Requests Report", 14, 22);
+    doc.setFontSize(11);
+    doc.text(`Generated on: ${format(new Date(), "dd MMM yyyy")}`, 14, 30);
+    doc.text(`Total records: ${filteredLeaves.length}`, 14, 36);
+
+    // Table headers
+    const head = [
+      ["Employee", "Leave Type", "From", "To", "Duration", "Status", "Applied On", "Reason"]
+    ];
+
+    // Table body
+    const body = filteredLeaves.map((leave) => {
+      const employee = leave.employee?.name || "Unknown";
+      const leaveType = leave.leave_type_name || leave.leave_type?.name || "N/A";
+      const from = leave.start_date ? format(new Date(leave.start_date), "dd/MM/yyyy") : "-";
+      const to = leave.end_date ? format(new Date(leave.end_date), "dd/MM/yyyy") : "-";
+      const duration =
+        leave.duration === "half_day"
+          ? "Half Day"
+          : leave.total_days
+            ? `${leave.total_days} Day${leave.total_days > 1 ? "s" : ""}`
+            : "Full Day";
+      const status = leave.status ? leave.status.charAt(0).toUpperCase() + leave.status.slice(1) : "Pending";
+      const appliedOn = leave.created_at ? format(new Date(leave.created_at), "dd/MM/yyyy") : "-";
+      const reason = leave.reason || "-";
+
+      return [employee, leaveType, from, to, duration, status, appliedOn, reason];
+    });
+
+    autoTable(doc, {
+      head: head,
+      body: body,
+      startY: 45,
+      styles: { fontSize: 9, cellPadding: 3, overflow: "linebreak" },
+      headStyles: {
+        fillColor: [0, 0, 0],
+        textColor: [255, 255, 255],
+        fontStyle: "bold",
+      },
+      alternateRowStyles: { fillColor: [240, 240, 240] },
+      columnStyles: {
+        0: { cellWidth: 35 },   // Employee
+        1: { cellWidth: 30 },   // Leave Type
+        2: { cellWidth: 25 },   // From
+        3: { cellWidth: 25 },   // To
+        4: { cellWidth: 25 },   // Duration
+        5: { cellWidth: 20 },   // Status
+        6: { cellWidth: 25 },   // Applied On
+        7: { cellWidth: "auto" } // Reason (remaining space)
+      },
+      margin: { top: 45, left: 14, right: 14 },
+    });
+
+    doc.save(`Leave_Requests_${format(new Date(), "yyyy-MM-dd")}.pdf`);
+    setShowExportMenu(false);
+  };
+
+  const handleExportExcel = () => {
+    alert("Excel export not implemented yet");
+    setShowExportMenu(false);
   };
 
   const toggleExpand = (id) => {
@@ -148,9 +224,9 @@ const Leaves = () => {
                 </button>
               ))}
             </div>
-            <div className="flex gap-3">
+            <div className="flex gap-3 relative">
               <button
-                onClick={handleExportCSV}
+                onClick={() => setShowExportMenu(!showExportMenu)}
                 className="flex items-center gap-2 px-5 py-4 border border-gray-300 rounded-xl hover:bg-gray-50 transition font-medium"
               >
                 <MdDownload className="w-5 h-5" />
@@ -165,6 +241,47 @@ const Leaves = () => {
                   Assign Leave
                 </Link>
               )}
+
+              <AnimatePresence>
+                {showExportMenu && (
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.95, y: -8 }}
+                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                    exit={{ opacity: 0, scale: 0.95, y: -8 }}
+                    transition={{ duration: 0.15 }}
+                    className="absolute right-0 top-full mt-2 w-48 bg-white rounded-xl shadow-xl border border-gray-200 overflow-hidden z-50"
+                  >
+                    <div className="py-1">
+                      <button
+                        onClick={handleExportCSV}
+                        className="w-full text-left px-5 py-3 hover:bg-gray-50 transition flex items-center gap-3 text-sm"
+                      >
+                        Export as CSV
+                      </button>
+                      <button
+                        onClick={handleExportExcel}
+                        className="w-full text-left px-5 py-3 hover:bg-gray-50 transition flex items-center gap-3 text-sm"
+                      >
+                        Export as Excel
+                      </button>
+                      <button
+                        onClick={handleExportPDF}
+                        className="w-full text-left px-5 py-3 hover:bg-gray-50 transition flex items-center gap-3 text-sm"
+                      >
+                        Export as PDF
+                      </button>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              <Link
+                to="/hr/leaves/assign"
+                className="flex items-center gap-3 px-6 py-3 bg-black text-white rounded-xl hover:bg-gray-900 transition font-medium"
+              >
+                <MdAdd className="w-5 h-5" />
+                Assign Leave
+              </Link>
             </div>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
