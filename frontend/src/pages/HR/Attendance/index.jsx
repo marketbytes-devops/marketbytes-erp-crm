@@ -106,7 +106,6 @@ const AttendanceModal = ({ record, date, onClose }) => {
             </div>
           </div>
 
-          {/* Notes */}
           {record.notes && (
             <div className="pt-4 border-t border-gray-200">
               <p className="font-medium text-gray-600 mb-2">Notes</p>
@@ -114,7 +113,6 @@ const AttendanceModal = ({ record, date, onClose }) => {
             </div>
           )}
 
-          {/* History Table */}
           {hasHistory && (
             <div className="mt-8">
               <h4 className="text-lg font-medium mb-4 flex items-center justify-center gap-2">
@@ -184,6 +182,12 @@ const Attendance = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(10);
 
+
+  const [showFilters, setShowFilters] = useState(false);
+  const [filterEmployeeName, setFilterEmployeeName] = useState("");
+  const [filterDate, setFilterDate] = useState("");
+  const [filterDepartment, setFilterDepartment] = useState("");
+
   const month = selectedDate.getMonth() + 1;
   const year = selectedDate.getFullYear();
 
@@ -219,31 +223,42 @@ const Attendance = () => {
 
   const calendarDays = eachDayOfInterval({ start: startDate, end: endDate });
 
+
   const employeesMap = attendances.reduce((acc, att) => {
     const empId = att.employee?.id || att.employee_id || "unknown";
     const empName = att.employee?.name || "Unknown Employee";
-    if (!acc[empId]) {
-      acc[empId] = { employee: { id: empId, name: empName }, records: [] };
+    const dept = att.employee?.department || "Unknown"; 
+
+
+    const nameMatch = filterEmployeeName === "" || 
+      empName.toLowerCase().includes(filterEmployeeName.toLowerCase());
+
+    const deptMatch = filterDepartment === "" || 
+      dept.toLowerCase().includes(filterDepartment.toLowerCase());
+
+ 
+
+    if (nameMatch && deptMatch) {
+      if (!acc[empId]) {
+        acc[empId] = { employee: { id: empId, name: empName }, records: [] };
+      }
+      acc[empId].records.push(att);
     }
-    acc[empId].records.push(att);
     return acc;
   }, {});
 
   const employeeList = Object.values(employeesMap);
 
-  // Get current employees
   const indexOfLastEmployee = currentPage * itemsPerPage;
   const indexOfFirstEmployee = indexOfLastEmployee - itemsPerPage;
   const currentEmployees = employeeList.slice(indexOfFirstEmployee, indexOfLastEmployee);
   const totalPages = Math.ceil(employeeList.length / itemsPerPage);
 
-  // Change page
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
-  // Reset to first page when month changes
   useEffect(() => {
     setCurrentPage(1);
-  }, [month, year]);
+  }, [month, year, filterEmployeeName, filterDepartment]); // reset page when filters change
 
   const getRecordForDate = (records, date) => {
     const formatted = format(date, "yyyy-MM-dd");
@@ -279,6 +294,13 @@ const Attendance = () => {
     setSelectedDay(null);
   };
 
+  const resetFilters = () => {
+    setFilterEmployeeName("");
+    setFilterDate("");
+    setFilterDepartment("");
+    setShowFilters(false);
+  };
+
   return (
     <div className="p-6">
       <LayoutComponents
@@ -307,7 +329,7 @@ const Attendance = () => {
           ))}
         </div>
 
-        <div className="bg-white rounded-2xl shadow-sm p-6 mb-8">
+        <div className="bg-white rounded-2xl shadow-sm p-6 mb-6">
           <div className="flex flex-wrap gap-4 justify-between items-center">
             <div className="flex items-center gap-4">
               <button
@@ -327,6 +349,12 @@ const Attendance = () => {
               </button>
             </div>
             <div className="flex gap-3">
+              <button
+                onClick={() => setShowFilters(!showFilters)}
+                className="flex items-center gap-2 px-5 py-3 border border-gray-400 rounded-xl hover:bg-gray-50 transition font-medium"
+              >
+                <span>Filters {showFilters ? "▲" : "▼"}</span>
+              </button>
               <button
                 onClick={fetchAttendance}
                 className="flex items-center gap-3 px-6 py-3.5 bg-black text-white rounded-xl hover:bg-black transition font-medium"
@@ -351,6 +379,79 @@ const Attendance = () => {
           </div>
         </div>
 
+
+        {showFilters && (
+          <div className="bg-white rounded-2xl shadow-sm p-6 mb-6 border border-gray-200">
+            <div className="flex justify-between items-center mb-5">
+              <h3 className="text-lg font-medium">Advanced Filters</h3>
+              <button
+                onClick={() => setShowFilters(false)}
+                className="text-gray-500 hover:text-gray-800"
+              >
+                <MdClose className="w-6 h-6" />
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">Employee Name</label>
+                <input
+                  type="text"
+                  value={filterEmployeeName}
+                  onChange={(e) => setFilterEmployeeName(e.target.value)}
+                  placeholder="Search employee..."
+                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black/30"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">Date</label>
+                <input
+                  type="date"
+                  value={filterDate}
+                  onChange={(e) => setFilterDate(e.target.value)}
+                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black/30"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">Department</label>
+                <input
+                  type="text"
+                  value={filterDepartment}
+                  onChange={(e) => setFilterDepartment(e.target.value)}
+                  placeholder="e.g. Development, HR..."
+                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black/30"
+                />
+              </div>
+
+              {/* Month is already controlled by calendar → disabled or informational */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">Month</label>
+                <div className="px-4 py-2.5 bg-gray-100 border border-gray-300 rounded-lg text-gray-600">
+                  {format(selectedDate, "MMMM yyyy")}
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-6 flex justify-end gap-3">
+              <button
+                onClick={resetFilters}
+                className="px-6 py-2.5 border border-gray-300 rounded-lg hover:bg-gray-50 transition"
+              >
+                Reset All Filters
+              </button>
+              <button
+                onClick={() => setShowFilters(false)}
+                className="px-6 py-2.5 bg-black text-white rounded-lg hover:bg-gray-900 transition"
+              >
+                Apply & Close
+              </button>
+            </div>
+          </div>
+        )}
+
+     
         <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
           {loading ? (
             <div className="p-16 text-center">
@@ -360,7 +461,7 @@ const Attendance = () => {
           ) : employeeList.length === 0 ? (
             <div className="p-16 text-center text-gray-500">
               <p className="text-xl font-medium">No records found</p>
-              <p className="text-sm mt-2">Try selecting a different month</p>
+              <p className="text-sm mt-2">Try selecting a different month or adjusting filters</p>
             </div>
           ) : (
             <div className="overflow-x-auto">
@@ -448,7 +549,6 @@ const Attendance = () => {
               </button>
 
               {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                // Show first, last and current page with neighbors
                 let pageNum;
                 if (totalPages <= 5) {
                   pageNum = i + 1;
