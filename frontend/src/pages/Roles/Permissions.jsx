@@ -3,9 +3,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "react-hot-toast";
 import { Search, Loader2, X, Shield, Lock, ChevronRight, AlertCircle } from "lucide-react";
 import apiClient from "../../helpers/apiClient";
-import LayoutComponents from "../../components/LayoutComponents";
-import Loading from "../../components/Loading";
 import Toggle from "../../components/Toggle";
+import { usePermission } from "../../context/PermissionContext";
 
 const pageNameMap = {
   // Common / Home
@@ -25,7 +24,7 @@ const pageNameMap = {
   // Operations
   projects: { apiName: "projects", displayName: "Projects", route: "/operations/projects" },
   tasks: { apiName: "tasks", displayName: "Tasks", route: "/operations/tasks" },
-  taskboard: { apiName: "task_board", displayName: "Task Board", route: "/operations/task-board" },
+  task_board: { apiName: "task_board", displayName: "Task Board", route: "/operations/task-board" },
   timelogs: { apiName: "timelogs", displayName: "Time Log", route: "/operations/time-logs" },
   task_calendar: { apiName: "task_calendar", displayName: "Task Calendar", route: "/operations/task-calendar" },
   scrum: { apiName: "scrum", displayName: "Scrum", route: "/operations/scrum" },
@@ -49,39 +48,19 @@ const pageNameMap = {
 };
 
 const Permissions = () => {
+  const { hasPermission, isSuperadmin } = usePermission();
   const [users, setUsers] = useState([]);
   const [selectedUser, setSelectedUser] = useState(null);
   const [userPermissions, setUserPermissions] = useState({});
   const [isSaving, setIsSaving] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
-  const [isSuperadmin, setIsSuperadmin] = useState(false);
-  const [effectivePermissions, setEffectivePermissions] = useState({});
 
   useEffect(() => {
-    const fetchInitialData = async () => {
-      try {
-        setIsLoading(true);
-        const profileRes = await apiClient.get("/auth/profile/");
-        const user = profileRes.data;
-        setIsSuperadmin(user.is_superuser || user.role?.name === "Superadmin");
-        setEffectivePermissions(user.effective_permissions || {});
-
-        await fetchUsers();
-      } catch (err) {
-        console.error(err);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    fetchInitialData();
+    fetchUsers();
   }, []);
 
-  const hasPermission = (page, action) => {
-    if (isSuperadmin) return true;
-    const pagePerms = effectivePermissions[page];
-    return pagePerms && pagePerms[`can_${action}`];
-  };
+
 
   const fetchUsers = async () => {
     try {
@@ -199,7 +178,11 @@ const Permissions = () => {
     return matchesSearch;
   });
 
-  if (isLoading) return <div className="p-6"><Loading /></div>;
+  if (isLoading) return (
+    <div className="p-6 flex items-center justify-center min-h-screen">
+      <Loader2 className="w-12 h-12 animate-spin text-gray-600" />
+    </div>
+  );
 
   return (
     <div className="p-6 min-h-screen">
@@ -247,12 +230,14 @@ const Permissions = () => {
 
             <div className="flex items-center justify-between pt-4 border-t border-gray-50">
               <span className="text-xs font-medium text-gray-400 uppercase tracking-widest">Access Control</span>
-              <button
-                onClick={() => openOverridesModal(user)}
-                className="flex items-center gap-2 text-sm font-medium text-gray-700 hover:text-black transition-colors"
-              >
-                Manage <ChevronRight className="w-4 h-4" />
-              </button>
+              {hasPermission("permissions", "edit") && (
+                <button
+                  onClick={() => openOverridesModal(user)}
+                  className="flex items-center gap-2 text-sm font-medium text-gray-700 hover:text-black transition-colors"
+                >
+                  Manage <ChevronRight className="w-4 h-4" />
+                </button>
+              )}
             </div>
           </motion.div>
         ))}

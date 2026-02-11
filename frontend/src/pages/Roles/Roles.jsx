@@ -7,8 +7,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import apiClient from "../../helpers/apiClient";
 import LayoutComponents from "../../components/LayoutComponents";
-import Loading from "../../components/Loading";
 import Input from "../../components/Input";
+import { usePermission } from "../../context/PermissionContext";
 
 const createRoleSchema = z.object({
   name: z.string().min(1, "Role name is required"),
@@ -16,13 +16,11 @@ const createRoleSchema = z.object({
 });
 
 const Roles = () => {
+  const { hasPermission, isSuperadmin } = usePermission();
   const [roles, setRoles] = useState([]);
   const [editRole, setEditRole] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [isLoading, setIsLoading] = useState(true);
-  const [isSuperadmin, setIsSuperadmin] = useState(false);
-  const [effectivePermissions, setEffectivePermissions] = useState({});
-  const [isLoadingProfile, setIsLoadingProfile] = useState(true);
 
   const {
     register: registerCreate,
@@ -44,29 +42,10 @@ const Roles = () => {
   });
 
   useEffect(() => {
-    const fetchProfile = async () => {
-      try {
-        const response = await apiClient.get("/auth/profile/");
-        const user = response.data;
-        setIsSuperadmin(user.is_superuser || user.role?.name === "Superadmin");
-        setEffectivePermissions(user.effective_permissions || {});
-      } catch (error) {
-        console.error("Unable to fetch user profile:", error);
-        setEffectivePermissions({});
-        setIsSuperadmin(false);
-      } finally {
-        setIsLoadingProfile(false);
-      }
-    };
-    fetchProfile();
     fetchRoles();
   }, []);
 
-  const hasPermission = (page, action) => {
-    if (isSuperadmin) return true;
-    const pagePerms = effectivePermissions[page];
-    return pagePerms && pagePerms[`can_${action}`];
-  };
+
 
   const fetchRoles = async () => {
     setIsLoading(true);
@@ -152,10 +131,10 @@ const Roles = () => {
     return matchesSearch;
   });
 
-  if (isLoading || isLoadingProfile) {
+  if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <Loading />
+        <Loader2 className="w-12 h-12 animate-spin text-gray-600" />
       </div>
     );
   }
@@ -259,35 +238,25 @@ const Roles = () => {
                       <td className="px-6 py-6 text-gray-700">{role.description || "—"}</td>
                       <td className="px-6 py-6">
                         <div className="flex items-center gap-4">
-                          <button
-                            onClick={() => openEditModal(role)}
-                            disabled={!hasPermission("roles", "edit") || role.name === "Superadmin"}
-                            className={`
-                              inline-flex items-center gap-3 px-6 py-3 rounded-xl text-sm font-medium transition-all duration-300 shadow-lg
-                              ${hasPermission("roles", "edit") && role.name !== "Superadmin"
-                                ? "bg-black text-white hover:bg-white hover:text-black border"
-                                : "bg-gray-200 text-gray-500 cursor-not-allowed"
-                              }
-                            `}
-                          >
-                            <Edit className="w-5 h-5" />
-                            Edit
-                          </button>
+                          {hasPermission("roles", "edit") && role.name !== "Superadmin" && (
+                            <button
+                              onClick={() => openEditModal(role)}
+                              className="inline-flex items-center gap-3 px-6 py-3 rounded-xl text-sm font-medium transition-all duration-300 shadow-lg bg-black text-white hover:bg-white hover:text-black border"
+                            >
+                              <Edit className="w-5 h-5" />
+                              Edit
+                            </button>
+                          )}
 
-                          <button
-                            onClick={() => handleDeleteRole(role.id)}
-                            disabled={!hasPermission("roles", "delete") || role.name === "Superadmin"}
-                            className={`
-                              inline-flex items-center gap-3 px-6 py-3 rounded-xl text-sm font-medium transition-all duration-300 shadow-lg
-                              ${hasPermission("roles", "delete") && role.name !== "Superadmin"
-                                ? "bg-red-600 text-white hover:bg-red-700"
-                                : "bg-gray-200 text-gray-500 cursor-not-allowed"
-                              }
-                            `}
-                          >
-                            <Trash2 className="w-5 h-5" />
-                            Delete
-                          </button>
+                          {hasPermission("roles", "delete") && role.name !== "Superadmin" && (
+                            <button
+                              onClick={() => handleDeleteRole(role.id)}
+                              className="inline-flex items-center gap-3 px-6 py-3 rounded-xl text-sm font-medium transition-all duration-300 shadow-lg bg-red-600 text-white hover:bg-red-700"
+                            >
+                              <Trash2 className="w-5 h-5" />
+                              Delete
+                            </button>
+                          )}
                         </div>
                       </td>
                     </motion.tr>

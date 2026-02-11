@@ -14,9 +14,11 @@ import {
 } from 'react-icons/md';
 import { motion, AnimatePresence } from 'framer-motion';
 import apiClient from '../../../helpers/apiClient';
+import { usePermission } from '../../../context/PermissionContext';
 
 const ContractsList = () => {
     const navigate = useNavigate();
+    const { hasPermission } = usePermission();
     const [contracts, setContracts] = useState([]);
     const [stats, setStats] = useState({
         total_contracts: 0,
@@ -112,12 +114,14 @@ const ContractsList = () => {
                     Contracts
                 </h1>
                 <div className="flex gap-3">
-                    <button
-                        onClick={() => navigate('/operations/contracts/create')}
-                        className="flex items-center gap-2 px-4 py-2 border-2 border-emerald-500 text-emerald-500 rounded-lg hover:bg-emerald-50 font-medium transition-colors"
-                    >
-                        Create Contract <MdAdd size={20} />
-                    </button>
+                    {hasPermission("contracts", "add") && (
+                        <button
+                            onClick={() => navigate('/operations/contracts/create')}
+                            className="flex items-center gap-2 px-4 py-2 border-2 border-emerald-500 text-emerald-500 rounded-lg hover:bg-emerald-50 font-medium transition-colors"
+                        >
+                            Create Contract <MdAdd size={20} />
+                        </button>
+                    )}
                     <div className="relative">
                         <button
                             onClick={() => setIsExportOpen(!isExportOpen)}

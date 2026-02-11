@@ -4,6 +4,7 @@ import LayoutComponents from "../../../components/LayoutComponents";
 import apiClient from "../../../helpers/apiClient";
 import Loading from "../../../components/Loading";
 import Input from "../../../components/Input";
+import { usePermission } from "../../../context/PermissionContext";
 import {
   MdAdd,
   MdEdit,
@@ -22,6 +23,7 @@ import { FiExternalLink, FiMail, FiPhone, FiGlobe, FiMapPin } from "react-icons/
 import { toast } from "react-hot-toast";
 
 const Customers = () => {
+  const { hasPermission } = usePermission();
   const [activeTab, setActiveTab] = useState("companies");
   const [companies, setCompanies] = useState([]);
   const [clients, setClients] = useState([]);
@@ -274,12 +276,14 @@ const Customers = () => {
                 className="w-full pl-12 pr-4 py-3 bg-gray-50 border-none rounded-2xl focus:ring-2 focus:ring-black transition-all outline-none font-medium text-sm"
               />
             </div>
-            <button
-              onClick={() => activeTab === "companies" ? openCompanyModal() : openClientModal()}
-              className="flex items-center justify-center gap-2 px-6 py-3 bg-black text-white rounded-2xl hover:bg-gray-900 transition-all font-medium shadow-black/10 active:scale-95 whitespace-nowrap"
-            >
-              <MdAdd className="w-5 h-5" /> New {activeTab === "companies" ? "Company" : "Client"}
-            </button>
+            {hasPermission("customer", "add") && (
+              <button
+                onClick={() => activeTab === "companies" ? openCompanyModal() : openClientModal()}
+                className="flex items-center justify-center gap-2 px-6 py-3 bg-black text-white rounded-2xl hover:bg-gray-900 transition-all font-medium shadow-black/10 active:scale-95 whitespace-nowrap"
+              >
+                <MdAdd className="w-5 h-5" /> New {activeTab === "companies" ? "Company" : "Client"}
+              </button>
+            )}
           </div>
         </div>
 
@@ -398,20 +402,24 @@ const Customers = () => {
                         )}
                         <td className="px-8 py-6 text-right">
                           <div className="flex justify-end gap-1 opacity-0 group-hover:opacity-100 transition-all transform translate-x-2 group-hover:translate-x-0">
-                            <button
-                              onClick={() => activeTab === "companies" ? openCompanyModal(item) : openClientModal(item)}
-                              className="p-2.5 bg-white shadow-sm border border-gray-100 hover:bg-slate-50 hover:text-indigo-600 rounded-xl transition-all"
-                              title="Edit"
-                            >
-                              <MdEdit className="w-4.5 h-4.5" />
-                            </button>
-                            <button
-                              onClick={() => activeTab === "companies" ? handleDeleteCompany(item.id) : handleDeleteClient(item.id)}
-                              className="p-2.5 bg-white shadow-sm border border-gray-100 hover:bg-rose-50 hover:text-rose-600 rounded-xl transition-all"
-                              title="Delete"
-                            >
-                              <MdDelete className="w-4.5 h-4.5" />
-                            </button>
+                            {hasPermission("customer", "edit") && (
+                              <button
+                                onClick={() => activeTab === "companies" ? openCompanyModal(item) : openClientModal(item)}
+                                className="p-2.5 bg-white shadow-sm border border-gray-100 hover:bg-slate-50 hover:text-indigo-600 rounded-xl transition-all"
+                                title="Edit"
+                              >
+                                <MdEdit className="w-4.5 h-4.5" />
+                              </button>
+                            )}
+                            {hasPermission("customer", "delete") && (
+                              <button
+                                onClick={() => activeTab === "companies" ? handleDeleteCompany(item.id) : handleDeleteClient(item.id)}
+                                className="p-2.5 bg-white shadow-sm border border-gray-100 hover:bg-rose-50 hover:text-rose-600 rounded-xl transition-all"
+                                title="Delete"
+                              >
+                                <MdDelete className="w-4.5 h-4.5" />
+                              </button>
+                            )}
                           </div>
                         </td>
                       </motion.tr>
@@ -444,15 +452,15 @@ const Customers = () => {
                   <Input label="Industry Sector *" placeholder="Technology / Finance" value={companyForm.industry} onChange={(e) => setCompanyForm({ ...companyForm, industry: e.target.value })} />
                 </div>
               </div>
-                <div className="space-y-6">
-                  <h4 className="text-[10px] font-medium text-purple-600 uppercase tracking-widest mb-2">Geo-Spatial Data</h4>
-                  <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                    <Input label="City" value={companyForm.city} onChange={(e) => setCompanyForm({ ...companyForm, city: e.target.value })} />
-                    <Input label="State" value={companyForm.state} onChange={(e) => setCompanyForm({ ...companyForm, state: e.target.value })} />
-                    <Input label="Country" value={companyForm.country} onChange={(e) => setCompanyForm({ ...companyForm, country: e.target.value })} />
-                    <Input label="Postal Code" value={companyForm.postal_code} onChange={(e) => setCompanyForm({ ...companyForm, postal_code: e.target.value })} />
-                  </div>
+              <div className="space-y-6">
+                <h4 className="text-[10px] font-medium text-purple-600 uppercase tracking-widest mb-2">Geo-Spatial Data</h4>
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                  <Input label="City" value={companyForm.city} onChange={(e) => setCompanyForm({ ...companyForm, city: e.target.value })} />
+                  <Input label="State" value={companyForm.state} onChange={(e) => setCompanyForm({ ...companyForm, state: e.target.value })} />
+                  <Input label="Country" value={companyForm.country} onChange={(e) => setCompanyForm({ ...companyForm, country: e.target.value })} />
+                  <Input label="Postal Code" value={companyForm.postal_code} onChange={(e) => setCompanyForm({ ...companyForm, postal_code: e.target.value })} />
                 </div>
+              </div>
 
               <div className="flex justify-end gap-4 pt-6">
                 <button onClick={() => setShowCompanyModal(false)} className="px-8 py-4 text-sm font-medium text-gray-600 hover:text-black transition">Discard Changes</button>

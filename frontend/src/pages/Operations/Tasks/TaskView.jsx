@@ -22,9 +22,11 @@ import apiClient from "../../../helpers/apiClient";
 import Loading from "../../../components/Loading";
 import toast from "react-hot-toast";
 import Input from "../../../components/Input";
+import { usePermission } from "../../../context/PermissionContext";
 
 const TasksPage = () => {
   const navigate = useNavigate();
+  const { hasPermission } = usePermission();
   const location = useLocation();
 
   const [tasks, setTasks] = useState([]);
@@ -275,12 +277,14 @@ const TasksPage = () => {
         >
           Close
         </button>
-        <Link
-          to={`/operations/tasks/edit/${selectedTask.id}`}
-          className="px-6 py-2.5 bg-black text-white rounded-xl hover:bg-gray-900 transition font-medium text-sm flex items-center gap-2"
-        >
-          <MdEdit className="w-4 h-4" /> Edit Task
-        </Link>
+        {hasPermission("tasks", "edit") && (
+          <Link
+            to={`/operations/tasks/edit/${selectedTask.id}`}
+            className="px-6 py-2.5 bg-black text-white rounded-xl hover:bg-gray-900 transition font-medium text-sm flex items-center gap-2"
+          >
+            <MdEdit className="w-4 h-4" /> Edit Task
+          </Link>
+        )}
       </div>
     </div>
   );
@@ -318,12 +322,15 @@ const TasksPage = () => {
                   <p className="text-sm text-gray-600">Completed</p>
                 </div>
               </div>
-              <Link
-                to="/operations/tasks/new-task"
-                className="flex items-center gap-3 px-6 py-3 bg-black text-white rounded-xl hover:bg-gray-900 transition text-sm font-medium"
-              >
-                <MdAdd className="w-5 h-5" /> New Task
-              </Link>
+
+              {hasPermission("tasks", "add") && (
+                <Link
+                  to="/operations/tasks/new-task"
+                  className="flex items-center gap-3 px-6 py-3 bg-black text-white rounded-xl hover:bg-gray-900 transition text-sm font-medium"
+                >
+                  <MdAdd className="w-5 h-5" /> New Task
+                </Link>
+              )}
             </div>
           </div>
 
@@ -528,15 +535,21 @@ const TasksPage = () => {
                             {task.due_date ? new Date(task.due_date).toLocaleDateString("en-GB") : "No due date"}
                           </td>
                           <td className="px-6 py-5 whitespace-nowrap min-w-[180px]">
-                            <Input
-                              type="select"
-                              value={task.status}
-                              onChange={(val) => handleStatusChange(task.id, val)}
-                              options={statusOptions}
-                              className="text-xs font-medium"
-                            />
+                            {hasPermission("tasks", "edit") ? (
+                              <Input
+                                type="select"
+                                value={task.status}
+                                onChange={(val) => handleStatusChange(task.id, val)}
+                                options={statusOptions}
+                                className="text-xs font-medium"
+                              />
+                            ) : (
+                              <span className="text-xs font-medium px-3 py-1.5 bg-gray-100 rounded-full">
+                                {statusOptions.find(o => o.value === task.status)?.label || task.status}
+                              </span>
+                            )}
                           </td>
-                          <td className="px-6 py-5 whitespace-nowrap">
+                          <td className="px-6 py-5 whitespace-nowrap text-right">
                             <div className="flex items-center justify-end gap-3">
                               <button
                                 onClick={() => {
@@ -547,12 +560,16 @@ const TasksPage = () => {
                               >
                                 <MdVisibility className="w-5 h-5 text-gray-600 group-hover:text-blue-600" />
                               </button>
-                              <Link
-                                to={`/operations/tasks/edit/${task.id}`}
-                                className="p-2 hover:bg-amber-50 rounded-lg transition group"
-                              >
-                                <MdEdit className="w-5 h-5 text-gray-600 group-hover:text-amber-600" />
-                              </Link>
+
+                              {hasPermission("tasks", "edit") && (
+                                <Link
+                                  to={`/operations/tasks/edit/${task.id}`}
+                                  className="p-2 hover:bg-amber-50 rounded-lg transition group"
+                                >
+                                  <MdEdit className="w-5 h-5 text-gray-600 group-hover:text-amber-600" />
+                                </Link>
+                              )}
+
                               <button
                                 onClick={() => togglePinTask(task)}
                                 className="p-2 hover:bg-yellow-50 rounded-lg transition group"
@@ -562,20 +579,23 @@ const TasksPage = () => {
                                     } group-hover:text-yellow-600`}
                                 />
                               </button>
-                              <button
-                                onClick={async () => {
-                                  if (window.confirm("Archive this task?")) {
-                                    try {
-                                      await apiClient.delete(`/operation/tasks/${task.id}/`);
-                                      toast.success("Task archived");
-                                      fetchTasks();
-                                    } catch (err) { toast.error("Archive failed"); }
-                                  }
-                                }}
-                                className="p-2 hover:bg-red-50 rounded-lg transition group"
-                              >
-                                <MdDelete className="w-5 h-5 text-gray-600 group-hover:text-red-600" />
-                              </button>
+
+                              {hasPermission("tasks", "delete") && (
+                                <button
+                                  onClick={async () => {
+                                    if (window.confirm("Archive this task?")) {
+                                      try {
+                                        await apiClient.delete(`/operation/tasks/${task.id}/`);
+                                        toast.success("Task archived");
+                                        fetchTasks();
+                                      } catch (err) { toast.error("Archive failed"); }
+                                    }
+                                  }}
+                                  className="p-2 hover:bg-red-50 rounded-lg transition group"
+                                >
+                                  <MdDelete className="w-5 h-5 text-gray-600 group-hover:text-red-600" />
+                                </button>
+                              )}
                             </div>
                           </td>
                         </motion.tr>
