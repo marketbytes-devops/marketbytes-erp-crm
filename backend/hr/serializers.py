@@ -296,6 +296,7 @@ class WorkSessionSerializer(serializers.ModelSerializer):
     duration = serializers.SerializerMethodField()
     total_hours = serializers.SerializerMethodField()
     productive_hours = serializers.SerializerMethodField()
+    break_hours = serializers.SerializerMethodField()
     
     class Meta:
         model = WorkSession
@@ -317,6 +318,37 @@ class WorkSessionSerializer(serializers.ModelSerializer):
 
     def get_productive_hours(self, obj):
         return self.get_total_hours(obj)
+
+    def get_break_hours(self, obj):
+        """Calculate total break hours for the employee on the date of this work session"""
+        if not obj.start_time:
+            return 0
+            
+        local_tz = timezone.get_current_timezone()
+        local_date = timezone.localtime(obj.start_time).date()
+        
+        start_of_day = datetime.combine(local_date, datetime.min.time())
+        end_of_day = datetime.combine(local_date, datetime.max.time())
+        
+        start_of_day = timezone.make_aware(start_of_day, local_tz)
+        end_of_day = timezone.make_aware(end_of_day, local_tz)
+        
+        break_sessions = BreakSession.objects.filter(
+            employee=obj.employee,
+            start_time__gte=start_of_day,
+            start_time__lte=end_of_day
+        )
+        
+        total_seconds = 0
+        now = timezone.now()
+        for session in break_sessions:
+            if session.end_time:
+                total_seconds += (session.end_time - session.start_time).total_seconds()
+            elif local_date == now.date():
+                total_seconds += (now - session.start_time).total_seconds()
+                
+        hours = total_seconds / 3600
+        return round(hours, 2)
 
 
 class BreakSessionSerializer(serializers.ModelSerializer):
