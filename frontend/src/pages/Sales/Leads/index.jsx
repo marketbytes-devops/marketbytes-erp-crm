@@ -16,11 +16,13 @@ import Input from "../../../components/Input";
 import apiClient from "../../../helpers/apiClient";
 import toast from "react-hot-toast";
 import Loading from "../../../components/Loading";
+import { usePermission } from "../../../context/PermissionContext";
 import jsPDF from "jspdf";
 import "jspdf-autotable";
 import * as XLSX from "xlsx";
 
 const Leads = () => {
+  const { hasPermission } = usePermission();
   const [leads, setLeads] = useState([]);
   const [filtered, setFiltered] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -381,12 +383,14 @@ const Leads = () => {
                 </div>
               </div>
 
-              <button
-                onClick={() => openModal()}
-                className="flex items-center gap-3 px-6 py-3.5 bg-black text-white rounded-xl hover:bg-gray-900 transition font-medium"
-              >
-                <MdAdd className="w-5 h-5" /> Add Lead
-              </button>
+              {hasPermission("leads", "add") && (
+                <button
+                  onClick={() => openModal()}
+                  className="flex items-center gap-3 px-6 py-3.5 bg-black text-white rounded-xl hover:bg-gray-900 transition font-medium"
+                >
+                  <MdAdd className="w-5 h-5" /> Add Lead
+                </button>
+              )}
             </div>
           </div>
         </div>
@@ -469,20 +473,24 @@ const Leads = () => {
                       <td className="px-6 py-5">{getStatusBadge(l.status)}</td>
                       <td className="px-6 py-5">
                         <div className="flex items-center justify-center gap-3">
-                          <button
-                            onClick={() => openModal(l)}
-                            className="p-2 hover:bg-amber-50 rounded-lg transition group"
-                            title="Edit"
-                          >
-                            <MdEdit className="w-5 h-5 text-gray-600 group-hover:text-amber-600" />
-                          </button>
-                          <button
-                            onClick={() => handleDelete(l.id)}
-                            className="p-2 hover:bg-red-50 rounded-lg transition group"
-                            title="Delete"
-                          >
-                            <MdDelete className="w-5 h-5 text-gray-600 group-hover:text-red-600" />
-                          </button>
+                          {hasPermission("leads", "edit") && (
+                            <button
+                              onClick={() => openModal(l)}
+                              className="p-2 hover:bg-amber-50 rounded-lg transition group"
+                              title="Edit"
+                            >
+                              <MdEdit className="w-5 h-5 text-gray-600 group-hover:text-amber-600" />
+                            </button>
+                          )}
+                          {hasPermission("leads", "delete") && (
+                            <button
+                              onClick={() => handleDelete(l.id)}
+                              className="p-2 hover:bg-red-50 rounded-lg transition group"
+                              title="Delete"
+                            >
+                              <MdDelete className="w-5 h-5 text-gray-600 group-hover:text-red-600" />
+                            </button>
+                          )}
                         </div>
                       </td>
                     </motion.tr>

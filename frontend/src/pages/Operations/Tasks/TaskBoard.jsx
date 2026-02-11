@@ -14,10 +14,11 @@ import LayoutComponents from "../../../components/LayoutComponents";
 import apiClient from "../../../helpers/apiClient";
 import Loading from "../../../components/Loading";
 import toast from "react-hot-toast";
-import Input from "../../../components/Input";
 import { Link } from "react-router-dom";
+import { usePermission } from "../../../context/PermissionContext";
 
 const TaskBoardPage = () => {
+  const { hasPermission } = usePermission();
   const [loading, setLoading] = useState(true);
   const [tasks, setTasks] = useState([]);
   const [projects, setProjects] = useState([]);
@@ -201,12 +202,15 @@ const TaskBoardPage = () => {
                   <p className="text-sm text-gray-600">Done</p>
                 </div>
               </div>
-              <Link
-                to="/operations/tasks/new-task"
-                className="flex items-center gap-3 px-6 py-3 bg-black text-white rounded-xl hover:bg-gray-900 transition text-sm font-medium"
-              >
-                <MdAdd className="w-5 h-5" /> New Task
-              </Link>
+
+              {hasPermission("tasks", "add") && (
+                <Link
+                  to="/operations/tasks/new-task"
+                  className="flex items-center gap-3 px-6 py-3 bg-black text-white rounded-xl hover:bg-gray-900 transition text-sm font-medium"
+                >
+                  <MdAdd className="w-5 h-5" /> New Task
+                </Link>
+              )}
             </div>
           </div>
 
@@ -355,11 +359,17 @@ const TaskBoardPage = () => {
                           )}
                         </div>
 
-                        <Link to={`/operations/tasks/edit/${task.id}`}>
-                          <h4 className="font-medium text-gray-900 mb-2 leading-snug hover:text-blue-600 transition">
+                        {hasPermission("tasks", "edit") ? (
+                          <Link to={`/operations/tasks/edit/${task.id}`}>
+                            <h4 className="font-medium text-gray-900 mb-2 leading-snug hover:text-blue-600 transition">
+                              {task.name}
+                            </h4>
+                          </Link>
+                        ) : (
+                          <h4 className="font-medium text-gray-900 mb-2 leading-snug">
                             {task.name}
                           </h4>
-                        </Link>
+                        )}
 
                         <div className="flex items-center justify-between mt-4">
                           <div className="flex items-center gap-2 text-xs text-gray-500 font-medium">

@@ -27,47 +27,17 @@ import {
 } from "react-icons/md";
 import { SiDraugiemdotlv } from "react-icons/si";
 import logo from "../../../assets/images/img-logo.png";
-import apiClient from "../../../helpers/apiClient";
+import { usePermission } from "../../../context/PermissionContext";
 
 const Sidebar = ({ toggleSidebar }) => {
   const location = useLocation();
+  const { hasPermission, isLoaded } = usePermission();
 
   const [isHROpen, setIsHROpen] = useState(false);
   const [isOperationOpen, setOperationOpen] = useState(false);
   const [isTasksOpen, setTasksOpen] = useState(false);
   const [isUserRolesOpen, setIsUserRolesOpen] = useState(false);
-  const [permissions, setPermissions] = useState([]);
-  const [isSuperadmin, setIsSuperadmin] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
   const [isSalesOpen, setSalesOpen] = useState(false);
-
-  useEffect(() => {
-    const fetchProfile = async () => {
-      try {
-        const response = await apiClient.get("/auth/profile/");
-        const user = response.data;
-        setIsSuperadmin(user.is_superuser || user.role?.name === "Superadmin");
-
-        // Use effective_permissions which includes role perms + direct perms + overrides
-        setPermissions(user.effective_permissions || {});
-      } catch (error) {
-        console.error("Failed to load user profile or permissions:", error);
-        setPermissions({});
-        setIsSuperadmin(false);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    fetchProfile();
-  }, []);
-
-  const hasPermission = (page, action) => {
-    if (isSuperadmin) return true;
-
-    // permissions is now an object { pageName: { can_view: bool, ... } }
-    const pagePerms = permissions[page];
-    return pagePerms && pagePerms[`can_${action}`];
-  };
 
   const isMobile = () => window.innerWidth < 768;
 
@@ -300,7 +270,7 @@ const Sidebar = ({ toggleSidebar }) => {
     return hasPermission(item.page, item.action);
   });
 
-  if (isLoading) {
+  if (!isLoaded) {
     return (
       <div
         className="fixed inset-y-0 left-0 w-72 bg-white shadow-inner z-50 flex flex-col"

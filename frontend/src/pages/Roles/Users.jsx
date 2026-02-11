@@ -5,6 +5,7 @@ import { Search, Trash2, Edit, Loader2, X, UserPlus, Shield, ShieldAlert, CheckC
 import apiClient from "../../helpers/apiClient";
 import Input from "../../components/Input";
 import PermissionMatrix from "../../components/PermissionMatrix";
+import { usePermission } from "../../context/PermissionContext";
 
 const pageNameMap = {
   // Common / Home
@@ -46,14 +47,12 @@ const pageNameMap = {
 };
 
 const Users = () => {
+  const { hasPermission, isSuperadmin } = usePermission();
   const [users, setUsers] = useState([]);
   const [roles, setRoles] = useState([]);
   const [editUser, setEditUser] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [isLoading, setIsLoading] = useState(true);
-  const [isSuperadmin, setIsSuperadmin] = useState(false);
-  const [effectivePermissions, setEffectivePermissions] = useState({});
-  const [isLoadingProfile, setIsLoadingProfile] = useState(true);
 
   // Form States (Manual Control)
   const [createFormValues, setCreateFormValues] = useState({
@@ -85,30 +84,11 @@ const Users = () => {
   const [isEditing, setIsEditing] = useState(false);
 
   useEffect(() => {
-    const fetchProfile = async () => {
-      try {
-        const response = await apiClient.get("/auth/profile/");
-        const user = response.data;
-        setIsSuperadmin(user.is_superuser || user.role?.name === "Superadmin");
-        setEffectivePermissions(user.effective_permissions || {});
-      } catch (err) {
-        console.error(err);
-        setEffectivePermissions({});
-        setIsSuperadmin(false);
-      } finally {
-        setIsLoadingProfile(false);
-      }
-    };
-    fetchProfile();
     fetchUsers();
     fetchRoles();
   }, []);
 
-  const hasPermission = (page, action) => {
-    if (isSuperadmin) return true;
-    const pagePerms = effectivePermissions[page];
-    return pagePerms && pagePerms[`can_${action}`];
-  };
+
 
   const fetchUsers = async () => {
     setIsLoading(true);
@@ -280,7 +260,7 @@ const Users = () => {
     return matchesSearch;
   });
 
-  if (isLoading || isLoadingProfile) {
+  if (isLoading) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen">
         <Loader2 className="w-12 h-12 animate-spin text-gray-600" />
@@ -435,29 +415,25 @@ const Users = () => {
                       </td>
                       <td className="px-6 py-4">
                         <div className="flex items-center justify-end gap-3">
-                          <button
-                            onClick={() => openEditModal(user)}
-                            disabled={!hasPermission("users", "edit")}
-                            className={`p-2 rounded-lg transition-colors ${hasPermission("users", "edit")
-                              ? "text-gray-600 hover:bg-black hover:text-white"
-                              : "text-gray-300 cursor-not-allowed"
-                              }`}
-                            title="Edit User"
-                          >
-                            <Edit className="w-5 h-5" />
-                          </button>
+                          {hasPermission("users", "edit") && (
+                            <button
+                              onClick={() => openEditModal(user)}
+                              className="p-2 rounded-lg text-gray-600 hover:bg-black hover:text-white transition-colors"
+                              title="Edit User"
+                            >
+                              <Edit className="w-5 h-5" />
+                            </button>
+                          )}
 
-                          <button
-                            onClick={() => handleDeleteUser(user.id)}
-                            disabled={!hasPermission("users", "delete")}
-                            className={`p-2 rounded-lg transition-colors ${hasPermission("users", "delete")
-                              ? "text-red-600 hover:bg-red-600 hover:text-white"
-                              : "text-gray-300 cursor-not-allowed"
-                              }`}
-                            title="Delete User"
-                          >
-                            <Trash2 className="w-5 h-5" />
-                          </button>
+                          {hasPermission("users", "delete") && (
+                            <button
+                              onClick={() => handleDeleteUser(user.id)}
+                              className="p-2 rounded-lg text-red-600 hover:bg-red-600 hover:text-white transition-colors"
+                              title="Delete User"
+                            >
+                              <Trash2 className="w-5 h-5" />
+                            </button>
+                          )}
                         </div>
                       </td>
                     </tr>

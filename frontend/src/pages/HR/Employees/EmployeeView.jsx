@@ -8,8 +8,8 @@ import apiClient from "../../../helpers/apiClient";
 import Loading from "../../../components/Loading";
 import toast from "react-hot-toast";
 import Input from "../../../components/Input";
-import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
+import { usePermission } from "../../../context/PermissionContext";
 
 const EmployeeView = () => {
   const [employees, setEmployees] = useState([]);
@@ -17,7 +17,8 @@ const EmployeeView = () => {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [filtersOpen, setFiltersOpen] = useState(false);
-const [showExport, setShowExport] = useState(false);
+  const [showExport, setShowExport] = useState(false);
+  const { hasPermission } = usePermission();
 
   const [filters, setFilters] = useState({
     status: "",
@@ -33,91 +34,91 @@ const [showExport, setShowExport] = useState(false);
   const [allSkills, setAllSkills] = useState([]);
   const [designations, setDesignations] = useState([]);
 
-  
-const exportCSV = () => {
-  if (!filtered.length) {
-    toast.error("No employees to export");
-    return;
-  }
 
-  const headers = [
-    "Employee ID",
-    "Name",
-    "Email",
-    "Department",
-    "Role",
-    "Status"
-  ];
+  const exportCSV = () => {
+    if (!filtered.length) {
+      toast.error("No employees to export");
+      return;
+    }
 
-  const rows = filtered.map(emp => [
-    emp.employee_id || "",
-    emp.name || "",
-    emp.email || "",
-    emp.department?.name || "",
-    emp.role?.name || "",
-    emp.status || ""
-  ]);
+    const headers = [
+      "Employee ID",
+      "Name",
+      "Email",
+      "Department",
+      "Role",
+      "Status"
+    ];
 
-  const csv =
-    [headers, ...rows]
-      .map(row => row.map(v => `"${v}"`).join(","))
-      .join("\n");
+    const rows = filtered.map(emp => [
+      emp.employee_id || "",
+      emp.name || "",
+      emp.email || "",
+      emp.department?.name || "",
+      emp.role?.name || "",
+      emp.status || ""
+    ]);
 
-  const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-  const url = URL.createObjectURL(blob);
+    const csv =
+      [headers, ...rows]
+        .map(row => row.map(v => `"${v}"`).join(","))
+        .join("\n");
 
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = "employees.csv";
-  a.click();
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
 
-  URL.revokeObjectURL(url);
-  setShowExport(false);
-};
-const exportPDF = () => {
-  if (!filtered.length) {
-    toast.error("No employees to export");
-    return;
-  }
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "employees.csv";
+    a.click();
 
-  const doc = new jsPDF({
-    orientation: "landscape",
-    unit: "pt",
-    format: "a4",
-  });
+    URL.revokeObjectURL(url);
+    setShowExport(false);
+  };
+  const exportPDF = () => {
+    if (!filtered.length) {
+      toast.error("No employees to export");
+      return;
+    }
 
-  doc.setFontSize(18);
-  doc.text("Employee List", 40, 40);
+    const doc = new jsPDF({
+      orientation: "landscape",
+      unit: "pt",
+      format: "a4",
+    });
 
-  const columns = [
-    "Employee ID",
-    "Name",
-    "Email",
-    "Department",
-    "Role",
-    "Status",
-  ];
+    doc.setFontSize(18);
+    doc.text("Employee List", 40, 40);
 
-  const rows = filtered.map((emp) => [
-    emp.employee_id || "-",
-    emp.name || "-",
-    emp.email || "-",
-    emp.department?.name || "-",
-    emp.role?.name || "-",
-    emp.status || "-",
-  ]);
+    const columns = [
+      "Employee ID",
+      "Name",
+      "Email",
+      "Department",
+      "Role",
+      "Status",
+    ];
 
-  autoTable(doc, {
-    head: [columns],
-    body: rows,
-    startY: 70,
-    styles: { fontSize: 10 },
-    headStyles: { fillColor: [0, 0, 0] },
-  });
+    const rows = filtered.map((emp) => [
+      emp.employee_id || "-",
+      emp.name || "-",
+      emp.email || "-",
+      emp.department?.name || "-",
+      emp.role?.name || "-",
+      emp.status || "-",
+    ]);
 
-  doc.save("employees.pdf");
-  setShowExport(false);
-};
+    autoTable(doc, {
+      head: [columns],
+      body: rows,
+      startY: 70,
+      styles: { fontSize: 10 },
+      headStyles: { fillColor: [0, 0, 0] },
+    });
+
+    doc.save("employees.pdf");
+    setShowExport(false);
+  };
 
   useEffect(() => {
     const fetchAll = async () => {
@@ -250,55 +251,57 @@ const exportPDF = () => {
 
               <div className="flex gap-3">
                 <div className="relative">
-  <button
-    onClick={() => setShowExport(prev => !prev)}
-    className="flex items-center gap-2 px-5 py-4 border border-gray-300 rounded-xl hover:bg-gray-50 transition text-sm font-medium"
-  >
-    <MdDownload className="w-5 h-5" />
-    Export
-    <MdKeyboardArrowDown className="w-4 h-4" />
-  </button>
+                  <button
+                    onClick={() => setShowExport(prev => !prev)}
+                    className="flex items-center gap-2 px-5 py-4 border border-gray-300 rounded-xl hover:bg-gray-50 transition text-sm font-medium"
+                  >
+                    <MdDownload className="w-5 h-5" />
+                    Export
+                    <MdKeyboardArrowDown className="w-4 h-4" />
+                  </button>
 
-  <AnimatePresence>
-    {showExport && (
-      <motion.div
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        exit={{ opacity: 0, y: 10 }}
-        className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-xl shadow-lg z-50"
-      >
-        <button
-          onClick={exportCSV}
-          className="w-full text-left px-4 py-3 hover:bg-gray-50 text-sm"
-        >
-          Export CSV
-        </button>
+                  <AnimatePresence>
+                    {showExport && (
+                      <motion.div
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: 10 }}
+                        className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-xl shadow-lg z-50"
+                      >
+                        <button
+                          onClick={exportCSV}
+                          className="w-full text-left px-4 py-3 hover:bg-gray-50 text-sm"
+                        >
+                          Export CSV
+                        </button>
 
-        <button
-          onClick={exportCSV}
-          className="w-full text-left px-4 py-3 hover:bg-gray-50 text-sm"
-        >
-          Export Excel
-        </button>
+                        <button
+                          onClick={exportCSV}
+                          className="w-full text-left px-4 py-3 hover:bg-gray-50 text-sm"
+                        >
+                          Export Excel
+                        </button>
 
-      <button
-  onClick={exportPDF}
-  className="w-full text-left px-4 py-3 hover:bg-gray-50 text-sm"
->
-  Export PDF
-</button>
+                        <button
+                          onClick={exportPDF}
+                          className="w-full text-left px-4 py-3 hover:bg-gray-50 text-sm"
+                        >
+                          Export PDF
+                        </button>
 
-      </motion.div>
-    )}
-  </AnimatePresence>
-</div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
 
-                <Link
-                  to="/hr/employees/create"
-                  className="flex items-center gap-3 px-6 py-3 bg-black text-white rounded-xl hover:bg-gray-900 transition text-sm font-medium"
-                >
-                  <MdAdd className="w-5 h-5" /> Add Employee
-                </Link>
+                {hasPermission("employees", "add") && (
+                  <Link
+                    to="/hr/employees/create"
+                    className="flex items-center gap-3 px-6 py-3 bg-black text-white rounded-xl hover:bg-gray-900 transition text-sm font-medium"
+                  >
+                    <MdAdd className="w-5 h-5" /> Add Employee
+                  </Link>
+                )}
               </div>
             </div>
           </div>
@@ -510,12 +513,18 @@ const exportPDF = () => {
                             <Link to={`/hr/employees/${emp.id}`} className="p-2 hover:bg-blue-50 rounded-lg transition group">
                               <MdVisibility className="w-5 h-5 text-gray-600 group-hover:text-blue-600" />
                             </Link>
-                            <Link to={`/hr/employees/${emp.id}/edit`} className="p-2 hover:bg-amber-50 rounded-lg transition group">
-                              <MdEdit className="w-5 h-5 text-gray-600 group-hover:text-amber-600" />
-                            </Link>
-                            <button onClick={() => handleDelete(emp.id)} className="p-2 hover:bg-red-50 rounded-lg transition group">
-                              <MdDelete className="w-5 h-5 text-gray-600 group-hover:text-red-600" />
-                            </button>
+
+                            {hasPermission("employees", "edit") && (
+                              <Link to={`/hr/employees/${emp.id}/edit`} className="p-2 hover:bg-amber-50 rounded-lg transition group">
+                                <MdEdit className="w-5 h-5 text-gray-600 group-hover:text-amber-600" />
+                              </Link>
+                            )}
+
+                            {hasPermission("employees", "delete") && (
+                              <button onClick={() => handleDelete(emp.id)} className="p-2 hover:bg-red-50 rounded-lg transition group">
+                                <MdDelete className="w-5 h-5 text-gray-600 group-hover:text-red-600" />
+                              </button>
+                            )}
                           </div>
                         </td>
                       </motion.tr>

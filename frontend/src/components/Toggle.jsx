@@ -1,5 +1,3 @@
-import React from 'react';
-
 const Toggle = ({ enabled, onChange, disabled = false }) => {
     return (
         <button

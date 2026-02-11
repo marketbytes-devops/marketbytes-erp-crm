@@ -19,9 +19,11 @@ import apiClient from "../../../helpers/apiClient";
 import toast from "react-hot-toast";
 import Input from "../../../components/Input";
 import Loading from "../../../components/Loading";
+import { usePermission } from "../../../context/PermissionContext";
 
 const ProjectsView = () => {
   const navigate = useNavigate();
+  const { hasPermission } = usePermission();
 
   const [projects, setProjects] = useState([]);
   const [filtered, setFiltered] = useState([]);
@@ -293,12 +295,14 @@ const ProjectsView = () => {
                   <p className="text-sm text-gray-600">Completed</p>
                 </div>
               </div>
-              <Link
-                to="/operations/projects/projectcreate"
-                className="flex items-center gap-3 px-6 py-3 bg-black text-white rounded-xl hover:bg-gray-900 transition text-sm font-medium"
-              >
-                <MdAdd className="w-5 h-5" /> Add New Project
-              </Link>
+              {hasPermission("projects", "add") && (
+                <Link
+                  to="/operations/projects/projectcreate"
+                  className="flex items-center gap-3 px-6 py-3 bg-black text-white rounded-xl hover:bg-gray-900 transition text-sm font-medium"
+                >
+                  <MdAdd className="w-5 h-5" /> Add New Project
+                </Link>
+              )}
             </div>
           </div>
 
@@ -593,20 +597,26 @@ const ProjectsView = () => {
                             </div>
                           </td>
                           <td className="px-6 py-5 whitespace-nowrap min-w-[180px]">
-                            <Input
-                              type="select"
-                              value={project.status_id ? project.status_id.toString() : ""}
-                              onChange={(val) => handleStatusChange(project.id, val)}
-                              options={[
-                                { label: "Not Started", value: "" },
-                                ...statuses
-                                  .filter(s => s.name.toLowerCase() !== "not started")
-                                  .map((s) => ({ label: s.name, value: s.id.toString() })),
-                              ]}
-                              className="text-xs font-medium"
-                            />
+                            {hasPermission("projects", "edit") ? (
+                              <Input
+                                type="select"
+                                value={project.status_id ? project.status_id.toString() : ""}
+                                onChange={(val) => handleStatusChange(project.id, val)}
+                                options={[
+                                  { label: "Not Started", value: "" },
+                                  ...statuses
+                                    .filter(s => s.name.toLowerCase() !== "not started")
+                                    .map((s) => ({ label: s.name, value: s.id.toString() })),
+                                ]}
+                                className="text-xs font-medium"
+                              />
+                            ) : (
+                              <span className="text-xs font-medium px-3 py-1.5 bg-gray-100 rounded-full">
+                                {project.status?.name || "Not Started"}
+                              </span>
+                            )}
                           </td>
-                          <td className="px-6 py-5 whitespace-nowrap">
+                          <td className="px-6 py-5 whitespace-nowrap text-right">
                             <div className="flex items-center justify-end gap-3">
                               <Link
                                 to={`/operations/projects/${project.id}`}
@@ -614,12 +624,16 @@ const ProjectsView = () => {
                               >
                                 <MdVisibility className="w-5 h-5 text-gray-600 group-hover:text-blue-600" />
                               </Link>
-                              <Link
-                                to={`/operations/projects/edit/${project.id}`}
-                                className="p-2 hover:bg-amber-50 rounded-lg transition group"
-                              >
-                                <MdEdit className="w-5 h-5 text-gray-600 group-hover:text-amber-600" />
-                              </Link>
+
+                              {hasPermission("projects", "edit") && (
+                                <Link
+                                  to={`/operations/projects/edit/${project.id}`}
+                                  className="p-2 hover:bg-amber-50 rounded-lg transition group"
+                                >
+                                  <MdEdit className="w-5 h-5 text-gray-600 group-hover:text-amber-600" />
+                                </Link>
+                              )}
+
                               <button
                                 onClick={() => togglePin(project)}
                                 className="p-2 hover:bg-yellow-50 rounded-lg transition group"
@@ -629,21 +643,27 @@ const ProjectsView = () => {
                                     } group-hover:text-yellow-600`}
                                 />
                               </button>
-                              <button
-                                onClick={() => handleArchive(project.id)}
-                                className="p-2 hover:bg-red-50 rounded-lg transition group"
-                              >
-                                <MdArchive className="w-5 h-5 text-gray-600 group-hover:text-red-600" />
-                              </button>
-                              <button
-                                onClick={() =>
-                                  window.confirm("Permanently delete this project?") &&
-                                  toast.error("Permanent delete not implemented")
-                                }
-                                className="p-2 hover:bg-red-50 rounded-lg transition group"
-                              >
-                                <MdDelete className="w-5 h-5 text-gray-600 group-hover:text-red-600" />
-                              </button>
+
+                              {hasPermission("projects", "edit") && (
+                                <button
+                                  onClick={() => handleArchive(project.id)}
+                                  className="p-2 hover:bg-red-50 rounded-lg transition group"
+                                >
+                                  <MdArchive className="w-5 h-5 text-gray-600 group-hover:text-red-600" />
+                                </button>
+                              )}
+
+                              {hasPermission("projects", "delete") && (
+                                <button
+                                  onClick={() =>
+                                    window.confirm("Permanently delete this project?") &&
+                                    toast.error("Permanent delete not implemented")
+                                  }
+                                  className="p-2 hover:bg-red-50 rounded-lg transition group"
+                                >
+                                  <MdDelete className="w-5 h-5 text-gray-600 group-hover:text-red-600" />
+                                </button>
+                              )}
                             </div>
                           </td>
                         </motion.tr>
