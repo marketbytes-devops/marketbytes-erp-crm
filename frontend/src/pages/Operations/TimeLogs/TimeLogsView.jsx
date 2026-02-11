@@ -166,14 +166,15 @@ const TimeLogs = () => {
                 `${entry.productive_hours}h`
             ]);
         } else {
-            headers = ['ID', 'Task/Project', 'Employee', 'Start Time', 'End Time', 'Duration'];
+            headers = ['ID', 'Task/Project', 'Employee', 'Start Time', 'End Time', 'Duration', 'Break Timer'];
             tableData = filteredEntries.map(entry => [
                 `#${entry.id}`,
                 `${entry.task_name || 'Internal'} / ${entry.project_name || 'General'}`,
                 entry.employee?.name || 'Unknown',
                 formatTime(entry.start_time),
                 formatTime(entry.end_time),
-                `${entry.total_hours}h`
+                `${entry.total_hours}h`,
+                `${entry.break_hours || 0}h`
             ]);
         }
         
@@ -232,6 +233,7 @@ const TimeLogs = () => {
                 'End Time': formatTime(entry.end_time),
                 'End Date': formatDate(entry.end_time || entry.start_time),
                 'Duration': `${entry.total_hours}h`,
+                'Break Timer': `${entry.break_hours || 0}h`,
                 'Memo': entry.memo || 'N/A',
                 'Type': entry.is_billable ? 'Billable' : 'Internal'
             }));
@@ -243,7 +245,7 @@ const TimeLogs = () => {
         // Set column widths
         const colWidths = viewMode === 'daily' 
             ? [{ wch: 8 }, { wch: 20 }, { wch: 25 }, { wch: 12 }, { wch: 15 }, { wch: 15 }, { wch: 12 }, { wch: 15 }, { wch: 30 }, { wch: 30 }, { wch: 12 }]
-            : [{ wch: 8 }, { wch: 25 }, { wch: 20 }, { wch: 20 }, { wch: 25 }, { wch: 12 }, { wch: 12 }, { wch: 12 }, { wch: 12 }, { wch: 12 }, { wch: 30 }, { wch: 12 }];
+            : [{ wch: 8 }, { wch: 25 }, { wch: 20 }, { wch: 20 }, { wch: 25 }, { wch: 12 }, { wch: 12 }, { wch: 12 }, { wch: 12 }, { wch: 12 }, { wch: 12 }, { wch: 30 }, { wch: 12 }];
         ws['!cols'] = colWidths;
         
         // Create workbook
@@ -555,6 +557,9 @@ const TimeLogs = () => {
                                         <th className="px-6 py-5 text-left text-xs font-medium text-gray-700 uppercase tracking-wider whitespace-nowrap">Start Time</th>
                                         <th className="px-6 py-5 text-left text-xs font-medium text-gray-700 uppercase tracking-wider whitespace-nowrap">End Time</th>
                                         <th className="px-6 py-5 text-left text-xs font-medium text-gray-700 uppercase tracking-wider whitespace-nowrap">Duration</th>
+                                        {viewMode === "detailed" && (
+                                            <th className="px-6 py-5 text-left text-xs font-medium text-gray-700 uppercase tracking-wider whitespace-nowrap">Break Timer</th>
+                                        )}
                                         <th className="px-6 py-5 text-left text-xs font-medium text-gray-700 uppercase tracking-wider whitespace-nowrap">Productive Hours</th>
                                         <th className="px-6 py-5 text-left text-xs font-medium text-gray-700 uppercase tracking-wider whitespace-nowrap">Type</th>
                                         <th className="px-6 py-5 text-right text-xs font-medium text-gray-700 uppercase tracking-wider whitespace-nowrap">Actions</th>
@@ -563,7 +568,7 @@ const TimeLogs = () => {
                                 <tbody className="divide-y divide-gray-200">
                                     {filteredEntries.length === 0 ? (
                                         <tr>
-                                            <td colSpan="9" className="text-center py-24">
+                                            <td colSpan={viewMode === "detailed" ? "10" : "9"} className="text-center py-24">
                                                 <div className="flex flex-col items-center">
                                                     <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mb-5">
                                                         <MdTimer className="w-10 h-10 text-gray-400" />
@@ -632,6 +637,11 @@ const TimeLogs = () => {
                                                 <td className="px-6 py-5 whitespace-nowrap">
                                                     <span className="text-sm font-medium text-gray-900">{entry.total_hours}h</span>
                                                 </td>
+                                                {viewMode === "detailed" && (
+                                                    <td className="px-6 py-5 whitespace-nowrap">
+                                                        <span className="text-sm font-medium text-orange-600">{entry.break_hours || 0}h</span>
+                                                    </td>
+                                                )}
                                                 <td className="px-6 py-5 whitespace-nowrap">
                                                     <span className="text-sm font-medium text-blue-600">{entry.productive_hours || 0}h</span>
                                                 </td>
