@@ -29,9 +29,17 @@ class AttendanceViewSet(viewsets.ModelViewSet):
         
         month = self.request.query_params.get('month')
         year = self.request.query_params.get('year')
+        employee_id = self.request.query_params.get('employee_id')
+        department_id = self.request.query_params.get('department_id')
         
         if month and year:
             queryset = queryset.filter(date__month=month, date__year=year)
+            
+        if employee_id:
+            queryset = queryset.filter(employee_id=employee_id)
+            
+        if department_id:
+            queryset = queryset.filter(employee__department_id=department_id)
         
         if user.is_superuser or (getattr(user, 'role', None) and user.role.name == "Superadmin"):
             return queryset
@@ -586,6 +594,21 @@ class OvertimeViewSet(viewsets.ModelViewSet):
         
         message = f"Overtime sync complete for {len(date_list)} day(s). Found {count_updated} overtime record(s)."
         return Response({"message": message, "updated_count": count_updated})
+
+    @action(detail=False, methods=['get'])
+    def available_years(self, request):
+        """Get list of years for selection, starting from 2020 to current + 5"""
+        current_year = timezone.now().year
+        # Generate range from 2020 to current_year + 5
+        range_years = list(range(2020, current_year + 6))
+        
+        # Include any actual years with data that might be outside this range
+        data_years = Overtime.objects.dates('date', 'year')
+        data_year_list = [date.year for date in data_years]
+        
+        final_years = sorted(list(set(range_years + data_year_list)), reverse=True)
+            
+        return Response([{"value": y, "label": str(y)} for y in final_years])
 
 class CandidateViewSet(viewsets.ModelViewSet):
     queryset = Candidate.objects.all().select_related('department')
