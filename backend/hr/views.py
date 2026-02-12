@@ -793,7 +793,7 @@ class WorkSessionViewSet(viewsets.ModelViewSet):
     queryset = WorkSession.objects.all().select_related('employee', 'project', 'task').order_by('-start_time')
     serializer_class = WorkSessionSerializer
     permission_classes = [HasPermission]
-    page_name = 'time_logs'
+    page_name = 'timelogs'
 
     def get_queryset(self):
         user = self.request.user

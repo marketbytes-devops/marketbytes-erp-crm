@@ -17,6 +17,7 @@ const Select = forwardRef(
       placeholder = "Select an option",
       className,
       multiple = false,
+      disabled = false,
     },
     ref
   ) => {
@@ -71,6 +72,7 @@ const Select = forwardRef(
     };
 
     const handleRemove = (val) => {
+      if (disabled) return;
       onChange(value.filter((v) => v !== val));
     };
 
@@ -112,11 +114,12 @@ const Select = forwardRef(
         <button
           ref={triggerRef}
           type="button"
-          onClick={() => setIsOpen(!isOpen)}
+          onClick={() => !disabled && setIsOpen(!isOpen)}
+          disabled={disabled}
           className={cn(
             "w-full px-4 py-3 border rounded-lg flex items-center justify-between text-left transition-all",
-            "focus:ring focus:ring-black focus:border-black outline-none",
-            "border-gray-600 hover:border-gray-800",
+            !disabled && "focus:ring focus:ring-black focus:border-black outline-none border-gray-600 hover:border-gray-800",
+            disabled && "bg-gray-100 text-gray-400 cursor-not-allowed border-gray-200",
             className
           )}
         >
@@ -182,6 +185,7 @@ const Input = forwardRef(
       value,
       onChange,
       required,
+      disabled,
       ...props
     },
     ref
@@ -211,6 +215,7 @@ const Input = forwardRef(
             onChange={onChange}
             placeholder={placeholder}
             multiple={props.multiple}
+            disabled={disabled}
             className={cn(
               hasError &&
               "border-red-500 focus:ring-red-500 focus:border-red-500"

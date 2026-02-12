@@ -23,8 +23,10 @@ import Loading from "../../../components/Loading";
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
 import * as XLSX from "xlsx";
+import { usePermission } from "../../../context/PermissionContext";
 
 const TimeLogs = () => {
+    const { hasPermission } = usePermission();
     const [loading, setLoading] = useState(true);
     const [timeEntries, setTimeEntries] = useState([]);
     const [search, setSearch] = useState("");
@@ -47,7 +49,7 @@ const TimeLogs = () => {
 
     const [selectedEntry, setSelectedEntry] = useState(null);
     const [isViewModalOpen, setIsViewModalOpen] = useState(false);
-    
+
     // Export dropdown state
     const [exportDropdownOpen, setExportDropdownOpen] = useState(false);
     const exportDropdownRef = useRef(null);
@@ -102,7 +104,7 @@ const TimeLogs = () => {
     useEffect(() => {
         fetchData();
     }, []);
-    
+
     // Close export dropdown when clicking outside
     useEffect(() => {
         const handleClickOutside = (event) => {
@@ -130,14 +132,14 @@ const TimeLogs = () => {
         setSelectedEntry(entry);
         setIsViewModalOpen(true);
     };
-    
+
     const handleExportPDF = () => {
         const doc = new jsPDF();
-        
+
         // Add title
         doc.setFontSize(18);
         doc.text(`Time Logs Report - ${viewMode === 'daily' ? 'Daily Summary' : 'Detailed Logs'}`, 14, 20);
-        
+
         // Add filters info
         doc.setFontSize(10);
         let yPos = 30;
@@ -151,7 +153,7 @@ const TimeLogs = () => {
             doc.text(`Employee: ${emp?.name || emp?.email || 'N/A'}`, 14, yPos);
             yPos += 6;
         }
-        
+
         // Prepare table data based on view mode
         let tableData, headers;
         if (viewMode === 'daily') {
@@ -177,7 +179,7 @@ const TimeLogs = () => {
                 `${entry.break_hours || 0}h`
             ]);
         }
-        
+
         // Add table using autoTable
         autoTable(doc, {
             startY: yPos + 5,
@@ -187,7 +189,7 @@ const TimeLogs = () => {
             headStyles: { fillColor: [0, 0, 0] },
             styles: { fontSize: 9 }
         });
-        
+
         // Add footer
         const pageCount = doc.internal.getNumberOfPages();
         for (let i = 1; i <= pageCount; i++) {
@@ -199,11 +201,11 @@ const TimeLogs = () => {
                 doc.internal.pageSize.height - 10
             );
         }
-        
+
         doc.save(`time-logs-${viewMode}-${new Date().toISOString().split('T')[0]}.pdf`);
         setExportDropdownOpen(false);
     };
-    
+
     const handleExportExcel = () => {
         // Prepare data based on view mode
         let data;
@@ -238,20 +240,20 @@ const TimeLogs = () => {
                 'Type': entry.is_billable ? 'Billable' : 'Internal'
             }));
         }
-        
+
         // Create worksheet
         const ws = XLSX.utils.json_to_sheet(data);
-        
+
         // Set column widths
-        const colWidths = viewMode === 'daily' 
+        const colWidths = viewMode === 'daily'
             ? [{ wch: 8 }, { wch: 20 }, { wch: 25 }, { wch: 12 }, { wch: 15 }, { wch: 15 }, { wch: 12 }, { wch: 15 }, { wch: 30 }, { wch: 30 }, { wch: 12 }]
             : [{ wch: 8 }, { wch: 25 }, { wch: 20 }, { wch: 20 }, { wch: 25 }, { wch: 12 }, { wch: 12 }, { wch: 12 }, { wch: 12 }, { wch: 12 }, { wch: 12 }, { wch: 30 }, { wch: 12 }];
         ws['!cols'] = colWidths;
-        
+
         // Create workbook
         const wb = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(wb, ws, viewMode === 'daily' ? 'Daily Summary' : 'Detailed Logs');
-        
+
         // Save file
         XLSX.writeFile(wb, `time-logs-${viewMode}-${new Date().toISOString().split('T')[0]}.xlsx`);
         setExportDropdownOpen(false);
@@ -375,8 +377,8 @@ const TimeLogs = () => {
                             <button
                                 onClick={() => setViewMode("daily")}
                                 className={`px-5 py-2 rounded-lg text-sm font-medium transition-all ${viewMode === "daily"
-                                        ? "bg-white text-black shadow-sm"
-                                        : "text-gray-500 hover:text-gray-800"
+                                    ? "bg-white text-black shadow-sm"
+                                    : "text-gray-500 hover:text-gray-800"
                                     }`}
                             >
                                 Daily Summary
@@ -384,8 +386,8 @@ const TimeLogs = () => {
                             <button
                                 onClick={() => setViewMode("detailed")}
                                 className={`px-5 py-2 rounded-lg text-sm font-medium transition-all ${viewMode === "detailed"
-                                        ? "bg-white text-black shadow-sm"
-                                        : "text-gray-500 hover:text-gray-800"
+                                    ? "bg-white text-black shadow-sm"
+                                    : "text-gray-500 hover:text-gray-800"
                                     }`}
                             >
                                 Detailed Logs
@@ -445,7 +447,7 @@ const TimeLogs = () => {
                             </div>
 
                             <div className="relative" ref={exportDropdownRef}>
-                                <button 
+                                <button
                                     onClick={() => setExportDropdownOpen(!exportDropdownOpen)}
                                     className="flex items-center gap-2 px-5 py-3 border border-gray-300 rounded-xl hover:bg-gray-50 transition text-sm font-medium"
                                 >
@@ -667,13 +669,15 @@ const TimeLogs = () => {
                                                                 <MdVisibility className="w-5 h-5 text-gray-600 group-hover:text-blue-600" />
                                                             </button>
                                                         )}
-                                                        <button
-                                                            onClick={() => handleDelete(entry.id)}
-                                                            className="p-2 hover:bg-red-50 rounded-lg transition group"
-                                                            title="Delete Log"
-                                                        >
-                                                            <MdDelete className="w-5 h-5 text-gray-600 group-hover:text-red-600" />
-                                                        </button>
+                                                        {hasPermission("timelogs", "delete") && (
+                                                            <button
+                                                                onClick={() => handleDelete(entry.id)}
+                                                                className="p-2 hover:bg-red-50 rounded-lg transition group"
+                                                                title="Delete Log"
+                                                            >
+                                                                <MdDelete className="w-5 h-5 text-gray-600 group-hover:text-red-600" />
+                                                            </button>
+                                                        )}
                                                     </div>
                                                 </td>
                                             </motion.tr>

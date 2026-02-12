@@ -186,7 +186,7 @@ class ProjectViewSet(viewsets.ModelViewSet):
         queryset = Project.objects.all()
         user = self.request.user
 
-        if not user.is_superuser and not user.is_staff:
+        if not user.is_superuser and not user.is_staff and not (user.role and user.role.name == 'HR'):
             query = Q(members=user)
             if user.department:
                 query |= Q(department=user.department)
