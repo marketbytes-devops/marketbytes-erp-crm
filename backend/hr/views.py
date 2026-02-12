@@ -7,7 +7,15 @@ from django.utils import timezone
 from datetime import timedelta, datetime, time, timezone as dt_timezone
 from django.db.models import Q, Count, Exists, OuterRef
 from .models import Attendance, Holiday, LeaveType, Leave, Overtime, Candidate, Performance, Project, Task, WorkSession, BreakSession
+from .models import Attendance, Holiday, LeaveType, Leave, Overtime, Candidate, Performance, Project, Task, WorkSession, BreakSession
 from .serializers import *
+import csv
+from django.http import HttpResponse
+from openpyxl import Workbook
+from reportlab.lib.pagesizes import letter, landscape
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph
+from reportlab.lib.styles import getSampleStyleSheet
+from reportlab.lib import colors
 
 class AttendanceViewSet(viewsets.ModelViewSet):
     queryset = Attendance.objects.all().select_related('employee')
@@ -359,6 +367,87 @@ class HolidayViewSet(viewsets.ModelViewSet):
     serializer_class = HolidaySerializer
     permission_classes = [HasPermission]
     page_name = 'holidays'
+
+    @action(detail=False, methods=['get'])
+    def export_csv(self, request):
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = 'attachment; filename="holidays.csv"'
+        
+        writer = csv.writer(response)
+        writer.writerow(['SL No', 'Date', 'Day', 'Occasion', 'Type'])
+        
+        holidays = self.queryset.order_by('date')
+        for idx, holiday in enumerate(holidays, 1):
+            writer.writerow([
+                idx,
+                holiday.date,
+                holiday.day,
+                holiday.occasion,
+                'Default' if holiday.is_default else 'Regular'
+            ])
+        return response
+
+    @action(detail=False, methods=['get'])
+    def export_excel(self, request):
+        wb = Workbook()
+        ws = wb.active
+        ws.title = "Holidays"
+        
+        columns = ['SL No', 'Date', 'Day', 'Occasion', 'Type']
+        ws.append(columns)
+        
+        holidays = self.queryset.order_by('date')
+        for idx, holiday in enumerate(holidays, 1):
+            ws.append([
+                idx,
+                str(holiday.date),
+                holiday.day,
+                holiday.occasion,
+                'Default' if holiday.is_default else 'Regular'
+            ])
+            
+        response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+        response['Content-Disposition'] = 'attachment; filename="holidays.xlsx"'
+        wb.save(response)
+        return response
+
+    @action(detail=False, methods=['get'])
+    def export_pdf(self, request):
+        response = HttpResponse(content_type='application/pdf')
+        response['Content-Disposition'] = 'attachment; filename="holidays.pdf"'
+        
+        doc = SimpleDocTemplate(response, pagesize=letter)
+        elements = []
+        
+        styles = getSampleStyleSheet()
+        elements.append(Paragraph("Holiday List", styles['Title']))
+        
+        data = [['SL No', 'Date', 'Day', 'Occasion', 'Type']]
+        holidays = self.queryset.order_by('date')
+        
+        for idx, holiday in enumerate(holidays, 1):
+            data.append([
+                str(idx),
+                str(holiday.date),
+                holiday.day,
+                holiday.occasion,
+                'Default' if holiday.is_default else 'Regular'
+            ])
+            
+        table = Table(data)
+        table.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
+            ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+            ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+            ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+            ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
+            ('GRID', (0, 0), (-1, -1), 1, colors.black)
+        ]))
+        
+        elements.append(table)
+        doc.build(elements)
+        return response
 
 class LeaveTypeViewSet(viewsets.ModelViewSet):
     queryset = LeaveType.objects.all()
