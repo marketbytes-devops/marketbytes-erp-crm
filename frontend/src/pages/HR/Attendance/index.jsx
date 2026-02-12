@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import LayoutComponents from "../../../components/LayoutComponents";
 import apiClient from "../../../helpers/apiClient";
-import { MdDownload, MdRefresh, MdClose, MdAccessTime } from "react-icons/md";
+import { MdDownload, MdRefresh, MdClose, MdAccessTime, MdKeyboardArrowDown, MdKeyboardArrowUp } from "react-icons/md";
 import { usePermission } from "../../../context/PermissionContext";
 import {
   format,
@@ -12,9 +12,18 @@ import {
   getDay,
   addMonths,
   subMonths,
+  isBefore,
+  isToday,
+  isSunday,
+  isSaturday,
+  startOfToday
 } from "date-fns";
 import Dropdown from "../../../components/Dropdown";
+import Input from "../../../components/Input";
 import { createPortal } from "react-dom";
+import * as XLSX from "xlsx";
+import { jsPDF } from "jspdf";
+import autoTable from "jspdf-autotable";
 
 const AttendanceModal = ({ record, date, onClose }) => {
   if (!record) return null;
@@ -183,24 +192,54 @@ const Attendance = () => {
   const [selectedDay, setSelectedDay] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(10);
+  const [expandedEmployeeId, setExpandedEmployeeId] = useState(null);
 
 
   const [showFilters, setShowFilters] = useState(false);
-  const [filterEmployeeName, setFilterEmployeeName] = useState("");
-  const [filterDate, setFilterDate] = useState("");
-  const [filterDepartment, setFilterDepartment] = useState("");
+  const [filterEmployeeId, setFilterEmployeeId] = useState("");
+  const [filterDepartmentId, setFilterDepartmentId] = useState("");
+
+  const [departments, setDepartments] = useState([]);
+  const [employees, setEmployees] = useState([]);
+  const [loadingLists, setLoadingLists] = useState(false);
 
   const month = selectedDate.getMonth() + 1;
   const year = selectedDate.getFullYear();
 
   useEffect(() => {
     fetchAttendance();
-  }, [month, year]);
+  }, [month, year, filterEmployeeId, filterDepartmentId]);
+
+  useEffect(() => {
+    const fetchLists = async () => {
+      setLoadingLists(true);
+      try {
+        const [deptRes, empRes] = await Promise.all([
+          apiClient.get("/auth/departments/"),
+          apiClient.get("/auth/users/"),
+        ]);
+        const extract = (d) => (Array.isArray(d) ? d : d.results || []);
+        setDepartments(extract(deptRes.data));
+        setEmployees(extract(empRes.data));
+      } catch (err) {
+        console.error("Failed to fetch filter lists", err);
+      } finally {
+        setLoadingLists(false);
+      }
+    };
+    fetchLists();
+  }, []);
 
   const fetchAttendance = () => {
     setLoading(true);
+    const params = { 
+      month, 
+      year,
+      employee_id: filterEmployeeId || undefined,
+      department_id: filterDepartmentId || undefined
+    };
     apiClient
-      .get("/hr/attendance/", { params: { month, year } })
+      .get("/hr/attendance/", { params })
       .then((res) => {
         const data = Array.isArray(res.data) ? res.data : res.data.results || [];
         setAttendances(data);
@@ -228,24 +267,22 @@ const Attendance = () => {
 
   const employeesMap = attendances.reduce((acc, att) => {
     const empId = att.employee?.id || att.employee_id || "unknown";
-    const empName = att.employee?.name || "Unknown Employee";
-    const dept = att.employee?.department || "Unknown"; 
+    
+    // Better name fallback logic
+    const getBestName = (emp) => {
+      if (!emp) return "Deleted Employee";
+      if (emp.name) return emp.name;
+      if (emp.first_name || emp.last_name) return `${emp.first_name || ""} ${emp.last_name || ""}`.trim();
+      return emp.username || emp.email || "Unknown Employee";
+    };
 
+    const empName = getBestName(att.employee);
 
-    const nameMatch = filterEmployeeName === "" || 
-      empName.toLowerCase().includes(filterEmployeeName.toLowerCase());
-
-    const deptMatch = filterDepartment === "" || 
-      dept.toLowerCase().includes(filterDepartment.toLowerCase());
-
- 
-
-    if (nameMatch && deptMatch) {
-      if (!acc[empId]) {
-        acc[empId] = { employee: { id: empId, name: empName }, records: [] };
-      }
-      acc[empId].records.push(att);
+    // Since backend now filters, we just map everything that comes back
+    if (!acc[empId]) {
+      acc[empId] = { employee: { id: empId, name: empName }, records: [] };
     }
+    acc[empId].records.push(att);
     return acc;
   }, {});
 
@@ -260,7 +297,8 @@ const Attendance = () => {
 
   useEffect(() => {
     setCurrentPage(1);
-  }, [month, year, filterEmployeeName, filterDepartment]); // reset page when filters change
+    setExpandedEmployeeId(null);
+  }, [month, year, filterEmployeeId, filterDepartmentId]); // reset page and expanded row when filters change
 
   const getRecordForDate = (records, date) => {
     const formatted = format(date, "yyyy-MM-dd");
@@ -282,8 +320,134 @@ const Attendance = () => {
     return badges[status] || { label: "-", bg: "bg-gray-100 text-gray-500", border: "" };
   };
 
-  const exportData = (format) => {
-    alert(`Exporting as ${format}...`);
+  const calculateTotals = (records) => {
+    const monthDays = eachDayOfInterval({ start: startOfMonth(selectedDate), end: endOfMonth(selectedDate) });
+    const today = startOfToday();
+    
+    const counts = {
+      present: 0,
+      half_day_late: 0,
+      absent: 0,
+      total: 0
+    };
+
+    // 1. Count from existing records
+    records.forEach(r => {
+      if (['present', 'late'].includes(r.status)) counts.present++;
+      if (r.status === 'half_day_late') counts.half_day_late++;
+      
+      // Total is any working status
+      if (['present', 'late', 'half_day', 'half_day_late'].includes(r.status)) {
+        counts.total++;
+      }
+    });
+
+    // 2. Count Absent (A) - Missing Mon-Fri records up to today
+    monthDays.forEach(day => {
+      if (isBefore(day, today) || isToday(day)) {
+        const isWeekday = !isSunday(day) && !isSaturday(day);
+        const record = getRecordForDate(records, day);
+        if (isWeekday && !record) {
+          counts.absent++;
+        }
+      }
+    });
+
+    return counts;
+  };
+
+  const exportData = (type) => {
+    const monthName = format(selectedDate, "MMMM");
+    const yearName = format(selectedDate, "yyyy");
+    
+    const data = employeeList.map((emp, index) => {
+      const stats = calculateTotals(emp.records);
+      return {
+        "SL No": index + 1,
+        "Employee Name": emp.employee.name,
+        "Month": `${monthName} ${yearName}`,
+        "Present (P)": stats.present,
+        "Half Day Late (HL)": stats.half_day_late,
+        "Absent (A)": stats.absent,
+        "Total Attendance": stats.total
+      };
+    });
+
+    if (type === "CSV" || type === "Excel") {
+      const ws = XLSX.utils.json_to_sheet(data);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "Attendance Summary");
+      XLSX.writeFile(wb, `Attendance_Summary_${monthName}_${yearName}.${type === "CSV" ? "csv" : "xlsx"}`);
+    } else if (type === "PDF") {
+      const doc = new jsPDF('l', 'mm', 'a4'); 
+      const now = new Date();
+      
+      // Title
+      doc.setFontSize(18);
+      doc.setTextColor(0, 0, 0);
+      doc.text(`Attendance Summary Report`, 14, 20);
+      
+      // Filter Information
+      doc.setFontSize(10);
+      doc.setTextColor(100, 100, 100);
+      let yPos = 28;
+      
+      doc.text(`Month: ${monthName} ${yearName}`, 14, yPos);
+      yPos += 6;
+      
+      if (filterDepartmentId) {
+        const dept = departments.find(d => d.id.toString() === filterDepartmentId.toString());
+        doc.text(`Department: ${dept?.name || 'All'}`, 14, yPos);
+        yPos += 6;
+      }
+      
+      if (filterEmployeeId) {
+        const emp = employees.find(e => e.id.toString() === filterEmployeeId.toString());
+        doc.text(`Employee: ${emp?.name || 'All'}`, 14, yPos);
+        yPos += 6;
+      }
+
+      const tableData = data.map(item => [
+        item["SL No"],
+        item["Employee Name"],
+        item["Month"],
+        item["Present (P)"],
+        item["Half Day Late (HL)"],
+        item["Absent (A)"],
+        item["Total Attendance"]
+      ]);
+
+      autoTable(doc, {
+        head: [["SL No", "Employee Name", "Month", "P", "HL", "A", "Total"]],
+        body: tableData,
+        startY: yPos + 5,
+        theme: 'grid',
+        headStyles: { fillColor: [0, 0, 0], fontSize: 11, halign: 'center' },
+        bodyStyles: { fontSize: 10 },
+        columnStyles: {
+          0: { halign: 'center' },
+          3: { halign: 'center' },
+          4: { halign: 'center' },
+          5: { halign: 'center' },
+          6: { halign: 'center', fontStyle: 'bold' }
+        }
+      });
+      
+      // Footer with page numbers
+      const pageCount = doc.internal.getNumberOfPages();
+      for (let i = 1; i <= pageCount; i++) {
+        doc.setPage(i);
+        doc.setFontSize(8);
+        doc.setTextColor(150, 150, 150);
+        doc.text(
+          `Page ${i} of ${pageCount} | Generated on ${now.toLocaleString()}`,
+          14,
+          doc.internal.pageSize.height - 10
+        );
+      }
+      
+      doc.save(`Attendance_Summary_${monthName}_${yearName}.pdf`);
+    }
   };
 
   const openModal = (record, date) => {
@@ -297,9 +461,9 @@ const Attendance = () => {
   };
 
   const resetFilters = () => {
-    setFilterEmployeeName("");
-    setFilterDate("");
-    setFilterDepartment("");
+    setFilterEmployeeId("");
+    setFilterDepartmentId("");
+    setSelectedDate(new Date()); // Resets to current month/year
     setShowFilters(false);
   };
 
@@ -387,69 +551,76 @@ const Attendance = () => {
         {showFilters && (
           <div className="bg-white rounded-2xl shadow-sm p-6 mb-6 border border-gray-200">
             <div className="flex justify-between items-center mb-5">
-              <h3 className="text-lg font-medium">Advanced Filters</h3>
+              <h3 className="text-xl font-semibold text-gray-900">Advanced Filters</h3>
               <button
                 onClick={() => setShowFilters(false)}
-                className="text-gray-500 hover:text-gray-800"
+                className="p-2 hover:bg-gray-100 rounded-full transition"
               >
-                <MdClose className="w-6 h-6" />
+                <MdClose className="w-6 h-6 text-gray-500" />
               </button>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1.5">Employee Name</label>
-                <input
-                  type="text"
-                  value={filterEmployeeName}
-                  onChange={(e) => setFilterEmployeeName(e.target.value)}
-                  placeholder="Search employee..."
-                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black/30"
-                />
-              </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              <Input
+                label="Month"
+                type="select"
+                value={month}
+                onChange={(val) => {
+                  const newDate = new Date(selectedDate);
+                  newDate.setMonth(parseInt(val) - 1);
+                  setSelectedDate(newDate);
+                }}
+                options={[
+                  { label: "January", value: 1 },
+                  { label: "February", value: 2 },
+                  { label: "March", value: 3 },
+                  { label: "April", value: 4 },
+                  { label: "May", value: 5 },
+                  { label: "June", value: 6 },
+                  { label: "July", value: 7 },
+                  { label: "August", value: 8 },
+                  { label: "September", value: 9 },
+                  { label: "October", value: 10 },
+                  { label: "November", value: 11 },
+                  { label: "December", value: 12 },
+                ]}
+              />
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1.5">Date</label>
-                <input
-                  type="date"
-                  value={filterDate}
-                  onChange={(e) => setFilterDate(e.target.value)}
-                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black/30"
-                />
-              </div>
+              <Input
+                label="Department"
+                type="select"
+                value={filterDepartmentId}
+                onChange={setFilterDepartmentId}
+                options={[
+                  { label: "All Departments", value: "" },
+                  ...departments.map(d => ({ label: d.name, value: d.id }))
+                ]}
+              />
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1.5">Department</label>
-                <input
-                  type="text"
-                  value={filterDepartment}
-                  onChange={(e) => setFilterDepartment(e.target.value)}
-                  placeholder="e.g. Development, HR..."
-                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black/30"
-                />
-              </div>
-
-              {/* Month is already controlled by calendar → disabled or informational */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1.5">Month</label>
-                <div className="px-4 py-2.5 bg-gray-100 border border-gray-300 rounded-lg text-gray-600">
-                  {format(selectedDate, "MMMM yyyy")}
-                </div>
-              </div>
+              <Input
+                label="Employee"
+                type="select"
+                value={filterEmployeeId}
+                onChange={setFilterEmployeeId}
+                options={[
+                  { label: "All Employees", value: "" },
+                  ...employees.map(e => ({ label: e.name, value: e.id }))
+                ]}
+              />
             </div>
 
-            <div className="mt-6 flex justify-end gap-3">
+            <div className="mt-8 flex justify-end gap-3 pt-6 border-t border-gray-100">
               <button
                 onClick={resetFilters}
-                className="px-6 py-2.5 border border-gray-300 rounded-lg hover:bg-gray-50 transition"
+                className="px-6 py-3 border border-gray-300 text-gray-700 font-medium rounded-xl hover:bg-gray-50 transition"
               >
                 Reset All Filters
               </button>
               <button
                 onClick={() => setShowFilters(false)}
-                className="px-6 py-2.5 bg-black text-white rounded-lg hover:bg-gray-900 transition"
+                className="px-8 py-3 bg-black text-white font-medium rounded-xl hover:bg-gray-900 transition shadow-lg shadow-black/10"
               >
-                Apply & Close
+                Close Filters
               </button>
             </div>
           </div>
@@ -468,66 +639,119 @@ const Attendance = () => {
               <p className="text-sm mt-2">Try selecting a different month or adjusting filters</p>
             </div>
           ) : (
-            <div className="overflow-x-auto">
+            <div className="overflow-x-auto overflow-y-hidden">
               <div className="min-w-[1000px] p-6">
-                <div className="grid grid-cols-[60px_250px_1fr] gap-0 border border-gray-400">
-                  <div className="sticky left-0 bg-white border-r border-b border-gray-400 px-4 py-5 text-sm font-medium text-black text-center whitespace-nowrap">
+                {/* Simple Table Header */}
+                <div className="grid grid-cols-[80px_350px_150px_1fr] gap-0 border border-gray-400 bg-white">
+                  <div className="border-r border-gray-400 px-4 py-5 text-sm font-medium text-black text-center whitespace-nowrap">
                     SL No
                   </div>
-                  <div className="sticky left-[60px] bg-white border-r border-b border-gray-400 px-6 py-5 text-sm font-medium text-black whitespace-nowrap">
-                    Employee
+                  <div className="border-r border-gray-400 px-6 py-5 text-sm font-medium text-black whitespace-nowrap">
+                    Employee Name
                   </div>
-                  <div className="grid grid-cols-7 border-b border-gray-400">
-                    {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day) => (
-                      <div
-                        key={day}
-                        className="py-4 text-center text-xs font-medium text-gray-700 border-r border-gray-400 last:border-r-0 whitespace-nowrap"
-                      >
-                        {day}
-                      </div>
-                    ))}
+                  <div className="border-r border-gray-400 px-4 py-5 text-sm font-medium text-black text-center whitespace-nowrap">
+                    Total Attendance
                   </div>
-
-                  {currentEmployees.map((emp, index) => (
-                    <div key={emp.employee.id} className="contents">
-                      <div className="sticky left-0 z-10 bg-white border-r border-b border-gray-400 px-4 py-5 text-sm text-center text-gray-600 whitespace-nowrap">
-                        {index + 1 + (currentPage - 1) * itemsPerPage}
-                      </div>
-                      <div className="sticky left-[60px] z-10 bg-white border-r border-b border-gray-400 px-6 py-5 text-sm font-medium text-black whitespace-nowrap">
-                        {emp.employee.name}
-                      </div>
-                      <div className="grid grid-cols-7">
-                        {calendarDays.map((date, idx) => {
-                          const isCurrentMonth = date.getMonth() === selectedDate.getMonth();
-                          const record = isCurrentMonth ? getRecordForDate(emp.records, date) : null;
-                          const badge = getStatusBadge(record?.status);
-
-                          return (
-                            <div
-                              key={idx}
-                              onClick={() => record && openModal(record, date)}
-                              className={`border-r border-b border-gray-400 h-24 p-3 flex flex-col items-center justify-center gap-2 transition cursor-pointer whitespace-nowrap
-                                ${!isCurrentMonth ? "bg-gray-50 text-gray-400" : "bg-white hover:bg-gray-50"}
-                                ${getDay(date) === 0 || getDay(date) === 6 ? "bg-gray-50" : ""}
-                              `}
-                            >
-                              <div className={`text-sm font-medium ${!isCurrentMonth ? "text-gray-400" : "text-gray-800"}`}>
-                                {format(date, "d")}
-                              </div>
-                              {record && (
-                                <div
-                                  className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-medium ${badge.bg} ${badge.border}`}
-                                >
-                                  {badge.label}
-                                </div>
-                              )}
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  ))}
+                  <div className="px-4 py-5 text-sm font-medium text-black text-center whitespace-nowrap">
+                    Actions
+                  </div>
                 </div>
+
+                {currentEmployees.map((emp, index) => {
+                  const stats = calculateTotals(emp.records);
+                  const isExpanded = expandedEmployeeId === emp.employee.id;
+
+                  return (
+                    <div key={emp.employee.id} className="contents shadow-none">
+                      {/* Summary Row */}
+                      <div className="grid grid-cols-[80px_350px_150px_1fr] gap-0 border-x border-b border-gray-400 bg-white hover:bg-gray-50 transition-colors">
+                        <div className="border-r border-gray-400 px-4 py-5 text-sm text-center text-gray-600 whitespace-nowrap flex items-center justify-center">
+                          {index + 1 + (currentPage - 1) * itemsPerPage}
+                        </div>
+                        <div className="border-r border-gray-400 px-6 py-5 text-sm font-medium text-black whitespace-nowrap flex items-center">
+                          {emp.employee.name}
+                        </div>
+                        <div className="border-r border-gray-400 px-4 py-5 text-lg font-bold text-black text-center whitespace-nowrap flex items-center justify-center">
+                          {stats.total}
+                        </div>
+                        <div className="px-4 py-5 flex items-center justify-center">
+                          <button
+                            onClick={() => setExpandedEmployeeId(isExpanded ? null : emp.employee.id)}
+                            className={`px-4 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all
+                              ${isExpanded 
+                                ? "bg-red-50 text-red-600 border border-red-200" 
+                                : "bg-black text-white hover:bg-gray-800 shadow-sm"}
+                            `}
+                          >
+                            {isExpanded ? (
+                              <>
+                                <MdClose className="w-3.5 h-3.5" /> Close
+                              </>
+                            ) : (
+                              <>
+                                <MdKeyboardArrowDown className="w-4 h-4" /> View Calendar
+                              </>
+                            )}
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Expanded Calendar View */}
+                      {isExpanded && (
+                        <motion.div 
+                          initial={{ opacity: 0, y: -10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          className="col-span-full bg-gray-50 p-6 border-x border-b border-gray-400"
+                        >
+                          <div className="bg-white border border-gray-400">
+                            <div className="grid grid-cols-7 border-b border-gray-400 bg-gray-50/50">
+                              {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day) => (
+                                <div key={day} className="py-2.5 text-center text-[10px] font-bold uppercase tracking-wider text-gray-500 border-r border-gray-400 last:border-r-0">
+                                  {day}
+                                </div>
+                              ))}
+                            </div>
+                            <div className="grid grid-cols-7">
+                              {calendarDays.map((date, idx) => {
+                                const isCurrentMonth = date.getMonth() === selectedDate.getMonth();
+                                const record = isCurrentMonth ? getRecordForDate(emp.records, date) : null;
+                                const badge = getStatusBadge(record?.status);
+                                const isPresentOrPast = isBefore(date, startOfToday()) || isToday(date);
+                                const isWeekend = isSunday(date) || isSaturday(date);
+                                
+                                let displayBadge = badge;
+                                if (!record && isCurrentMonth && isPresentOrPast && !isWeekend) {
+                                  displayBadge = getStatusBadge('absent');
+                                }
+
+                                return (
+                                  <div
+                                    key={idx}
+                                    onClick={() => record && openModal(record, date)}
+                                    className={`h-20 p-2 flex flex-col items-center justify-center gap-1 border-r border-b border-gray-400 last:border-r-0
+                                      ${!isCurrentMonth ? "bg-gray-100/30 text-gray-300" : "bg-white"}
+                                      ${isWeekend ? "bg-gray-50" : ""}
+                                      ${record ? "cursor-pointer hover:bg-gray-50 transition-colors" : ""}
+                                    `}
+                                  >
+                                    <div className={`text-[10px] font-bold ${!isCurrentMonth ? "text-gray-300" : "text-gray-500"}`}>
+                                      {format(date, "d")}
+                                    </div>
+                                    {displayBadge.label !== "-" && (
+                                      <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold border-2 ${displayBadge.bg} ${displayBadge.border}`}>
+                                        {displayBadge.label}
+                                      </div>
+                                    )}
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        </motion.div>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
             </div>
           )}

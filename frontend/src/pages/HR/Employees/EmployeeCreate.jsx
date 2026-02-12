@@ -1,11 +1,12 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router";
 import LayoutComponents from "../../../components/LayoutComponents";
-import { MdArrowBack, MdAutoAwesome } from "react-icons/md";
+import { MdArrowBack, MdAutoAwesome, MdAdd, MdClose } from "react-icons/md";
 import toast from "react-hot-toast";
 import apiClient from "../../../helpers/apiClient";
 import Loading from "../../../components/Loading";
 import Input from "../../../components/Input";
+import { countryCodes } from "../../../utils/countryCodes";
 
 const generateStrongPassword = () => {
   const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()_+-=[]{}|;:,.<>?";
@@ -72,6 +73,13 @@ const EmployeeCreate = () => {
   const [designations, setDesignations] = useState([]);
   const [employees, setEmployees] = useState([]);
 
+  // Quick-Add Modal States
+  const [showDesigModal, setShowDesigModal] = useState(false);
+  const [showDeptModal, setShowDeptModal] = useState(false);
+  const [newDesigName, setNewDesigName] = useState("");
+  const [newDeptName, setNewDeptName] = useState("");
+  const [modalLoading, setModalLoading] = useState(false);
+
   const [directPermissions, setDirectPermissions] = useState(() => {
     const initialPerms = {};
     Object.keys(pageNameMap).forEach(key => {
@@ -100,6 +108,7 @@ const EmployeeCreate = () => {
     login_enabled: true,
     email_notifications: true,
     profile_picture: null,
+    exit_date: "",
   });
 
   const [selectedDesignation, setSelectedDesignation] = useState(null);
@@ -127,11 +136,11 @@ const EmployeeCreate = () => {
 
         const usedIds = users
           .map(u => u.employee_id)
-          .filter(id => id && id.startsWith("EMP"))
-          .map(id => parseInt(id.replace("EMP", "")) || 0);
+          .filter(id => id && id.startsWith("MB"))
+          .map(id => parseInt(id.replace("MB", "")) || 0);
 
         const maxId = usedIds.length > 0 ? Math.max(...usedIds) : 0;
-        const nextId = `EMP${String(maxId + 1).padStart(4, "0")}`;
+        const nextId = `MB${String(maxId + 1).padStart(4, "0")}`;
         setNextEmployeeId(nextId);
 
       } catch (err) {
@@ -144,6 +153,54 @@ const EmployeeCreate = () => {
 
     fetchData();
   }, []);
+
+  const fetchLists = async () => {
+    try {
+      const [deptRes, desigRes] = await Promise.all([
+        apiClient.get("/auth/departments/"),
+        apiClient.get("/auth/roles/"),
+      ]);
+      const extract = (data) => (Array.isArray(data) ? data : data.results || []);
+      setDepartments(extract(deptRes.data));
+      setDesignations(extract(desigRes.data));
+    } catch (err) {
+      console.error("Failed to refresh lists", err);
+    }
+  };
+
+  const handleSubmitDesignation = async (e) => {
+    e.preventDefault();
+    if (!newDesigName.trim()) return;
+    setModalLoading(true);
+    try {
+      await apiClient.post("/auth/roles/", { name: newDesigName });
+      toast.success("Designation added successfully!");
+      setNewDesigName("");
+      setShowDesigModal(false);
+      await fetchLists();
+    } catch (err) {
+      toast.error(err.response?.data?.name?.[0] || "Failed to add designation");
+    } finally {
+      setModalLoading(false);
+    }
+  };
+
+  const handleSubmitDepartment = async (e) => {
+    e.preventDefault();
+    if (!newDeptName.trim()) return;
+    setModalLoading(true);
+    try {
+      await apiClient.post("/auth/departments/", { name: newDeptName });
+      toast.success("Department added successfully!");
+      setNewDeptName("");
+      setShowDeptModal(false);
+      await fetchLists();
+    } catch (err) {
+      toast.error(err.response?.data?.name?.[0] || "Failed to add department");
+    } finally {
+      setModalLoading(false);
+    }
+  };
 
   useEffect(() => {
     if (formData.email && !formData.username) {
@@ -186,7 +243,8 @@ const EmployeeCreate = () => {
       status: 'status',
       login_enabled: 'login_enabled',
       email_notifications: 'email_notifications',
-      profile_picture: 'image'
+      profile_picture: 'image',
+      exit_date: 'exit_date'
     };
 
     Object.keys(fieldMapping).forEach(key => {
@@ -246,15 +304,79 @@ const EmployeeCreate = () => {
   const departmentOptions = departments.map(d => ({ value: d.id, label: d.name }));
   const designationOptions = designations.map(d => ({
     value: d.id,
-    label: d.name + (d.role_name ? ` (Role: ${d.role_name})` : '')
+    label: d.name
   }));
   const reportsToOptions = employees.map(e => ({
     value: e.id,
     label: `${e.name} (${e.employee_id || 'No ID'})`
   }));
 
+  const QuickAddModal = ({ isOpen, onClose, title, value, onChange, onSubmit, placeholder, loading }) => {
+    if (!isOpen) return null;
+    return (
+      <div className="fixed inset-0 z-[2000] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+        <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden">
+          <div className="flex items-center justify-between p-6 border-b border-gray-100">
+            <h3 className="text-xl font-semibold text-gray-900">{title}</h3>
+            <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-full transition">
+              <MdClose className="w-6 h-6 text-gray-500" />
+            </button>
+          </div>
+          <form onSubmit={onSubmit} className="p-6 space-y-6">
+            <Input
+              label={`${title.split(' ')[1]} Name`}
+              placeholder={placeholder}
+              value={value}
+              onChange={(e) => onChange(e.target.value)}
+              required
+              autoFocus
+            />
+            <div className="flex gap-3 pt-2">
+              <button
+                type="button"
+                onClick={onClose}
+                className="flex-1 px-6 py-3 border border-gray-300 text-gray-700 font-medium rounded-xl hover:bg-gray-50 transition"
+                disabled={loading}
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                className="flex-1 px-6 py-3 bg-black text-white font-medium rounded-xl hover:bg-gray-900 transition disabled:opacity-50"
+                disabled={loading || !value.trim()}
+              >
+                {loading ? "Saving..." : "Save"}
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div className="p-4 md:p-6 max-w-7xl mx-auto">
+      {/* Modals */}
+      <QuickAddModal
+        isOpen={showDesigModal}
+        onClose={() => setShowDesigModal(false)}
+        title="Add Designation"
+        value={newDesigName}
+        onChange={setNewDesigName}
+        onSubmit={handleSubmitDesignation}
+        placeholder="e.g. Senior Developer"
+        loading={modalLoading}
+      />
+      <QuickAddModal
+        isOpen={showDeptModal}
+        onClose={() => setShowDeptModal(false)}
+        title="Add Department"
+        value={newDeptName}
+        onChange={setNewDeptName}
+        onSubmit={handleSubmitDepartment}
+        placeholder="e.g. Marketing"
+        loading={modalLoading}
+      />
       <LayoutComponents title="Add New Employee" subtitle="Fill in the details to create a new employee profile" variant="card">
         <div className="mb-8">
           <Link
@@ -275,7 +397,7 @@ const EmployeeCreate = () => {
                   Employee ID <span className="text-red-500">*</span>
                 </label>
                 <div className="px-4 py-3 bg-gray-100 border border-gray-300 rounded-lg font-mono text-gray-800">
-                  {nextEmployeeId || "EMP0001"}
+                  {nextEmployeeId || "MB0001"}
                 </div>
                 <p className="text-xs text-gray-500 mt-1">Auto-generated • Cannot be changed</p>
               </div>
@@ -284,7 +406,13 @@ const EmployeeCreate = () => {
               <Input label="Email" required type="email" placeholder="john@company.com" value={formData.email} onChange={e => setFormData({ ...formData, email: e.target.value })} />
               <Input label="Username" required placeholder="johndoe" value={formData.username} onChange={e => setFormData({ ...formData, username: e.target.value })} />
               <Input label="Mobile Number" placeholder="9876543210" value={formData.mobile} onChange={e => setFormData({ ...formData, mobile: e.target.value })} />
-              <Input label="Country Code" placeholder="+91" value={formData.country_code} onChange={e => setFormData({ ...formData, country_code: e.target.value })} />
+              <Input
+                label="Country Code"
+                type="select"
+                options={countryCodes}
+                value={formData.country_code}
+                onChange={v => setFormData({ ...formData, country_code: v })}
+              />
               <Input label="Date of Birth" type="date" value={formData.dob} onChange={e => setFormData({ ...formData, dob: e.target.value })} />
               <Input
                 label="Gender"
@@ -310,22 +438,56 @@ const EmployeeCreate = () => {
             <h3 className="text-lg font-medium text-gray-900 mb-6">Job Information</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               <div>
+                <div className="flex items-center justify-between mb-2">
+                  <label className="block text-sm font-medium text-black">
+                    Designation / Role (Optional)
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => setShowDesigModal(true)}
+                    className="p-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-colors group flex items-center gap-1 text-xs font-semibold"
+                    title="Quick Add Designation"
+                  >
+                    <MdAdd className="w-4 h-4" /> Add New
+                  </button>
+                </div>
                 <Input
-                  label="Designation / Role (Optional)"
                   type="select"
                   options={[{ value: "", label: "None (Direct Permissions Only)" }, ...designationOptions]}
                   value={formData.designation_id}
                   onChange={v => setFormData({ ...formData, designation_id: v })}
                 />
                 {selectedDesignation && (
-                  <p className={`text-sm font-medium mt-2 ${selectedDesignation.role_name ? 'text-green-600' : 'text-amber-600'}`}>
-                    {selectedDesignation.role_name ? `Role: ${selectedDesignation.role_name}` : "No role assigned"}
+                  <p className="text-sm font-medium mt-2 text-green-600">
+                    Designation Selected: {selectedDesignation.name}
                   </p>
                 )}
               </div>
-              <Input label="Department" required type="select" options={[{ value: "", label: "Select Department" }, ...departmentOptions]} value={formData.department_id} onChange={v => setFormData({ ...formData, department_id: v })} />
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <label className="block text-sm font-medium text-black">
+                    Department <span className="text-red-500">*</span>
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => setShowDeptModal(true)}
+                    className="p-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-colors group flex items-center gap-1 text-xs font-semibold"
+                    title="Quick Add Department"
+                  >
+                    <MdAdd className="w-4 h-4" /> Add New
+                  </button>
+                </div>
+                <Input
+                  type="select"
+                  options={[{ value: "", label: "Select Department" }, ...departmentOptions]}
+                  value={formData.department_id}
+                  onChange={v => setFormData({ ...formData, department_id: v })}
+                  required
+                />
+              </div>
               <Input label="Reports To" type="select" options={[{ value: "", label: "None (Top Level)" }, ...reportsToOptions]} value={formData.reports_to || ""} onChange={v => setFormData({ ...formData, reports_to: v || null })} />
               <Input label="Joining Date" required type="date" value={formData.joining_date} onChange={e => setFormData({ ...formData, joining_date: e.target.value })} />
+              <Input label="Exit Date" type="date" value={formData.exit_date} onChange={e => setFormData({ ...formData, exit_date: e.target.value })} />
               <Input label="Probation Period (months)" type="number" placeholder="3" value={formData.probation_period} onChange={e => setFormData({ ...formData, probation_period: e.target.value })} />
               <Input label="Hourly Rate ($)" type="number" step="0.01" placeholder="45.00" value={formData.hourly_rate} onChange={e => setFormData({ ...formData, hourly_rate: e.target.value })} />
             </div>

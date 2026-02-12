@@ -8,6 +8,7 @@ import apiClient from "../../../helpers/apiClient";
 import Loading from "../../../components/Loading";
 import toast from "react-hot-toast";
 import Input from "../../../components/Input";
+import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
 import { usePermission } from "../../../context/PermissionContext";
 
@@ -51,7 +52,7 @@ const EmployeeView = () => {
     ];
 
     const rows = filtered.map(emp => [
-      emp.employee_id || "",
+      (emp.employee_id || "").replace("EMP", "MB"),
       emp.name || "",
       emp.email || "",
       emp.department?.name || "",
@@ -100,7 +101,7 @@ const EmployeeView = () => {
     ];
 
     const rows = filtered.map((emp) => [
-      emp.employee_id || "-",
+      (emp.employee_id || "").replace("EMP", "MB"),
       emp.name || "-",
       emp.email || "-",
       emp.department?.name || "-",
@@ -345,7 +346,7 @@ const EmployeeView = () => {
                       options={[
                         { label: "All Employees", value: "" },
                         ...employees.map(emp => ({
-                          label: `${emp.name} (${emp.employee_id})`,
+                          label: `${emp.name} (${(emp.employee_id || "").replace("EMP", "MB")})`,
                           value: emp.id
                         }))
                       ]}
@@ -477,7 +478,9 @@ const EmployeeView = () => {
                         transition={{ delay: i * 0.03 }}
                         className="hover:bg-gray-50 transition"
                       >
-                        <td className="px-6 py-5 text-sm font-medium text-blue-600 whitespace-nowrap">{emp.employee_id}</td>
+                        <td className="px-6 py-5 text-sm font-medium text-blue-600 whitespace-nowrap">
+                          {emp.employee_id?.replace("EMP", "MB")}
+                        </td>
                         <td className="px-6 py-5 whitespace-nowrap">
                           <div className="flex items-center gap-4">
                             <img src={getImageUrl(emp)} alt={emp.name} className="w-12 h-12 rounded-full object-cover shadow-md" />
