@@ -83,23 +83,29 @@ class LeadViewSet(viewsets.ModelViewSet):
 class LeadSourceViewSet(viewsets.ModelViewSet):
     queryset = LeadSource.objects.all()
     serializer_class = LeadSourceSerializer
+    permission_classes = [HasPermission]
+    page_name = 'leads'
 
 
 class LeadCategoryViewSet(viewsets.ModelViewSet):
     queryset = LeadCategory.objects.all()
     serializer_class = LeadCategorySerializer
+    permission_classes = [HasPermission]
+    page_name = 'leads'
 
 
 class LeadTeamViewSet(viewsets.ModelViewSet):
     queryset = LeadTeam.objects.all()
     serializer_class = LeadTeamSerializer
+    permission_classes = [HasPermission]
+    page_name = 'leads'
 
 
 class ProposalTemplateViewSet(viewsets.ModelViewSet):
     queryset = ProposalTemplate.objects.all()
     serializer_class = ProposalTemplateSerializer
     permission_classes = [HasPermission]
-    page_name = 'reports'
+    page_name = 'communication_tools'
     filter_backends = [
         DjangoFilterBackend,
         filters.SearchFilter,
@@ -120,7 +126,7 @@ class RfpTemplateViewSet(viewsets.ModelViewSet):
     queryset = RfpTemplate.objects.all()
     serializer_class = RfpTemplateSerializer
     permission_classes = [HasPermission]
-    page_name = 'reports'
+    page_name = 'communication_tools'
     filter_backends = [
         DjangoFilterBackend,
         filters.SearchFilter,

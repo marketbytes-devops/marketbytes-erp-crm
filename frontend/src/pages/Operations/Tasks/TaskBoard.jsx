@@ -203,7 +203,7 @@ const TaskBoardPage = () => {
                 </div>
               </div>
 
-              {hasPermission("tasks", "add") && (
+              {hasPermission("task_board", "add") && (
                 <Link
                   to="/operations/tasks/new-task"
                   className="flex items-center gap-3 px-6 py-3 bg-black text-white rounded-xl hover:bg-gray-900 transition text-sm font-medium"

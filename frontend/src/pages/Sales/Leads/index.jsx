@@ -353,35 +353,37 @@ const Leads = () => {
             </div>
 
             <div className="flex gap-3">
-              <div className="relative group">
-                <button className="flex items-center gap-3 px-6 py-3.5 border border-gray-300 rounded-xl hover:bg-gray-50 transition font-medium">
-                  <MdDownload className="w-5 h-5" /> Export
-                  <MdKeyboardArrowDown className="w-5 h-5 transition-transform group-hover:rotate-180" />
-                </button>
-                <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg border border-gray-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-10">
-                  <button
-                    onClick={exportToCSV}
-                    className="w-full text-left px-5 py-3 hover:bg-gray-50 transition flex items-center gap-3"
-                  >
-                    <span className="text-green-600 font-medium">CSV</span>{" "}
-                    Download as .csv
+              {hasPermission("leads", "view") && (
+                <div className="relative group">
+                  <button className="flex items-center gap-3 px-6 py-3.5 border border-gray-300 rounded-xl hover:bg-gray-50 transition font-medium">
+                    <MdDownload className="w-5 h-5" /> Export
+                    <MdKeyboardArrowDown className="w-5 h-5 transition-transform group-hover:rotate-180" />
                   </button>
-                  <button
-                    onClick={exportToExcel}
-                    className="w-full text-left px-5 py-3 hover:bg-gray-50 transition flex items-center gap-3"
-                  >
-                    <span className="text-green-700 font-medium">Excel</span>{" "}
-                    Download as .xlsx
-                  </button>
-                  <button
-                    onClick={exportToPDF}
-                    className="w-full text-left px-5 py-3 hover:bg-gray-50 transition flex items-center gap-3 border-t"
-                  >
-                    <span className="text-red-600 font-medium">PDF</span>{" "}
-                    Download as .pdf
-                  </button>
+                  <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg border border-gray-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-10">
+                    <button
+                      onClick={exportToCSV}
+                      className="w-full text-left px-5 py-3 hover:bg-gray-50 transition flex items-center gap-3"
+                    >
+                      <span className="text-green-600 font-medium">CSV</span>{" "}
+                      Download as .csv
+                    </button>
+                    <button
+                      onClick={exportToExcel}
+                      className="w-full text-left px-5 py-3 hover:bg-gray-50 transition flex items-center gap-3"
+                    >
+                      <span className="text-green-700 font-medium">Excel</span>{" "}
+                      Download as .xlsx
+                    </button>
+                    <button
+                      onClick={exportToPDF}
+                      className="w-full text-left px-5 py-3 hover:bg-gray-50 transition flex items-center gap-3 border-t"
+                    >
+                      <span className="text-red-600 font-medium">PDF</span>{" "}
+                      Download as .pdf
+                    </button>
+                  </div>
                 </div>
-              </div>
+              )}
 
               {hasPermission("leads", "add") && (
                 <button
@@ -564,12 +566,14 @@ const Leads = () => {
                     </option>
                   ))}
                 </select>
-                <Link
-                  to="/sales/customer"
-                  className="text-sm text-blue-600 hover:underline mt-2 inline-block"
-                >
-                  + Manage Clients
-                </Link>
+                {hasPermission("customer", "view") && (
+                  <Link
+                    to="/sales/customer"
+                    className="text-sm text-blue-600 hover:underline mt-2 inline-block"
+                  >
+                    + Manage Clients
+                  </Link>
+                )}
               </div>
 
               {/* Other Fields */}
