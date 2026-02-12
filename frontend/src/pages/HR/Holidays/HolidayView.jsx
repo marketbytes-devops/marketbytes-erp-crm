@@ -25,6 +25,7 @@ import {
   MdChevronLeft,
   MdChevronRight,
   MdClose,
+  MdArrowDropDown,
 } from "react-icons/md";
 import { usePermission } from "../../../context/PermissionContext";
 
@@ -34,9 +35,11 @@ const HolidayView = () => {
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth());
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editingHoliday, setEditingHoliday] = useState(null);
   const [isCalendarView, setIsCalendarView] = useState(false);
+  const [showExportMenu, setShowExportMenu] = useState(false);
   const [loading, setLoading] = useState(true);
 
   const [newHoliday, setNewHoliday] = useState({ date: "", occasion: "", is_default: false });
@@ -132,27 +135,27 @@ const HolidayView = () => {
     }
   };
 
-  const handleExport = () => {
-    if (holidays.length === 0) {
-      alert("No holidays to export for the selected year.");
-      return;
+  const handleExport = async (type) => {
+    try {
+      const response = await apiClient.get(`/hr/holidays/export_${type}/?year=${selectedYear}`, {
+        responseType: "blob",
+      });
+
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement("a");
+      link.href = url;
+
+      const ext = type === "excel" ? "xlsx" : type;
+      link.setAttribute("download", `Holidays_${selectedYear}.${ext}`);
+
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      setShowExportMenu(false);
+    } catch (error) {
+      console.error(`Error exporting ${type}:`, error);
+      alert(`Failed to export to ${type.toUpperCase()}`);
     }
-    const sortedHolidays = [...holidays].sort((a, b) => new Date(a.date) - new Date(b.date));
-    const headers = "SL No,Date,Day,Occasion,Default Holiday\n";
-    const rows = sortedHolidays
-      .map((holiday, index) => {
-        const date = format(new Date(holiday.date), "MMMM d, yyyy");
-        const day = format(new Date(holiday.date), "EEEE");
-        const occasion = holiday.occasion.replace(/"/g, '""');
-        const isDefault = holiday.is_default ? "Yes" : "No";
-        return `${index + 1},"${date}","${day}","${occasion}","${isDefault}"`;
-      })
-      .join("\n");
-    const csvContent = "data:text/csv;charset=utf-8," + encodeURIComponent(headers + rows);
-    const link = document.createElement("a");
-    link.setAttribute("href", csvContent);
-    link.setAttribute("download", `Holidays_${selectedYear}.csv`);
-    link.click();
   };
 
   const handlePrevMonth = () => {
@@ -381,13 +384,46 @@ const HolidayView = () => {
             </div>
 
             <div className="flex gap-3">
-              <button
-                onClick={handleExport}
-                className="flex items-center gap-2 px-5 py-4 border border-gray-300 rounded-xl hover:bg-gray-50 transition font-medium"
-              >
-                <MdDownload className="w-5 h-5" />
-                Export
-              </button>
+              <div className="relative">
+                <button
+                  onClick={() => setShowExportMenu(!showExportMenu)}
+                  className="flex items-center gap-2 px-5 py-4 border border-gray-300 rounded-xl hover:bg-gray-50 transition font-medium"
+                >
+                  <MdDownload className="w-5 h-5" />
+                  Export
+                  <MdArrowDropDown className="w-5 h-5" />
+                </button>
+
+                <AnimatePresence>
+                  {showExportMenu && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: 10 }}
+                      className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg border border-gray-100 py-2 z-20"
+                    >
+                      <button
+                        onClick={() => handleExport("pdf")}
+                        className="w-full text-left px-4 py-2 hover:bg-gray-50 text-sm font-medium text-gray-700"
+                      >
+                        Export as PDF
+                      </button>
+                      <button
+                        onClick={() => handleExport("excel")}
+                        className="w-full text-left px-4 py-2 hover:bg-gray-50 text-sm font-medium text-gray-700"
+                      >
+                        Export as Excel
+                      </button>
+                      <button
+                        onClick={() => handleExport("csv")}
+                        className="w-full text-left px-4 py-2 hover:bg-gray-50 text-sm font-medium text-gray-700"
+                      >
+                        Export as CSV
+                      </button>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
               {hasPermission("holidays", "add") && (
                 <button
                   onClick={() => {
