@@ -34,6 +34,7 @@ const ContractsList = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [showFilters, setShowFilters] = useState(true);
     const [isExportOpen, setIsExportOpen] = useState(false);
+const [clients, setClients] = useState([]);
 
     const [pagination, setPagination] = useState({
         count: 0,
@@ -46,6 +47,18 @@ const ContractsList = () => {
         fetchStats();
         fetchFilters();
     }, []);
+const fetchClients = async () => {
+    try {
+        const response = await apiClient.get('/operation/clients/');
+        setClients(
+            response.data.results || 
+            (Array.isArray(response.data) ? response.data : [])
+        );
+    } catch (error) {
+        console.error('Error fetching clients:', error);
+        setClients([]);
+    }
+};
 
     const fetchFilters = async () => {
         try {

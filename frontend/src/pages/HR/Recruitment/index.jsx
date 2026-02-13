@@ -27,6 +27,7 @@ const Recruitment = () => {
   });
 
   const [departments, setDepartments] = useState([]);
+  const [designations, setDesignations] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [editingCandidate, setEditingCandidate] = useState(null);
 
@@ -48,15 +49,18 @@ const Recruitment = () => {
     const fetchData = async () => {
       try {
         setLoading(true);
-        const [candRes, deptRes] = await Promise.all([
+        const [candRes, deptRes ,roleRes] = await Promise.all([
+          
           apiClient.get("/hr/candidates/"),
           apiClient.get("/auth/departments/"),
+          apiClient.get("/auth/roles/"),
         ]);
 
         const extract = (data) => (Array.isArray(data) ? data : data.results || []);
         setCandidates(extract(candRes.data));
         setFiltered(extract(candRes.data));
         setDepartments(extract(deptRes.data));
+    setDesignations(extract(roleRes.data));
       } catch (err) {
         toast.error("Failed to load recruitment data");
       } finally {
@@ -435,13 +439,21 @@ const Recruitment = () => {
                     { value: "other", label: "Other" },
                   ]}
                 />
-                <Input
-                  label="Designation"
-                  required
-                  value={formData.designation}
-                  onChange={e => setFormData({ ...formData, designation: e.target.value })}
-                  placeholder="Software Engineer"
-                />
+         
+<Input
+  label="Designation"
+  type="select"
+  required
+  value={formData.designation}
+  onChange={v => setFormData({ ...formData, designation: v })}
+  options={[
+    { value: "", label: "— Select Designation —" },
+    ...designations.map(d => ({
+      value: d.name,   
+      label: d.name     
+    }))
+  ]}
+/>
                 <Input
                   label="Department"
                   type="select"
