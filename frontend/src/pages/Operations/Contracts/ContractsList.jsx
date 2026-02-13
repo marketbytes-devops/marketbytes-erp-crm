@@ -10,8 +10,11 @@ import {
     MdCalendarToday,
     MdHistory,
     MdWarning,
-    MdKeyboardArrowDown
+    MdKeyboardArrowDown,
+    MdEdit,
+    MdDelete
 } from 'react-icons/md';
+import { toast } from 'react-hot-toast';
 import { motion, AnimatePresence } from 'framer-motion';
 import apiClient from '../../../helpers/apiClient';
 import { usePermission } from '../../../context/PermissionContext';
@@ -25,6 +28,8 @@ const ContractsList = () => {
         about_to_expire: 0,
         expired: 0
     });
+    const [clients, setClients] = useState([]);
+    const [contractTypes, setContractTypes] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
     const [showFilters, setShowFilters] = useState(true);
@@ -40,7 +45,7 @@ const [clients, setClients] = useState([]);
     useEffect(() => {
         fetchContracts();
         fetchStats();
-         fetchClients();  
+        fetchFilters();
     }, []);
 const fetchClients = async () => {
     try {
@@ -54,6 +59,19 @@ const fetchClients = async () => {
         setClients([]);
     }
 };
+
+    const fetchFilters = async () => {
+        try {
+            const [clientsRes, typesRes] = await Promise.all([
+                apiClient.get('/operation/clients/'),
+                apiClient.get('/operation/contract-types/')
+            ]);
+            setClients(clientsRes.data.results || (Array.isArray(clientsRes.data) ? clientsRes.data : []));
+            setContractTypes(typesRes.data.results || (Array.isArray(typesRes.data) ? typesRes.data : []));
+        } catch (error) {
+            console.error('Error fetching filters:', error);
+        }
+    };
 
     const fetchContracts = async (url = '/operation/contracts/') => {
         try {
@@ -90,11 +108,6 @@ const fetchClients = async () => {
         const url = `${apiClient.defaults.baseURL}/operation/contracts/export_${format}/`;
         const token = localStorage.getItem('access_token');
 
-        // Since these are GET requests that return files, we can use window.open 
-        // but we might need to handle auth if the backend doesn't allow session cookies.
-        // However, usually for these simple exports, we can just trigger a download.
-        // If JWT is needed in headers, we'd need a different approach (fetch + blob).
-
         fetch(url, {
             headers: {
                 'Authorization': `Bearer ${token}`
@@ -112,6 +125,19 @@ const fetchClients = async () => {
                 setIsExportOpen(false);
             })
             .catch(err => console.error('Export failed:', err));
+    };
+
+    const handleDelete = async (id) => {
+        if (!window.confirm('Are you sure you want to delete this contract?')) return;
+        try {
+            await apiClient.delete(`/operation/contracts/${id}/`);
+            toast.success('Contract deleted successfully');
+            fetchContracts();
+            fetchStats();
+        } catch (error) {
+            console.error('Error deleting contract:', error);
+            toast.error('Failed to delete contract');
+        }
     };
 
     const statusCards = [
@@ -218,21 +244,21 @@ const fetchClients = async () => {
 
                             <div>
                                 <label className="block text-sm font-medium text-gray-600 mb-2">Client</label>
-                              <select className="w-full p-2 border border-gray-200 rounded-lg text-sm bg-gray-50">
-    <option value="">Select Client</option>
-    {clients.map(client => (
-        <option key={client.id} value={client.id}>
-            {client.name}
-        </option>
-    ))}
-</select>
-
+                                <select className="w-full p-2 border border-gray-200 rounded-lg text-sm bg-gray-50 outline-none focus:border-emerald-500 transition-colors">
+                                    <option value="">Select Client</option>
+                                    {clients.map(client => (
+                                        <option key={client.id} value={client.id}>{client.name}</option>
+                                    ))}
+                                </select>
                             </div>
 
                             <div>
                                 <label className="block text-sm font-medium text-gray-600 mb-2">Contract Type</label>
-                                <select className="w-full p-2 border border-gray-200 rounded-lg text-sm bg-gray-50">
-                                    <option>Select Type</option>
+                                <select className="w-full p-2 border border-gray-200 rounded-lg text-sm bg-gray-50 outline-none focus:border-emerald-500 transition-colors">
+                                    <option value="">Select Type</option>
+                                    {contractTypes.map(type => (
+                                        <option key={type.id} value={type.id}>{type.name}</option>
+                                    ))}
                                 </select>
                             </div>
 
@@ -308,9 +334,26 @@ const fetchClients = async () => {
                                             <td className="px-6 py-4 text-gray-600">{contract.start_date}</td>
                                             <td className="px-6 py-4 text-gray-600">{contract.no_end_date ? 'No End Date' : contract.end_date}</td>
                                             <td className="px-6 py-4 text-center">
-                                                <button className="p-2 hover:bg-gray-100 rounded-full transition-colors text-gray-400 hover:text-gray-600">
-                                                    <MdMoreVert size={20} />
-                                                </button>
+                                                <div className="flex justify-center gap-2">
+                                                    {hasPermission("contracts", "edit") && (
+                                                        <button
+                                                            onClick={() => navigate(`/operations/contracts/edit/${contract.id}`)}
+                                                            className="p-2 hover:bg-amber-50 rounded-lg transition-colors text-gray-400 hover:text-amber-600"
+                                                            title="Edit Contract"
+                                                        >
+                                                            <MdEdit size={20} />
+                                                        </button>
+                                                    )}
+                                                    {hasPermission("contracts", "delete") && (
+                                                        <button
+                                                            onClick={() => handleDelete(contract.id)}
+                                                            className="p-2 hover:bg-red-50 rounded-lg transition-colors text-gray-400 hover:text-red-600"
+                                                            title="Delete Contract"
+                                                        >
+                                                            <MdDelete size={20} />
+                                                        </button>
+                                                    )}
+                                                </div>
                                             </td>
                                         </tr>
                                     ))

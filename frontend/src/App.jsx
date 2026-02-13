@@ -58,6 +58,7 @@ import TaskCalendarPage from "./pages/Operations/Tasks/TaskCalendar";
 import EditScrumPage from "./pages/Operations/Scrum/EditScrum";
 import ContractsList from "./pages/Operations/Contracts/ContractsList";
 import ContractCreate from "./pages/Operations/Contracts/ContractCreate";
+import ContractEdit from "./pages/Operations/Contracts/ContractEdit";
 
 
 
@@ -657,6 +658,18 @@ function App() {
               requiredAction="add"
             >
               <ContractCreate />
+            </ProtectedRoute>
+          ),
+        },
+        {
+          path: "/operations/contracts/edit/:id",
+          element: (
+            <ProtectedRoute
+              isAuthenticated={isAuthenticated}
+              requiredPage="contracts"
+              requiredAction="edit"
+            >
+              <ContractEdit />
             </ProtectedRoute>
           ),
         },

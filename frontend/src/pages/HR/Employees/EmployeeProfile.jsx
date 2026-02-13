@@ -194,7 +194,7 @@ const EmployeeProfile = () => {
                 <h2 className="text-2xl font-medium">{employee.name || "Unknown"}</h2>
                 <p className="text-gray-300 mt-1 flex items-center justify-center gap-2">
                   <FaIdBadge className="w-4 h-4" />
-                  {employee.employee_id}
+                  {employee.employee_id?.replace("EMP", "MB")}
                 </p>
                 <div className="mt-4">
                   <span className={`px-4 py-1.5 rounded-full text-sm font-medium ${employee.status === "active"
