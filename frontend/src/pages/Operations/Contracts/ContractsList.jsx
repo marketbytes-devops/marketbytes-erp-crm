@@ -29,6 +29,7 @@ const ContractsList = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [showFilters, setShowFilters] = useState(true);
     const [isExportOpen, setIsExportOpen] = useState(false);
+const [clients, setClients] = useState([]);
 
     const [pagination, setPagination] = useState({
         count: 0,
@@ -39,7 +40,20 @@ const ContractsList = () => {
     useEffect(() => {
         fetchContracts();
         fetchStats();
+         fetchClients();  
     }, []);
+const fetchClients = async () => {
+    try {
+        const response = await apiClient.get('/operation/clients/');
+        setClients(
+            response.data.results || 
+            (Array.isArray(response.data) ? response.data : [])
+        );
+    } catch (error) {
+        console.error('Error fetching clients:', error);
+        setClients([]);
+    }
+};
 
     const fetchContracts = async (url = '/operation/contracts/') => {
         try {
@@ -204,9 +218,15 @@ const ContractsList = () => {
 
                             <div>
                                 <label className="block text-sm font-medium text-gray-600 mb-2">Client</label>
-                                <select className="w-full p-2 border border-gray-200 rounded-lg text-sm bg-gray-50">
-                                    <option>Select Client</option>
-                                </select>
+                              <select className="w-full p-2 border border-gray-200 rounded-lg text-sm bg-gray-50">
+    <option value="">Select Client</option>
+    {clients.map(client => (
+        <option key={client.id} value={client.id}>
+            {client.name}
+        </option>
+    ))}
+</select>
+
                             </div>
 
                             <div>
