@@ -81,7 +81,7 @@ class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = CustomUser
-        fields = ['id', 'first_name','last_name', 'email', 'username', 'name', 'employee_id', 'status', 'role', 'role_id', 'department', 'department_id', 'direct_permissions', 'effective_permissions']
+        fields = ['id', 'first_name','last_name', 'email', 'username', 'name', 'employee_id', 'status', 'role', 'role_id', 'department', 'department_id', 'exit_date', 'direct_permissions', 'effective_permissions']
 
     def get_effective_permissions(self, obj):
         """Returns computed effective permissions for the user"""

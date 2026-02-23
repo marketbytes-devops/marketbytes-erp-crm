@@ -275,13 +275,7 @@ const Leaves = () => {
                 )}
               </AnimatePresence>
 
-              <Link
-                to="/hr/leaves/assign"
-                className="flex items-center gap-3 px-6 py-3 bg-black text-white rounded-xl hover:bg-gray-900 transition font-medium"
-              >
-                <MdAdd className="w-5 h-5" />
-                Assign Leave
-              </Link>
+
             </div>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">

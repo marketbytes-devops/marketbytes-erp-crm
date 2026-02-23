@@ -22,6 +22,7 @@ import { FiMail, FiFileText, FiLink, FiShield } from "react-icons/fi";
 import toast from "react-hot-toast";
 import Input from "../../../components/Input";
 import Loading from "../../../components/Loading";
+import { usePermission } from "../../../context/PermissionContext";
 
 const TABS = [
   { id: "proposal", label: "Proposals", icon: FiFileText },
@@ -30,6 +31,12 @@ const TABS = [
 ];
 
 const Communication = () => {
+  const { hasPermission } = usePermission();
+
+  const hasCommPerm = useCallback((action) => {
+    return hasPermission("communication_tools", action) || hasPermission("reports", action);
+  }, [hasPermission]);
+
   const [activeTab, setActiveTab] = useState("proposal");
   const [proposalTemplates, setProposalTemplates] = useState([]);
   const [rfpTemplates, setRfpTemplates] = useState([]);
@@ -238,12 +245,14 @@ const Communication = () => {
                   </div>
                   <h3 className="text-xl font-medium text-gray-900">Proposal Library</h3>
                 </div>
-                <button
-                  onClick={() => openProposalModal()}
-                  className="flex items-center gap-2 px-6 py-3 bg-black text-white rounded-xl hover:bg-gray-900 transition-all font-medium shadow-black/10 active:scale-95"
-                >
-                  <MdAdd className="w-5 h-5" /> New Template
-                </button>
+                {hasCommPerm("add") && (
+                  <button
+                    onClick={() => openProposalModal()}
+                    className="flex items-center gap-2 px-6 py-3 bg-black text-white rounded-xl hover:bg-gray-900 transition-all font-medium shadow-black/10 active:scale-95"
+                  >
+                    <MdAdd className="w-5 h-5" /> New Template
+                  </button>
+                )}
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -264,8 +273,12 @@ const Communication = () => {
                       className="group bg-white p-6 rounded-2xl border border-gray-100 shadow-sm hover:shadow-xl hover:border-black/5 transition-all duration-300 relative overflow-hidden"
                     >
                       <div className="absolute top-0 right-0 p-4 opacity-0 group-hover:opacity-100 transition-opacity flex gap-1">
-                        <button onClick={() => openProposalModal(temp)} className="p-2 bg-gray-50 hover:bg-gray-100 rounded-lg text-gray-600"><MdEdit /></button>
-                        <button onClick={() => handleDeleteProposal(temp.id)} className="p-2 bg-red-50 hover:bg-red-100 rounded-lg text-red-600"><MdDelete /></button>
+                        {hasCommPerm("edit") && (
+                          <button onClick={() => openProposalModal(temp)} className="p-2 bg-gray-50 hover:bg-gray-100 rounded-lg text-gray-600"><MdEdit /></button>
+                        )}
+                        {hasCommPerm("delete") && (
+                          <button onClick={() => handleDeleteProposal(temp.id)} className="p-2 bg-red-50 hover:bg-red-100 rounded-lg text-red-600"><MdDelete /></button>
+                        )}
                       </div>
                       <div className="mb-4">
                         <div className="text-xs font-medium text-blue-600 uppercase tracking-widest mb-1">PROPOSAL</div>
@@ -300,12 +313,14 @@ const Communication = () => {
                   </div>
                   <h3 className="text-xl font-medium text-gray-900">RFP Body Templates</h3>
                 </div>
-                <button
-                  onClick={() => openRfpModal()}
-                  className="flex items-center gap-2 px-6 py-3 bg-black text-white rounded-xl hover:bg-gray-900 transition-all font-medium shadow-lg shadow-black/10 active:scale-95"
-                >
-                  <MdAdd className="w-5 h-5" /> New Body Template
-                </button>
+                {hasCommPerm("add") && (
+                  <button
+                    onClick={() => openRfpModal()}
+                    className="flex items-center gap-2 px-6 py-3 bg-black text-white rounded-xl hover:bg-gray-900 transition-all font-medium shadow-lg shadow-black/10 active:scale-95"
+                  >
+                    <MdAdd className="w-5 h-5" /> New Body Template
+                  </button>
+                )}
               </div>
 
               <div className="bg-white rounded-3xl border border-gray-100 overflow-hidden shadow-sm">
@@ -324,8 +339,12 @@ const Communication = () => {
                         <td className="px-8 py-5 text-gray-600 truncate max-w-md italic">"{temp.body.replace(/<[^>]+>/g, '').substring(0, 80)}..."</td>
                         <td className="px-8 py-5 text-right">
                           <div className="flex justify-end gap-2 text-gray-400">
-                            <button onClick={() => openRfpModal(temp)} className="p-2 hover:bg-white hover:text-black rounded-lg transition-all shadow-sm"><MdEdit /></button>
-                            <button onClick={() => handleDeleteRfp(temp.id)} className="p-2 hover:bg-red-50 hover:text-red-600 rounded-lg transition-all"><MdDelete /></button>
+                            {hasCommPerm("edit") && (
+                              <button onClick={() => openRfpModal(temp)} className="p-2 hover:bg-white hover:text-black rounded-lg transition-all shadow-sm"><MdEdit /></button>
+                            )}
+                            {hasCommPerm("delete") && (
+                              <button onClick={() => handleDeleteRfp(temp.id)} className="p-2 hover:bg-red-50 hover:text-red-600 rounded-lg transition-all"><MdDelete /></button>
+                            )}
                           </div>
                         </td>
                       </tr>

@@ -6,6 +6,7 @@ import apiClient from "../../../helpers/apiClient";
 import Loading from "../../../components/Loading";
 import LayoutComponents from "../../../components/LayoutComponents";
 import Input from "../../../components/Input";
+import { countryCodes } from "../../../utils/countryCodes";
 
 const generateStrongPassword = () => {
   const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()_+-=[]{}|;:,.<>?";
@@ -98,7 +99,7 @@ const EmployeeEdit = () => {
 
         const empData = empRes.data;
 
-        setEmployeeId(empData.employee_id || "N/A");
+        setEmployeeId((empData.employee_id || "N/A").replace("EMP", "MB"));
         setEmployeeName(empData.name || "Employee");
 
         setFormData({
@@ -226,7 +227,7 @@ const EmployeeEdit = () => {
   const roleOptions = roles.map(r => ({ value: r.id, label: r.name }));
   const reportsToOptions = employees.map(e => ({
     value: e.id,
-    label: `${e.name} (${e.employee_id || "No ID"})`,
+    label: `${e.name} (${(e.employee_id || "No ID").replace("EMP", "MB")})`,
   }));
 
   return (
@@ -261,7 +262,13 @@ const EmployeeEdit = () => {
               <Input label="Full Name" required value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} />
               <Input label="Username" required value={formData.username} onChange={e => setFormData({ ...formData, username: e.target.value })} />
               <Input label="Mobile Number" value={formData.mobile} onChange={e => setFormData({ ...formData, mobile: e.target.value })} />
-              <Input label="Country Code" value={formData.country_code} onChange={e => setFormData({ ...formData, country_code: e.target.value })} />
+              <Input
+                label="Country Code"
+                type="select"
+                options={countryCodes}
+                value={formData.country_code}
+                onChange={v => setFormData({ ...formData, country_code: v })}
+              />
               <Input label="Date of Birth" type="date" value={formData.dob} onChange={e => setFormData({ ...formData, dob: e.target.value })} />
               <Input
                 label="Gender"

@@ -32,6 +32,27 @@ const ProjectsView = () => {
 
   const [pinnedProjects, setPinnedProjects] = useState([]);
 
+useEffect(() => {
+  const saved = localStorage.getItem("pinnedProjects");
+  if (saved) {
+    try {
+      const parsed = JSON.parse(saved);
+      setPinnedProjects(parsed);
+    } catch (e) {
+      console.log("Old pinned data was broken, starting fresh");
+    }
+  }
+}, []);   
+
+
+
+useEffect(() => {
+  if (pinnedProjects.length > 0) {
+    localStorage.setItem("pinnedProjects", JSON.stringify(pinnedProjects));
+  } else {
+    localStorage.removeItem("pinnedProjects");
+  }
+}, [pinnedProjects]);
   const [search, setSearch] = useState("");
   const [filtersOpen, setFiltersOpen] = useState(false);
 

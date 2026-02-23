@@ -18,8 +18,10 @@ import Input from "../../../components/Input";
 import Loading from "../../../components/Loading";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
+import { usePermission } from "../../../context/PermissionContext";
 
 const Scrum = () => {
+  const { hasPermission } = usePermission();
   const navigate = useNavigate();
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -297,12 +299,14 @@ const Scrum = () => {
               </div>
 
               <div className="flex gap-3">
-                <button
-                  onClick={prepareCreate}
-                  className="flex items-center gap-3 px-6 py-3 bg-black text-white rounded-xl hover:bg-gray-900 transition text-sm font-medium whitespace-nowrap"
-                >
-                  <MdAdd className="w-5 h-5" /> New Scrum
-                </button>
+                {hasPermission("scrum", "add") && (
+                  <button
+                    onClick={prepareCreate}
+                    className="flex items-center gap-3 px-6 py-3 bg-black text-white rounded-xl hover:bg-gray-900 transition text-sm font-medium whitespace-nowrap"
+                  >
+                    <MdAdd className="w-5 h-5" /> New Scrum
+                  </button>
+                )}
               </div>
             </div>
           </div>
@@ -467,11 +471,12 @@ const Scrum = () => {
                         </td>
                         <td className="px-6 py-5">
                           <textarea
-                            className="w-full text-sm bg-transparent border-b border-transparent hover:border-gray-300 focus:border-blue-500 focus:bg-white focus:outline-none transition-colors resize-none overflow-hidden h-8 focus:h-20"
-                            placeholder="Add memo..."
+                            className={`w-full text-sm bg-transparent border-b border-transparent hover:border-gray-300 focus:border-blue-500 focus:bg-white focus:outline-none transition-colors resize-none overflow-hidden h-8 focus:h-20 ${!hasPermission("scrum", "edit") ? "opacity-50 cursor-not-allowed" : ""}`}
+                            placeholder={hasPermission("scrum", "edit") ? "Add memo..." : "No memo"}
                             defaultValue={item.evening_memo}
+                            readOnly={!hasPermission("scrum", "edit")}
                             onBlur={(e) => {
-                              if (e.target.value !== item.evening_memo) {
+                              if (e.target.value !== item.evening_memo && hasPermission("scrum", "edit")) {
                                 updateField(item.id, 'evening_memo', e.target.value);
                               }
                             }}
@@ -484,19 +489,24 @@ const Scrum = () => {
                             onChange={(v) => updateField(item.id, 'status', v)}
                             options={statusOptions}
                             className="text-xs font-medium"
+                            disabled={!hasPermission("scrum", "edit")}
                           />
                         </td>
                         <td className="px-6 py-5 whitespace-nowrap">
                           <div className="flex items-center justify-end gap-3">
-                            <button onClick={() => navigate(`/operations/scrum/edit/${item.id}`)} className="p-2 hover:bg-amber-50 rounded-lg transition group">
-                              <MdEdit className="w-5 h-5 text-gray-600 group-hover:text-amber-600" />
-                            </button>
+                            {hasPermission("scrum", "edit") && (
+                              <button onClick={() => navigate(`/operations/scrum/edit/${item.id}`)} className="p-2 hover:bg-amber-50 rounded-lg transition group">
+                                <MdEdit className="w-5 h-5 text-gray-600 group-hover:text-amber-600" />
+                              </button>
+                            )}
                             <button onClick={() => togglePin(item.id)} className="p-2 hover:bg-yellow-50 rounded-lg transition group">
                               <MdPushPin className={`w-5 h-5 ${pinnedItems.includes(item.id) ? 'text-yellow-600' : 'text-gray-600'} group-hover:text-yellow-600`} />
                             </button>
-                            <button onClick={() => handleDelete(item.id)} className="p-2 hover:bg-red-50 rounded-lg transition group">
-                              <MdDelete className="w-5 h-5 text-gray-600 group-hover:text-red-600" />
-                            </button>
+                            {hasPermission("scrum", "delete") && (
+                              <button onClick={() => handleDelete(item.id)} className="p-2 hover:bg-red-50 rounded-lg transition group">
+                                <MdDelete className="w-5 h-5 text-gray-600 group-hover:text-red-600" />
+                              </button>
+                            )}
                           </div>
                         </td>
                       </motion.tr>
@@ -538,15 +548,17 @@ const Scrum = () => {
                         <p className="text-[10px] font-medium text-gray-400 uppercase">{item.task_name || "Task"}</p>
                       </div>
                       <div className="flex gap-2">
-                        <button
-                          onClick={() => {
-                            setPinnedModalOpen(false);
-                            navigate(`/operations/scrum/edit/${item.id}`);
-                          }}
-                          className="p-3 bg-white text-amber-600 rounded-xl shadow-xs hover:bg-amber-600 hover:text-white transition"
-                        >
-                          <MdEdit className="w-5 h-5" />
-                        </button>
+                        {hasPermission("scrum", "edit") && (
+                          <button
+                            onClick={() => {
+                              setPinnedModalOpen(false);
+                              navigate(`/operations/scrum/edit/${item.id}`);
+                            }}
+                            className="p-3 bg-white text-amber-600 rounded-xl shadow-xs hover:bg-amber-600 hover:text-white transition"
+                          >
+                            <MdEdit className="w-5 h-5" />
+                          </button>
+                        )}
                         <button
                           onClick={() => togglePin(item.id)}
                           className="p-3 bg-white text-red-600 rounded-xl shadow-xs hover:bg-red-600 hover:text-white transition"
@@ -596,13 +608,13 @@ const Scrum = () => {
                 </div>
 
                 <Input label="Employee" type="select" value={formData.employeeName} onChange={(v) => handleFormChange("employeeName", v)}
-                 options={[
-  { label: "Select Employee", value: "" },
-  ...employees.map(e => ({
-    label: [e.first_name || "", e.last_name || ""].join(" ").trim() || e.username || "Unknown",
-    value: String(e.id),        
-  }))
-]}
+                  options={[
+                    { label: "Select Employee", value: "" },
+                    ...employees.map(e => ({
+                      label: [e.first_name || "", e.last_name || ""].join(" ").trim() || e.username || "Unknown",
+                      value: String(e.id),
+                    }))
+                  ]}
                 />
 
                 <div className="space-y-1">

@@ -31,6 +31,7 @@ const Overtime = () => {
   const [loading, setLoading] = useState(true);
   const [month, setMonth] = useState(new Date().getMonth() + 1);
   const [year, setYear] = useState(new Date().getFullYear());
+  const [availableYears, setAvailableYears] = useState([{ value: new Date().getFullYear(), label: String(new Date().getFullYear()) }]);
   const [calculating, setCalculating] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
 
@@ -52,6 +53,22 @@ const Overtime = () => {
   useEffect(() => {
     fetchOvertime();
   }, [month, year]);
+
+  useEffect(() => {
+    fetchAvailableYears();
+  }, []);
+
+  const fetchAvailableYears = () => {
+    apiClient.get("/hr/overtime/available_years/")
+      .then(res => {
+        if (Array.isArray(res.data) && res.data.length > 0) {
+          setAvailableYears(res.data);
+        }
+      })
+      .catch(err => {
+        console.error("Failed to fetch available years:", err);
+      });
+  };
 
   const fetchOvertime = () => {
     setLoading(true);
@@ -151,12 +168,13 @@ const Overtime = () => {
                 className="rounded-2xl border-gray-200"
               />
             </div>
-            <div className="w-32">
+            <div className="w-40">
               <Input
-                type="number"
+                type="select"
                 label="Fiscal Year"
                 value={year}
-                onChange={(e) => setYear(Number(e.target.value))}
+                onChange={setYear}
+                options={availableYears}
                 className="rounded-2xl border-gray-200"
               />
             </div>

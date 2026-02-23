@@ -7,7 +7,15 @@ from django.utils import timezone
 from datetime import timedelta, datetime, time, timezone as dt_timezone
 from django.db.models import Q, Count, Exists, OuterRef
 from .models import Attendance, Holiday, LeaveType, Leave, Overtime, Candidate, Performance, Project, Task, WorkSession, BreakSession
+from .models import Attendance, Holiday, LeaveType, Leave, Overtime, Candidate, Performance, Project, Task, WorkSession, BreakSession
 from .serializers import *
+import csv
+from django.http import HttpResponse
+from openpyxl import Workbook
+from reportlab.lib.pagesizes import letter, landscape
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph
+from reportlab.lib.styles import getSampleStyleSheet
+from reportlab.lib import colors
 
 class AttendanceViewSet(viewsets.ModelViewSet):
     queryset = Attendance.objects.all().select_related('employee')
@@ -21,9 +29,17 @@ class AttendanceViewSet(viewsets.ModelViewSet):
         
         month = self.request.query_params.get('month')
         year = self.request.query_params.get('year')
+        employee_id = self.request.query_params.get('employee_id')
+        department_id = self.request.query_params.get('department_id')
         
         if month and year:
             queryset = queryset.filter(date__month=month, date__year=year)
+            
+        if employee_id:
+            queryset = queryset.filter(employee_id=employee_id)
+            
+        if department_id:
+            queryset = queryset.filter(employee__department_id=department_id)
         
         if user.is_superuser or (getattr(user, 'role', None) and user.role.name == "Superadmin"):
             return queryset
@@ -360,6 +376,87 @@ class HolidayViewSet(viewsets.ModelViewSet):
     permission_classes = [HasPermission]
     page_name = 'holidays'
 
+    @action(detail=False, methods=['get'])
+    def export_csv(self, request):
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = 'attachment; filename="holidays.csv"'
+        
+        writer = csv.writer(response)
+        writer.writerow(['SL No', 'Date', 'Day', 'Occasion', 'Type'])
+        
+        holidays = self.queryset.order_by('date')
+        for idx, holiday in enumerate(holidays, 1):
+            writer.writerow([
+                idx,
+                holiday.date,
+                holiday.day,
+                holiday.occasion,
+                'Default' if holiday.is_default else 'Regular'
+            ])
+        return response
+
+    @action(detail=False, methods=['get'])
+    def export_excel(self, request):
+        wb = Workbook()
+        ws = wb.active
+        ws.title = "Holidays"
+        
+        columns = ['SL No', 'Date', 'Day', 'Occasion', 'Type']
+        ws.append(columns)
+        
+        holidays = self.queryset.order_by('date')
+        for idx, holiday in enumerate(holidays, 1):
+            ws.append([
+                idx,
+                str(holiday.date),
+                holiday.day,
+                holiday.occasion,
+                'Default' if holiday.is_default else 'Regular'
+            ])
+            
+        response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+        response['Content-Disposition'] = 'attachment; filename="holidays.xlsx"'
+        wb.save(response)
+        return response
+
+    @action(detail=False, methods=['get'])
+    def export_pdf(self, request):
+        response = HttpResponse(content_type='application/pdf')
+        response['Content-Disposition'] = 'attachment; filename="holidays.pdf"'
+        
+        doc = SimpleDocTemplate(response, pagesize=letter)
+        elements = []
+        
+        styles = getSampleStyleSheet()
+        elements.append(Paragraph("Holiday List", styles['Title']))
+        
+        data = [['SL No', 'Date', 'Day', 'Occasion', 'Type']]
+        holidays = self.queryset.order_by('date')
+        
+        for idx, holiday in enumerate(holidays, 1):
+            data.append([
+                str(idx),
+                str(holiday.date),
+                holiday.day,
+                holiday.occasion,
+                'Default' if holiday.is_default else 'Regular'
+            ])
+            
+        table = Table(data)
+        table.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
+            ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+            ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+            ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+            ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
+            ('GRID', (0, 0), (-1, -1), 1, colors.black)
+        ]))
+        
+        elements.append(table)
+        doc.build(elements)
+        return response
+
 class LeaveTypeViewSet(viewsets.ModelViewSet):
     queryset = LeaveType.objects.all()
     serializer_class = LeaveTypeSerializer
@@ -497,6 +594,21 @@ class OvertimeViewSet(viewsets.ModelViewSet):
         
         message = f"Overtime sync complete for {len(date_list)} day(s). Found {count_updated} overtime record(s)."
         return Response({"message": message, "updated_count": count_updated})
+
+    @action(detail=False, methods=['get'])
+    def available_years(self, request):
+        """Get list of years for selection, starting from 2020 to current + 5"""
+        current_year = timezone.now().year
+        # Generate range from 2020 to current_year + 5
+        range_years = list(range(2020, current_year + 6))
+        
+        # Include any actual years with data that might be outside this range
+        data_years = Overtime.objects.dates('date', 'year')
+        data_year_list = [date.year for date in data_years]
+        
+        final_years = sorted(list(set(range_years + data_year_list)), reverse=True)
+            
+        return Response([{"value": y, "label": str(y)} for y in final_years])
 
 class CandidateViewSet(viewsets.ModelViewSet):
     queryset = Candidate.objects.all().select_related('department')
@@ -704,7 +816,7 @@ class WorkSessionViewSet(viewsets.ModelViewSet):
     queryset = WorkSession.objects.all().select_related('employee', 'project', 'task').order_by('-start_time')
     serializer_class = WorkSessionSerializer
     permission_classes = [HasPermission]
-    page_name = 'time_logs'
+    page_name = 'timelogs'
 
     def get_queryset(self):
         user = self.request.user

@@ -34,8 +34,24 @@ class HasPermission(BasePermission):
             return True
 
         # Alias 'clients'/'client' and 'customer' (Clients are part of the 'customer' page in backend)
-        if page in ['clients', 'client'] and has_user_permission(request.user, 'customer', action):
+        if page in ['clients', 'client', 'customer'] and has_user_permission(request.user, 'customer', action):
             return True
+
+        # Allow view access to customers/clients if user has leads access
+        # Leads page needs to fetch companies and clients for lists/dropdowns.
+        if action == 'view' and page in ['customer', 'clients', 'client', 'companies'] and has_user_permission(request.user, 'leads', 'view'):
+            return True
+
+        # Communication Tools and Reports interoperability
+        # Some frontend components might still refer to 'reports' for templates,
+        # while others use 'communication_tools'.
+        if page in ['reports', 'communication_tools']:
+            if has_user_permission(request.user, 'reports', action) or \
+               has_user_permission(request.user, 'communication_tools', action):
+                return True
+            # Also allow viewing if user has leads view permission (for convenience)
+            if action == 'view' and has_user_permission(request.user, 'leads', 'view'):
+                return True
 
         # Allow view access to metadata (roles, departments) if user has employee access
         # This is needed for dropdowns and filters in the employee module.
