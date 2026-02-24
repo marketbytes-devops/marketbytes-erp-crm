@@ -9,7 +9,7 @@ import ResetPassword from "./pages/Auth/ResetPassword";
 import Profile from "./pages/Profile";
 import Users from "./pages/Roles/Users";
 import Roles from "./pages/Roles/Roles";
-import Permissions from "./pages/Roles/Permissions"; 
+import Permissions from "./pages/Roles/Permissions";
 import Loading from "./components/Loading";
 import { PermissionProvider, usePermission } from "./context/PermissionContext";
 import EmployeeView from "./pages/HR/Employees/EmployeeView";
@@ -67,7 +67,7 @@ const ProtectedRoute = ({
   requiredPage,
   requiredAction = "view",
 }) => {
-  const { hasPermission, isLoaded } = usePermission();
+  const { hasPermission, isLoaded, isAuthenticated } = usePermission();
 
   if (!isLoaded) {
     return (
@@ -77,6 +77,12 @@ const ProtectedRoute = ({
     );
   }
 
+  // If not logged in, go to login
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
+
+  // If logged in but no permission, go to home
   if (!hasPermission(requiredPage, requiredAction)) {
     return <Navigate to="/" replace />;
   }
@@ -719,6 +725,10 @@ function App() {
               <TaskArchive />
             </ProtectedRoute>
           ),
+        },
+        {
+          path: "*",
+          element: <Navigate to="/" replace />,
         },
       ],
     },
