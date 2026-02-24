@@ -50,6 +50,9 @@ const TimeLogs = () => {
   const [selectedEntry, setSelectedEntry] = useState(null);
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
 
+  const [viewMode, setViewMode] = useState("daily"); // "daily" or "detailed"
+  const [detailedEntries, setDetailedEntries] = useState([]);
+
   // Export dropdown state
   const [exportDropdownOpen, setExportDropdownOpen] = useState(false);
   const exportDropdownRef = useRef(null);
@@ -155,8 +158,6 @@ const TimeLogs = () => {
     setSearch("");
   };
 
-  const [viewMode, setViewMode] = useState("daily"); // "daily" or "detailed"
-  const [detailedEntries, setDetailedEntries] = useState([]);
 
   const fetchData = async () => {
     try {

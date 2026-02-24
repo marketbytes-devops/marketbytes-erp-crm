@@ -79,15 +79,7 @@ const EmployeeProfile = () => {
   }
 
   const getImageUrl = () => {
-    if (employee.image_url) return employee.image_url;
-    if (employee.image) {
-      if (employee.image.startsWith('http')) {
-        return employee.image;
-      } else {
-        return `http://localhost:8000${employee.image}`;
-      }
-    }
-    return `https://ui-avatars.com/api/?name=${encodeURIComponent(employee.name || employee.email)}&background=000&color=fff&size=300&bold=true&font-size=0.5`;
+    return employee.image_url || employee.image || `https://ui-avatars.com/api/?name=${encodeURIComponent(employee.name || employee.email)}&background=000&color=fff&size=300&bold=true&font-size=0.5`;
   };
 
   const formatDate = (dateString) => {
