@@ -179,7 +179,9 @@ CORS_ALLOW_HEADERS = [
  
 # Allow credentials if needed (for cookies, auth)
 CORS_ALLOW_CREDENTIALS = True
- 
+
+CSRF_TRUSTED_ORIGINS = os.getenv('CSRF_TRUSTED_ORIGINS', 'http://localhost').split(',')
+
 # File Upload Size Limit
 DATA_UPLOAD_MAX_MEMORY_SIZE = int(os.getenv('DATA_UPLOAD_MAX_MEMORY_SIZE', 5242880))
 FILE_UPLOAD_MAX_MEMORY_SIZE = int(os.getenv('FILE_UPLOAD_MAX_MEMORY_SIZE', 5242880))
@@ -203,6 +205,9 @@ GMAIL_REDIRECT_URI = os.getenv('GMAIL_REDIRECT_URI', 'http://127.0.0.1:8000/api/
 # Encryption Key for storing OAuth tokens securely
 FERNET_KEY = os.getenv('FERNET_KEY')
  
+# Tell Django that Nginx is forwarding HTTPS requests
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
 # Security settings (enable in production)
 if not DEBUG:
     SECURE_BROWSER_XSS_FILTER = True
