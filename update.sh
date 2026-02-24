@@ -15,8 +15,10 @@ git pull
 echo "Rebuilding and restarting Docker containers..."
 docker-compose up -d --build
 
-# 3. Clean up unused Docker images and volumes
-echo "Cleaning up unused Docker resources..."
-docker system prune -f
+# 3. Clean up old images (dangling)
+# This only removes the "old" versions of images left over from the build.
+# It will NOT affect your other running projects.
+echo "Cleaning up old Docker images..."
+docker image prune -f
 
 echo "Update Complete! Your ERP-CRM is now up to date."
