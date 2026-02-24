@@ -78,15 +78,25 @@ class UserSerializer(serializers.ModelSerializer):
     department_id = serializers.PrimaryKeyRelatedField(queryset=Department.objects.all(), source='department', write_only=True, required=False, allow_null=True)
     direct_permissions = UserPermissionSerializer(many=True, read_only=True)
     effective_permissions = serializers.SerializerMethodField()
+    image = serializers.ImageField(required=False)
+    image_url = serializers.SerializerMethodField()
 
     class Meta:
         model = CustomUser
-        fields = ['id', 'first_name','last_name', 'email', 'username', 'name', 'employee_id', 'status', 'role', 'role_id', 'department', 'department_id', 'exit_date', 'direct_permissions', 'effective_permissions']
+        fields = ['id', 'first_name','last_name', 'email', 'username', 'name', 'employee_id', 'status', 'role', 'role_id', 'department', 'department_id', 'exit_date', 'direct_permissions', 'effective_permissions', 'image', 'image_url']
 
     def get_effective_permissions(self, obj):
         """Returns computed effective permissions for the user"""
         effective = get_user_effective_permissions(obj)
         return effective
+
+    def get_image_url(self, obj):
+        if obj.image:
+            request = self.context.get('request')
+            if request:
+                return request.build_absolute_uri(obj.image.url)
+            return obj.image.url
+        return None
 
 class ProfileSerializer(serializers.ModelSerializer):
     role = RoleSerializer(read_only=True)
