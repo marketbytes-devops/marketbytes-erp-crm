@@ -1,6 +1,17 @@
 version: '3.8'
-
 services:
+  db:
+    image: mysql:8.0
+    container_name: mysql_marketbytes_erp
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: erpcrmmarketbytes@9633
+      MYSQL_DATABASE: marketbytes_crm
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - marketbytes-erp-network
+
   backend:
     build:
       context: ./backend
@@ -14,8 +25,10 @@ services:
     volumes:
       - backend_media:/app/media
       - backend_static:/app/staticfiles
+    depends_on:
+      - db
     networks:
-      - marketbytes-network
+      - marketbytes-erp-network
 
   frontend:
     build:
@@ -28,12 +41,13 @@ services:
     depends_on:
       - backend
     networks:
-      - marketbytes-network
+      - marketbytes-erp-network
 
 networks:
-  marketbytes-network:
+  marketbytes-erp-network:
     driver: bridge
 
 volumes:
   backend_media:
   backend_static:
+  mysql_data:
