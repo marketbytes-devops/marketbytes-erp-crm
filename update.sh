@@ -10,10 +10,10 @@ echo "Pulling latest changes from GitHub..."
 git pull
 
 # 2. Rebuild and restart Docker containers
-# Note: Rebuild is necessary because the code is inside Docker images.
-# Git pull only updates files on the server; rebuild puts them into the app.
+# Note: Using 'docker compose' (V2) instead of 'docker-compose' (V1)
+# to fix a bug (KeyError: 'ContainerConfig') in old versions.
 echo "Rebuilding and restarting Docker containers..."
-docker-compose up -d --build
+docker compose up -d --build
 
 # 3. Clean up old images (dangling)
 # This only removes the "old" versions of images left over from the build.
