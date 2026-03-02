@@ -253,41 +253,45 @@ const TimeLogs = () => {
     let tableData, headers;
     if (viewMode === "daily") {
       headers = [
-        "ID",
-        "Employee",
-        "Date",
-        "First Check-in",
-        "Last Check-out",
-        "Total Hours",
-        "Productive Hours",
-      ];
-      tableData = filteredEntries.map((entry) => [
-        `#${entry.id}`,
-        entry.employee?.name || "Unknown",
-        formatDate(entry.date),
-        entry.first_clock_in || "N/A",
-        entry.last_clock_out || "Active",
-        `${entry.total_hours}h`,
-        `${entry.productive_hours}h`,
-      ]);
-    } else {
-      headers = [
-        "ID",
-        "Task/Project",
+        "Task / Project",
         "Employee",
         "Start Time",
         "End Time",
         "Duration",
         "Break Timer",
+        "Productive Hours",
+        "Type",
       ];
       tableData = filteredEntries.map((entry) => [
-        `#${entry.id}`,
+        entry.tasks || "Daily Work",
+        entry.employee?.name || "Unknown",
+        entry.first_clock_in || "N/A",
+        entry.last_clock_out || "Active",
+        `${entry.total_hours}h`,
+        `${entry.break_hours || 0}h`,
+        `${entry.productive_hours}h`,
+        entry.is_billable ? "Billable" : "Internal",
+      ]);
+    } else {
+      headers = [
+        "Task / Project",
+        "Employee",
+        "Start Time",
+        "End Time",
+        "Duration",
+        "Break Timer",
+        "Productive Hours",
+        "Type",
+      ];
+      tableData = filteredEntries.map((entry) => [
         `${entry.task_name || "Internal"} / ${entry.project_name || "General"}`,
         entry.employee?.name || "Unknown",
         formatTime(entry.start_time),
         formatTime(entry.end_time),
         `${entry.total_hours}h`,
         `${entry.break_hours || 0}h`,
+        `${entry.productive_hours}h`,
+        entry.is_billable ? "Billable" : "Internal",
       ]);
     }
 
@@ -324,32 +328,26 @@ const TimeLogs = () => {
     let data;
     if (viewMode === "daily") {
       data = filteredEntries.map((entry) => ({
-        ID: `#${entry.id}`,
+        "Task / Project": entry.tasks || "Daily Work",
         Employee: entry.employee?.name || "Unknown",
         Email: entry.employee?.email || "N/A",
-        Date: formatDate(entry.date),
-        "First Check-in": entry.first_clock_in || "N/A",
-        "Last Check-out": entry.last_clock_out || "Active",
-        "Total Hours": `${entry.total_hours}h`,
+        "Start Time": entry.first_clock_in || "N/A",
+        "End Time": entry.last_clock_out || "Active",
+        Duration: `${entry.total_hours}h`,
+        "Break Timer": `${entry.break_hours || 0}h`,
         "Productive Hours": `${entry.productive_hours}h`,
-        Tasks: entry.tasks || "N/A",
-        Projects: entry.projects || "N/A",
         Type: entry.is_billable ? "Billable" : "Internal",
       }));
     } else {
       data = filteredEntries.map((entry) => ({
-        ID: `#${entry.id}`,
-        Task: entry.task_name || "Internal",
-        Project: entry.project_name || "General",
+        "Task / Project": `${entry.task_name || "Internal"} / ${entry.project_name || "General"}`,
         Employee: entry.employee?.name || "Unknown",
         Email: entry.employee?.email || "N/A",
         "Start Time": formatTime(entry.start_time),
-        "Start Date": formatDate(entry.start_time),
         "End Time": formatTime(entry.end_time),
-        "End Date": formatDate(entry.end_time || entry.start_time),
         Duration: `${entry.total_hours}h`,
         "Break Timer": `${entry.break_hours || 0}h`,
-        Memo: entry.memo || "N/A",
+        "Productive Hours": `${entry.productive_hours}h`,
         Type: entry.is_billable ? "Billable" : "Internal",
       }));
     }
@@ -410,32 +408,26 @@ const TimeLogs = () => {
 
     if (viewMode === "daily") {
       data = filteredEntries.map((entry) => ({
-        ID: `#${entry.id}`,
+        "Task / Project": entry.tasks || "Daily Work",
         Employee: entry.employee?.name || "Unknown",
         Email: entry.employee?.email || "N/A",
-        Date: formatDate(entry.date),
-        "First Check-in": entry.first_clock_in || "N/A",
-        "Last Check-out": entry.last_clock_out || "Active",
-        "Total Hours": entry.total_hours,
+        "Start Time": entry.first_clock_in || "N/A",
+        "End Time": entry.last_clock_out || "Active",
+        Duration: entry.total_hours,
+        "Break Timer": entry.break_hours || 0,
         "Productive Hours": entry.productive_hours,
-        Tasks: entry.tasks || "N/A",
-        Projects: entry.projects || "N/A",
         Type: entry.is_billable ? "Billable" : "Internal",
       }));
     } else {
       data = filteredEntries.map((entry) => ({
-        ID: `#${entry.id}`,
-        Task: entry.task_name || "Internal",
-        Project: entry.project_name || "General",
+        "Task / Project": `${entry.task_name || "Internal"} / ${entry.project_name || "General"}`,
         Employee: entry.employee?.name || "Unknown",
         Email: entry.employee?.email || "N/A",
         "Start Time": formatTime(entry.start_time),
-        "Start Date": formatDate(entry.start_time),
         "End Time": formatTime(entry.end_time),
-        "End Date": formatDate(entry.end_time || entry.start_time),
         Duration: entry.total_hours,
         "Break Timer": entry.break_hours || 0,
-        Memo: entry.memo || "N/A",
+        "Productive Hours": entry.productive_hours,
         Type: entry.is_billable ? "Billable" : "Internal",
       }));
     }
@@ -716,9 +708,7 @@ const TimeLogs = () => {
               <table className="w-full min-w-[1000px]">
                 <thead className="bg-gray-50 border-b border-gray-200">
                   <tr>
-                    <th className="px-6 py-5 text-left text-xs font-medium text-gray-700 uppercase tracking-wider whitespace-nowrap">
-                      ID
-                    </th>
+
                     <th className="px-6 py-5 text-left text-xs font-medium text-gray-700 uppercase tracking-wider whitespace-nowrap">
                       Task / Project
                     </th>
@@ -734,11 +724,9 @@ const TimeLogs = () => {
                     <th className="px-6 py-5 text-left text-xs font-medium text-gray-700 uppercase tracking-wider whitespace-nowrap">
                       Duration
                     </th>
-                    {viewMode === "detailed" && (
-                      <th className="px-6 py-5 text-left text-xs font-medium text-gray-700 uppercase tracking-wider whitespace-nowrap">
-                        Break Timer
-                      </th>
-                    )}
+                    <th className="px-6 py-5 text-left text-xs font-medium text-gray-700 uppercase tracking-wider whitespace-nowrap">
+                      Break Timer
+                    </th>
                     <th className="px-6 py-5 text-left text-xs font-medium text-gray-700 uppercase tracking-wider whitespace-nowrap">
                       Productive Hours
                     </th>
@@ -754,7 +742,7 @@ const TimeLogs = () => {
                   {filteredEntries.length === 0 ? (
                     <tr>
                       <td
-                        colSpan={viewMode === "detailed" ? "10" : "9"}
+                        colSpan="9"
                         className="text-center py-24"
                       >
                         <div className="flex flex-col items-center">
@@ -787,9 +775,7 @@ const TimeLogs = () => {
                         transition={{ delay: i * 0.03 }}
                         className="hover:bg-gray-50 transition"
                       >
-                        <td className="px-6 py-5 text-sm font-medium text-gray-500 whitespace-nowrap">
-                          #{entry.id}
-                        </td>
+
                         <td className="px-6 py-5 whitespace-nowrap">
                           <div className="flex flex-col">
                             <span className="font-medium text-gray-900 line-clamp-1">
@@ -851,13 +837,11 @@ const TimeLogs = () => {
                             {entry.total_hours}h
                           </span>
                         </td>
-                        {viewMode === "detailed" && (
-                          <td className="px-6 py-5 whitespace-nowrap">
-                            <span className="text-sm font-medium text-orange-600">
-                              {entry.break_hours || 0}h
-                            </span>
-                          </td>
-                        )}
+                        <td className="px-6 py-5 whitespace-nowrap">
+                          <span className="text-sm font-medium text-orange-600">
+                            {entry.break_hours || 0}h
+                          </span>
+                        </td>
                         <td className="px-6 py-5 whitespace-nowrap">
                           <span className="text-sm font-medium text-blue-600">
                             {entry.productive_hours || 0}h

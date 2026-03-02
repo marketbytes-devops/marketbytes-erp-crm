@@ -15,7 +15,7 @@ const DesignationEdit = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    apiClient.get(`/auth/roles/${id}/`)
+    apiClient.get(`/auth/designations/${id}/`)
       .then(res => {
         setName(res.data.name);
         setDescription(res.data.description);
@@ -26,7 +26,7 @@ const DesignationEdit = () => {
 
   const handleSave = async () => {
     try {
-      await apiClient.put(`/auth/roles/${id}/`, { name, description });
+      await apiClient.put(`/auth/designations/${id}/`, { name, description });
       toast.success("Updated!");
       navigate("/hr/designations");
     } catch {

@@ -26,7 +26,7 @@ const EmployeeView = () => {
     selectedEmployee: "",
     skills: "",
     role: "",
-    designation: "",
+    designation_id: "",
     department: "",
   });
 
@@ -56,7 +56,7 @@ const EmployeeView = () => {
       emp.name || "",
       emp.email || "",
       emp.department?.name || "",
-      emp.role?.name || "",
+      emp.designation?.name || emp.role?.name || "",
       emp.status || ""
     ]);
 
@@ -105,7 +105,7 @@ const EmployeeView = () => {
       emp.name || "-",
       emp.email || "-",
       emp.department?.name || "-",
-      emp.role?.name || "-",
+      emp.designation?.name || emp.role?.name || "-",
       emp.status || "-",
     ]);
 
@@ -125,10 +125,11 @@ const EmployeeView = () => {
     const fetchAll = async () => {
       try {
         setLoading(true);
-        const [empRes, deptRes, roleRes] = await Promise.all([
+        const [empRes, deptRes, roleRes, desigRes] = await Promise.all([
           apiClient.get("/auth/users/"),
           apiClient.get("/auth/departments/"),
           apiClient.get("/auth/roles/"),
+          apiClient.get("/auth/designations/"),
         ]);
 
         const extract = (d) => (Array.isArray(d) ? d : d.results || []);
@@ -138,6 +139,7 @@ const EmployeeView = () => {
         setFiltered(emps);
         setDepartments(extract(deptRes.data));
         setRoles(extract(roleRes.data));
+        setDesignations(extract(desigRes.data));
 
         const skillsSet = new Set();
         emps.forEach(emp => {
@@ -149,10 +151,6 @@ const EmployeeView = () => {
           }
         });
         setAllSkills(Array.from(skillsSet).sort());
-
-        const desSet = new Set();
-        emps.forEach(emp => emp.role?.name && desSet.add(emp.role.name));
-        setDesignations(Array.from(desSet).sort());
 
       } catch (err) {
         toast.error("Failed to load data");
@@ -183,7 +181,7 @@ const EmployeeView = () => {
     if (filters.selectedEmployee) result = result.filter(e => e.id === parseInt(filters.selectedEmployee));
     if (filters.skills) result = result.filter(e => e.skills?.toLowerCase().includes(filters.skills.toLowerCase()));
     if (filters.role) result = result.filter(e => e.role?.id === parseInt(filters.role));
-    if (filters.designation) result = result.filter(e => e.role?.name === filters.designation);
+    if (filters.designation_id) result = result.filter(e => e.designation?.id === parseInt(filters.designation_id));
     if (filters.department) result = result.filter(e => e.department?.id === parseInt(filters.department));
 
     setFiltered(result);
@@ -191,6 +189,7 @@ const EmployeeView = () => {
 
   const getDepartmentName = (emp) => emp.department?.name || "—";
   const getRoleName = (emp) => emp.role?.name || "No Role";
+  const getDesignationName = (emp) => emp.designation?.name || "—";
   const getImageUrl = (emp) => emp.image_url || emp.image || `https://ui-avatars.com/api/?name=${encodeURIComponent(emp.name || emp.email)}&background=2563eb&color=fff&bold=true`;
 
   const handleDelete = async (id) => {
@@ -206,7 +205,7 @@ const EmployeeView = () => {
 
   const handleFilterChange = (key, value) => setFilters(prev => ({ ...prev, [key]: value }));
   const resetFilters = () => {
-    setFilters({ status: "", selectedEmployee: "", skills: "", role: "", designation: "", department: "" });
+    setFilters({ status: "", selectedEmployee: "", skills: "", role: "", designation_id: "", department: "" });
     setSearch("");
   };
   const activeCount = Object.values(filters).filter(v => v !== "").length;
@@ -380,11 +379,11 @@ const EmployeeView = () => {
                     <Input
                       label="Designation"
                       type="select"
-                      value={filters.designation}
-                      onChange={(val) => handleFilterChange("designation", val)}
+                      value={filters.designation_id}
+                      onChange={(val) => handleFilterChange("designation_id", val)}
                       options={[
                         { label: "All Designations", value: "" },
-                        ...designations.map(d => ({ label: d, value: d }))
+                        ...designations.map(d => ({ label: d.name, value: d.id }))
                       ]}
                       placeholder="Select designation"
                     />
@@ -499,9 +498,14 @@ const EmployeeView = () => {
                           </span>
                         </td>
                         <td className="px-6 py-5 whitespace-nowrap">
-                          <span className="px-3 py-1.5 bg-purple-100 text-purple-800 rounded-full text-xs font-medium">
-                            {getRoleName(emp)}
-                          </span>
+                          <div className="flex flex-col gap-1">
+                            <span className="px-3 py-1 bg-gray-100 text-gray-800 rounded-lg text-[11px] font-medium w-fit">
+                              {getDesignationName(emp)}
+                            </span>
+                            <span className="px-3 py-1 bg-purple-50 text-purple-700 rounded-lg text-[10px] font-semibold w-fit">
+                              {getRoleName(emp)}
+                            </span>
+                          </div>
                         </td>
                         <td className="px-6 py-5 whitespace-nowrap">
                           <span className={`px-3 py-1.5 rounded-full text-xs font-medium ${emp.status === "active" ? "bg-green-100 text-green-800" :

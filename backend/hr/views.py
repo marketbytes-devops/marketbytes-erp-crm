@@ -139,6 +139,11 @@ class AttendanceViewSet(viewsets.ModelViewSet):
                 attendance.clock_in_ip = ip
                 attendance.status = self._calculate_status(current_time)
                 attendance.save()
+                
+                # Start an automatic break session if no active break exists
+                if not BreakSession.objects.filter(employee=request.user, end_time__isnull=True).exists():
+                    BreakSession.objects.create(employee=request.user, type='break')
+
                 return Response({
                     "message": "Welcome back! Check-in time updated.",
                     "time": attendance.clock_in.strftime("%H:%M"),
@@ -172,6 +177,10 @@ class AttendanceViewSet(viewsets.ModelViewSet):
                          attendance.is_late = False
 
                 attendance.save()
+
+                # Automatically start a break session upon check-in
+                BreakSession.objects.create(employee=request.user, type='break')
+
                 return Response({
                     "message": "Checked in successfully",
                     "time": attendance.clock_in.strftime("%H:%M"),
@@ -738,6 +747,10 @@ class TimerViewSet(viewsets.ViewSet):
         
         session.end_time = timezone.now()
         session.save()
+
+        # Automatically start a break session after stopping work
+        BreakSession.objects.create(employee=request.user, type='break')
+
         return Response(WorkSessionSerializer(session).data)
     
     @action(detail=False, methods=['post'])
@@ -761,6 +774,9 @@ class TimerViewSet(viewsets.ViewSet):
         
         break_session.end_time = timezone.now()
         break_session.save()
+
+
+
         return Response(BreakSessionSerializer(break_session).data)
     
     @action(detail=False, methods=['get'])

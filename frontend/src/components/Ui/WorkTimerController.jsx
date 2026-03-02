@@ -34,9 +34,9 @@ const WorkTimerController = () => {
       setBreakSeconds(s.today_total_break_seconds || 0);
       setSupportSeconds(s.today_total_support_seconds || 0);
 
-      // Initialize session timer for breaks/support based on current session start
-      if (s.is_on_break && s.current_break_session?.start_time) {
-        const start = new Date(s.current_break_session.start_time);
+      // Initialize session timer based on current session start
+      if ((s.is_working && s.current_work_session?.start_time) || (s.is_on_break && s.current_break_session?.start_time)) {
+        const start = new Date(s.is_working ? s.current_work_session.start_time : s.current_break_session.start_time);
         const elapsed = Math.floor((new Date() - start) / 1000);
         setSessionSeconds(elapsed);
       } else {
@@ -58,13 +58,11 @@ const WorkTimerController = () => {
     if (!status.is_working && !status.is_on_break) return;
 
     const id = setInterval(() => {
+      setSessionSeconds((prev) => prev + 1);
       if (status.is_working) {
         // Work timer always shows daily total
         setWorkSeconds((prev) => prev + 1);
       } else if (status.is_on_break) {
-        // Break/Support shows current session timer on the main display
-        setSessionSeconds((prev) => prev + 1);
-
         // But also update the daily counts for the dashboard
         if (status.active_type === "break") {
           setBreakSeconds((prev) => prev + 1);
@@ -86,10 +84,10 @@ const WorkTimerController = () => {
   const handleCheckIn = async () => {
     try {
       await apiClient.post("/hr/attendance/check_in_out/", { action: "in" });
+      await apiClient.post("/hr/timer/start_break/", { type: "break" });
+      alert("Attendance marked successfully");
       setCheckedIn(true);
-      await apiClient.post("/hr/timer/start_work/", { project: null, task: null, memo: "Started day" });
       fetchStatus();
-      setModalOpen(true);
     } catch (e) {
       console.error(e);
     }
@@ -123,7 +121,8 @@ const WorkTimerController = () => {
   const stopWork = async () => {
     try {
       await apiClient.post("/hr/timer/stop_work/");
-      setModalOpen(true);
+      await apiClient.post("/hr/timer/start_break/", { type: "break" });
+      setModalOpen(false);
       fetchStatus();
     } catch (e) {
       console.error(e);
@@ -132,7 +131,7 @@ const WorkTimerController = () => {
 
   const startBreak = async (type) => {
     try {
-      setSessionSeconds(0); // Reset session timer immediately for visual snappiness
+      setSessionSeconds(0);
       await apiClient.post("/hr/timer/start_break/", { type });
       setModalOpen(false);
       fetchStatus();
@@ -144,22 +143,14 @@ const WorkTimerController = () => {
   const stopBreak = async () => {
     try {
       await apiClient.post("/hr/timer/stop_break/");
-      setModalOpen(true);
+      setModalOpen(false);
       fetchStatus();
     } catch (e) {
       console.error(e);
     }
   };
 
-  const handleTopbarButtonClick = () => {
-    if (!checkedIn) {
-      handleCheckIn();
-      return;
-    }
-    if (status?.is_working) {
-      stopWork();
-      return;
-    }
+  const handleStartStopClick = () => {
     if (status?.is_on_break) {
       stopBreak();
       return;
@@ -172,7 +163,17 @@ const WorkTimerController = () => {
   return (
     <>
       <WorkTimerButton
-        onOpenWorkTimer={handleTopbarButtonClick}
+        onCheckIn={handleCheckIn}
+        onCheckOut={() => {
+          if (status?.is_working || status?.is_on_break) {
+            if (window.confirm("Active timer will be stopped. Proceed to Check Out?")) {
+              handleCheckOut();
+            }
+          } else {
+            handleCheckOut();
+          }
+        }}
+        onStartStop={handleStartStopClick}
         status={{
           ...status,
           workSeconds,
@@ -187,8 +188,9 @@ const WorkTimerController = () => {
         open={modalOpen}
         onClose={() => setModalOpen(false)}
         onStartWork={startWork}
-        onBreak={() => startBreak("break")}
-        onSupport={() => startBreak("support")}
+        onStopWork={stopWork}
+        onBreak={() => status?.active_type === "break" ? stopBreak() : startBreak("break")}
+        onSupport={() => status?.active_type === "support" ? stopBreak() : startBreak("support")}
         onCheckOut={handleCheckOut}
         checkedIn={checkedIn}
         status={{

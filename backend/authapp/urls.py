@@ -4,12 +4,13 @@ from .views import (
     LoginView, RequestOTPView, ResetPasswordView, ProfileView,
     ChangePasswordView, RoleView, RoleDetailView, PermissionView,
     PermissionListView, PermissionDetailView, UserManagementView,
-    UserDetailView, CustomTokenObtainPairView, DepartmentViewSet
+    UserDetailView, CustomTokenObtainPairView, DepartmentViewSet, DesignationViewSet
 )
 from rest_framework_simplejwt.views import TokenRefreshView
 
 router = DefaultRouter()
 router.register(r'departments', DepartmentViewSet)
+router.register(r'designations', DesignationViewSet)
 
 urlpatterns = [
     path("login/", LoginView.as_view(), name="login"),
