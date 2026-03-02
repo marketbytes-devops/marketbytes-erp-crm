@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import apiClient from "../../helpers/apiClient";
 import WorkTimerButton from "../Ui/WorkTimerButton";
 import TimerModal from "../Ui/TimerModal";
+import toast from "react-hot-toast";
 
 const WorkTimerController = () => {
   const [checkedIn, setCheckedIn] = useState(false);
@@ -60,10 +61,8 @@ const WorkTimerController = () => {
     const id = setInterval(() => {
       setSessionSeconds((prev) => prev + 1);
       if (status.is_working) {
-        // Work timer always shows daily total
         setWorkSeconds((prev) => prev + 1);
       } else if (status.is_on_break) {
-        // But also update the daily counts for the dashboard
         if (status.active_type === "break") {
           setBreakSeconds((prev) => prev + 1);
         } else if (status.active_type === "support") {
@@ -83,9 +82,24 @@ const WorkTimerController = () => {
 
   const handleCheckIn = async () => {
     try {
-      await apiClient.post("/hr/attendance/check_in_out/", { action: "in" });
+      const res = await apiClient.post("/hr/attendance/check_in_out/", { action: "in" });
       await apiClient.post("/hr/timer/start_break/", { type: "break" });
-      alert("Attendance marked successfully");
+      // Show popup with clock-in time from response or current time
+      const time = res?.data?.time || new Date().toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", hour12: true });
+      // Show toast notification
+      toast.success("Attendance Marked!", {
+        position: "top-right",
+        duration: 3000,
+        style: {
+          borderRadius: '12px',
+          background: '#FFFFFF',
+          color: '#111827',
+          border: '1px solid #E5E7EB',
+          padding: '16px',
+          fontSize: '14px',
+          fontWeight: '500'
+        },
+      });
       setCheckedIn(true);
       fetchStatus();
     } catch (e) {
@@ -95,7 +109,18 @@ const WorkTimerController = () => {
 
   const handleCheckOut = async () => {
     try {
+      // 1. If currently working, stop work session
+      if (status?.is_working) {
+        await apiClient.post("/hr/timer/stop_work/");
+      }
+      // 2. If currently on break/support, stop break session
+      else if (status?.is_on_break) {
+        await apiClient.post("/hr/timer/stop_break/");
+      }
+
+      // 3. Finally, perform the attendance check-out
       await apiClient.post("/hr/attendance/check_in_out/", { action: "out" });
+
       setCheckedIn(false);
       setStatus(null);
       setWorkSeconds(0);
@@ -104,7 +129,7 @@ const WorkTimerController = () => {
       setSessionSeconds(0);
       setModalOpen(false);
     } catch (e) {
-      console.error(e);
+      console.error("Check-out error:", e);
     }
   };
 
@@ -164,21 +189,14 @@ const WorkTimerController = () => {
     <>
       <WorkTimerButton
         onCheckIn={handleCheckIn}
-        onCheckOut={() => {
-          if (status?.is_working || status?.is_on_break) {
-            if (window.confirm("Active timer will be stopped. Proceed to Check Out?")) {
-              handleCheckOut();
-            }
-          } else {
-            handleCheckOut();
-          }
-        }}
+        onCheckOut={handleCheckOut}
         onStartStop={handleStartStopClick}
         status={{
           ...status,
           workSeconds,
           breakSeconds,
-          supportSeconds
+          supportSeconds,
+          clock_in: clockIn
         }}
         timerSeconds={activeTimerSeconds}
         checkedIn={checkedIn}
