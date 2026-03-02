@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { MdStop } from "react-icons/md";
 import apiClient from "../../helpers/apiClient";
 import Input from "../Input";
 import LayoutComponents from "../LayoutComponents";
@@ -10,7 +11,7 @@ const formatTime = (s) => {
   return `${h}:${m}:${sec}`;
 };
 
-const TimerModal = ({ open, onClose, onStartWork, onBreak, onSupport, onCheckOut, checkedIn, status }) => {
+const TimerModal = ({ open, onClose, onStartWork, onStopWork, onBreak, onSupport, onCheckOut, checkedIn, status }) => {
   const [projects, setProjects] = useState([]);
   const [showWorkForm, setShowWorkForm] = useState(false);
   const [showCheckoutConfirm, setShowCheckoutConfirm] = useState(false);
@@ -20,6 +21,8 @@ const TimerModal = ({ open, onClose, onStartWork, onBreak, onSupport, onCheckOut
   const [memo, setMemo] = useState("");
   const [error, setError] = useState("");
 
+  const isWorking = !!status?.is_working;
+
   useEffect(() => {
     if (open) {
       apiClient
@@ -28,8 +31,13 @@ const TimerModal = ({ open, onClose, onStartWork, onBreak, onSupport, onCheckOut
           setProjects(res.data);
         })
         .catch((err) => console.error("Error fetching timer projects:", err));
+
+      // Automatically show work form if not working and opening modal
+      if (!isWorking && !showCheckoutConfirm) {
+        setShowWorkForm(true);
+      }
     }
-  }, [open]);
+  }, [open, isWorking]);
 
   const projectOptions = projects.map((p) => ({ value: p.id, label: p.name }));
   const selectedProject = projects.find((p) => String(p.id) === String(project));
@@ -55,6 +63,7 @@ const TimerModal = ({ open, onClose, onStartWork, onBreak, onSupport, onCheckOut
       task: task || null,
       memo: memo.trim(),
     });
+    setShowWorkForm(false);
   };
 
   const handleCheckoutConfirm = () => {
@@ -70,11 +79,39 @@ const TimerModal = ({ open, onClose, onStartWork, onBreak, onSupport, onCheckOut
   return (
     <LayoutComponents
       variant="modal"
-      title="Daily Timer Dashboard"
+      title={isWorking ? "STOP TIMER" : "Daily Timer Dashboard"}
       onCloseModal={onClose}
       modal={
         <div className="space-y-6 min-w-[320px]">
-          {!showWorkForm && !showCheckoutConfirm && (
+          {isWorking && (
+            <div className="space-y-8 py-4">
+              <div className="border-b border-gray-100 pb-6">
+                <h3 className="text-sm font-bold text-gray-900 uppercase tracking-widest mb-4">
+                  {status.current_work_session?.project_name || "General"}# {status.current_work_session?.task || "N/A"} - {status.current_work_session?.task_name || "Works"}
+                </h3>
+                <p className="text-lg text-gray-800 font-medium">
+                  <span className="text-gray-900 font-bold">Memo :-</span> {status.current_work_session?.memo || "No memo provided"}
+                </p>
+              </div>
+
+              <div className="text-center py-6 border-b border-gray-100">
+                <p className="text-4xl font-mono font-medium text-gray-600 tracking-wider">
+                  {formatTime(status?.sessionSeconds || 0)}
+                </p>
+              </div>
+
+              <button
+                onClick={() => {
+                  onStopWork();
+                }}
+                className="w-full bg-black hover:bg-gray-900 text-white font-bold py-4 rounded-lg shadow-xl flex items-center justify-center gap-2 transition-all active:scale-95 text-lg"
+              >
+                <MdStop className="w-5 h-5" /> Stop Timer
+              </button>
+            </div>
+          )}
+
+          {!isWorking && !showWorkForm && !showCheckoutConfirm && (
             <div className="space-y-6">
               {/* Daily Progress Section */}
               <div className="bg-gray-50 rounded-2xl p-6 border border-gray-100 shadow-inner">
@@ -98,26 +135,26 @@ const TimerModal = ({ open, onClose, onStartWork, onBreak, onSupport, onCheckOut
 
               {/* Stats Grid */}
               <div className="grid grid-cols-2 gap-4">
-                <div className={`p-4 rounded-xl border transition-all ${status?.active_type === "break" ? "bg-orange-100 border-orange-300 ring-2 ring-orange-200" : "bg-orange-50 border-orange-100"}`}>
-                  <p className="text-orange-600 text-[10px] font-medium uppercase tracking-tight mb-1">
+                <div className={`p-4 rounded-xl border transition-all ${status?.active_type === "break" ? "bg-white border-black ring-2 ring-black/5" : "bg-white border-gray-100"}`}>
+                  <p className="text-gray-600 text-[10px] font-medium uppercase tracking-tight mb-1">
                     {status?.active_type === "break" ? "Current Break" : "Total Break"}
                   </p>
-                  <p className="text-lg font-mono font-medium text-orange-700">
+                  <p className="text-lg font-mono font-medium text-gray-700">
                     {formatTime(status?.active_type === "break" ? (status?.sessionSeconds || 0) : (status?.breakSeconds || 0))}
                   </p>
                   {status?.active_type === "break" && (
-                    <p className="text-[10px] text-orange-500 mt-1">Total today: {formatTime(status?.breakSeconds || 0)}</p>
+                    <p className="text-[10px] text-gray-500 mt-1">Total today: {formatTime(status?.breakSeconds || 0)}</p>
                   )}
                 </div>
-                <div className={`p-4 rounded-xl border transition-all ${status?.active_type === "support" ? "bg-indigo-100 border-indigo-300 ring-2 ring-indigo-200" : "bg-indigo-50 border-indigo-100"}`}>
-                  <p className="text-indigo-600 text-[10px] font-medium uppercase tracking-tight mb-1">
+                <div className={`p-4 rounded-xl border transition-all ${status?.active_type === "support" ? "bg-white border-black ring-2 ring-black/5" : "bg-white border-gray-100"}`}>
+                  <p className="text-gray-600 text-[10px] font-medium uppercase tracking-tight mb-1">
                     {status?.active_type === "support" ? "Current Support" : "Total Support"}
                   </p>
-                  <p className="text-lg font-mono font-medium text-indigo-700">
+                  <p className="text-lg font-mono font-medium text-gray-700">
                     {formatTime(status?.active_type === "support" ? (status?.sessionSeconds || 0) : (status?.supportSeconds || 0))}
                   </p>
                   {status?.active_type === "support" && (
-                    <p className="text-[10px] text-indigo-500 mt-1">Total today: {formatTime(status?.supportSeconds || 0)}</p>
+                    <p className="text-[10px] text-gray-500 mt-1">Total today: {formatTime(status?.supportSeconds || 0)}</p>
                   )}
                 </div>
               </div>
@@ -135,20 +172,20 @@ const TimerModal = ({ open, onClose, onStartWork, onBreak, onSupport, onCheckOut
                   <button
                     onClick={onBreak}
                     className={`font-medium py-3.5 px-4 rounded-xl shadow-md transition-all active:scale-95 text-sm ${status?.active_type === "break"
-                      ? "bg-orange-600 text-white"
-                      : "bg-white text-orange-600 border-2 border-orange-600 hover:bg-orange-50"
+                      ? "bg-black text-white"
+                      : "bg-white text-gray-700 border-2 border-gray-200 hover:bg-gray-50"
                       }`}
                   >
-                    {status?.active_type === "break" ? "Running Break" : "Break Timer"}
+                    {status?.active_type === "break" ? "Stop Break" : "Break Timer"}
                   </button>
                   <button
                     onClick={onSupport}
                     className={`font-medium py-3.5 px-4 rounded-xl shadow-md transition-all active:scale-95 text-sm ${status?.active_type === "support"
-                      ? "bg-indigo-600 text-white"
-                      : "bg-white text-indigo-600 border-2 border-indigo-600 hover:bg-indigo-50"
+                      ? "bg-black text-white"
+                      : "bg-white text-gray-700 border-2 border-gray-200 hover:bg-gray-50"
                       }`}
                   >
-                    {status?.active_type === "support" ? "Running Support" : "Support Timer"}
+                    {status?.active_type === "support" ? "Stop Support" : "Support Timer"}
                   </button>
                 </div>
 
@@ -164,7 +201,7 @@ const TimerModal = ({ open, onClose, onStartWork, onBreak, onSupport, onCheckOut
             </div>
           )}
 
-          {showWorkForm && (
+          {!isWorking && showWorkForm && (
             <div className="space-y-5">
               <div className="space-y-4">
                 <button
@@ -238,7 +275,7 @@ const TimerModal = ({ open, onClose, onStartWork, onBreak, onSupport, onCheckOut
 
           {showCheckoutConfirm && (
             <div className="text-center space-y-6 py-6 px-4">
-              <div className="w-20 h-20 bg-red-50 text-red-600 rounded-full flex items-center justify-center mx-auto mb-4">
+              <div className="w-20 h-20 bg-gray-100 text-gray-900 rounded-full flex items-center justify-center mx-auto mb-4">
                 <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
                 </svg>
@@ -251,7 +288,7 @@ const TimerModal = ({ open, onClose, onStartWork, onBreak, onSupport, onCheckOut
               <div className="flex flex-col gap-3 pt-4">
                 <button
                   onClick={handleCheckoutConfirm}
-                  className="w-full py-4 bg-red-600 hover:bg-red-700 text-white font-medium rounded-xl shadow-xl transition-all active:scale-95"
+                  className="w-full py-4 bg-black hover:bg-gray-900 text-white font-medium rounded-xl shadow-xl transition-all active:scale-95"
                 >
                   End Workday & Check Out
                 </button>

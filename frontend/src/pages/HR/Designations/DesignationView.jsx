@@ -25,7 +25,7 @@ const DesignationView = () => {
   const fetchDesignations = async () => {
     try {
       setLoading(true);
-      const res = await apiClient.get("/auth/roles/");
+      const res = await apiClient.get("/auth/designations/");
       const data = Array.isArray(res.data) ? res.data : res.data.results || [];
       setDesignations(data);
     } catch (err) {
@@ -37,7 +37,7 @@ const DesignationView = () => {
 
   const handleDelete = async (id) => {
     try {
-      await apiClient.delete(`/auth/roles/${id}/`);
+      await apiClient.delete(`/auth/designations/${id}/`);
       setDesignations(prev => prev.filter(d => d.id !== id));
       toast.success("Designation deleted successfully");
       setShowDeleteConfirm(null);

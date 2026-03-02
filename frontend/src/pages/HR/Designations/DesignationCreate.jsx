@@ -18,7 +18,7 @@ const DesignationCreate = () => {
 
     setLoading(true);
     try {
-      await apiClient.post("/auth/roles/", { name: name.trim(), description: description.trim() });
+      await apiClient.post("/auth/designations/", { name: name.trim(), description: description.trim() });
       toast.success("Designation created successfully!");
       navigate("/hr/designations");
     } catch (err) {
@@ -48,10 +48,9 @@ const DesignationCreate = () => {
             <Input
               label="Designation Description"
               required
-              value={name}
+              value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="e.g. Anything can access"
-              autoFocus
             />
             <div className="flex gap-4">
               <button
