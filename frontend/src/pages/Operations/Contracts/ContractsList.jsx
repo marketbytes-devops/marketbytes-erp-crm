@@ -46,6 +46,7 @@ const ContractsList = () => {
         fetchStats();
         fetchFilters();
     }, []);
+
     const fetchFilters = async () => {
         try {
             const [clientsRes, typesRes] = await Promise.all([

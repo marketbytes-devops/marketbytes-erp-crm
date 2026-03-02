@@ -36,6 +36,7 @@ const TimeLogs = () => {
   const [projects, setProjects] = useState([]);
   const [tasks, setTasks] = useState([]);
   const [employees, setEmployees] = useState([]);
+  const { hasPermission } = usePermission();
 
   // Filter states
   const [filters, setFilters] = useState({
@@ -869,6 +870,13 @@ const TimeLogs = () => {
                                 <MdVisibility className="w-5 h-5 text-gray-600 group-hover:text-blue-600" />
                               </button>
                             )}
+                            <button
+                              onClick={() => handleDelete(entry.id)}
+                              className="p-2 hover:bg-red-50 rounded-lg transition group"
+                              title="Delete Log"
+                            >
+                              <MdDelete className="w-5 h-5 text-gray-600 group-hover:text-red-600" />
+                            </button>
                             {hasPermission("timelogs", "delete") && (
                               <button
                                 onClick={() => handleDelete(entry.id)}
@@ -943,6 +951,7 @@ const TimeLogs = () => {
                   <MdClose className="w-6 h-6 text-gray-500" />
                 </button>
               </div>
+
               <div className="p-6 overflow-y-auto">
                 <div className="grid grid-cols-2 gap-4 mb-6">
                   <div className="p-4 bg-gray-50 rounded-xl border border-gray-100">
