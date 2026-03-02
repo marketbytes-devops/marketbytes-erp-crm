@@ -36,7 +36,7 @@ const TimeLogs = () => {
   const [projects, setProjects] = useState([]);
   const [tasks, setTasks] = useState([]);
   const [employees, setEmployees] = useState([]);
-  const { hasPermission } = usePermission();
+
 
   // Filter states
   const [filters, setFilters] = useState({
@@ -139,6 +139,20 @@ const TimeLogs = () => {
       minute: "2-digit",
       hour12: true,
     });
+  };
+
+  const formatDetailedDuration = (hoursDecimal) => {
+    if (!hoursDecimal && hoursDecimal !== 0) return "--";
+    const totalSeconds = Math.round(parseFloat(hoursDecimal) * 3600);
+    const h = Math.floor(totalSeconds / 3600);
+    const m = Math.floor((totalSeconds % 3600) / 60);
+    const s = totalSeconds % 60;
+
+    let result = "";
+    if (h > 0) result += `${h}h`;
+    if (m > 0 || h > 0) result += `${m}mints`;
+    result += `${s}secs`;
+    return result;
   };
 
   const activeFilterCount = Object.values(filters).filter(Boolean).length;
@@ -268,9 +282,9 @@ const TimeLogs = () => {
         entry.employee?.name || "Unknown",
         entry.first_clock_in || "N/A",
         entry.last_clock_out || "Active",
-        `${entry.total_hours}h`,
-        `${entry.break_hours || 0}h`,
-        `${entry.productive_hours}h`,
+        formatDetailedDuration(entry.total_hours),
+        formatDetailedDuration(entry.break_hours),
+        formatDetailedDuration(entry.productive_hours),
         entry.is_billable ? "Billable" : "Internal",
       ]);
     } else {
@@ -289,9 +303,9 @@ const TimeLogs = () => {
         entry.employee?.name || "Unknown",
         formatTime(entry.start_time),
         formatTime(entry.end_time),
-        `${entry.total_hours}h`,
-        `${entry.break_hours || 0}h`,
-        `${entry.productive_hours}h`,
+        formatDetailedDuration(entry.total_hours),
+        formatDetailedDuration(entry.break_hours),
+        formatDetailedDuration(entry.productive_hours),
         entry.is_billable ? "Billable" : "Internal",
       ]);
     }
@@ -334,9 +348,9 @@ const TimeLogs = () => {
         Email: entry.employee?.email || "N/A",
         "Start Time": entry.first_clock_in || "N/A",
         "End Time": entry.last_clock_out || "Active",
-        Duration: `${entry.total_hours}h`,
-        "Break Timer": `${entry.break_hours || 0}h`,
-        "Productive Hours": `${entry.productive_hours}h`,
+        Duration: formatDetailedDuration(entry.total_hours),
+        "Break Timer": formatDetailedDuration(entry.break_hours),
+        "Productive Hours": formatDetailedDuration(entry.productive_hours),
         Type: entry.is_billable ? "Billable" : "Internal",
       }));
     } else {
@@ -346,9 +360,9 @@ const TimeLogs = () => {
         Email: entry.employee?.email || "N/A",
         "Start Time": formatTime(entry.start_time),
         "End Time": formatTime(entry.end_time),
-        Duration: `${entry.total_hours}h`,
-        "Break Timer": `${entry.break_hours || 0}h`,
-        "Productive Hours": `${entry.productive_hours}h`,
+        Duration: formatDetailedDuration(entry.total_hours),
+        "Break Timer": formatDetailedDuration(entry.break_hours),
+        "Productive Hours": formatDetailedDuration(entry.productive_hours),
         Type: entry.is_billable ? "Billable" : "Internal",
       }));
     }
@@ -414,9 +428,9 @@ const TimeLogs = () => {
         Email: entry.employee?.email || "N/A",
         "Start Time": entry.first_clock_in || "N/A",
         "End Time": entry.last_clock_out || "Active",
-        Duration: entry.total_hours,
-        "Break Timer": entry.break_hours || 0,
-        "Productive Hours": entry.productive_hours,
+        Duration: formatDetailedDuration(entry.total_hours),
+        "Break Timer": formatDetailedDuration(entry.break_hours),
+        "Productive Hours": formatDetailedDuration(entry.productive_hours),
         Type: entry.is_billable ? "Billable" : "Internal",
       }));
     } else {
@@ -426,9 +440,9 @@ const TimeLogs = () => {
         Email: entry.employee?.email || "N/A",
         "Start Time": formatTime(entry.start_time),
         "End Time": formatTime(entry.end_time),
-        Duration: entry.total_hours,
-        "Break Timer": entry.break_hours || 0,
-        "Productive Hours": entry.productive_hours,
+        Duration: formatDetailedDuration(entry.total_hours),
+        "Break Timer": formatDetailedDuration(entry.break_hours),
+        "Productive Hours": formatDetailedDuration(entry.productive_hours),
         Type: entry.is_billable ? "Billable" : "Internal",
       }));
     }
@@ -480,7 +494,7 @@ const TimeLogs = () => {
                 </div>
                 <div className="text-center">
                   <div className="text-4xl font-medium text-blue-600 mb-2">
-                    {stats.productive}h
+                    {formatDetailedDuration(stats.productive)}
                   </div>
                   <p className="text-sm text-gray-600">Productive Hours</p>
                 </div>
@@ -492,7 +506,7 @@ const TimeLogs = () => {
                 </div>
                 <div className="text-center">
                   <div className="text-4xl font-medium text-gray-600 mb-2">
-                    {stats.totalHours}h
+                    {formatDetailedDuration(stats.totalHours)}
                   </div>
                   <p className="text-sm text-gray-600">Total Hours</p>
                 </div>
@@ -835,17 +849,17 @@ const TimeLogs = () => {
                         </td>
                         <td className="px-6 py-5 whitespace-nowrap">
                           <span className="text-sm font-medium text-gray-900">
-                            {entry.total_hours}h
+                            {formatDetailedDuration(entry.total_hours)}
                           </span>
                         </td>
                         <td className="px-6 py-5 whitespace-nowrap">
                           <span className="text-sm font-medium text-orange-600">
-                            {entry.break_hours || 0}h
+                            {formatDetailedDuration(entry.break_hours)}
                           </span>
                         </td>
                         <td className="px-6 py-5 whitespace-nowrap">
                           <span className="text-sm font-medium text-blue-600">
-                            {entry.productive_hours || 0}h
+                            {formatDetailedDuration(entry.productive_hours)}
                           </span>
                         </td>
                         <td className="px-6 py-5 whitespace-nowrap">
@@ -970,10 +984,10 @@ const TimeLogs = () => {
                       Total Hours
                     </p>
                     <p className="text-2xl font-medium text-gray-900">
-                      {selectedEntry.total_hours}h
+                      {formatDetailedDuration(selectedEntry.total_hours)}
                     </p>
                     <p className="text-xs text-green-600 font-medium mt-1">
-                      {selectedEntry.productive_hours}h Productive
+                      {formatDetailedDuration(selectedEntry.productive_hours)} Productive
                     </p>
                   </div>
                 </div>
