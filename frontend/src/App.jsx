@@ -9,7 +9,7 @@ import ResetPassword from "./pages/Auth/ResetPassword";
 import Profile from "./pages/Profile";
 import Users from "./pages/Roles/Users";
 import Roles from "./pages/Roles/Roles";
-import Permissions from "./pages/Roles/Permissions"; // ✅ ADD THIS LINE
+import Permissions from "./pages/Roles/Permissions";
 import Loading from "./components/Loading";
 import { PermissionProvider, usePermission } from "./context/PermissionContext";
 import EmployeeView from "./pages/HR/Employees/EmployeeView";
@@ -31,18 +31,18 @@ import DesignationCreate from "./pages/HR/Designations/DesignationCreate";
 import AssignLeave from "./pages/HR/Leaves/AssignLeave";
 import Projects from "./pages/Operations/Projects/ProjectView";
 import ProjectCreate from "./pages/Operations/Projects/ProjectCreate";
-import ProjectTemplate from "./pages/Operations/projects/ProjectTemplate";
-import ProjectTemplateAdd from "./pages/Operations/projects/ProjectTemplateAdd";
-import ProjectArchive from "./pages/Operations/projects/ProjectArchive";
+import ProjectTemplate from "./pages/Operations/Projects/ProjectTemplate";
+import ProjectTemplateAdd from "./pages/Operations/Projects/ProjectTemplateAdd";
+import ProjectArchive from "./pages/Operations/Projects/ProjectArchive";
 import ProjectEdit from "./pages/Operations/Projects/ProjectEdit";
 import ProjectDetails from "./pages/Operations/Projects/ProjectDetails";
 import TaskView from "./pages/Operations/Tasks/TaskView";
-import TaskLabel from "./pages/Operations/tasks/TaskLabel";
-import CreateTaskLabel from "./pages/Operations/tasks/CreateTaskLabel";
+import TaskLabel from "./pages/Operations/Tasks/TaskLabel";
+import CreateTaskLabel from "./pages/Operations/Tasks/CreateTaskLabel";
 import TaskEdit from "./pages/Operations/Tasks/TaskEdit";
 import TaskBoard from "./pages/Operations/Tasks/TaskBoard";
 import TaskArchive from "./pages/Operations/Tasks/TaskArchive";
-import NewTask from "./pages/operations/tasks/NewTask";
+import NewTask from "./pages/Operations/Tasks/NewTask";
 import ScrumView from "./pages/Operations/Scrum/ScrumView";
 import Leads from "./pages/Sales/Leads";
 import Invoice from "./pages/Sales/Invoice";
@@ -67,7 +67,7 @@ const ProtectedRoute = ({
   requiredPage,
   requiredAction = "view",
 }) => {
-  const { hasPermission, isLoaded } = usePermission();
+  const { hasPermission, isLoaded, isAuthenticated } = usePermission();
 
   if (!isLoaded) {
     return (
@@ -77,6 +77,12 @@ const ProtectedRoute = ({
     );
   }
 
+  // If not logged in, go to login
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
+
+  // If logged in but no permission, go to home
   if (!hasPermission(requiredPage, requiredAction)) {
     return <Navigate to="/" replace />;
   }
@@ -697,18 +703,7 @@ function App() {
             </ProtectedRoute>
           ),
         },
-        {
-          path: "/user-roles/permissions",
-          element: (
-            <ProtectedRoute
-              isAuthenticated={isAuthenticated}
-              requiredPage="permissions"
-              requiredAction="view"
-            >
-              <Permissions />
-            </ProtectedRoute>
-          ),
-        },
+
         {
           path: "/operations/tasks/archive",
           element: (
@@ -719,6 +714,10 @@ function App() {
               <TaskArchive />
             </ProtectedRoute>
           ),
+        },
+        {
+          path: "*",
+          element: <Navigate to="/" replace />,
         },
       ],
     },

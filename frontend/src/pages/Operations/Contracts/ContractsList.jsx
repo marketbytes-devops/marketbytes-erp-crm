@@ -212,7 +212,7 @@ const ContractsList = () => {
 
             <div className="flex gap-6">
                 {showFilters && (
-                    <div className="w-64 flex-shrink-0 bg-white p-6 rounded-2xl shadow-sm border border-gray-100 h-fit sticky top-6">
+                    <div className="w-64 shrink-0 bg-white p-6 rounded-2xl shadow-sm border border-gray-100 h-fit sticky top-6">
                         <div className="flex items-center justify-between mb-6">
                             <h3 className="font-semibold text-gray-800 flex items-center gap-2">
                                 <MdFilterList /> Filter Results

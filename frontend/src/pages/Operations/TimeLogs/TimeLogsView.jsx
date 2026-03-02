@@ -26,6 +26,7 @@ import * as XLSX from "xlsx";
 import { usePermission } from "../../../context/PermissionContext";
 
 const TimeLogs = () => {
+  const { hasPermission } = usePermission();
   const [loading, setLoading] = useState(true);
   const [timeEntries, setTimeEntries] = useState([]);
   const [search, setSearch] = useState("");
@@ -50,9 +51,95 @@ const TimeLogs = () => {
   const [selectedEntry, setSelectedEntry] = useState(null);
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
 
+  const [viewMode, setViewMode] = useState("daily"); // "daily" or "detailed"
+  const [detailedEntries, setDetailedEntries] = useState([]);
+
   // Export dropdown state
   const [exportDropdownOpen, setExportDropdownOpen] = useState(false);
   const exportDropdownRef = useRef(null);
+
+  const filteredEntries = useMemo(() => {
+    let result = viewMode === "daily" ? timeEntries : detailedEntries;
+
+    if (search.trim()) {
+      const term = search.toLowerCase();
+      if (viewMode === "daily") {
+        result = result.filter(
+          (entry) =>
+            entry.tasks?.toLowerCase().includes(term) ||
+            entry.employee?.name?.toLowerCase().includes(term) ||
+            entry.projects?.toLowerCase().includes(term) ||
+            entry.date?.includes(term),
+        );
+      } else {
+        result = result.filter(
+          (entry) =>
+            entry.task_name?.toLowerCase().includes(term) ||
+            entry.employee?.name?.toLowerCase().includes(term) ||
+            entry.project_name?.toLowerCase().includes(term) ||
+            entry.memo?.toLowerCase().includes(term),
+        );
+      }
+    }
+
+    if (filters.employee) {
+      result = result.filter(
+        (entry) => entry.employee?.id === parseInt(filters.employee),
+      );
+    }
+
+    if (filters.project) {
+      if (viewMode === "daily") {
+        const projectName = projects
+          .find((p) => p.id === parseInt(filters.project))
+          ?.name?.toLowerCase();
+        if (projectName)
+          result = result.filter((entry) =>
+            entry.projects?.toLowerCase().includes(projectName),
+          );
+      } else {
+        result = result.filter(
+          (entry) => entry.project === parseInt(filters.project),
+        );
+      }
+    }
+
+    return result;
+  }, [timeEntries, detailedEntries, search, filters, projects, viewMode]);
+
+  const stats = useMemo(() => {
+    const activeData = filteredEntries;
+    return {
+      total: activeData.length,
+      productive: activeData
+        .reduce((acc, curr) => acc + parseFloat(curr.productive_hours || 0), 0)
+        .toFixed(1),
+      billable: activeData.filter((e) => e.is_billable).length,
+      totalHours: activeData
+        .reduce((acc, curr) => acc + parseFloat(curr.total_hours || 0), 0)
+        .toFixed(1),
+    };
+  }, [filteredEntries]);
+
+  const formatDate = (dateStr) => {
+    if (!dateStr) return "";
+    const date = new Date(dateStr);
+    return date.toLocaleDateString("en-GB", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+    });
+  };
+
+  const formatTime = (dateStr) => {
+    if (!dateStr) return "Running...";
+    const date = new Date(dateStr);
+    return date.toLocaleTimeString("en-US", {
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: true,
+    });
+  };
 
   const activeFilterCount = Object.values(filters).filter(Boolean).length;
 
@@ -72,8 +159,6 @@ const TimeLogs = () => {
     setSearch("");
   };
 
-  const [viewMode, setViewMode] = useState("daily"); // "daily" or "detailed"
-  const [detailedEntries, setDetailedEntries] = useState([]);
 
   const fetchData = async () => {
     try {
@@ -169,41 +254,45 @@ const TimeLogs = () => {
     let tableData, headers;
     if (viewMode === "daily") {
       headers = [
-        "ID",
-        "Employee",
-        "Date",
-        "First Check-in",
-        "Last Check-out",
-        "Total Hours",
-        "Productive Hours",
-      ];
-      tableData = filteredEntries.map((entry) => [
-        `#${entry.id}`,
-        entry.employee?.name || "Unknown",
-        formatDate(entry.date),
-        entry.first_clock_in || "N/A",
-        entry.last_clock_out || "Active",
-        `${entry.total_hours}h`,
-        `${entry.productive_hours}h`,
-      ]);
-    } else {
-      headers = [
-        "ID",
-        "Task/Project",
+        "Task / Project",
         "Employee",
         "Start Time",
         "End Time",
         "Duration",
         "Break Timer",
+        "Productive Hours",
+        "Type",
       ];
       tableData = filteredEntries.map((entry) => [
-        `#${entry.id}`,
+        entry.tasks || "Daily Work",
+        entry.employee?.name || "Unknown",
+        entry.first_clock_in || "N/A",
+        entry.last_clock_out || "Active",
+        `${entry.total_hours}h`,
+        `${entry.break_hours || 0}h`,
+        `${entry.productive_hours}h`,
+        entry.is_billable ? "Billable" : "Internal",
+      ]);
+    } else {
+      headers = [
+        "Task / Project",
+        "Employee",
+        "Start Time",
+        "End Time",
+        "Duration",
+        "Break Timer",
+        "Productive Hours",
+        "Type",
+      ];
+      tableData = filteredEntries.map((entry) => [
         `${entry.task_name || "Internal"} / ${entry.project_name || "General"}`,
         entry.employee?.name || "Unknown",
         formatTime(entry.start_time),
         formatTime(entry.end_time),
         `${entry.total_hours}h`,
         `${entry.break_hours || 0}h`,
+        `${entry.productive_hours}h`,
+        entry.is_billable ? "Billable" : "Internal",
       ]);
     }
 
@@ -240,32 +329,26 @@ const TimeLogs = () => {
     let data;
     if (viewMode === "daily") {
       data = filteredEntries.map((entry) => ({
-        ID: `#${entry.id}`,
+        "Task / Project": entry.tasks || "Daily Work",
         Employee: entry.employee?.name || "Unknown",
         Email: entry.employee?.email || "N/A",
-        Date: formatDate(entry.date),
-        "First Check-in": entry.first_clock_in || "N/A",
-        "Last Check-out": entry.last_clock_out || "Active",
-        "Total Hours": `${entry.total_hours}h`,
+        "Start Time": entry.first_clock_in || "N/A",
+        "End Time": entry.last_clock_out || "Active",
+        Duration: `${entry.total_hours}h`,
+        "Break Timer": `${entry.break_hours || 0}h`,
         "Productive Hours": `${entry.productive_hours}h`,
-        Tasks: entry.tasks || "N/A",
-        Projects: entry.projects || "N/A",
         Type: entry.is_billable ? "Billable" : "Internal",
       }));
     } else {
       data = filteredEntries.map((entry) => ({
-        ID: `#${entry.id}`,
-        Task: entry.task_name || "Internal",
-        Project: entry.project_name || "General",
+        "Task / Project": `${entry.task_name || "Internal"} / ${entry.project_name || "General"}`,
         Employee: entry.employee?.name || "Unknown",
         Email: entry.employee?.email || "N/A",
         "Start Time": formatTime(entry.start_time),
-        "Start Date": formatDate(entry.start_time),
         "End Time": formatTime(entry.end_time),
-        "End Date": formatDate(entry.end_time || entry.start_time),
         Duration: `${entry.total_hours}h`,
         "Break Timer": `${entry.break_hours || 0}h`,
-        Memo: entry.memo || "N/A",
+        "Productive Hours": `${entry.productive_hours}h`,
         Type: entry.is_billable ? "Billable" : "Internal",
       }));
     }
@@ -277,33 +360,33 @@ const TimeLogs = () => {
     const colWidths =
       viewMode === "daily"
         ? [
-            { wch: 8 },
-            { wch: 20 },
-            { wch: 25 },
-            { wch: 12 },
-            { wch: 15 },
-            { wch: 15 },
-            { wch: 12 },
-            { wch: 15 },
-            { wch: 30 },
-            { wch: 30 },
-            { wch: 12 },
-          ]
+          { wch: 8 },
+          { wch: 20 },
+          { wch: 25 },
+          { wch: 12 },
+          { wch: 15 },
+          { wch: 15 },
+          { wch: 12 },
+          { wch: 15 },
+          { wch: 30 },
+          { wch: 30 },
+          { wch: 12 },
+        ]
         : [
-            { wch: 8 },
-            { wch: 25 },
-            { wch: 20 },
-            { wch: 20 },
-            { wch: 25 },
-            { wch: 12 },
-            { wch: 12 },
-            { wch: 12 },
-            { wch: 12 },
-            { wch: 12 },
-            { wch: 12 },
-            { wch: 30 },
-            { wch: 12 },
-          ];
+          { wch: 8 },
+          { wch: 25 },
+          { wch: 20 },
+          { wch: 20 },
+          { wch: 25 },
+          { wch: 12 },
+          { wch: 12 },
+          { wch: 12 },
+          { wch: 12 },
+          { wch: 12 },
+          { wch: 12 },
+          { wch: 30 },
+          { wch: 12 },
+        ];
     ws["!cols"] = colWidths;
 
     // Create workbook
@@ -326,32 +409,26 @@ const TimeLogs = () => {
 
     if (viewMode === "daily") {
       data = filteredEntries.map((entry) => ({
-        ID: `#${entry.id}`,
+        "Task / Project": entry.tasks || "Daily Work",
         Employee: entry.employee?.name || "Unknown",
         Email: entry.employee?.email || "N/A",
-        Date: formatDate(entry.date),
-        "First Check-in": entry.first_clock_in || "N/A",
-        "Last Check-out": entry.last_clock_out || "Active",
-        "Total Hours": entry.total_hours,
+        "Start Time": entry.first_clock_in || "N/A",
+        "End Time": entry.last_clock_out || "Active",
+        Duration: entry.total_hours,
+        "Break Timer": entry.break_hours || 0,
         "Productive Hours": entry.productive_hours,
-        Tasks: entry.tasks || "N/A",
-        Projects: entry.projects || "N/A",
         Type: entry.is_billable ? "Billable" : "Internal",
       }));
     } else {
       data = filteredEntries.map((entry) => ({
-        ID: `#${entry.id}`,
-        Task: entry.task_name || "Internal",
-        Project: entry.project_name || "General",
+        "Task / Project": `${entry.task_name || "Internal"} / ${entry.project_name || "General"}`,
         Employee: entry.employee?.name || "Unknown",
         Email: entry.employee?.email || "N/A",
         "Start Time": formatTime(entry.start_time),
-        "Start Date": formatDate(entry.start_time),
         "End Time": formatTime(entry.end_time),
-        "End Date": formatDate(entry.end_time || entry.start_time),
         Duration: entry.total_hours,
         "Break Timer": entry.break_hours || 0,
-        Memo: entry.memo || "N/A",
+        "Productive Hours": entry.productive_hours,
         Type: entry.is_billable ? "Billable" : "Internal",
       }));
     }
@@ -374,88 +451,6 @@ const TimeLogs = () => {
     setExportDropdownOpen(false);
   };
 
-  const filteredEntries = useMemo(() => {
-    let result = viewMode === "daily" ? timeEntries : detailedEntries;
-
-    if (search.trim()) {
-      const term = search.toLowerCase();
-      if (viewMode === "daily") {
-        result = result.filter(
-          (entry) =>
-            entry.tasks?.toLowerCase().includes(term) ||
-            entry.employee?.name?.toLowerCase().includes(term) ||
-            entry.projects?.toLowerCase().includes(term) ||
-            entry.date?.includes(term),
-        );
-      } else {
-        result = result.filter(
-          (entry) =>
-            entry.task_name?.toLowerCase().includes(term) ||
-            entry.employee?.name?.toLowerCase().includes(term) ||
-            entry.project_name?.toLowerCase().includes(term) ||
-            entry.memo?.toLowerCase().includes(term),
-        );
-      }
-    }
-
-    if (filters.employee) {
-      result = result.filter(
-        (entry) => entry.employee?.id === parseInt(filters.employee),
-      );
-    }
-
-    if (filters.project) {
-      if (viewMode === "daily") {
-        const projectName = projects
-          .find((p) => p.id === parseInt(filters.project))
-          ?.name?.toLowerCase();
-        if (projectName)
-          result = result.filter((entry) =>
-            entry.projects?.toLowerCase().includes(projectName),
-          );
-      } else {
-        result = result.filter(
-          (entry) => entry.project === parseInt(filters.project),
-        );
-      }
-    }
-
-    return result;
-  }, [timeEntries, detailedEntries, search, filters, projects, viewMode]);
-
-  const stats = useMemo(() => {
-    const activeData = filteredEntries;
-    return {
-      total: activeData.length,
-      productive: activeData
-        .reduce((acc, curr) => acc + parseFloat(curr.productive_hours || 0), 0)
-        .toFixed(1),
-      billable: activeData.filter((e) => e.is_billable).length,
-      totalHours: activeData
-        .reduce((acc, curr) => acc + parseFloat(curr.total_hours || 0), 0)
-        .toFixed(1),
-    };
-  }, [filteredEntries]);
-
-  const formatDate = (dateStr) => {
-    if (!dateStr) return "";
-    const date = new Date(dateStr);
-    return date.toLocaleDateString("en-GB", {
-      day: "2-digit",
-      month: "2-digit",
-      year: "numeric",
-    });
-  };
-
-  const formatTime = (dateStr) => {
-    if (!dateStr) return "Running...";
-    const date = new Date(dateStr);
-    return date.toLocaleTimeString("en-US", {
-      hour: "2-digit",
-      minute: "2-digit",
-      hour12: true,
-    });
-  };
 
   if (loading) {
     return (
@@ -518,21 +513,19 @@ const TimeLogs = () => {
             <div className="flex p-1 bg-gray-100 rounded-xl w-fit">
               <button
                 onClick={() => setViewMode("daily")}
-                className={`px-5 py-2 rounded-lg text-sm font-medium transition-all ${
-                  viewMode === "daily"
-                    ? "bg-white text-black shadow-sm"
-                    : "text-gray-500 hover:text-gray-800"
-                }`}
+                className={`px-5 py-2 rounded-lg text-sm font-medium transition-all ${viewMode === "daily"
+                  ? "bg-white text-black shadow-sm"
+                  : "text-gray-500 hover:text-gray-800"
+                  }`}
               >
                 Daily Summary
               </button>
               <button
                 onClick={() => setViewMode("detailed")}
-                className={`px-5 py-2 rounded-lg text-sm font-medium transition-all ${
-                  viewMode === "detailed"
-                    ? "bg-white text-black shadow-sm"
-                    : "text-gray-500 hover:text-gray-800"
-                }`}
+                className={`px-5 py-2 rounded-lg text-sm font-medium transition-all ${viewMode === "detailed"
+                  ? "bg-white text-black shadow-sm"
+                  : "text-gray-500 hover:text-gray-800"
+                  }`}
               >
                 Detailed Logs
               </button>
@@ -716,9 +709,7 @@ const TimeLogs = () => {
               <table className="w-full min-w-[1000px]">
                 <thead className="bg-gray-50 border-b border-gray-200">
                   <tr>
-                    <th className="px-6 py-5 text-left text-xs font-medium text-gray-700 uppercase tracking-wider whitespace-nowrap">
-                      ID
-                    </th>
+
                     <th className="px-6 py-5 text-left text-xs font-medium text-gray-700 uppercase tracking-wider whitespace-nowrap">
                       Task / Project
                     </th>
@@ -734,11 +725,9 @@ const TimeLogs = () => {
                     <th className="px-6 py-5 text-left text-xs font-medium text-gray-700 uppercase tracking-wider whitespace-nowrap">
                       Duration
                     </th>
-                    {viewMode === "detailed" && (
-                      <th className="px-6 py-5 text-left text-xs font-medium text-gray-700 uppercase tracking-wider whitespace-nowrap">
-                        Break Timer
-                      </th>
-                    )}
+                    <th className="px-6 py-5 text-left text-xs font-medium text-gray-700 uppercase tracking-wider whitespace-nowrap">
+                      Break Timer
+                    </th>
                     <th className="px-6 py-5 text-left text-xs font-medium text-gray-700 uppercase tracking-wider whitespace-nowrap">
                       Productive Hours
                     </th>
@@ -754,7 +743,7 @@ const TimeLogs = () => {
                   {filteredEntries.length === 0 ? (
                     <tr>
                       <td
-                        colSpan={viewMode === "detailed" ? "10" : "9"}
+                        colSpan="9"
                         className="text-center py-24"
                       >
                         <div className="flex flex-col items-center">
@@ -787,9 +776,7 @@ const TimeLogs = () => {
                         transition={{ delay: i * 0.03 }}
                         className="hover:bg-gray-50 transition"
                       >
-                        <td className="px-6 py-5 text-sm font-medium text-gray-500 whitespace-nowrap">
-                          #{entry.id}
-                        </td>
+
                         <td className="px-6 py-5 whitespace-nowrap">
                           <div className="flex flex-col">
                             <span className="font-medium text-gray-900 line-clamp-1">
@@ -851,13 +838,11 @@ const TimeLogs = () => {
                             {entry.total_hours}h
                           </span>
                         </td>
-                        {viewMode === "detailed" && (
-                          <td className="px-6 py-5 whitespace-nowrap">
-                            <span className="text-sm font-medium text-orange-600">
-                              {entry.break_hours || 0}h
-                            </span>
-                          </td>
-                        )}
+                        <td className="px-6 py-5 whitespace-nowrap">
+                          <span className="text-sm font-medium text-orange-600">
+                            {entry.break_hours || 0}h
+                          </span>
+                        </td>
                         <td className="px-6 py-5 whitespace-nowrap">
                           <span className="text-sm font-medium text-blue-600">
                             {entry.productive_hours || 0}h
@@ -892,6 +877,15 @@ const TimeLogs = () => {
                             >
                               <MdDelete className="w-5 h-5 text-gray-600 group-hover:text-red-600" />
                             </button>
+                            {hasPermission("timelogs", "delete") && (
+                              <button
+                                onClick={() => handleDelete(entry.id)}
+                                className="p-2 hover:bg-red-50 rounded-lg transition group"
+                                title="Delete Log"
+                              >
+                                <MdDelete className="w-5 h-5 text-gray-600 group-hover:text-red-600" />
+                              </button>
+                            )}
                           </div>
                         </td>
                       </motion.tr>
@@ -989,7 +983,7 @@ const TimeLogs = () => {
                 </h4>
 
                 {selectedEntry.check_in_out_history &&
-                selectedEntry.check_in_out_history.length > 0 ? (
+                  selectedEntry.check_in_out_history.length > 0 ? (
                   <div className="border border-gray-200 rounded-xl overflow-hidden">
                     <table className="w-full text-sm">
                       <thead className="bg-gray-50 border-b border-gray-200">
@@ -1048,7 +1042,7 @@ const TimeLogs = () => {
           </motion.div>
         )}
       </AnimatePresence>
-    </div>
+    </div >
   );
 };
 

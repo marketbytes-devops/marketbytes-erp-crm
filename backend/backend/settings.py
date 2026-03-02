@@ -18,7 +18,7 @@ SECRET_KEY = os.getenv('SECRET_KEY')
 DEBUG = os.getenv('DEBUG', 'False').lower() == 'true'
  
 # Allowed hosts - restrict in production!
-ALLOWED_HOSTS = ['*'] if DEBUG else ['yourdomain.com', 'www.yourdomain.com', 'localhost', '127.0.0.1']
+ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '127.0.0.1').split(',')
  
 # Application definition
 INSTALLED_APPS = [
@@ -48,6 +48,7 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -115,6 +116,16 @@ MEDIA_ROOT = BASE_DIR / 'media'
  
 # Default primary key field type
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# WhiteNoise Configuration
+STORAGES = {
+    "default": {
+        "BACKEND": "django.core.files.storage.FileSystemStorage",
+    },
+    "staticfiles": {
+        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+    },
+}
  
 AUTH_USER_MODEL = 'authapp.CustomUser'
  
@@ -142,7 +153,7 @@ SIMPLE_JWT = {
  
 # Frontend URL
 FRONTEND_URL = os.getenv('FRONTEND_URL', 'http://localhost:5173')
- 
+
 # CORS Settings
 CORS_ALLOWED_ORIGINS = [
     FRONTEND_URL,
@@ -168,10 +179,12 @@ CORS_ALLOW_HEADERS = [
  
 # Allow credentials if needed (for cookies, auth)
 CORS_ALLOW_CREDENTIALS = True
- 
+
+CSRF_TRUSTED_ORIGINS = os.getenv('CSRF_TRUSTED_ORIGINS', 'http://localhost').split(',')
+
 # File Upload Size Limit
-DATA_UPLOAD_MAX_MEMORY_SIZE = int(os.getenv('DATA_UPLOAD_MAX_MEMORY_SIZE', 5242880))
-FILE_UPLOAD_MAX_MEMORY_SIZE = int(os.getenv('FILE_UPLOAD_MAX_MEMORY_SIZE', 5242880))
+DATA_UPLOAD_MAX_MEMORY_SIZE = int(os.getenv('DATA_UPLOAD_MAX_MEMORY_SIZE', 20971520))
+FILE_UPLOAD_MAX_MEMORY_SIZE = int(os.getenv('FILE_UPLOAD_MAX_MEMORY_SIZE', 20971520))
  
 # Email Configuration
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
@@ -192,6 +205,9 @@ GMAIL_REDIRECT_URI = os.getenv('GMAIL_REDIRECT_URI', 'http://127.0.0.1:8000/api/
 # Encryption Key for storing OAuth tokens securely
 FERNET_KEY = os.getenv('FERNET_KEY')
  
+# Tell Django that Nginx is forwarding HTTPS requests
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
 # Security settings (enable in production)
 if not DEBUG:
     SECURE_BROWSER_XSS_FILTER = True

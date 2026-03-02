@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import CustomUser, Role, Permission, Department, UserPermission, PermissionOverride, get_user_effective_permissions
+from .models import CustomUser, Role, Permission, Department, UserPermission, PermissionOverride, get_user_effective_permissions, Designation
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from django.conf import settings
 from django.core.mail import send_mail
@@ -35,6 +35,11 @@ class DepartmentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Department
         fields = ['id', 'name', 'worksheet_url', 'services']
+
+class DesignationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Designation
+        fields = ['id', 'name', 'description']
 
 class PermissionSerializer(serializers.ModelSerializer):
     role = serializers.PrimaryKeyRelatedField(queryset=Role.objects.all())
@@ -74,23 +79,36 @@ class RoleCreateSerializer(serializers.ModelSerializer):
 class UserSerializer(serializers.ModelSerializer):
     role = RoleSerializer(read_only=True)
     department = DepartmentSerializer(read_only=True)
+    designation = DesignationSerializer(read_only=True)
     role_id = serializers.PrimaryKeyRelatedField(queryset=Role.objects.all(), source='role', write_only=True, required=False, allow_null=True)
     department_id = serializers.PrimaryKeyRelatedField(queryset=Department.objects.all(), source='department', write_only=True, required=False, allow_null=True)
+    designation_id = serializers.PrimaryKeyRelatedField(queryset=Designation.objects.all(), source='designation', write_only=True, required=False, allow_null=True)
     direct_permissions = UserPermissionSerializer(many=True, read_only=True)
     effective_permissions = serializers.SerializerMethodField()
+    image = serializers.ImageField(required=False)
+    image_url = serializers.SerializerMethodField()
 
     class Meta:
         model = CustomUser
-        fields = ['id', 'first_name','last_name', 'email', 'username', 'name', 'employee_id', 'status', 'role', 'role_id', 'department', 'department_id', 'exit_date', 'direct_permissions', 'effective_permissions']
+        fields = ['id', 'first_name','last_name', 'email', 'username', 'name', 'employee_id', 'status', 'role', 'role_id', 'department', 'department_id', 'designation', 'designation_id', 'exit_date', 'direct_permissions', 'effective_permissions', 'image', 'image_url']
 
     def get_effective_permissions(self, obj):
         """Returns computed effective permissions for the user"""
         effective = get_user_effective_permissions(obj)
         return effective
 
+    def get_image_url(self, obj):
+        if obj.image:
+            request = self.context.get('request')
+            if request:
+                return request.build_absolute_uri(obj.image.url)
+            return obj.image.url
+        return None
+
 class ProfileSerializer(serializers.ModelSerializer):
     role = RoleSerializer(read_only=True)
     department = DepartmentSerializer(read_only=True)
+    designation = DesignationSerializer(read_only=True)
     reports_to = UserSerializer(read_only=True)
     
     image = serializers.ImageField(required=False)
@@ -105,6 +123,13 @@ class ProfileSerializer(serializers.ModelSerializer):
     department_id = serializers.PrimaryKeyRelatedField(
         queryset=Department.objects.all(), 
         source='department', 
+        write_only=True, 
+        required=False, 
+        allow_null=True
+    )
+    designation_id = serializers.PrimaryKeyRelatedField(
+        queryset=Designation.objects.all(), 
+        source='designation', 
         write_only=True, 
         required=False, 
         allow_null=True
@@ -135,7 +160,7 @@ class ProfileSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'email', 'name', 'username', 'employee_id', 'address',
             'phone_number', 'mobile', 'country_code', 'image', 'image_url',
-            'role', 'role_id', 'department', 'department_id', 'reports_to',
+            'role', 'role_id', 'department', 'department_id', 'designation', 'designation_id', 'reports_to',
             'reports_to_id', 'joining_date', 'dob', 'probation_period',
             'exit_date', 'gender', 'skills', 'hourly_rate', 'status',
             'login_enabled', 'email_notifications', 'created_at',
@@ -156,6 +181,12 @@ class UserCreateSerializer(serializers.ModelSerializer):
         required=False, 
         allow_null=True
     )
+    designation_id = serializers.PrimaryKeyRelatedField(
+        queryset=Designation.objects.all(), 
+        source='designation', 
+        required=False, 
+        allow_null=True
+    )
     reports_to_id = serializers.PrimaryKeyRelatedField(
         queryset=CustomUser.objects.all(), 
         source='reports_to', 
@@ -164,26 +195,17 @@ class UserCreateSerializer(serializers.ModelSerializer):
     )
     password = serializers.CharField(write_only=True, required=False)
     send_password_email = serializers.BooleanField(write_only=True, default=False)
-    user_permissions = serializers.JSONField(
-        write_only=True,
-        required=False,
-        help_text="List of permissions: [{page: 'employees', can_view: True, can_add: False, ...}]"
-    )
-    permission_overrides = serializers.JSONField(
-        write_only=True,
-        required=False,
-        help_text="List of overrides: [{page: 'employees', action: 'can_view', is_blocked: True}]"
-    )
+
     
     class Meta:
         model = CustomUser
         fields = [
             'id', 'email', 'name', 'username', 'employee_id', 'address', 
             'phone_number', 'mobile', 'country_code', 'image', 'role_id',
-            'department_id', 'reports_to_id', 'joining_date', 'dob',
+            'department_id', 'designation_id', 'reports_to_id', 'joining_date', 'dob',
             'probation_period', 'exit_date', 'gender', 'skills', 'hourly_rate',
             'status', 'login_enabled', 'email_notifications', 'password',
-            'send_password_email', 'user_permissions', 'permission_overrides'
+            'send_password_email'
         ]
         read_only_fields = ['id', 'employee_id']
     
@@ -200,21 +222,7 @@ class UserCreateSerializer(serializers.ModelSerializer):
         if isinstance(send_password_email, str):
             send_password_email = send_password_email.lower() == 'true'
             
-        user_permissions_data = validated_data.pop('user_permissions', [])
-        permission_overrides_data = validated_data.pop('permission_overrides', [])
 
-        # Handle stringified JSON from FormData
-        if isinstance(user_permissions_data, str):
-            try:
-                user_permissions_data = json.loads(user_permissions_data)
-            except (json.JSONDecodeError, TypeError):
-                user_permissions_data = []
-
-        if isinstance(permission_overrides_data, str):
-            try:
-                permission_overrides_data = json.loads(permission_overrides_data)
-            except (json.JSONDecodeError, TypeError):
-                permission_overrides_data = []
         
         if not password:
             password_length = 12
@@ -226,20 +234,7 @@ class UserCreateSerializer(serializers.ModelSerializer):
         user.set_password(password)
         user.save()
         
-        for perm_data in user_permissions_data:
-            page = str(perm_data.get('page', '')).lower()
-            UserPermission.objects.get_or_create(user=user, page=page, defaults={
-                'can_view': perm_data.get('can_view', False),
-                'can_add': perm_data.get('can_add', False),
-                'can_edit': perm_data.get('can_edit', False),
-                'can_delete': perm_data.get('can_delete', False),
-            })
-        
-        # Create permission overrides
-        for override_data in permission_overrides_data:
-            PermissionOverride.objects.get_or_create(user=user, page=override_data.get('page'), action=override_data.get('action'), defaults={
-                'is_blocked': override_data.get('is_blocked', False)
-            })
+
         
         if send_password_email:
             print(f"DEBUG: Attempting to send email to {user.email}")
@@ -284,6 +279,12 @@ class UserUpdateSerializer(serializers.ModelSerializer):
         required=False, 
         allow_null=True
     )
+    designation_id = serializers.PrimaryKeyRelatedField(
+        queryset=Designation.objects.all(), 
+        source='designation', 
+        required=False, 
+        allow_null=True
+    )
     reports_to_id = serializers.PrimaryKeyRelatedField(
         queryset=CustomUser.objects.all(), 
         source='reports_to', 
@@ -297,21 +298,14 @@ class UserUpdateSerializer(serializers.ModelSerializer):
         model = CustomUser
         fields = [
             'name', 'username', 'address', 'phone_number', 'mobile', 
-            'country_code', 'image', 'role_id', 'department_id', 
+            'country_code', 'image', 'role_id', 'department_id', 'designation_id',
             'reports_to_id', 'joining_date', 'dob', 'probation_period',
             'exit_date', 'gender', 'skills', 'hourly_rate', 'status',
             'login_enabled', 'email_notifications', 'password',
-            'send_password_email', 'user_permissions', 'permission_overrides'
+            'send_password_email'
         ]
     
-    user_permissions = serializers.JSONField(
-        write_only=True,
-        required=False
-    )
-    permission_overrides = serializers.JSONField(
-        write_only=True,
-        required=False
-    )
+
     
     def update(self, instance, validated_data):
         password = validated_data.pop('password', None)
@@ -321,8 +315,8 @@ class UserUpdateSerializer(serializers.ModelSerializer):
         if isinstance(send_password_email, str):
             send_password_email = send_password_email.lower() == 'true'
             
-        user_permissions_data = validated_data.pop('user_permissions', None)
-        permission_overrides_data = validated_data.pop('permission_overrides', None)
+        # Permissions removal logic
+
         
         if password:
             instance.set_password(password)
@@ -332,42 +326,7 @@ class UserUpdateSerializer(serializers.ModelSerializer):
         
         instance.save()
 
-        # Update direct user permissions if provided
-        if user_permissions_data is not None:
-            # Handle stringified JSON from FormData (for user_permissions)
-            if isinstance(user_permissions_data, str):
-                try:
-                    user_permissions_data = json.loads(user_permissions_data)
-                except (json.JSONDecodeError, TypeError):
-                    user_permissions_data = []
 
-            # Clear existing direct permissions for this user
-            UserPermission.objects.filter(user=instance).delete()
-            for perm_data in user_permissions_data:
-                page = str(perm_data.get('page', '')).lower()
-                UserPermission.objects.get_or_create(user=instance, page=page, defaults={
-                    'can_view': perm_data.get('can_view', False),
-                    'can_add': perm_data.get('can_add', False),
-                    'can_edit': perm_data.get('can_edit', False),
-                    'can_delete': perm_data.get('can_delete', False),
-                })
-
-        # Update permission overrides if provided
-        if permission_overrides_data is not None:
-            # Handle stringified JSON from FormData (for permission_overrides)
-            if isinstance(permission_overrides_data, str):
-                try:
-                    permission_overrides_data = json.loads(permission_overrides_data)
-                except (json.JSONDecodeError, TypeError):
-                    permission_overrides_data = []
-
-            # Clear existing overrides for this user
-            PermissionOverride.objects.filter(user=instance).delete()
-            for override_data in permission_overrides_data:
-                page = str(override_data.get('page', '')).lower()
-                PermissionOverride.objects.get_or_create(user=instance, page=page, action=override_data.get('action'), defaults={
-                    'is_blocked': override_data.get('is_blocked', False)
-                })
 
         if send_password_email and password:
             print(f"DEBUG: Attempting to send update email to {instance.email}")

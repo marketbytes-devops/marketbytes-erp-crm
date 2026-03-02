@@ -44,7 +44,7 @@ const Sidebar = ({ toggleSidebar }) => {
   const menuItems = [
     {
       to: "/",
-      label: "Admin",
+      label: "Dashboard",
       icon: <MdAdminPanelSettings className="w-6 h-6" />,
       page: "admin",
       action: "view",
@@ -249,13 +249,7 @@ const Sidebar = ({ toggleSidebar }) => {
           page: "users",
           action: "view",
         },
-        {
-          to: "/user-roles/permissions",
-          label: "Permissions",
-          icon: <MdLock className="w-6 h-6" />,
-          page: "permissions",
-          action: "view",
-        },
+
       ].filter((item) => hasPermission(item.page, item.action)),
     },
     {

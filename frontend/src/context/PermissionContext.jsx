@@ -65,6 +65,7 @@ export const PermissionProvider = ({ children, isAuthenticated }) => {
             permissions,
             isSuperadmin,
             isLoaded,
+            isAuthenticated,
             hasPermission,
             user,
             refreshPermissions

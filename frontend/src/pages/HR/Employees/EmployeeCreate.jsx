@@ -19,46 +19,7 @@ const generateStrongPassword = () => {
   return password;
 };
 
-const pageNameMap = {
-  // Common / Home
-  admin: { apiName: "admin", displayName: "Dashboard", route: "/Dashboard" },
 
-  // HR Management
-  employees: { apiName: "employees", displayName: "Employees", route: "/hr/employees" },
-  departments: { apiName: "departments", displayName: "Departments", route: "/hr/departments" },
-  designations: { apiName: "designations", displayName: "Designations", route: "/hr/designations" },
-  attendance: { apiName: "attendance", displayName: "Attendance", route: "/hr/attendance" },
-  holidays: { apiName: "holidays", displayName: "Holidays", route: "/hr/holidays" },
-  leaves: { apiName: "leaves", displayName: "Leaves", route: "/hr/leaves" },
-  overtime: { apiName: "overtime", displayName: "Overtime", route: "/hr/overtime" },
-  recruitment: { apiName: "recruitment", displayName: "Recruitment", route: "/hr/recruitment" },
-  performance: { apiName: "performance", displayName: "Performance", route: "/hr/performance" },
-
-  // Operations
-  projects: { apiName: "projects", displayName: "Projects", route: "/operations/projects" },
-  tasks: { apiName: "tasks", displayName: "Tasks", route: "/operations/tasks" },
-  task_board: { apiName: "task_board", displayName: "Task Board", route: "/operations/task-board" },
-  timelogs: { apiName: "timelogs", displayName: "Time Log", route: "/operations/time-logs" },
-  task_calendar: { apiName: "task_calendar", displayName: "Task Calendar", route: "/operations/task-calendar" },
-  scrum: { apiName: "scrum", displayName: "Scrum", route: "/operations/scrum" },
-  contracts: { apiName: "contracts", displayName: "Contracts", route: "/operations/contracts" },
-
-  // Sales
-  leads: { apiName: "leads", displayName: "Leads", route: "/sales/leads" },
-  pipeline: { apiName: "pipeline", displayName: "Pipeline", route: "/sales/pipeline" },
-  communication_tools: { apiName: "communication_tools", displayName: "Communication Tools", route: "/sales/communication-tools" },
-  invoices: { apiName: "invoices", displayName: "Invoices", route: "/sales/invoices" },
-  reports: { apiName: "reports", displayName: "Reports", route: "/sales/reports" },
-  customer: { apiName: "customer", displayName: "Clients & Companies", route: "/sales/customer" },
-
-  // User Roles
-  roles: { apiName: "roles", displayName: "Roles", route: "/user-roles/roles" },
-  users: { apiName: "users", displayName: "Users", route: "/user-roles/users" },
-  permissions: { apiName: "permissions", displayName: "Permissions", route: "/user-roles/permissions" },
-
-  // Profile
-  profile: { apiName: "profile", displayName: "Profile", route: "/profile" },
-};
 
 const EmployeeCreate = () => {
   const navigate = useNavigate();
@@ -70,23 +31,20 @@ const EmployeeCreate = () => {
   const [nextEmployeeId, setNextEmployeeId] = useState("");
 
   const [departments, setDepartments] = useState([]);
+  const [roles, setRoles] = useState([]);
   const [designations, setDesignations] = useState([]);
   const [employees, setEmployees] = useState([]);
 
   // Quick-Add Modal States
+  const [showRoleModal, setShowRoleModal] = useState(false);
   const [showDesigModal, setShowDesigModal] = useState(false);
   const [showDeptModal, setShowDeptModal] = useState(false);
+  const [newRoleName, setNewRoleName] = useState("");
   const [newDesigName, setNewDesigName] = useState("");
   const [newDeptName, setNewDeptName] = useState("");
   const [modalLoading, setModalLoading] = useState(false);
 
-  const [directPermissions, setDirectPermissions] = useState(() => {
-    const initialPerms = {};
-    Object.keys(pageNameMap).forEach(key => {
-      initialPerms[key] = { view: false, add: false, edit: false, delete: false };
-    });
-    return initialPerms;
-  });
+
 
   const [formData, setFormData] = useState({
     name: "",
@@ -95,6 +53,7 @@ const EmployeeCreate = () => {
     mobile: "",
     country_code: "+91",
     address: "",
+    role_id: "",
     designation_id: "",
     department_id: "",
     reports_to: "",
@@ -118,20 +77,23 @@ const EmployeeCreate = () => {
       try {
         setFormLoading(true);
 
-        const [usersRes, deptRes, desigRes] = await Promise.all([
+        const [usersRes, deptRes, roleRes, desigRes] = await Promise.all([
           apiClient.get("/auth/users/"),
           apiClient.get("/auth/departments/"),
           apiClient.get("/auth/roles/"),
+          apiClient.get("/auth/designations/"),
         ]);
 
         const extract = (data) => (Array.isArray(data) ? data : data.results || []);
 
         const users = extract(usersRes.data);
         const depts = extract(deptRes.data);
-        const roles = extract(desigRes.data);
+        const rolesData = extract(roleRes.data);
+        const desigsData = extract(desigRes.data);
 
         setDepartments(depts);
-        setDesignations(roles);
+        setRoles(rolesData);
+        setDesignations(desigsData);
         setEmployees(users);
 
         const usedIds = users
@@ -156,15 +118,34 @@ const EmployeeCreate = () => {
 
   const fetchLists = async () => {
     try {
-      const [deptRes, desigRes] = await Promise.all([
+      const [deptRes, roleRes, desigRes] = await Promise.all([
         apiClient.get("/auth/departments/"),
         apiClient.get("/auth/roles/"),
+        apiClient.get("/auth/designations/"),
       ]);
       const extract = (data) => (Array.isArray(data) ? data : data.results || []);
       setDepartments(extract(deptRes.data));
+      setRoles(extract(roleRes.data));
       setDesignations(extract(desigRes.data));
     } catch (err) {
       console.error("Failed to refresh lists", err);
+    }
+  };
+
+  const handleSubmitRole = async (e) => {
+    e.preventDefault();
+    if (!newRoleName.trim()) return;
+    setModalLoading(true);
+    try {
+      await apiClient.post("/auth/roles/", { name: newRoleName });
+      toast.success("Role added successfully!");
+      setNewRoleName("");
+      setShowRoleModal(false);
+      await fetchLists();
+    } catch (err) {
+      toast.error(err.response?.data?.name?.[0] || "Failed to add role");
+    } finally {
+      setModalLoading(false);
     }
   };
 
@@ -173,7 +154,7 @@ const EmployeeCreate = () => {
     if (!newDesigName.trim()) return;
     setModalLoading(true);
     try {
-      await apiClient.post("/auth/roles/", { name: newDesigName });
+      await apiClient.post("/auth/designations/", { name: newDesigName });
       toast.success("Designation added successfully!");
       setNewDesigName("");
       setShowDesigModal(false);
@@ -218,6 +199,16 @@ const EmployeeCreate = () => {
     }
   }, [formData.designation_id, designations]);
 
+  const [selectedRole, setSelectedRole] = useState(null);
+  useEffect(() => {
+    if (formData.role_id) {
+      const role = roles.find(r => r.id === parseInt(formData.role_id));
+      setSelectedRole(role);
+    } else {
+      setSelectedRole(null);
+    }
+  }, [formData.role_id, roles]);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -231,7 +222,8 @@ const EmployeeCreate = () => {
       mobile: 'mobile',
       country_code: 'country_code',
       address: 'address',
-      designation_id: 'role_id',
+      role_id: 'role_id',
+      designation_id: 'designation_id',
       department_id: 'department_id',
       reports_to: 'reports_to_id',
       joining_date: 'joining_date',
@@ -261,15 +253,7 @@ const EmployeeCreate = () => {
       formDataToSend.append('send_password_email', 'true');
     }
 
-    // Add direct permissions
-    const permsArray = Object.keys(directPermissions).map(key => ({
-      page: pageNameMap[key].apiName,
-      can_view: directPermissions[key].view,
-      can_add: directPermissions[key].add,
-      can_edit: directPermissions[key].edit,
-      can_delete: directPermissions[key].delete
-    }));
-    formDataToSend.append('user_permissions', JSON.stringify(permsArray));
+
 
     try {
       await apiClient.post("/auth/users/", formDataToSend);
@@ -305,6 +289,10 @@ const EmployeeCreate = () => {
   const designationOptions = designations.map(d => ({
     value: d.id,
     label: d.name
+  }));
+  const roleOptions = roles.map(r => ({
+    value: r.id,
+    label: r.name
   }));
   const reportsToOptions = employees.map(e => ({
     value: e.id,
@@ -357,6 +345,16 @@ const EmployeeCreate = () => {
   return (
     <div className="p-4 md:p-6 max-w-7xl mx-auto">
       {/* Modals */}
+      <QuickAddModal
+        isOpen={showRoleModal}
+        onClose={() => setShowRoleModal(false)}
+        title="Add User Role"
+        value={newRoleName}
+        onChange={setNewRoleName}
+        onSubmit={handleSubmitRole}
+        placeholder="e.g. Manager"
+        loading={modalLoading}
+      />
       <QuickAddModal
         isOpen={showDesigModal}
         onClose={() => setShowDesigModal(false)}
@@ -440,7 +438,33 @@ const EmployeeCreate = () => {
               <div>
                 <div className="flex items-center justify-between mb-2">
                   <label className="block text-sm font-medium text-black">
-                    Designation / Role (Optional)
+                    User Role
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => setShowRoleModal(true)}
+                    className="p-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-colors group flex items-center gap-1 text-xs font-semibold"
+                    title="Quick Add Role"
+                  >
+                    <MdAdd className="w-4 h-4" /> Add New
+                  </button>
+                </div>
+                <Input
+                  type="select"
+                  options={[{ value: "", label: "None (Direct Permissions Only)" }, ...roleOptions]}
+                  value={formData.role_id}
+                  onChange={v => setFormData({ ...formData, role_id: v })}
+                />
+                {selectedRole && (
+                  <p className="text-sm font-medium mt-2 text-green-600">
+                    Role Selected: {selectedRole.name}
+                  </p>
+                )}
+              </div>
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <label className="block text-sm font-medium text-black">
+                    Designation
                   </label>
                   <button
                     type="button"
@@ -453,13 +477,13 @@ const EmployeeCreate = () => {
                 </div>
                 <Input
                   type="select"
-                  options={[{ value: "", label: "None (Direct Permissions Only)" }, ...designationOptions]}
+                  options={[{ value: "", label: "Select Designation" }, ...designationOptions]}
                   value={formData.designation_id}
                   onChange={v => setFormData({ ...formData, designation_id: v })}
                 />
                 {selectedDesignation && (
-                  <p className="text-sm font-medium mt-2 text-green-600">
-                    Designation Selected: {selectedDesignation.name}
+                  <p className="text-sm font-medium mt-2 text-blue-600">
+                    Designation: {selectedDesignation.name}
                   </p>
                 )}
               </div>
@@ -569,83 +593,7 @@ const EmployeeCreate = () => {
             </div>
           </div>
 
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
-            <div className="p-8 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
-              <div>
-                <h3 className="text-xl font-medium text-gray-900">Direct Permissions</h3>
-                <p className="text-sm text-gray-500 mt-1">Set individual access overrides for this employee</p>
-              </div>
-              <div className="flex gap-2 p-1.5 bg-white rounded-2xl shadow-sm border border-gray-100">
-                <button
-                  type="button"
-                  onClick={() => {
-                    const reset = {};
-                    Object.keys(pageNameMap).forEach(k => { reset[k] = { view: false, add: false, edit: false, delete: false }; });
-                    setDirectPermissions(reset);
-                  }}
-                  className="px-6 py-2 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
-                >
-                  Clear All
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    const all = {};
-                    Object.keys(pageNameMap).forEach(k => { all[k] = { view: true, add: true, edit: true, delete: true }; });
-                    setDirectPermissions(all);
-                  }}
-                  className="px-6 py-2 rounded-xl text-sm font-medium bg-black text-white hover:bg-gray-800 transition-colors"
-                >
-                  Select All
-                </button>
-              </div>
-            </div>
 
-            <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse">
-                <thead className="bg-[#fafbff]">
-                  <tr>
-                    <th className="px-8 py-5 text-xs font-medium text-gray-400 uppercase tracking-widest">Module / Page</th>
-                    {["view", "add", "edit", "delete"].map(action => (
-                      <th key={action} className="px-4 py-5 text-xs font-medium text-gray-400 uppercase tracking-widest text-center">{action}</th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-50">
-                  {Object.keys(pageNameMap).map((key) => (
-                    <tr key={key} className="hover:bg-gray-50/50 group transition-colors">
-                      <td className="px-8 py-5">
-                        <div className="flex flex-col">
-                          <span className="font-medium text-gray-900 leading-none mb-1">{pageNameMap[key].displayName}</span>
-                          <span className="text-[10px] text-gray-400 font-mono tracking-tight">{pageNameMap[key].apiName}</span>
-                        </div>
-                      </td>
-                      {["view", "add", "edit", "delete"].map((action) => (
-                        <td key={action} className="px-4 py-5 text-center">
-                          <div className="flex justify-center">
-                            <button
-                              type="button"
-                              onClick={() => setDirectPermissions(prev => ({
-                                ...prev,
-                                [key]: { ...prev[key], [action]: !prev[key][action] }
-                              }))}
-                              className={`${directPermissions[key]?.[action] ? 'bg-[#50728c]' : 'bg-gray-200'
-                                } relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none`}
-                            >
-                              <span
-                                className={`${directPermissions[key]?.[action] ? 'translate-x-5' : 'translate-x-0'
-                                  } pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-sm transition duration-200 ease-in-out mt-0.1`}
-                              />
-                            </button>
-                          </div>
-                        </td>
-                      ))}
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
           <div className="flex justify-end gap-4">
             <Link
               to="/hr/employees"

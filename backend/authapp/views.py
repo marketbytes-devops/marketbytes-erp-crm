@@ -12,13 +12,13 @@ import string
 from django.core.mail import send_mail
 from django.conf import settings
 from django.db.models import Count
-from .models import CustomUser, Role, Permission, Department, UserPermission, PermissionOverride, has_user_permission, get_user_effective_permissions
+from .models import CustomUser, Role, Permission, Department, UserPermission, PermissionOverride, has_user_permission, get_user_effective_permissions, Designation
 from .serializers import (
     LoginSerializer, RequestOTPSerializer, ResetPasswordSerializer,
     ProfileSerializer, ChangePasswordSerializer, RoleSerializer,
     RoleCreateSerializer, PermissionSerializer, UserUpdateSerializer,
     UserCreateSerializer, CustomTokenObtainPairSerializer, DepartmentSerializer,
-    UserPermissionSerializer, PermissionOverrideSerializer
+    UserPermissionSerializer, PermissionOverrideSerializer, DesignationSerializer
 )
 
 from .permissions import HasPermission, has_permission
@@ -294,3 +294,9 @@ class DepartmentViewSet(viewsets.ModelViewSet):
     serializer_class = DepartmentSerializer
     permission_classes = [HasPermission]
     page_name = 'departments'
+
+class DesignationViewSet(viewsets.ModelViewSet):
+    queryset = Designation.objects.all()
+    serializer_class = DesignationSerializer
+    permission_classes = [HasPermission]
+    page_name = 'designations'

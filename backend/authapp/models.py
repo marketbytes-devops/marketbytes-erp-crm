@@ -37,6 +37,7 @@ class Department(models.Model):
 
     class Meta:
         verbose_name_plural = "Departments"
+        ordering = ['name']
 
 class Role(models.Model):
     name = models.CharField(max_length=100, unique=True)
@@ -51,8 +52,20 @@ class Role(models.Model):
     member_count.short_description = "Members"
 
     class Meta:
-        verbose_name = "Role or Designation"
-        verbose_name_plural = "Roles & Designations"
+        verbose_name = "User Role"
+        verbose_name_plural = "User Roles"
+        ordering = ['name']
+
+class Designation(models.Model):
+    name = models.CharField(max_length=100, unique=True)
+    description = models.TextField(null=True, blank=True)
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        verbose_name = "Designation"
+        verbose_name_plural = "Designations"
         ordering = ['name']
 
 class Permission(models.Model):
@@ -78,6 +91,7 @@ class CustomUser(AbstractUser):
     mobile = models.CharField(max_length=15, blank=True, null=True)
     image = models.ImageField(upload_to="profile_images/", null=True, blank=True)
     role = models.ForeignKey(Role, on_delete=models.SET_NULL, null=True, blank=True, related_name="users")
+    designation = models.ForeignKey(Designation, on_delete=models.SET_NULL, null=True, blank=True, related_name="users")
     department = models.ForeignKey(Department, on_delete=models.SET_NULL, null=True, blank=True)
     reports_to = models.ForeignKey('self', on_delete=models.SET_NULL, null=True, blank=True, related_name='subordinates')
     employee_id = models.CharField(max_length=20, unique=True, blank=True, null=True)

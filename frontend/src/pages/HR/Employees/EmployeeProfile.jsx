@@ -79,15 +79,7 @@ const EmployeeProfile = () => {
   }
 
   const getImageUrl = () => {
-    if (employee.image_url) return employee.image_url;
-    if (employee.image) {
-      if (employee.image.startsWith('http')) {
-        return employee.image;
-      } else {
-        return `http://localhost:8000${employee.image}`;
-      }
-    }
-    return `https://ui-avatars.com/api/?name=${encodeURIComponent(employee.name || employee.email)}&background=000&color=fff&size=300&bold=true&font-size=0.5`;
+    return employee.image_url || employee.image || `https://ui-avatars.com/api/?name=${encodeURIComponent(employee.name || employee.email)}&background=000&color=fff&size=300&bold=true&font-size=0.5`;
   };
 
   const formatDate = (dateString) => {
@@ -110,9 +102,16 @@ const EmployeeProfile = () => {
     {
       icon: <FaUserTie className="w-6 h-6" />,
       label: "Designation",
-      value: employee.designation?.name || employee.role?.name || "No designation assigned",
+      value: employee.designation?.name || "No designation assigned",
       color: "text-purple-600 bg-purple-50",
       iconColor: "text-purple-500"
+    },
+    {
+      icon: <MdSecurity className="w-6 h-6" />,
+      label: "Role",
+      value: employee.role?.name || "No role assigned",
+      color: "text-indigo-600 bg-indigo-50",
+      iconColor: "text-indigo-500"
     },
     {
       icon: <MdAccessTime className="w-6 h-6" />,
@@ -422,6 +421,18 @@ const EmployeeProfile = () => {
                       </div>
 
                       <div className="space-y-6">
+                        <div className="flex items-start gap-4 p-4 bg-purple-50/50 rounded-xl">
+                          <div className="p-2 bg-white rounded-lg shadow-sm">
+                            <FaUserTie className="w-5 h-5 text-purple-600" />
+                          </div>
+                          <div className="flex-1">
+                            <p className="text-sm text-gray-500 mb-1">Designation</p>
+                            <span className="px-4 py-2 bg-purple-100 text-purple-800 rounded-full text-sm font-medium">
+                              {employee.designation?.name || "No Designation Assigned"}
+                            </span>
+                          </div>
+                        </div>
+
                         <div className="flex items-start gap-4 p-4 bg-purple-50/50 rounded-xl">
                           <div className="p-2 bg-white rounded-lg shadow-sm">
                             <MdSecurity className="w-5 h-5 text-purple-600" />
