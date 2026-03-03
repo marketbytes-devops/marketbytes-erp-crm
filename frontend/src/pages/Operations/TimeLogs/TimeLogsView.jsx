@@ -148,12 +148,15 @@ const TimeLogs = () => {
     const m = Math.floor((totalSeconds % 3600) / 60);
     const s = totalSeconds % 60;
 
-    let result = "";
-    if (h > 0) result += `${h}h`;
-    if (m > 0 || h > 0) result += `${m}mints`;
-    result += `${s}secs`;
-    return result;
+   const parts = [];
+    if (h > 0) parts.push(`${h}h`);
+    if (m > 0 || h > 0) parts.push(`${m}m`);
+    parts.push(`${s}s`);
+    return parts.join(" ");
   };
+
+
+
 
   const activeFilterCount = Object.values(filters).filter(Boolean).length;
 
