@@ -249,6 +249,13 @@ const Sidebar = ({ toggleSidebar }) => {
           page: "users",
           action: "view",
         },
+        {
+          to: "/user-roles/permissions",
+          label: "Permissions",
+          icon: <MdLock className="w-6 h-6" />,
+          page: "permissions",
+          action: "view",
+        },
 
       ].filter((item) => hasPermission(item.page, item.action)),
     },

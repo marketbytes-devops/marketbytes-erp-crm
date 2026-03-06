@@ -703,6 +703,18 @@ function App() {
             </ProtectedRoute>
           ),
         },
+        {
+          path: "/user-roles/permissions",
+          element: (
+            <ProtectedRoute
+              isAuthenticated={isAuthenticated}
+              requiredPage="permissions"
+              requiredAction="view"
+            >
+              <Permissions />
+            </ProtectedRoute>
+          ),
+        },
 
         {
           path: "/operations/tasks/archive",
