@@ -112,6 +112,14 @@ class AttendanceViewSet(viewsets.ModelViewSet):
         
         current_time = current_time_local 
         
+        # Close any open attendance from previous days
+        Attendance.objects.filter(
+            employee=request.user,
+            date__lt=today,
+            clock_in__isnull=False,
+            clock_out__isnull=True
+        ).update(clock_out=time(23, 59, 59))
+
         attendance, created = Attendance.objects.get_or_create(
             employee=request.user,
             date=today,
@@ -679,6 +687,19 @@ class TimerViewSet(viewsets.ViewSet):
                 active_break.end_time = end_of_day_local
                 active_break.save()
                 active_break = None
+
+        # Auto-checkout for Attendance from previous days
+        open_attendance = Attendance.objects.filter(
+            employee=user, 
+            date__lt=local_now.date(), 
+            clock_in__isnull=False, 
+            clock_out__isnull=True
+        ).first()
+        
+        if open_attendance:
+            # Set clock_out to 23:59:59 UTC (store as time object)
+            open_attendance.clock_out = time(23, 59, 59)
+            open_attendance.save()
         start_of_day = local_now.replace(hour=0, minute=0, second=0, microsecond=0)
         
         # Calculate total work

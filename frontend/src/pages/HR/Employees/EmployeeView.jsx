@@ -170,7 +170,6 @@ const EmployeeView = () => {
       result = result.filter(e =>
         e.name?.toLowerCase().includes(term) ||
         e.email?.toLowerCase().includes(term) ||
-        e.username?.toLowerCase().includes(term) ||
         e.employee_id?.toLowerCase().includes(term) ||
         e.department?.name?.toLowerCase().includes(term) ||
         e.role?.name?.toLowerCase().includes(term)
@@ -487,7 +486,6 @@ const EmployeeView = () => {
                               <Link to={`/hr/employees/${emp.id}`} className="font-medium text-gray-900 hover:text-blue-600 transition">
                                 {emp.name}
                               </Link>
-                              {emp.username && <p className="text-sm text-gray-500">@{emp.username}</p>}
                             </div>
                           </div>
                         </td>
