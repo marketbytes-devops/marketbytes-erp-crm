@@ -107,7 +107,7 @@ const Performance = () => {
   })).sort((a, b) => b.avg - a.avg);
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-700">
+    <div className="space-y-8 animate-in fade-in duration-700 m-6">
       <LayoutComponents
         title="Performance Matrix"
         subtitle="Analytical oversight of organizational talent and impact growth."

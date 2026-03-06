@@ -112,14 +112,14 @@ const Overtime = () => {
   );
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-700">
+    <div className="space-y-6 animate-in fade-in duration-700 m-6">
       <LayoutComponents
         title="Overtime Lifecycle"
         subtitle="Manage and track extended productivity beyond the 8-hour window."
         variant="card"
       >
         {/* Metric Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-10">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
           <div className="bg-gray-50/50 rounded-3xl p-6 border border-gray-100 hover:shadow-lg transition-all group overflow-hidden relative">
             <div className="absolute -right-2 -top-2 text-gray-100 group-hover:text-black/5 transition-colors">
               <Clock size={80} />
