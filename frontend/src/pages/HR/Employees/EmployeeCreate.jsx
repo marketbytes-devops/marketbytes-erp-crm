@@ -49,14 +49,14 @@ const EmployeeCreate = () => {
   const [formData, setFormData] = useState({
     name: "",
     email: "",
-    username: "",
+    password: "",
     mobile: "",
     country_code: "+91",
     address: "",
     role_id: "",
     designation_id: "",
     department_id: "",
-    reports_to: "",
+    reports_to_id: "",
     joining_date: "",
     dob: "",
     gender: "",
@@ -66,7 +66,7 @@ const EmployeeCreate = () => {
     status: "active",
     login_enabled: true,
     email_notifications: true,
-    profile_picture: null,
+    image: null,
     exit_date: "",
   });
 
@@ -211,7 +211,22 @@ const EmployeeCreate = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true);
+
+    if (formData.dob) {
+      const dobDate = new Date(formData.dob);
+      const today = new Date();
+      let age = today.getFullYear() - dobDate.getFullYear();
+      const m = today.getMonth() - dobDate.getMonth();
+      if (m < 0 || (m === 0 && today.getDate() < dobDate.getDate())) {
+        age--;
+      }
+      if (age < 18) {
+        toast.error("Employee must be at least 18 years old.");
+        return;
+      }
+    }
+
+    setSubmitLoading(true);
 
     const formDataToSend = new FormData();
 
@@ -402,8 +417,6 @@ const EmployeeCreate = () => {
 
               <Input label="Full Name" required placeholder="John Doe" value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} />
               <Input label="Email" required type="email" placeholder="john@company.com" value={formData.email} onChange={e => setFormData({ ...formData, email: e.target.value })} />
-              <Input label="Username" required placeholder="johndoe" value={formData.username} onChange={e => setFormData({ ...formData, username: e.target.value })} />
-              <Input label="Mobile Number" placeholder="9876543210" value={formData.mobile} onChange={e => setFormData({ ...formData, mobile: e.target.value })} />
               <Input
                 label="Country Code"
                 type="select"
@@ -411,6 +424,7 @@ const EmployeeCreate = () => {
                 value={formData.country_code}
                 onChange={v => setFormData({ ...formData, country_code: v })}
               />
+               <Input label="Mobile Number" placeholder="9876543210" value={formData.mobile} onChange={e => setFormData({ ...formData, mobile: e.target.value })} />
               <Input label="Date of Birth" type="date" value={formData.dob} onChange={e => setFormData({ ...formData, dob: e.target.value })} />
               <Input
                 label="Gender"
@@ -511,8 +525,8 @@ const EmployeeCreate = () => {
               </div>
               <Input label="Reports To" type="select" options={[{ value: "", label: "None (Top Level)" }, ...reportsToOptions]} value={formData.reports_to || ""} onChange={v => setFormData({ ...formData, reports_to: v || null })} />
               <Input label="Joining Date" required type="date" value={formData.joining_date} onChange={e => setFormData({ ...formData, joining_date: e.target.value })} />
+               <Input label="Probation Period (months)" type="number" placeholder="3" value={formData.probation_period} onChange={e => setFormData({ ...formData, probation_period: e.target.value })} />
               <Input label="Exit Date" type="date" value={formData.exit_date} onChange={e => setFormData({ ...formData, exit_date: e.target.value })} />
-              <Input label="Probation Period (months)" type="number" placeholder="3" value={formData.probation_period} onChange={e => setFormData({ ...formData, probation_period: e.target.value })} />
               <Input label="Hourly Rate ($)" type="number" step="0.01" placeholder="45.00" value={formData.hourly_rate} onChange={e => setFormData({ ...formData, hourly_rate: e.target.value })} />
             </div>
             <div className="grid grid-cols-1 gap-6 mt-6">

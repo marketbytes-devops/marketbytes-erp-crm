@@ -11,7 +11,6 @@ import Input from '../../components/Input';
 
 const profileSchema = z.object({
   name: z.string().min(1, 'Full name is required'),
-  username: z.string().min(1, 'Username is required'),
   address: z.string().optional(),
   phone_number: z.string().optional(),
 });
@@ -28,7 +27,6 @@ const Profile = () => {
   const [profile, setProfile] = useState({
     email: '',
     name: '',
-    username: '',
     address: '',
     phone_number: '',
     image: null,
@@ -59,7 +57,6 @@ const Profile = () => {
         const profileData = {
           email: data.email || '',
           name: data.name || '',
-          username: data.username || '',
           address: data.address || '',
           phone_number: data.phone_number || '',
           image: data.image || null,
@@ -70,7 +67,6 @@ const Profile = () => {
 
         resetProfileForm({
           name: profileData.name,
-          username: profileData.username,
           address: profileData.address,
           phone_number: profileData.phone_number,
         });
@@ -113,7 +109,6 @@ const Profile = () => {
       setProfile(prev => ({
         ...prev,
         name: updatedData.name || prev.name,
-        username: updatedData.username || prev.username,
         address: updatedData.address || prev.address,
         phone_number: updatedData.phone_number || prev.phone_number,
         image: updatedData.image || prev.image,
@@ -125,7 +120,6 @@ const Profile = () => {
 
       resetProfileForm({
         name: updatedData.name || '',
-        username: updatedData.username || '',
         address: updatedData.address || '',
         phone_number: updatedData.phone_number || '',
       });
@@ -180,7 +174,6 @@ const Profile = () => {
                 </div>
 
                 <h1 className="text-2xl font-black text-black tracking-tight mb-1">{profile.name || 'Account Owner'}</h1>
-                <p className="text-gray-400 font-medium text-[10px] uppercase tracking-widest mb-4">@{profile.username || 'user'}</p>
 
                 <div className="flex flex-col gap-3 text-left pt-6 border-t border-gray-50">
                   <div className="flex items-center gap-3 text-gray-500">
@@ -248,14 +241,6 @@ const Profile = () => {
                   placeholder="e.g. Alexander Pierce"
                   {...registerProfile('name')}
                   error={profileErrors.name?.message}
-                  className="font-medium"
-                />
-                <Input
-                  label="Username Alias"
-                  id="username"
-                  placeholder="e.g. alex_01"
-                  {...registerProfile('username')}
-                  error={profileErrors.username?.message}
                   className="font-medium"
                 />
                 <div className="md:col-span">

@@ -10,7 +10,6 @@ class CustomUserManager(BaseUserManager):
         if not email:
             raise ValueError(_("The Email field must be set"))
         email = self.normalize_email(email)
-        extra_fields.setdefault("username", email.split("@")[0])
         user = self.model(email=email, **extra_fields)
         user.set_password(password)
         user.save(using=self._db)
@@ -20,7 +19,6 @@ class CustomUserManager(BaseUserManager):
         extra_fields.setdefault("is_staff", True)
         extra_fields.setdefault("is_superuser", True)
         extra_fields.setdefault("is_active", True)
-        extra_fields.setdefault("username", email.split("@")[0])
         if extra_fields.get("is_staff") is not True:
             raise ValueError("Superuser must have is_staff=True.")
         if extra_fields.get("is_superuser") is not True:
@@ -126,8 +124,6 @@ class CustomUser(AbstractUser):
         if not self.employee_id and self.email:
             last = CustomUser.objects.exclude(employee_id__isnull=True).count() + 1
             self.employee_id = f"MB{str(last).zfill(4)}"
-        if not self.username and self.email:
-            self.username = self.email.split("@")[0]
         super().save(*args, **kwargs)
 
 class UserPermission(models.Model):

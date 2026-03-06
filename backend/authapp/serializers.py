@@ -90,7 +90,7 @@ class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = CustomUser
-        fields = ['id', 'first_name','last_name', 'email', 'username', 'name', 'employee_id', 'status', 'role', 'role_id', 'department', 'department_id', 'designation', 'designation_id', 'exit_date', 'direct_permissions', 'effective_permissions', 'image', 'image_url']
+        fields = ['id', 'first_name','last_name', 'email', 'name', 'employee_id', 'status', 'role', 'role_id', 'department', 'department_id', 'designation', 'designation_id', 'exit_date', 'direct_permissions', 'effective_permissions', 'image', 'image_url']
 
     def get_effective_permissions(self, obj):
         """Returns computed effective permissions for the user"""
@@ -158,7 +158,7 @@ class ProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomUser
         fields = [
-            'id', 'email', 'name', 'username', 'employee_id', 'address',
+            'id', 'email', 'name', 'employee_id', 'address',
             'phone_number', 'mobile', 'country_code', 'image', 'image_url',
             'role', 'role_id', 'department', 'department_id', 'designation', 'designation_id', 'reports_to',
             'reports_to_id', 'joining_date', 'dob', 'probation_period',
@@ -200,7 +200,7 @@ class UserCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomUser
         fields = [
-            'id', 'email', 'name', 'username', 'employee_id', 'address', 
+            'id', 'email', 'name', 'employee_id', 'address', 
             'phone_number', 'mobile', 'country_code', 'image', 'role_id',
             'department_id', 'designation_id', 'reports_to_id', 'joining_date', 'dob',
             'probation_period', 'exit_date', 'gender', 'skills', 'hourly_rate',
@@ -208,6 +208,15 @@ class UserCreateSerializer(serializers.ModelSerializer):
             'send_password_email'
         ]
         read_only_fields = ['id', 'employee_id']
+    
+    def validate_dob(self, value):
+        if value:
+            from datetime import date
+            today = date.today()
+            age = today.year - value.year - ((today.month, today.day) < (value.month, value.day))
+            if age < 18:
+                raise serializers.ValidationError("Employee must be at least 18 years old.")
+        return value
     
     def validate_email(self, value):
         if CustomUser.objects.filter(email=value).exists():
@@ -297,13 +306,22 @@ class UserUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomUser
         fields = [
-            'name', 'username', 'address', 'phone_number', 'mobile', 
+            'name', 'address', 'phone_number', 'mobile', 
             'country_code', 'image', 'role_id', 'department_id', 'designation_id',
             'reports_to_id', 'joining_date', 'dob', 'probation_period',
             'exit_date', 'gender', 'skills', 'hourly_rate', 'status',
             'login_enabled', 'email_notifications', 'password',
             'send_password_email'
         ]
+    
+    def validate_dob(self, value):
+        if value:
+            from datetime import date
+            today = date.today()
+            age = today.year - value.year - ((today.month, today.day) < (value.month, value.day))
+            if age < 18:
+                raise serializers.ValidationError("Employee must be at least 18 years old.")
+        return value
     
 
     

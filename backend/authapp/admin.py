@@ -25,20 +25,20 @@ class PermissionOverrideInline(admin.TabularInline):
 class CustomUserAdmin(UserAdmin):
     form = CustomUserChangeForm
     add_form = CustomUserCreationForm
-    list_display = ('email', 'username', 'name', 'role', 'is_staff')
+    list_display = ('email', 'name', 'role', 'is_staff')
     list_filter = ('is_staff', 'is_superuser', 'is_active', 'role')
-    search_fields = ('email', 'username', 'name')
+    search_fields = ('email', 'name')
     ordering = ('email',)
     fieldsets = (
         (None, {'fields': ('email', 'password')}),
-        ('Personal Info', {'fields': ('username', 'name', 'address', 'phone_number', 'image')}),
+        ('Personal Info', {'fields': ('name', 'address', 'phone_number', 'image')}),
         ('Permissions', {'fields': ('is_active', 'is_staff', 'is_superuser', 'role')}),
         ('Important dates', {'fields': ('last_login', 'date_joined')}),
     )
     add_fieldsets = (
         (None, {
             'classes': ('wide',),
-            'fields': ('email', 'username', 'name', 'password1', 'password2', 'role', 'is_staff', 'is_active')}
+            'fields': ('email', 'name', 'password1', 'password2', 'role', 'is_staff', 'is_active')}
         ),
     )
     inlines = [UserPermissionInline, PermissionOverrideInline]
