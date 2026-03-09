@@ -173,36 +173,79 @@ class PermissionOverride(models.Model):
 def get_user_effective_permissions(user):
     """
     Calculate effective permissions for a user:
-    1. Direct UserPermissions (primary)
-    2. + Role Permissions (if role assigned)
-    3. - PermissionOverrides that block
+    1. Merge Role Permissions and Direct UserPermissions using Union (OR) logic.
+    2. Primary Direct UserPermissions take precedence OR just union for maximum access.
+    3. Include Inferred Logic (proxy access) so frontend is aware.
+    4. Apply blocks (PermissionOverride) at the end.
     
     Returns dict: {page: {can_view, can_add, can_edit, can_delete}}
     """
     effective = {}
 
-    # Step 1: Merge role permissions (Baseline)
+    def merge_perm(page, p_data):
+        if page not in effective:
+            effective[page] = {
+                'can_view': False,
+                'can_add': False,
+                'can_edit': False,
+                'can_delete': False,
+            }
+        effective[page]['can_view'] |= p_data.get('can_view', False)
+        effective[page]['can_add'] |= p_data.get('can_add', False)
+        effective[page]['can_edit'] |= p_data.get('can_edit', False)
+        effective[page]['can_delete'] |= p_data.get('can_delete', False)
+
+    # Step 1: Baseline from Role
     if user.role:
         role_perms = Permission.objects.filter(role=user.role)
         for perm in role_perms:
-            effective[perm.page] = {
+            merge_perm(perm.page, {
                 'can_view': perm.can_view,
                 'can_add': perm.can_add,
                 'can_edit': perm.can_edit,
                 'can_delete': perm.can_delete,
-            }
+            })
 
-    # Step 2: Overwrite with direct user permissions (Precedence)
+    # Step 2: Union with direct user permissions (Add more access)
     user_perms = UserPermission.objects.filter(user=user)
     for perm in user_perms:
-        effective[perm.page] = {
+        merge_perm(perm.page, {
             'can_view': perm.can_view,
             'can_add': perm.can_add,
             'can_edit': perm.can_edit,
             'can_delete': perm.can_delete,
-        }
+        })
 
-    # Step 3: Apply overrides (blocks take precedence)
+    # Step 3: Inferred/Proxy Logic (Sync with HasPermission logic)
+    # This ensures the frontend 'knows' it has access even if not explicit
+    
+    # helper for inferred view
+    def grant_proxy(page, source_page):
+        if effective.get(source_page, {}).get('can_view'):
+            merge_perm(page, {'can_view': True})
+
+    # employees view -> lots of inferred view access
+    if effective.get('employees', {}).get('can_view'):
+        grant_proxy('attendance', 'employees')
+        grant_proxy('roles', 'employees')
+        grant_proxy('departments', 'employees')
+        grant_proxy('designations', 'employees')
+
+    # leads view -> customer/client/company info
+    if effective.get('leads', {}).get('can_view'):
+        grant_proxy('customer', 'leads')
+        grant_proxy('clients', 'leads')
+        grant_proxy('client', 'leads')
+        grant_proxy('companies', 'leads')
+        grant_proxy('reports', 'leads')
+        grant_proxy('communication_tools', 'leads')
+
+    # user management -> role/permissions view
+    if effective.get('users', {}).get('can_view'):
+        grant_proxy('roles', 'users')
+        grant_proxy('permissions', 'users')
+
+    # Step 4: Apply Explicit Blocks (Explicit override to False)
     overrides = PermissionOverride.objects.filter(user=user, is_blocked=True)
     for override in overrides:
         if override.page in effective:

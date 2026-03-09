@@ -32,27 +32,27 @@ const ProjectsView = () => {
 
   const [pinnedProjects, setPinnedProjects] = useState([]);
 
-useEffect(() => {
-  const saved = localStorage.getItem("pinnedProjects");
-  if (saved) {
-    try {
-      const parsed = JSON.parse(saved);
-      setPinnedProjects(parsed);
-    } catch (e) {
-      console.log("Old pinned data was broken, starting fresh");
+  useEffect(() => {
+    const saved = localStorage.getItem("pinnedProjects");
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        setPinnedProjects(parsed);
+      } catch (e) {
+        console.log("Old pinned data was broken, starting fresh");
+      }
     }
-  }
-}, []);   
+  }, []);
 
 
 
-useEffect(() => {
-  if (pinnedProjects.length > 0) {
-    localStorage.setItem("pinnedProjects", JSON.stringify(pinnedProjects));
-  } else {
-    localStorage.removeItem("pinnedProjects");
-  }
-}, [pinnedProjects]);
+  useEffect(() => {
+    if (pinnedProjects.length > 0) {
+      localStorage.setItem("pinnedProjects", JSON.stringify(pinnedProjects));
+    } else {
+      localStorage.removeItem("pinnedProjects");
+    }
+  }, [pinnedProjects]);
   const [search, setSearch] = useState("");
   const [filtersOpen, setFiltersOpen] = useState(false);
 
@@ -95,7 +95,7 @@ useEffect(() => {
 
         const extract = (d) => (Array.isArray(d) ? d : d.results || []);
 
-        const projData = extract(projRes.data).filter((p) => !p.is_archived);
+        const projData = extract(projRes.data).filter((p) => p.is_active);
         const statusData = extract(statusRes.data);
 
         setProjects(projData);
@@ -230,12 +230,24 @@ useEffect(() => {
   const handleArchive = async (projectId) => {
     if (!window.confirm("Move this project to archive?")) return;
     try {
-      await apiClient.patch(`/operation/projects/${projectId}/`, { is_archived: true });
+      await apiClient.post(`/operation/projects/${projectId}/archive/`);
       setProjects((prev) => prev.filter((p) => p.id !== projectId));
       setFiltered((prev) => prev.filter((p) => p.id !== projectId));
       toast.success("Project archived");
     } catch (err) {
       toast.error("Failed to archive project");
+    }
+  };
+
+  const handleDelete = async (projectId) => {
+    if (!window.confirm("Are you sure you want to PERMANENTLY delete this project? This cannot be undone.")) return;
+    try {
+      await apiClient.delete(`/operation/projects/${projectId}/`);
+      setProjects((prev) => prev.filter((p) => p.id !== projectId));
+      setFiltered((prev) => prev.filter((p) => p.id !== projectId));
+      toast.success("Project deleted permanently");
+    } catch (err) {
+      toast.error("Failed to delete project");
     }
   };
 
@@ -676,10 +688,7 @@ useEffect(() => {
 
                               {hasPermission("projects", "delete") && (
                                 <button
-                                  onClick={() =>
-                                    window.confirm("Permanently delete this project?") &&
-                                    toast.error("Permanent delete not implemented")
-                                  }
+                                  onClick={() => handleDelete(project.id)}
                                   className="p-2 hover:bg-red-50 rounded-lg transition group"
                                 >
                                   <MdDelete className="w-5 h-5 text-gray-600 group-hover:text-red-600" />

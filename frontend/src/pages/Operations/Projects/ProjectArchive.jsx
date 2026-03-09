@@ -17,8 +17,10 @@ const ProjectsPage = () => {
       try {
         setLoading(true);
         const response = await apiClient.get("/operation/projects/inactive/");
-        setProjects(response.data || []);
-        setFiltered(response.data || []);
+        const extract = (d) => (Array.isArray(d) ? d : d.results || []);
+        const data = extract(response.data);
+        setProjects(data);
+        setFiltered(data);
       } catch (error) {
         toast.error("Failed to load archived projects");
         setProjects([]);
@@ -44,7 +46,7 @@ const ProjectsPage = () => {
   const handleRestore = async (id) => {
     if (!window.confirm("Restore this project? It will return to active projects.")) return;
     try {
-      await apiClient.patch(`/operation/projects/${id}/`, { is_archived: false });
+      await apiClient.post(`/operation/projects/${id}/activate/`);
       setProjects((prev) => prev.filter((p) => p.id !== id));
       setFiltered((prev) => prev.filter((p) => p.id !== id));
       toast.success("Project restored successfully");

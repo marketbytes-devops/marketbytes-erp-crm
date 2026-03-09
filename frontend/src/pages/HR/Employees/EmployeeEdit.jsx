@@ -32,6 +32,7 @@ const EmployeeEdit = () => {
 
   const [generatePassword, setGeneratePassword] = useState(false);
   const [customPassword, setCustomPassword] = useState("");
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
 
   const [departments, setDepartments] = useState([]);
   const [roles, setRoles] = useState([]);
@@ -183,6 +184,15 @@ const EmployeeEdit = () => {
     toast.success("Strong password generated & copied!");
   };
 
+  useEffect(() => {
+    if (isInitialLoad) {
+      setIsInitialLoad(false);
+      return;
+    }
+    // Clear Reports To if Department changes
+    setFormData(prev => (prev ? { ...prev, reports_to: "" } : null));
+  }, [formData?.department_id]);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -252,7 +262,12 @@ const EmployeeEdit = () => {
   const departmentOptions = departments.map(d => ({ value: d.id, label: d.name }));
   const designationOptions = designations.map(d => ({ value: d.id, label: d.name }));
   const roleOptions = roles.map(r => ({ value: r.id, label: r.name }));
-  const reportsToOptions = employees.map(e => ({
+
+  const filteredEmployees = formData.department_id
+    ? employees.filter(e => e.department && e.department.id === parseInt(formData.department_id))
+    : employees;
+
+  const reportsToOptions = filteredEmployees.map(e => ({
     value: e.id,
     label: `${e.name} (${(e.employee_id || "No ID").replace("EMP", "MB")})`,
   }));

@@ -90,16 +90,34 @@ const Permissions = () => {
         };
       });
 
+      // Step 1: Baseline from Role (to show what's already granted)
+      if (userData.role?.permissions) {
+        userData.role.permissions.forEach((perm) => {
+          const matchedKey = Object.keys(pageNameMap).find(
+            (key) => pageNameMap[key].apiName === perm.page
+          );
+          if (matchedKey) {
+            permissionsMap[matchedKey] = {
+              view: permissionsMap[matchedKey].view || perm.can_view,
+              add: permissionsMap[matchedKey].add || perm.can_add,
+              edit: permissionsMap[matchedKey].edit || perm.can_edit,
+              delete: permissionsMap[matchedKey].delete || perm.can_delete,
+            };
+          }
+        });
+      }
+
+      // Step 2: Merge Direct permissions
       (userData.direct_permissions || []).forEach((perm) => {
         const matchedKey = Object.keys(pageNameMap).find(
           (key) => pageNameMap[key].apiName === perm.page
         );
         if (matchedKey) {
           permissionsMap[matchedKey] = {
-            view: perm.can_view,
-            add: perm.can_add,
-            edit: perm.can_edit,
-            delete: perm.can_delete,
+            view: permissionsMap[matchedKey].view || perm.can_view,
+            add: permissionsMap[matchedKey].add || perm.can_add,
+            edit: permissionsMap[matchedKey].edit || perm.can_edit,
+            delete: permissionsMap[matchedKey].delete || perm.can_delete,
           };
         }
       });
@@ -137,20 +155,25 @@ const Permissions = () => {
   };
 
   const handleSavePermissions = async () => {
-    setIsSaving(true);
     try {
-      const permsArray = Object.keys(userPermissions)
-        .map(key => {
-          const p = userPermissions[key];
-          // Send all pages that are definitely in the map
-          return {
+      setIsSaving(true);
+      const permsArray = [];
+
+      // We send all toggled perms to the backend.
+      // Backend union merging logic will handle the rest.
+      Object.keys(userPermissions).forEach((key) => {
+        const perms = userPermissions[key];
+        // We only need to send it if at least one permission is true
+        if (perms.view || perms.add || perms.edit || perms.delete) {
+          permsArray.push({
             page: pageNameMap[key].apiName,
-            can_view: p.view || false,
-            can_add: p.add || false,
-            can_edit: p.edit || false,
-            can_delete: p.delete || false
-          };
-        });
+            can_view: perms.view,
+            can_add: perms.add,
+            can_edit: perms.edit,
+            can_delete: perms.delete,
+          });
+        }
+      });
 
       await apiClient.put(`/auth/users/${selectedUser.id}/`, {
         user_permissions: permsArray
