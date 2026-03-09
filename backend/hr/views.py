@@ -41,6 +41,9 @@ class AttendanceViewSet(viewsets.ModelViewSet):
         if department_id:
             queryset = queryset.filter(employee__department_id=department_id)
         
+        if self.request.query_params.get('employee_scope'):
+            return queryset.filter(employee=user)
+            
         if user.is_superuser or (getattr(user, 'role', None) and user.role.name == "Superadmin"):
             return queryset
         return queryset.filter(employee=user)
@@ -67,8 +70,11 @@ class AttendanceViewSet(viewsets.ModelViewSet):
         
         is_super = request.user.is_superuser or (getattr(request.user, 'role', None) and request.user.role.name == "Superadmin")
         lead_scope = 'lead_scope' in request.query_params
+        employee_scope = 'employee_scope' in request.query_params
         
-        if is_super:
+        if employee_scope:
+            all_employees = CustomUser.objects.filter(id=request.user.id)
+        elif is_super:
             all_employees = CustomUser.objects.filter(status='active')
         elif lead_scope:
             all_employees = CustomUser.objects.filter(
@@ -502,6 +508,9 @@ class LeaveViewSet(viewsets.ModelViewSet):
         queryset = self.queryset
         
         # Scoping logic
+        if 'employee_scope' in self.request.query_params:
+            return queryset.filter(employee=user)
+            
         if user.is_superuser or (getattr(user, 'role', None) and user.role.name == "Superadmin"):
             return queryset
             

@@ -21,7 +21,7 @@ import Input from "../../../components/Input";
 import Loading from "../../../components/Loading";
 import { usePermission } from "../../../context/PermissionContext";
 
-const ProjectsView = () => {
+const ProjectsView = ({ employeeScope = false, leadScope = false }) => {
   const navigate = useNavigate();
   const { hasPermission } = usePermission();
 
@@ -89,7 +89,7 @@ const ProjectsView = () => {
       try {
         setLoading(true);
         const [projRes, statusRes] = await Promise.all([
-          apiClient.get("/operation/projects/"),
+          apiClient.get(`/operation/projects/${employeeScope ? '?employee_scope=true' : (leadScope ? '?lead_scope=true' : '')}`),
           apiClient.get("/operation/statuses/"),
         ]);
 

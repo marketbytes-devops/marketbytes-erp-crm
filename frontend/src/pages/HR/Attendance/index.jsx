@@ -238,7 +238,8 @@ const Attendance = ({ leadScope, employeeScope }) => {
       year,
       employee_id: filterEmployeeId || undefined,
       department_id: filterDepartmentId || undefined,
-      lead_scope: leadScope ? true : undefined
+      lead_scope: leadScope ? true : undefined,
+      employee_scope: employeeScope ? true : undefined
     };
     apiClient
       .get("/hr/attendance/", { params })

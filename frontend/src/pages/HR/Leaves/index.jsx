@@ -38,7 +38,12 @@ const Leaves = ({ leadScope, employeeScope }) => {
   const fetchLeaves = async () => {
     setLoading(true);
     try {
-      const url = leadScope ? "/hr/leaves/?lead_scope=true" : "/hr/leaves/";
+      let url = "/hr/leaves/";
+      if (employeeScope) {
+        url += "?employee_scope=true";
+      } else if (leadScope) {
+        url += "?lead_scope=true";
+      }
       const res = await apiClient.get(url);
       let data = res.data.results || res.data || [];
       setLeaves(Array.isArray(data) ? data : []);

@@ -186,7 +186,9 @@ class ProjectViewSet(viewsets.ModelViewSet):
         queryset = Project.objects.all()
         user = self.request.user
 
-        if not user.is_superuser and not user.is_staff and not (user.role and user.role.name == 'HR'):
+        if self.request.query_params.get("employee_scope"):
+            queryset = queryset.filter(members=user).distinct()
+        elif not user.is_superuser and not user.is_staff and not (user.role and user.role.name == 'HR'):
             queryset = queryset.filter(members=user).distinct()
             query = Q(members=user)
             if user.department:
@@ -519,7 +521,9 @@ class TaskViewSet(viewsets.ModelViewSet):
         queryset = super().get_queryset()
         user = self.request.user
 
-        if not user.is_superuser and not user.is_staff:
+        if self.request.query_params.get('employee_scope'):
+            queryset = queryset.filter(assignees=user).distinct()
+        elif not user.is_superuser and not user.is_staff:
             query = Q(project__members=user) | Q(project__department=user.department) | Q(assignees=user)
             
             # Lead visibility: tasks of direct reports
