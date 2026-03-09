@@ -12,7 +12,7 @@ import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
 import { usePermission } from "../../../context/PermissionContext";
 
-const EmployeeView = () => {
+const EmployeeView = ({ leadScope, employeeScope }) => {
   const [employees, setEmployees] = useState([]);
   const [filtered, setFiltered] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -125,15 +125,33 @@ const EmployeeView = () => {
     const fetchAll = async () => {
       try {
         setLoading(true);
-        const [empRes, deptRes, roleRes, desigRes] = await Promise.all([
-          apiClient.get("/auth/users/"),
+
+        // Build query params based on scope
+        let userUrl = "/auth/users/";
+        if (leadScope) {
+          userUrl += "?lead_scope=true";
+        }
+
+        const [empRes, deptRes, roleRes, desigRes, profileRes] = await Promise.all([
+          apiClient.get(userUrl),
           apiClient.get("/auth/departments/"),
           apiClient.get("/auth/roles/"),
           apiClient.get("/auth/designations/"),
+          employeeScope ? apiClient.get("/auth/profile/") : Promise.resolve({ data: null })
         ]);
 
         const extract = (d) => (Array.isArray(d) ? d : d.results || []);
-        const emps = extract(empRes.data);
+        let emps = extract(empRes.data);
+
+        // Client-side filtering for employeeScope (colleagues)
+        if (employeeScope && profileRes.data?.reports_to) {
+          // If the backend doesn't have a specific "colleagues" endpoint, 
+          // we might need to fetch all users reporting to the same lead.
+          // For now, let's assume the user wants to see people under the same lead.
+          const myLeadId = profileRes.data.reports_to.id;
+          const colleagueRes = await apiClient.get(`/auth/users/?reports_to=${myLeadId}`);
+          emps = extract(colleagueRes.data);
+        }
 
         setEmployees(emps);
         setFiltered(emps);

@@ -4,6 +4,8 @@ import "./index.css";
 import apiClient from "./helpers/apiClient";
 import Layout from "./components/Layout";
 import Admin from "./pages/Dashboard/Admin";
+import LeadDashboard from "./pages/Dashboard/Lead";
+import EmployeeDashboard from "./pages/Dashboard/Employee";
 import Login from "./pages/Auth/Login";
 import ResetPassword from "./pages/Auth/ResetPassword";
 import Profile from "./pages/Profile";
@@ -121,6 +123,14 @@ function App() {
       ),
       children: [
         { index: true, element: <Admin /> },
+        {
+          path: "/lead-dashboard",
+          element: (
+            <ProtectedRoute requiredPage="lead_dashboard">
+              <LeadDashboard />
+            </ProtectedRoute>
+          )
+        },
         {
           path: "/hr/employees",
           element: (
@@ -724,6 +734,154 @@ function App() {
               requiredAction="view"
             >
               <TaskArchive />
+            </ProtectedRoute>
+          ),
+        },
+
+        /* Lead Scoped Routes */
+        {
+          path: "/team/employees",
+          element: (
+            <ProtectedRoute requiredPage="team_listing">
+              <EmployeeView leadScope={true} />
+            </ProtectedRoute>
+          ),
+        },
+        {
+          path: "/lead/projects",
+          element: (
+            <ProtectedRoute requiredPage="lead_projects">
+              <Projects leadScope={true} />
+            </ProtectedRoute>
+          ),
+        },
+        {
+          path: "/lead/tasks",
+          element: (
+            <ProtectedRoute requiredPage="lead_tasks">
+              <TaskView leadScope={true} />
+            </ProtectedRoute>
+          ),
+        },
+        {
+          path: "/lead/scrum",
+          element: (
+            <ProtectedRoute requiredPage="lead_scrum">
+              <ScrumView leadScope={true} />
+            </ProtectedRoute>
+          ),
+        },
+        {
+          path: "/lead/holidays",
+          element: (
+            <ProtectedRoute requiredPage="lead_holidays">
+              <HolidayView leadScope={true} />
+            </ProtectedRoute>
+          ),
+        },
+        {
+          path: "/lead/time-logs",
+          element: (
+            <ProtectedRoute requiredPage="lead_timelogs">
+              <TimeLogs leadScope={true} />
+            </ProtectedRoute>
+          ),
+        },
+        {
+          path: "/lead/leaves",
+          element: (
+            <ProtectedRoute requiredPage="lead_leaves">
+              <Leaves leadScope={true} />
+            </ProtectedRoute>
+          ),
+        },
+        {
+          path: "/lead/attendance",
+          element: (
+            <ProtectedRoute requiredPage="lead_attendance">
+              <Attendance leadScope={true} />
+            </ProtectedRoute>
+          ),
+        },
+        {
+          path: "/lead/leaves/assign",
+          element: (
+            <ProtectedRoute requiredPage="lead_leaves">
+              <AssignLeave leadScope={true} />
+            </ProtectedRoute>
+          ),
+        },
+        {
+          path: "/lead/overtime",
+          element: (
+            <ProtectedRoute requiredPage="lead_overtime">
+              <Overtime leadScope={true} />
+            </ProtectedRoute>
+          ),
+        },
+
+        /* Employee Scoped Routes */
+        {
+          path: "/employee/projects",
+          element: (
+            <ProtectedRoute requiredPage="employee_projects">
+              <Projects employeeScope={true} />
+            </ProtectedRoute>
+          ),
+        },
+        {
+          path: "/employee/tasks",
+          element: (
+            <ProtectedRoute requiredPage="employee_tasks">
+              <TaskView employeeScope={true} />
+            </ProtectedRoute>
+          ),
+        },
+        {
+          path: "/employee/scrum",
+          element: (
+            <ProtectedRoute requiredPage="employee_scrum">
+              <ScrumView employeeScope={true} />
+            </ProtectedRoute>
+          ),
+        },
+        {
+          path: "/employee/time-logs",
+          element: (
+            <ProtectedRoute requiredPage="employee_timelogs">
+              <TimeLogs employeeScope={true} />
+            </ProtectedRoute>
+          ),
+        },
+        {
+          path: "/employee/attendance",
+          element: (
+            <ProtectedRoute requiredPage="employee_attendance">
+              <Attendance employeeScope={true} />
+            </ProtectedRoute>
+          ),
+        },
+        {
+          path: "/employee/leaves",
+          element: (
+            <ProtectedRoute requiredPage="employee_leaves">
+              <Leaves employeeScope={true} />
+            </ProtectedRoute>
+          ),
+        },
+        {
+          path: "/employee/leaves/assign",
+          element: (
+            <ProtectedRoute requiredPage="employee_leaves">
+              <AssignLeave employeeScope={true} />
+            </ProtectedRoute>
+          ),
+        },
+        {
+          path: "/employee/holidays",
+          element: (
+            <ProtectedRoute requiredPage="employee_holidays">
+              <HolidayView employeeScope={true} />
             </ProtectedRoute>
           ),
         },

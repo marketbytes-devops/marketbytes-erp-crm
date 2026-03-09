@@ -65,7 +65,18 @@ class AttendanceViewSet(viewsets.ModelViewSet):
             'holiday': 0
         }
         
-        all_employees = CustomUser.objects.filter(status='active')
+        is_super = request.user.is_superuser or (getattr(request.user, 'role', None) and request.user.role.name == "Superadmin")
+        lead_scope = 'lead_scope' in request.query_params
+        
+        if is_super:
+            all_employees = CustomUser.objects.filter(status='active')
+        elif lead_scope:
+            all_employees = CustomUser.objects.filter(
+                Q(id=request.user.id) | Q(reports_to=request.user),
+                status='active'
+            )
+        else:
+            all_employees = CustomUser.objects.filter(id=request.user.id)
         
         from calendar import monthrange
         days_in_month = monthrange(int(year), int(month))[1]
@@ -486,6 +497,46 @@ class LeaveViewSet(viewsets.ModelViewSet):
     permission_classes = [HasPermission]
     page_name = 'leaves'
 
+    def get_queryset(self):
+        user = self.request.user
+        queryset = self.queryset
+        
+        # Scoping logic
+        if user.is_superuser or (getattr(user, 'role', None) and user.role.name == "Superadmin"):
+            return queryset
+            
+        if 'lead_scope' in self.request.query_params:
+            # Lead sees own + direct reports
+            return queryset.filter(Q(employee=user) | Q(employee__reports_to=user))
+            
+        return queryset.filter(employee=user)
+
+    @action(detail=True, methods=['post'])
+    def lead_confirm(self, request, pk=None):
+        leave = self.get_object()
+        # Ensure the user is the leader of the employee who requested leave
+        if leave.employee.reports_to != request.user and not request.user.is_superuser:
+            return Response({'error': 'Permission denied: You are not the leader of this employee.'}, status=403)
+        
+        comments = request.data.get('lead_comments', '')
+        leave.lead_status = 'confirmed'
+        leave.lead_comments = comments
+        leave.save()
+        return Response({'status': 'confirmed', 'message': 'Leave confirmed by lead. Awaiting HR approval.'})
+
+    @action(detail=True, methods=['post'])
+    def lead_decline(self, request, pk=None):
+        leave = self.get_object()
+        if leave.employee.reports_to != request.user and not request.user.is_superuser:
+            return Response({'error': 'Permission denied.'}, status=403)
+        
+        comments = request.data.get('lead_comments', '')
+        leave.lead_status = 'declined'
+        leave.lead_comments = comments
+        leave.status = 'rejected' # Auto-reject if lead declines? User said "mark Leave Declined gone for employees"
+        leave.save()
+        return Response({'status': 'declined', 'message': 'Leave declined by lead.'})
+
 class OvertimeViewSet(viewsets.ModelViewSet):
     queryset = Overtime.objects.all().select_related('employee')
     serializer_class = OvertimeSerializer
@@ -504,6 +555,11 @@ class OvertimeViewSet(viewsets.ModelViewSet):
         
         if user.is_superuser or (getattr(user, 'role', None) and user.role.name == "Superadmin"):
             return queryset
+            
+        if 'lead_scope' in self.request.query_params:
+            # Lead sees own + direct reports
+            return queryset.filter(Q(employee=user) | Q(employee__reports_to=user))
+            
         return queryset.filter(employee=user)
     
     @action(detail=False, methods=['post'], permission_classes=[IsAuthenticated])

@@ -78,6 +78,8 @@ class Leave(models.Model):
     duration = models.CharField(max_length=20, choices=[('full_day', 'Full Day'),('half_day', 'Half Day'),('multiple', 'Multiple Days')], default='full_day', null=True, blank=True)
     reason = models.TextField(null=True, blank=True)
     status = models.CharField(max_length=20, choices=[('pending', 'Pending'),('approved', 'Approved'),('rejected', 'Rejected')], default='pending', null=True, blank=True)
+    lead_status = models.CharField(max_length=20, choices=[('pending', 'Pending'),('confirmed', 'Confirmed'),('declined', 'Declined')], default='pending', null=True, blank=True)
+    lead_comments = models.TextField(blank=True, null=True)
     approved_by = models.ForeignKey(CustomUser, on_delete=models.SET_NULL, null=True, blank=True, related_name='approved_leaves')
     rejection_reason = models.TextField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True, null=True, blank=True)

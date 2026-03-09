@@ -15,6 +15,8 @@ import {
 } from 'react-icons/md';
 import { toast } from 'react-hot-toast';
 import apiClient from '../../../helpers/apiClient';
+import LayoutComponents from '../../../components/LayoutComponents';
+import Input from '../../../components/Input';
 
 const ContractEdit = () => {
     const navigate = useNavigate();
@@ -67,8 +69,6 @@ const ContractEdit = () => {
                 const [clientsRes] = await Promise.all([
                     apiClient.get('/operation/clients/'),
                 ]);
-
-                // Handle paginated responses
                 setClients(clientsRes.data.results || (Array.isArray(clientsRes.data) ? clientsRes.data : []));
                 await fetchContractTypes();
 
@@ -78,10 +78,10 @@ const ContractEdit = () => {
 
                 setFormData({
                     subject: contract.subject || '',
-                    client_id: contract.client || '', // Assuming Django REST Framework returns ID as 'client' or 'client_id'
+                    client_id: contract.client || '',
                     amount: contract.amount || '',
                     no_value: contract.no_value || false,
-                    contract_type_id: contract.contract_type || '', // Assuming ID
+                    contract_type_id: contract.contract_type || '',
                     start_date: contract.start_date || '',
                     end_date: contract.end_date || '',
                     no_end_date: contract.no_end_date || false,
@@ -94,7 +94,7 @@ const ContractEdit = () => {
                     cell: contract.cell || '',
                     office_phone_number: contract.office_phone_number || '',
                     notes: contract.notes || '',
-                    company_logo: null // Don't pre-fill file input
+                    company_logo: null
                 });
 
                 if (contract.company_logo) {
@@ -159,11 +159,9 @@ const ContractEdit = () => {
         e.preventDefault();
         setLoading(true);
 
-        // Using FormData for file upload
         const data = new FormData();
         Object.keys(formData).forEach(key => {
             if (formData[key] !== null) {
-                // For files, only append if it's a File object (new upload)
                 if (key === 'company_logo' && !(formData[key] instanceof File)) {
                     return;
                 }
@@ -185,385 +183,293 @@ const ContractEdit = () => {
         }
     };
 
-    const inputClass = "w-full p-3 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all bg-gray-50/50";
-    const labelClass = "block text-sm font-semibold text-gray-700 mb-1.5";
-
     return (
-        <div className="p-6 bg-gray-50 min-h-screen">
-            <div className="max-w-6xl mx-auto">
-                <div className="flex items-center gap-4 mb-6">
-                    <button
-                        onClick={() => navigate('/operations/contracts')}
-                        className="p-2 hover:bg-white rounded-full transition-colors text-gray-600 shadow-sm"
-                    >
-                        <MdArrowBack size={24} />
-                    </button>
-                    <h1 className="text-2xl font-bold text-gray-800">Edit Contract</h1>
-                </div>
+        <div className="p-6">
+            <LayoutComponents
+                title="Edit Contract"
+                subtitle={`Refine agreement for: ${formData.subject}`}
+                variant="card"
+            >
+                <form onSubmit={handleSubmit} className="space-y-10">
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
+                        {/* Essential Info Section */}
+                        <div className="space-y-8">
+                            <h3 className="text-xl font-bold text-black font-syne border-b border-gray-100 pb-4">Essential Details</h3>
 
-                <form onSubmit={handleSubmit} className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
-                    <div className="bg-gray-50 px-8 py-4 border-b border-gray-100">
-                        <h2 className="text-sm font-bold uppercase tracking-wider text-gray-500">Edit Contract Details</h2>
-                    </div>
+                            <Input
+                                label="Subject"
+                                name="subject"
+                                required
+                                value={formData.subject}
+                                onChange={handleChange}
+                                placeholder="e.g., Annual Maintenance Contract 2024"
+                            />
 
-                    <div className="p-8 space-y-8">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                            {/* Clients Selection */}
-                            <div>
-                                <label className={labelClass}>Client <span className="text-red-500">*</span></label>
-                                <div className="flex gap-2">
-                                    <select name="title" className="w-24 p-3 border border-gray-200 rounded-xl outline-none bg-gray-50/50">
-                                        <option>Mr.</option>
-                                        <option>Ms.</option>
-                                        <option>Mrs.</option>
-                                    </select>
-                                    <select
-                                        name="client_id"
-                                        required
-                                        value={formData.client_id}
-                                        onChange={handleChange}
-                                        className="flex-1 p-3 border border-gray-200 rounded-xl outline-none bg-gray-50/50"
-                                    >
-                                        <option value="">Select Client</option>
-                                        {clients.map(client => (
-                                            <option key={client.id} value={client.id}>{client.name}</option>
-                                        ))}
-                                    </select>
-                                </div>
-                            </div>
+                            <Input
+                                label="Client"
+                                type="select"
+                                required
+                                value={formData.client_id}
+                                onChange={(val) => setFormData(prev => ({ ...prev, client_id: val }))}
+                                options={[
+                                    { value: '', label: 'Select Client' },
+                                    ...clients.map(c => ({ value: c.id, label: c.name }))
+                                ]}
+                            />
 
-                            {/* Subject */}
-                            <div>
-                                <label className={labelClass}>Subject <span className="text-red-500">*</span></label>
-                                <input
-                                    type="text"
-                                    name="subject"
-                                    required
-                                    value={formData.subject}
-                                    onChange={handleChange}
-                                    className={inputClass}
-                                    placeholder="Contract subject"
-                                />
-                            </div>
-
-                            {/* Amount */}
-                            <div className="flex items-end gap-6">
-                                <div className="flex-1">
-                                    <label className={labelClass}>Amount (INR) <span className="text-red-500">*</span></label>
-                                    <input
+                            <div className="flex flex-col md:flex-row gap-6 items-start">
+                                <div className="flex-1 w-full">
+                                    <Input
+                                        label="Amount (INR)"
                                         type="number"
                                         name="amount"
+                                        disabled={formData.no_value}
                                         value={formData.amount}
                                         onChange={handleChange}
-                                        disabled={formData.no_value}
-                                        className={`${inputClass} ${formData.no_value ? 'opacity-50 cursor-not-allowed' : ''}`}
                                         placeholder="0.00"
                                     />
                                 </div>
-                                <div className="flex items-center gap-2 mb-3">
+                                <div className="pt-10 flex items-center gap-2">
                                     <input
                                         type="checkbox"
+                                        id="no_value"
                                         name="no_value"
                                         checked={formData.no_value}
                                         onChange={handleChange}
-                                        className="w-4 h-4 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500"
+                                        className="w-5 h-5 rounded-lg border-gray-300 text-black focus:ring-black"
                                     />
-                                    <span className="text-sm font-medium text-gray-600">No Value</span>
+                                    <label htmlFor="no_value" className="text-sm font-bold text-gray-600">No Fixed Value</label>
                                 </div>
                             </div>
 
-                            {/* Contract Type Searchable Dropdown */}
-                            <div>
-                                <label className={labelClass}>Contract Type</label>
-                                <div className="relative">
-                                    <div
-                                        className={`${inputClass} cursor-pointer flex justify-between items-center bg-white`}
-                                        onClick={() => setIsTypesDropdownOpen(!isTypesDropdownOpen)}
-                                    >
-                                        <span className={formData.contract_type_id ? 'text-gray-900' : 'text-gray-400'}>
-                                            {formData.contract_type_id
-                                                ? contractTypes.find(t => t.id == formData.contract_type_id)?.name
-                                                : 'Select Category'}
-                                        </span>
-                                        <MdKeyboardArrowDown className={`transition-transform ${isTypesDropdownOpen ? 'rotate-180' : ''}`} size={20} />
+                            <div className="relative">
+                                <label className="block text-sm font-bold text-black mb-2">Contract Type</label>
+                                <div className="flex gap-2">
+                                    <div className="flex-1">
+                                        <Input
+                                            type="select"
+                                            value={formData.contract_type_id}
+                                            onChange={(val) => setFormData(prev => ({ ...prev, contract_type_id: val }))}
+                                            options={[
+                                                { value: '', label: 'Select Type' },
+                                                ...contractTypes.map(t => ({ value: t.id, label: t.name }))
+                                            ]}
+                                        />
                                     </div>
-
                                     <button
                                         type="button"
                                         onClick={() => setIsModalOpen(true)}
-                                        className="absolute right-10 top-1/2 -translate-y-1/2 text-emerald-500 hover:text-emerald-600 font-bold flex items-center gap-1 bg-white px-2 py-1 rounded shadow-sm text-xs z-10"
+                                        className="p-3 bg-gray-50 text-black rounded-xl hover:bg-gray-100 transition-all border border-gray-100"
+                                        title="Manage Types"
                                     >
-                                        <MdAdd /> Add Contract Type
+                                        <MdAdd size={24} />
                                     </button>
-
-                                    <AnimatePresence>
-                                        {isTypesDropdownOpen && (
-                                            <motion.div
-                                                initial={{ opacity: 0, y: -10 }}
-                                                animate={{ opacity: 1, y: 0 }}
-                                                exit={{ opacity: 0, y: -10 }}
-                                                className="absolute z-50 w-full mt-2 bg-white border border-gray-100 rounded-2xl shadow-xl overflow-hidden"
-                                            >
-                                                <div className="p-3 border-b border-gray-50 flex items-center gap-2">
-                                                    <MdSearch className="text-gray-400" size={18} />
-                                                    <input
-                                                        type="text"
-                                                        placeholder="Search types..."
-                                                        className="w-full text-sm outline-none"
-                                                        value={searchTerm}
-                                                        onChange={(e) => setSearchTerm(e.target.value)}
-                                                        onClick={(e) => e.stopPropagation()}
-                                                    />
-                                                </div>
-                                                <div className="max-h-60 overflow-y-auto">
-                                                    {contractTypes.filter(t => t.name.toLowerCase().includes(searchTerm.toLowerCase())).map(type => (
-                                                        <div
-                                                            key={type.id}
-                                                            onClick={() => {
-                                                                setFormData(prev => ({ ...prev, contract_type_id: type.id }));
-                                                                setIsTypesDropdownOpen(false);
-                                                                setSearchTerm('');
-                                                            }}
-                                                            className={`px-4 py-3 text-sm cursor-pointer hover:bg-emerald-50 transition-colors ${formData.contract_type_id == type.id ? 'bg-emerald-50 text-emerald-600 font-semibold' : 'text-gray-700'}`}
-                                                        >
-                                                            {type.name}
-                                                        </div>
-                                                    ))}
-                                                    {contractTypes.filter(t => t.name.toLowerCase().includes(searchTerm.toLowerCase())).length === 0 && (
-                                                        <div className="px-4 py-3 text-sm text-gray-400 text-center">No types found</div>
-                                                    )}
-                                                </div>
-                                            </motion.div>
-                                        )}
-                                    </AnimatePresence>
                                 </div>
                             </div>
+                        </div>
 
-                            {/* Start Date */}
-                            <div>
-                                <label className={labelClass}>Start Date <span className="text-red-500">*</span></label>
-                                <input
+                        {/* Timeline & Logo Section */}
+                        <div className="space-y-8">
+                            <h3 className="text-xl font-bold text-black font-syne border-b border-gray-100 pb-4">Timeline & Identity</h3>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <Input
+                                    label="Start Date"
                                     type="date"
                                     name="start_date"
                                     required
                                     value={formData.start_date}
                                     onChange={handleChange}
-                                    className={inputClass}
                                 />
-                            </div>
-
-                            {/* End Date */}
-                            <div className="flex items-end gap-6">
-                                <div className="flex-1">
-                                    <label className={labelClass}>End Date</label>
-                                    <input
+                                <div className="space-y-2">
+                                    <Input
+                                        label="End Date"
                                         type="date"
                                         name="end_date"
+                                        disabled={formData.no_end_date}
                                         value={formData.end_date}
                                         onChange={handleChange}
-                                        disabled={formData.no_end_date}
-                                        className={`${inputClass} ${formData.no_end_date ? 'opacity-50 cursor-not-allowed' : ''}`}
                                     />
-                                </div>
-                                <div className="flex items-center gap-2 mb-3">
-                                    <input
-                                        type="checkbox"
-                                        name="no_end_date"
-                                        checked={formData.no_end_date}
-                                        onChange={handleChange}
-                                        className="w-4 h-4 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500"
-                                    />
-                                    <span className="text-sm font-medium text-gray-600">No End Date</span>
-                                </div>
-                            </div>
-
-                            {/* Contract Name */}
-                            <div>
-                                <label className={labelClass}>Contract Name</label>
-                                <input
-                                    type="text"
-                                    name="contract_name"
-                                    value={formData.contract_name}
-                                    onChange={handleChange}
-                                    className={inputClass}
-                                />
-                            </div>
-
-                            {/* Alternate Address */}
-                            <div>
-                                <label className={labelClass}>Alternate Address</label>
-                                <textarea
-                                    name="alternate_address"
-                                    rows="1"
-                                    value={formData.alternate_address}
-                                    onChange={handleChange}
-                                    className={inputClass}
-                                />
-                            </div>
-
-                            {/* Address Details */}
-                            <div className="grid grid-cols-2 gap-4 col-span-1">
-                                <div>
-                                    <label className={labelClass}>City</label>
-                                    <input type="text" name="city" value={formData.city} onChange={handleChange} className={inputClass} />
-                                </div>
-                                <div>
-                                    <label className={labelClass}>State</label>
-                                    <input type="text" name="state" value={formData.state} onChange={handleChange} className={inputClass} />
-                                </div>
-                            </div>
-
-                            <div className="grid grid-cols-2 gap-4 col-span-1">
-                                <div>
-                                    <label className={labelClass}>Country</label>
-                                    <input type="text" name="country" value={formData.country} onChange={handleChange} className={inputClass} />
-                                </div>
-                                <div>
-                                    <label className={labelClass}>Postal code</label>
-                                    <input type="text" name="postal_code" value={formData.postal_code} onChange={handleChange} className={inputClass} />
-                                </div>
-                            </div>
-
-                            {/* Contact Info */}
-                            <div>
-                                <label className={labelClass}>Cell</label>
-                                <input type="text" name="cell" value={formData.cell} onChange={handleChange} className={inputClass} />
-                            </div>
-
-                            <div>
-                                <label className={labelClass}>Office Phone Number</label>
-                                <input type="text" name="office_phone_number" value={formData.office_phone_number} onChange={handleChange} className={inputClass} />
-                            </div>
-                        </div>
-
-                        {/* Notes */}
-                        <div>
-                            <label className={labelClass}>Notes</label>
-                            <textarea
-                                name="notes"
-                                rows="4"
-                                value={formData.notes}
-                                onChange={handleChange}
-                                className={inputClass}
-                                placeholder="Enter contract notes or description..."
-                            />
-                        </div>
-
-                        {/* Logo Upload */}
-                        <div>
-                            <label className={labelClass}>Company Logo</label>
-                            <div className="flex items-start gap-8">
-                                <div className="w-64 h-40 border-2 border-dashed border-gray-200 rounded-2xl flex flex-col items-center justify-center bg-gray-50/50 hover:bg-gray-100 transition-colors relative overflow-hidden group">
-                                    {logoPreview ? (
-                                        <img src={logoPreview} alt="Preview" className="w-full h-full object-contain p-4" />
-                                    ) : (
-                                        <>
-                                            <MdImage size={40} className="text-gray-300 mb-2" />
-                                            <span className="text-xs text-gray-500">Image Preview</span>
-                                        </>
-                                    )}
-                                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                                        <MdCloudUpload className="text-white" size={32} />
+                                    <div className="flex items-center gap-2">
+                                        <input
+                                            type="checkbox"
+                                            id="no_end_date"
+                                            name="no_end_date"
+                                            checked={formData.no_end_date}
+                                            onChange={handleChange}
+                                            className="w-4 h-4 rounded border-gray-300 text-black focus:ring-black"
+                                        />
+                                        <label htmlFor="no_end_date" className="text-xs font-bold text-gray-500 uppercase tracking-wider">No End Date</label>
                                     </div>
                                 </div>
-                                <div className="flex flex-col gap-4">
-                                    <p className="text-xs text-gray-400 mt-2 max-w-xs">
-                                        Upload your company logo. Supported formats: JPG, PNG. Max size: 2MB.
-                                    </p>
-                                    <label className="bg-blue-500 text-white px-6 py-2.5 rounded-xl font-semibold text-sm cursor-pointer hover:bg-blue-600 transition-colors shadow-sm flex items-center gap-2 w-fit">
-                                        <MdCloudUpload /> Select Image
-                                        <input type="file" className="hidden" accept="image/*" onChange={handleFileChange} />
-                                    </label>
+                            </div>
+
+                            <Input
+                                label="Contract Reference Name"
+                                name="contract_name"
+                                value={formData.contract_name}
+                                onChange={handleChange}
+                                placeholder="Internal reference name"
+                            />
+
+                            <div className="space-y-4">
+                                <label className="block text-sm font-bold text-black">Company Logo / Banner</label>
+                                <div className="flex items-center gap-6">
+                                    <div className="w-40 h-40 rounded-3xl border-2 border-dashed border-gray-100 bg-gray-50/50 flex items-center justify-center overflow-hidden relative group transition-all hover:bg-gray-100/50 hover:border-black/10">
+                                        {logoPreview ? (
+                                            <img src={logoPreview} alt="Preview" className="w-full h-full object-contain p-4 transition-transform duration-500 group-hover:scale-110" />
+                                        ) : (
+                                            <MdImage size={48} className="text-gray-200" />
+                                        )}
+                                        <label className="absolute inset-0 cursor-pointer flex items-center justify-center bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity">
+                                            <MdCloudUpload className="text-white" size={32} />
+                                            <input type="file" className="hidden" onChange={handleFileChange} accept="image/*" />
+                                        </label>
+                                    </div>
+                                    <div className="space-y-2">
+                                        <p className="text-sm font-bold text-black">Update Contract Visual</p>
+                                        <p className="text-xs text-gray-400 leading-relaxed max-w-[200px]">PNG or JPG preferred. Max size: 2MB.</p>
+                                        {logoPreview && (
+                                            <button
+                                                type="button"
+                                                onClick={() => { setLogoPreview(null); setFormData(p => ({ ...p, company_logo: null })) }}
+                                                className="text-xs font-bold text-red-500 hover:text-red-700 underline"
+                                            >
+                                                Remove Image
+                                            </button>
+                                        )}
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <div className="px-8 py-6 bg-gray-50 border-t border-gray-100 flex gap-4">
+                    {/* Additional Details */}
+                    <div className="space-y-8 bg-gray-50/50 p-8 rounded-[2rem] border border-gray-100">
+                        <h3 className="text-xl font-bold text-black font-syne pb-4">Additional Information</h3>
+
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                            <div className="space-y-6">
+                                <Input
+                                    label="Office Address"
+                                    name="alternate_address"
+                                    value={formData.alternate_address}
+                                    onChange={handleChange}
+                                    placeholder="Full office address"
+                                />
+                                <div className="grid grid-cols-2 gap-4">
+                                    <Input label="City" name="city" value={formData.city} onChange={handleChange} />
+                                    <Input label="State" name="state" value={formData.state} onChange={handleChange} />
+                                </div>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <Input label="Country" name="country" value={formData.country} onChange={handleChange} />
+                                    <Input label="Postal Code" name="postal_code" value={formData.postal_code} onChange={handleChange} />
+                                </div>
+                            </div>
+
+                            <div className="space-y-6">
+                                <div className="grid grid-cols-2 gap-4">
+                                    <Input label="Mobile / Cell" name="cell" value={formData.cell} onChange={handleChange} />
+                                    <Input label="Office Phone" name="office_phone_number" value={formData.office_phone_number} onChange={handleChange} />
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="block text-sm font-bold text-black">Notes & Terms</label>
+                                    <textarea
+                                        name="notes"
+                                        value={formData.notes}
+                                        onChange={handleChange}
+                                        rows="5"
+                                        className="w-full px-6 py-4 bg-white border border-gray-200 rounded-2xl focus:ring-2 focus:ring-black/5 focus:border-black outline-none transition-all text-sm resize-none"
+                                        placeholder="Specify specific terms, SLAs, or unique conditions..."
+                                    />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Submission */}
+                    <div className="flex flex-col md:flex-row gap-4 pt-10">
                         <button
                             type="submit"
                             disabled={loading}
-                            className="flex items-center gap-2 bg-emerald-500 text-white px-8 py-3 rounded-xl font-bold hover:bg-emerald-600 transition-all shadow-md disabled:opacity-50"
+                            className="flex-1 md:flex-none flex items-center justify-center gap-3 bg-black text-white px-12 py-5 rounded-2xl font-bold hover:bg-gray-900 transition-all shadow-xl shadow-black/10 disabled:opacity-50 active:scale-95"
                         >
-                            {loading ? <><MdRefresh className="animate-spin" /> Saving...</> : <><MdSave /> Save Changes</>}
+                            {loading ? <MdRefresh size={24} className="animate-spin" /> : <MdSave size={24} />}
+                            {loading ? 'Processing...' : 'Save Contract Changes'}
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => navigate('/operations/contracts')}
+                            className="flex-1 md:flex-none flex items-center justify-center gap-3 bg-white border border-gray-200 text-black px-12 py-5 rounded-2xl font-bold hover:bg-gray-50 transition-all active:scale-95"
+                        >
+                            Cancel
                         </button>
                     </div>
                 </form>
+            </LayoutComponents>
 
-                {/* Contract Type Management Modal */}
-                <AnimatePresence>
-                    {isModalOpen && (
-                        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-                            <motion.div
-                                initial={{ opacity: 0 }}
-                                animate={{ opacity: 1 }}
-                                exit={{ opacity: 0 }}
-                                className="absolute inset-0 bg-black/60 backdrop-blur-sm"
-                                onClick={() => setIsModalOpen(false)}
-                            />
-                            <motion.div
-                                initial={{ scale: 0.9, opacity: 0, y: 20 }}
-                                animate={{ scale: 1, opacity: 1, y: 0 }}
-                                exit={{ scale: 0.9, opacity: 0, y: 20 }}
-                                className="relative bg-white w-full max-w-lg rounded-[2.5rem] shadow-2xl overflow-hidden flex flex-col max-h-[90vh]"
-                            >
-                                <div className="bg-blue-500 p-6 flex items-center justify-between text-white">
-                                    <h3 className="text-xl font-bold">Contract Type</h3>
-                                    <button onClick={() => setIsModalOpen(false)} className="p-2 hover:bg-white/20 rounded-full transition-colors">
-                                        <MdClose size={24} />
-                                    </button>
-                                </div>
+            {/* Sub-modal for Contract Types */}
+            <AnimatePresence>
+                {isModalOpen && (
+                    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            className="absolute inset-0 bg-black/20 backdrop-blur-md"
+                            onClick={() => setIsModalOpen(false)}
+                        />
+                        <motion.div
+                            initial={{ scale: 0.9, opacity: 0, y: 20 }}
+                            animate={{ scale: 1, opacity: 1, y: 0 }}
+                            exit={{ scale: 0.9, opacity: 0, y: 20 }}
+                            className="relative bg-white w-full max-w-xl rounded-[2.5rem] shadow-2xl overflow-hidden flex flex-col max-h-[85vh]"
+                        >
+                            <div className="p-8 border-b border-gray-50 flex items-center justify-between">
+                                <h3 className="text-2xl font-bold text-black font-syne">Contract Types</h3>
+                                <button onClick={() => setIsModalOpen(false)} className="p-3 hover:bg-gray-100 rounded-2xl transition-colors">
+                                    <MdClose size={24} />
+                                </button>
+                            </div>
 
-                                <div className="p-8 flex-1 overflow-y-auto">
-                                    <table className="w-full text-left">
-                                        <thead>
-                                            <tr className="text-gray-400 text-xs font-bold uppercase tracking-widest border-b border-gray-100">
-                                                <th className="pb-4 pl-2">#</th>
-                                                <th className="pb-4">Name</th>
-                                                <th className="pb-4 text-center">Action</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody className="divide-y divide-gray-50">
-                                            {contractTypes.map((type, index) => (
-                                                <tr key={type.id} className="group hover:bg-gray-50/50 transition-colors">
-                                                    <td className="py-4 pl-2 text-gray-400 text-sm font-medium">{index + 1}</td>
-                                                    <td className="py-4 text-gray-700 font-medium">{type.name}</td>
-                                                    <td className="py-4 text-center">
-                                                        <button
-                                                            onClick={() => handleDeleteType(type.id)}
-                                                            className="px-4 py-1.5 border border-red-200 text-red-500 rounded-lg text-xs font-bold hover:bg-red-50 transition-colors uppercase"
-                                                        >
-                                                            Remove
-                                                        </button>
-                                                    </td>
-                                                </tr>
-                                            ))}
-                                        </tbody>
-                                    </table>
-                                </div>
-
-                                <div className="p-8 bg-gray-50 border-t border-gray-100">
-                                    <label className="block text-sm font-bold text-gray-700 mb-2">Name <span className="text-red-500">*</span></label>
-                                    <input
-                                        type="text"
-                                        className="w-full p-4 border border-gray-200 rounded-2xl outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all bg-white shadow-inner mb-6"
+                            <div className="p-8 flex-1 overflow-y-auto">
+                                <div className="space-y-4 mb-8">
+                                    <Input
+                                        label="New Contract Type"
                                         value={newTypeName}
                                         onChange={(e) => setNewTypeName(e.target.value)}
-                                        placeholder="Enter contract type name"
+                                        placeholder="e.g., Software Licensing"
                                     />
                                     <button
                                         onClick={handleSaveType}
                                         disabled={isSavingType || !newTypeName.trim()}
-                                        className="bg-emerald-500 text-white px-8 py-3 rounded-2xl font-bold hover:bg-emerald-600 transition-all shadow-lg flex items-center gap-2 disabled:opacity-50"
+                                        className="w-full bg-black text-white py-4 rounded-2xl font-bold hover:bg-gray-900 transition-all shadow-lg flex items-center justify-center gap-2 disabled:opacity-50"
                                     >
-                                        <MdSave /> {isSavingType ? 'Saving...' : 'Save'}
+                                        <MdAdd size={20} /> {isSavingType ? 'Saving...' : 'Add Type Category'}
                                     </button>
                                 </div>
-                            </motion.div>
-                        </div>
-                    )}
-                </AnimatePresence>
-            </div>
+
+                                <div className="space-y-2">
+                                    <p className="text-xs font-bold text-gray-400 uppercase tracking-widest pl-2 mb-4">Existing Categories</p>
+                                    <div className="grid grid-cols-1 gap-2">
+                                        {contractTypes.map((type) => (
+                                            <div key={type.id} className="group flex items-center justify-between p-4 bg-gray-50 rounded-2xl hover:bg-gray-100 transition-colors">
+                                                <span className="font-bold text-gray-800">{type.name}</span>
+                                                <button
+                                                    onClick={() => handleDeleteType(type.id)}
+                                                    className="p-2 opacity-0 group-hover:opacity-100 text-red-500 hover:bg-red-50 rounded-xl transition-all"
+                                                >
+                                                    <MdDelete size={20} />
+                                                </button>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
+                        </motion.div>
+                    </div>
+                )}
+            </AnimatePresence>
         </div>
     );
 };
