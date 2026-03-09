@@ -11,8 +11,11 @@ class HasPermission(BasePermission):
         if request.user.is_superuser or (request.user.role and request.user.role.name == "Superadmin"):
             return True
         
-        # Determine the page name from the view
-        page = getattr(view, 'page_name', view.__class__.__name__.lower().replace('view', '').replace('set', ''))
+        # Determine the page names from the view
+        page_names = getattr(view, 'page_names', [])
+        if not page_names:
+            page_name = getattr(view, 'page_name', view.__class__.__name__.lower().replace('view', '').replace('set', ''))
+            page_names = [page_name]
         
         # Map HTTP methods to actions
         action = ('view' if request.method == 'GET' else
@@ -23,7 +26,11 @@ class HasPermission(BasePermission):
         if not action:
             return False
             
-        return has_user_permission(request.user, page, action)
+        # Check if user has permission for ANY of the page names
+        for page in page_names:
+            if has_user_permission(request.user, page, action):
+                return True
+        return False
 
 def has_permission(user, page, action):
     """Helper function for manual permission checks using unified logic"""

@@ -21,7 +21,7 @@ class AttendanceViewSet(viewsets.ModelViewSet):
     queryset = Attendance.objects.all().select_related('employee')
     serializer_class = AttendanceSerializer
     permission_classes = [HasPermission]
-    page_name = 'attendance'
+    page_names = ['attendance', 'employee_attendance', 'lead_attendance']
     
     def get_queryset(self):
         user = self.request.user
@@ -48,7 +48,7 @@ class AttendanceViewSet(viewsets.ModelViewSet):
             return queryset
         return queryset.filter(employee=user)
     
-    @action(detail=False, methods=['get'])
+    @action(detail=False, methods=['get'], permission_classes=[IsAuthenticated])
     def summary(self, request):
         """Get attendance summary for the current month"""
         month = request.query_params.get('month', timezone.now().month)
@@ -244,7 +244,7 @@ class AttendanceViewSet(viewsets.ModelViewSet):
         else:
             return 'present'
     
-    @action(detail=False, methods=['get'])
+    @action(detail=False, methods=['get'], permission_classes=[IsAuthenticated])
     def status(self, request):
         now = timezone.now()
         local_now = timezone.localtime(now)
@@ -408,9 +408,9 @@ class HolidayViewSet(viewsets.ModelViewSet):
     queryset = Holiday.objects.all()
     serializer_class = HolidaySerializer
     permission_classes = [HasPermission]
-    page_name = 'holidays'
+    page_names = ['holidays', 'employee_holidays', 'lead_holidays']
 
-    @action(detail=False, methods=['get'])
+    @action(detail=False, methods=['get'], permission_classes=[IsAuthenticated])
     def export_csv(self, request):
         response = HttpResponse(content_type='text/csv')
         response['Content-Disposition'] = 'attachment; filename="holidays.csv"'
@@ -429,7 +429,7 @@ class HolidayViewSet(viewsets.ModelViewSet):
             ])
         return response
 
-    @action(detail=False, methods=['get'])
+    @action(detail=False, methods=['get'], permission_classes=[IsAuthenticated])
     def export_excel(self, request):
         wb = Workbook()
         ws = wb.active
@@ -453,7 +453,7 @@ class HolidayViewSet(viewsets.ModelViewSet):
         wb.save(response)
         return response
 
-    @action(detail=False, methods=['get'])
+    @action(detail=False, methods=['get'], permission_classes=[IsAuthenticated])
     def export_pdf(self, request):
         response = HttpResponse(content_type='application/pdf')
         response['Content-Disposition'] = 'attachment; filename="holidays.pdf"'
@@ -501,7 +501,7 @@ class LeaveViewSet(viewsets.ModelViewSet):
     queryset = Leave.objects.all().select_related('employee', 'leave_type', 'approved_by')
     serializer_class = LeaveSerializer
     permission_classes = [HasPermission]
-    page_name = 'leaves'
+    page_names = ['leaves', 'employee_leaves', 'lead_leaves']
 
     def get_queryset(self):
         user = self.request.user
@@ -550,7 +550,7 @@ class OvertimeViewSet(viewsets.ModelViewSet):
     queryset = Overtime.objects.all().select_related('employee')
     serializer_class = OvertimeSerializer
     permission_classes = [HasPermission]
-    page_name = 'overtime'
+    page_names = ['overtime', 'employee_overtime', 'lead_overtime']
     
     def get_queryset(self):
         user = self.request.user
@@ -677,7 +677,7 @@ class OvertimeViewSet(viewsets.ModelViewSet):
         message = f"Overtime sync complete for {len(date_list)} day(s). Found {count_updated} overtime record(s)."
         return Response({"message": message, "updated_count": count_updated})
 
-    @action(detail=False, methods=['get'])
+    @action(detail=False, methods=['get'], permission_classes=[IsAuthenticated])
     def available_years(self, request):
         """Get list of years for selection, starting from 2020 to current + 5"""
         current_year = timezone.now().year
@@ -702,7 +702,7 @@ class PerformanceViewSet(viewsets.ModelViewSet):
     queryset = Performance.objects.all().select_related('employee', 'department', 'reviewed_by')
     serializer_class = PerformanceSerializer
     permission_classes = [HasPermission]
-    page_name = 'performance'
+    page_names = ['performance', 'employee_performance', 'lead_performance']
 
     def get_queryset(self):
         user = self.request.user
@@ -728,7 +728,7 @@ class PerformanceViewSet(viewsets.ModelViewSet):
 class TimerViewSet(viewsets.ViewSet):
     permission_classes = [IsAuthenticated]
     
-    @action(detail=False, methods=['get'])
+    @action(detail=False, methods=['get'], permission_classes=[IsAuthenticated])
     def status(self, request):
         user = request.user
         active_work = WorkSession.objects.filter(employee=user, end_time__isnull=True).first()
@@ -865,7 +865,7 @@ class TimerViewSet(viewsets.ViewSet):
 
         return Response(BreakSessionSerializer(break_session).data)
     
-    @action(detail=False, methods=['get'])
+    @action(detail=False, methods=['get'], permission_classes=[IsAuthenticated])
     def projects_tasks(self, request):
         user = request.user
         role = getattr(user, 'role', None)

@@ -224,9 +224,8 @@ def get_user_effective_permissions(user):
         if effective.get(source_page, {}).get('can_view'):
             merge_perm(page, {'can_view': True})
 
-    # employees view -> lots of inferred view access
+    # employees view -> user info/roles view
     if effective.get('employees', {}).get('can_view'):
-        grant_proxy('attendance', 'employees')
         grant_proxy('roles', 'employees')
         grant_proxy('departments', 'employees')
         grant_proxy('designations', 'employees')
