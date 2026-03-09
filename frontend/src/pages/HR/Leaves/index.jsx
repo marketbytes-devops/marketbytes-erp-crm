@@ -18,7 +18,7 @@ import { usePermission } from "../../../context/PermissionContext";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 
-const Leaves = () => {
+const Leaves = ({ leadScope, employeeScope }) => {
   const { hasPermission } = usePermission();
   const [leaves, setLeaves] = useState([]);
   const [filter, setFilter] = useState("all");
@@ -38,7 +38,8 @@ const Leaves = () => {
   const fetchLeaves = async () => {
     setLoading(true);
     try {
-      const res = await apiClient.get("/hr/leaves/");
+      const url = leadScope ? "/hr/leaves/?lead_scope=true" : "/hr/leaves/";
+      const res = await apiClient.get(url);
       let data = res.data.results || res.data || [];
       setLeaves(Array.isArray(data) ? data : []);
     } catch (err) {
@@ -71,6 +72,12 @@ const Leaves = () => {
     rejected: { color: "bg-red-100 text-red-800", icon: MdCancel, label: "Rejected" },
   };
 
+  const leadStatusConfig = {
+    pending: { color: "bg-gray-100 text-gray-600", label: "Awaiting Lead" },
+    confirmed: { color: "bg-indigo-100 text-indigo-700", label: "Lead Confirmed" },
+    declined: { color: "bg-orange-100 text-orange-700", label: "Lead Declined" },
+  };
+
   const handleStatusUpdate = async (leaveId, newStatus) => {
     if (!window.confirm(`Are you sure you want to ${newStatus === "approved" ? "approve" : "reject"} this leave?`))
       return;
@@ -83,6 +90,29 @@ const Leaves = () => {
     } catch (err) {
       alert("Failed to update status");
       console.error(err);
+    }
+  };
+
+  const handleLeadAction = async (leaveId, action) => {
+    const verb = action === "confirm" ? "confirm" : "decline";
+    if (!window.confirm(`Are you sure you want to ${verb} this leave request?`)) return;
+
+    try {
+      const res = await apiClient.post(`/hr/leaves/${leaveId}/lead_${action}/`);
+      setLeaves(prev =>
+        prev.map(leave => {
+          if (leave.id === leaveId) {
+            return {
+              ...leave,
+              lead_status: action === "confirm" ? "confirmed" : "declined",
+              status: action === "decline" ? "rejected" : leave.status
+            };
+          }
+          return leave;
+        })
+      );
+    } catch (err) {
+      alert(`Failed to ${verb} leave`);
     }
   };
 
@@ -234,7 +264,7 @@ const Leaves = () => {
               </button>
               {hasPermission("leaves", "add") && (
                 <Link
-                  to="/hr/leaves/assign"
+                  to={leadScope ? "/lead/leaves/assign" : employeeScope ? "/employee/leaves/assign" : "/hr/leaves/assign"}
                   className="flex items-center gap-3 px-6 py-3 bg-black text-white rounded-xl hover:bg-gray-900 transition font-medium"
                 >
                   <MdAdd className="w-5 h-5" />
@@ -358,6 +388,12 @@ const Leaves = () => {
                         <span className="font-medium">{config.label}</span>
                       </div>
                     </div>
+                    {/* Display Lead Status Badge */}
+                    <div className="mb-4">
+                      <span className={`px-3 py-1 rounded-lg text-xs font-semibold ${leadStatusConfig[leave.lead_status || 'pending'].color}`}>
+                        {leadStatusConfig[leave.lead_status || 'pending'].label}
+                      </span>
+                    </div>
                     <div className="space-y-3 text-sm">
                       <div className="flex justify-between">
                         <span className="text-gray-500">From</span>
@@ -419,7 +455,23 @@ const Leaves = () => {
                               className="overflow-hidden"
                             >
                               <div className="mt-4 flex gap-3">
-                                {hasPermission("leaves", "edit") && (
+                                {leadScope && leave.lead_status === "pending" && (
+                                  <>
+                                    <button
+                                      onClick={() => handleLeadAction(leave.id, "confirm")}
+                                      className="flex-1 bg-indigo-600 text-white py-3 rounded-xl font-medium hover:bg-indigo-700 transition"
+                                    >
+                                      Confirm
+                                    </button>
+                                    <button
+                                      onClick={() => handleLeadAction(leave.id, "decline")}
+                                      className="flex-1 bg-orange-600 text-white py-3 rounded-xl font-medium hover:bg-orange-700 transition"
+                                    >
+                                      Decline
+                                    </button>
+                                  </>
+                                )}
+                                {!leadScope && hasPermission("leaves", "edit") && (
                                   <>
                                     <button
                                       onClick={() => handleStatusUpdate(leave.id, "approved")}

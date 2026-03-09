@@ -188,6 +188,15 @@ class ProjectViewSet(viewsets.ModelViewSet):
 
         if not user.is_superuser and not user.is_staff and not (user.role and user.role.name == 'HR'):
             queryset = queryset.filter(members=user).distinct()
+            query = Q(members=user)
+            if user.department:
+                query |= Q(department=user.department)
+            
+            # Lead visibility: projects of direct reports
+            if 'lead_scope' in self.request.query_params:
+                query |= Q(members__reports_to=user)
+
+            queryset = queryset.filter(query).distinct()
 
         project_name = self.request.query_params.get("project_name", None)
         if project_name:
@@ -511,11 +520,13 @@ class TaskViewSet(viewsets.ModelViewSet):
         user = self.request.user
 
         if not user.is_superuser and not user.is_staff:
-            queryset = queryset.filter(
-                Q(project__members=user) |
-                Q(project__department=user.department) |
-                Q(assignees=user)
-            ).distinct()
+            query = Q(project__members=user) | Q(project__department=user.department) | Q(assignees=user)
+            
+            # Lead visibility: tasks of direct reports
+            if 'lead_scope' in self.request.query_params:
+                query |= Q(assignees__reports_to=user)
+            
+            queryset = queryset.filter(query).distinct()
 
         project_id = self.request.query_params.get('project_id')
         if project_id:
@@ -565,13 +576,17 @@ class ScrumViewSet(viewsets.ModelViewSet):
         user = self.request.user
 
         if not user.is_superuser and not user.is_staff:
-            queryset = queryset.filter(
-                Q(task__project__members=user) |
-                Q(task__project__department=user.department) |
-                Q(task__assignees=user) |
-                Q(employee=user) |
-                Q(created_by=user)
-            ).distinct()
+            query = Q(task__project__members=user) | \
+                    Q(task__project__department=user.department) | \
+                    Q(task__assignees=user) | \
+                    Q(employee=user) | \
+                    Q(created_by=user)
+            
+            # Lead visibility: scrum of direct reports
+            if 'lead_scope' in self.request.query_params:
+                query |= Q(employee__reports_to=user)
+                
+            queryset = queryset.filter(query).distinct()
 
         task_id = self.request.query_params.get('task')
         if task_id:

@@ -217,8 +217,21 @@ class UserManagementView(APIView):
     
     def get(self, request):
         users = CustomUser.objects.all().select_related('role', 'department', 'reports_to')
+        
+        # Add support for reports_to filtering
+        reports_to_id = request.query_params.get('reports_to')
+        if reports_to_id:
+            if reports_to_id == 'me':
+                users = users.filter(reports_to=request.user)
+            else:
+                users = users.filter(reports_to_id=reports_to_id)
+        elif 'lead_scope' in request.query_params:
+            # Automatic scoping if lead_scope is passed
+            users = users.filter(reports_to=request.user)
+
         if not (request.user.is_superuser or (request.user.role and request.user.role.name == 'Superadmin')):
             users = users.exclude(role__name='Superadmin').exclude(is_superuser=True)
+            
         serializer = ProfileSerializer(users, many=True, context={'request': request})
         return Response(serializer.data)
     

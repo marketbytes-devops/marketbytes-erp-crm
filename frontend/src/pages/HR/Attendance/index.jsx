@@ -175,7 +175,7 @@ const AttendanceModal = ({ record, date, onClose }) => {
   );
 };
 
-const Attendance = () => {
+const Attendance = ({ leadScope, employeeScope }) => {
   const { hasPermission } = usePermission();
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [attendances, setAttendances] = useState([]);
@@ -214,9 +214,10 @@ const Attendance = () => {
     const fetchLists = async () => {
       setLoadingLists(true);
       try {
+        const usersUrl = leadScope ? "/auth/users/?lead_scope=true" : "/auth/users/";
         const [deptRes, empRes] = await Promise.all([
           apiClient.get("/auth/departments/"),
-          apiClient.get("/auth/users/"),
+          apiClient.get(usersUrl),
         ]);
         const extract = (d) => (Array.isArray(d) ? d : d.results || []);
         setDepartments(extract(deptRes.data));
@@ -232,11 +233,12 @@ const Attendance = () => {
 
   const fetchAttendance = () => {
     setLoading(true);
-    const params = { 
-      month, 
+    const params = {
+      month,
       year,
       employee_id: filterEmployeeId || undefined,
-      department_id: filterDepartmentId || undefined
+      department_id: filterDepartmentId || undefined,
+      lead_scope: leadScope ? true : undefined
     };
     apiClient
       .get("/hr/attendance/", { params })
@@ -247,7 +249,7 @@ const Attendance = () => {
       .catch(() => setAttendances([]));
 
     apiClient
-      .get("/hr/attendance/summary/", { params: { month, year } })
+      .get("/hr/attendance/summary/", { params })
       .then((res) => setSummary(res.data))
       .catch(() =>
         setSummary({ present: 0, late: 0, absent: 0, half_day: 0, leave: 0, holiday: 0 })
@@ -267,7 +269,7 @@ const Attendance = () => {
 
   const employeesMap = attendances.reduce((acc, att) => {
     const empId = att.employee?.id || att.employee_id || "unknown";
-    
+
     // Better name fallback logic
     const getBestName = (emp) => {
       if (!emp) return "Deleted Employee";
@@ -323,7 +325,7 @@ const Attendance = () => {
   const calculateTotals = (records) => {
     const monthDays = eachDayOfInterval({ start: startOfMonth(selectedDate), end: endOfMonth(selectedDate) });
     const today = startOfToday();
-    
+
     const counts = {
       present: 0,
       half_day_late: 0,
@@ -335,7 +337,7 @@ const Attendance = () => {
     records.forEach(r => {
       if (['present', 'late'].includes(r.status)) counts.present++;
       if (r.status === 'half_day_late') counts.half_day_late++;
-      
+
       // Total is any working status
       if (['present', 'late', 'half_day', 'half_day_late'].includes(r.status)) {
         counts.total++;
@@ -359,7 +361,7 @@ const Attendance = () => {
   const exportData = (type) => {
     const monthName = format(selectedDate, "MMMM");
     const yearName = format(selectedDate, "yyyy");
-    
+
     const data = employeeList.map((emp, index) => {
       const stats = calculateTotals(emp.records);
       return {
@@ -379,28 +381,28 @@ const Attendance = () => {
       XLSX.utils.book_append_sheet(wb, ws, "Attendance Summary");
       XLSX.writeFile(wb, `Attendance_Summary_${monthName}_${yearName}.${type === "CSV" ? "csv" : "xlsx"}`);
     } else if (type === "PDF") {
-      const doc = new jsPDF('l', 'mm', 'a4'); 
+      const doc = new jsPDF('l', 'mm', 'a4');
       const now = new Date();
-      
+
       // Title
       doc.setFontSize(18);
       doc.setTextColor(0, 0, 0);
       doc.text(`Attendance Summary Report`, 14, 20);
-      
+
       // Filter Information
       doc.setFontSize(10);
       doc.setTextColor(100, 100, 100);
       let yPos = 28;
-      
+
       doc.text(`Month: ${monthName} ${yearName}`, 14, yPos);
       yPos += 6;
-      
+
       if (filterDepartmentId) {
         const dept = departments.find(d => d.id.toString() === filterDepartmentId.toString());
         doc.text(`Department: ${dept?.name || 'All'}`, 14, yPos);
         yPos += 6;
       }
-      
+
       if (filterEmployeeId) {
         const emp = employees.find(e => e.id.toString() === filterEmployeeId.toString());
         doc.text(`Employee: ${emp?.name || 'All'}`, 14, yPos);
@@ -432,7 +434,7 @@ const Attendance = () => {
           6: { halign: 'center', fontStyle: 'bold' }
         }
       });
-      
+
       // Footer with page numbers
       const pageCount = doc.internal.getNumberOfPages();
       for (let i = 1; i <= pageCount; i++) {
@@ -445,7 +447,7 @@ const Attendance = () => {
           doc.internal.pageSize.height - 10
         );
       }
-      
+
       doc.save(`Attendance_Summary_${monthName}_${yearName}.pdf`);
     }
   };
@@ -626,7 +628,7 @@ const Attendance = () => {
           </div>
         )}
 
-     
+
         <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
           {loading ? (
             <div className="p-16 text-center">
@@ -678,8 +680,8 @@ const Attendance = () => {
                           <button
                             onClick={() => setExpandedEmployeeId(isExpanded ? null : emp.employee.id)}
                             className={`px-4 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all
-                              ${isExpanded 
-                                ? "bg-red-50 text-red-600 border border-red-200" 
+                              ${isExpanded
+                                ? "bg-red-50 text-red-600 border border-red-200"
                                 : "bg-black text-white hover:bg-gray-800 shadow-sm"}
                             `}
                           >
@@ -698,7 +700,7 @@ const Attendance = () => {
 
                       {/* Expanded Calendar View */}
                       {isExpanded && (
-                        <motion.div 
+                        <motion.div
                           initial={{ opacity: 0, y: -10 }}
                           animate={{ opacity: 1, y: 0 }}
                           className="col-span-full bg-gray-50 p-6 border-x border-b border-gray-400"
@@ -718,7 +720,7 @@ const Attendance = () => {
                                 const badge = getStatusBadge(record?.status);
                                 const isPresentOrPast = isBefore(date, startOfToday()) || isToday(date);
                                 const isWeekend = isSunday(date) || isSaturday(date);
-                                
+
                                 let displayBadge = badge;
                                 if (!record && isCurrentMonth && isPresentOrPast && !isWeekend) {
                                   displayBadge = getStatusBadge('absent');

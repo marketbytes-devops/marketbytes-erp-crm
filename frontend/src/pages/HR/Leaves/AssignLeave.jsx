@@ -6,7 +6,7 @@ import Input from "../../../components/Input";
 import apiClient from "../../../helpers/apiClient";
 import { usePermission } from "../../../context/PermissionContext";
 
-const AssignLeave = () => {
+const AssignLeave = ({ leadScope, employeeScope }) => {
   const { hasPermission } = usePermission();
   const [employees, setEmployees] = useState([]);
   const [leaveTypes, setLeaveTypes] = useState([]);
@@ -33,7 +33,8 @@ const AssignLeave = () => {
 
   const fetchEmployees = async () => {
     try {
-      const res = await apiClient.get("/auth/users/");
+      const url = leadScope ? "/auth/users/?lead_scope=true" : "/auth/users/";
+      const res = await apiClient.get(url);
       const data = res.data.results || res.data || [];
 
       const formatted = data.map(emp => ({
@@ -130,7 +131,7 @@ const AssignLeave = () => {
       >
         <div className="mb-8">
           <Link
-            to="/hr/leaves"
+            to={leadScope ? "/lead/leaves" : employeeScope ? "/employee/leaves" : "/hr/leaves"}
             className="inline-flex items-center gap-2 px-5 py-3 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 transition"
           >
             <MdArrowBack className="w-5 h-5" />

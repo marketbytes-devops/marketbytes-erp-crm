@@ -25,7 +25,7 @@ import Input from "../../../components/Input";
 import toast from "react-hot-toast";
 import { usePermission } from "../../../context/PermissionContext";
 
-const Overtime = () => {
+const Overtime = ({ leadScope, employeeScope }) => {
   const { hasPermission } = usePermission();
   const [overtime, setOvertime] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -72,8 +72,13 @@ const Overtime = () => {
 
   const fetchOvertime = () => {
     setLoading(true);
+    const params = {
+      month,
+      year,
+      lead_scope: leadScope ? true : undefined
+    };
     apiClient
-      .get("/hr/overtime/", { params: { month, year } })
+      .get("/hr/overtime/", { params })
       .then((res) => {
         let data = res.data;
         if (data && data.results) {
