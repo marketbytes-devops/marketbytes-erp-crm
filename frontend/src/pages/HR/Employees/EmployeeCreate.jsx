@@ -199,6 +199,11 @@ const EmployeeCreate = () => {
     }
   }, [formData.designation_id, designations]);
 
+  useEffect(() => {
+    // Clear Reports To if Department changes
+    setFormData(prev => ({ ...prev, reports_to: "" }));
+  }, [formData.department_id]);
+
   const [selectedRole, setSelectedRole] = useState(null);
   useEffect(() => {
     if (formData.role_id) {
@@ -226,7 +231,7 @@ const EmployeeCreate = () => {
       }
     }
 
-    setSubmitLoading(true);
+    setLoading(true);
 
     const formDataToSend = new FormData();
 
@@ -309,7 +314,12 @@ const EmployeeCreate = () => {
     value: r.id,
     label: r.name
   }));
-  const reportsToOptions = employees.map(e => ({
+
+  const filteredEmployees = formData.department_id
+    ? employees.filter(e => e.department && (e.department.id === parseInt(formData.department_id) || String(e.department.id) === String(formData.department_id)))
+    : employees;
+
+  const reportsToOptions = filteredEmployees.map(e => ({
     value: e.id,
     label: `${e.name} (${e.employee_id || 'No ID'})`
   }));
@@ -424,7 +434,7 @@ const EmployeeCreate = () => {
                 value={formData.country_code}
                 onChange={v => setFormData({ ...formData, country_code: v })}
               />
-               <Input label="Mobile Number" placeholder="9876543210" value={formData.mobile} onChange={e => setFormData({ ...formData, mobile: e.target.value })} />
+              <Input label="Mobile Number" placeholder="9876543210" value={formData.mobile} onChange={e => setFormData({ ...formData, mobile: e.target.value })} />
               <Input label="Date of Birth" type="date" value={formData.dob} onChange={e => setFormData({ ...formData, dob: e.target.value })} />
               <Input
                 label="Gender"
@@ -525,7 +535,7 @@ const EmployeeCreate = () => {
               </div>
               <Input label="Reports To" type="select" options={[{ value: "", label: "None (Top Level)" }, ...reportsToOptions]} value={formData.reports_to || ""} onChange={v => setFormData({ ...formData, reports_to: v || null })} />
               <Input label="Joining Date" required type="date" value={formData.joining_date} onChange={e => setFormData({ ...formData, joining_date: e.target.value })} />
-               <Input label="Probation Period (months)" type="number" placeholder="3" value={formData.probation_period} onChange={e => setFormData({ ...formData, probation_period: e.target.value })} />
+              <Input label="Probation Period (months)" type="number" placeholder="3" value={formData.probation_period} onChange={e => setFormData({ ...formData, probation_period: e.target.value })} />
               <Input label="Exit Date" type="date" value={formData.exit_date} onChange={e => setFormData({ ...formData, exit_date: e.target.value })} />
               <Input label="Hourly Rate ($)" type="number" step="0.01" placeholder="45.00" value={formData.hourly_rate} onChange={e => setFormData({ ...formData, hourly_rate: e.target.value })} />
             </div>

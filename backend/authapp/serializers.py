@@ -7,8 +7,27 @@ import random
 import string
 import json
 import logging
+import threading
 
 logger = logging.getLogger(__name__)
+
+def _send_email_async(subject, message, recipient_list):
+    def run():
+        try:
+            send_mail(
+                subject,
+                message,
+                settings.DEFAULT_FROM_EMAIL,
+                recipient_list,
+                fail_silently=False
+            )
+            print(f"DEBUG: Email sent successfully to {recipient_list}")
+        except Exception as e:
+            print(f"DEBUG: Failed to send email to {recipient_list}: {e}")
+            logger.error(f"Failed to send email to {recipient_list}: {e}")
+    
+    thread = threading.Thread(target=run)
+    thread.start()
 
 class LoginSerializer(serializers.Serializer):
     email = serializers.EmailField()
@@ -246,7 +265,7 @@ class UserCreateSerializer(serializers.ModelSerializer):
 
         
         if send_password_email:
-            print(f"DEBUG: Attempting to send email to {user.email}")
+            print(f"DEBUG: Attempting to send email to {user.email} in background")
             subject = 'Your Account Credentials'
             message = f"""Hello {user.name},
 
@@ -260,19 +279,7 @@ Please change your password after your first login.
 
 Best regards,
 HR Team"""
-            
-            try:
-                send_mail(
-                    subject, 
-                    message, 
-                    settings.DEFAULT_FROM_EMAIL, 
-                    [user.email],
-                    fail_silently=False
-                )
-                print(f"DEBUG: Email sent successfully to {user.email}")
-            except Exception as e:
-                print(f"DEBUG: Failed to send email: {e}")
-                logger.error(f"Failed to send registration email to {user.email}: {e}")
+            _send_email_async(subject, message, [user.email])
         
         return user
 
@@ -302,6 +309,7 @@ class UserUpdateSerializer(serializers.ModelSerializer):
     )
     password = serializers.CharField(write_only=True, required=False)
     send_password_email = serializers.BooleanField(write_only=True, default=False)
+    generate_password = serializers.BooleanField(write_only=True, default=False)
     
     class Meta:
         model = CustomUser
@@ -311,8 +319,10 @@ class UserUpdateSerializer(serializers.ModelSerializer):
             'reports_to_id', 'joining_date', 'dob', 'probation_period',
             'exit_date', 'gender', 'skills', 'hourly_rate', 'status',
             'login_enabled', 'email_notifications', 'password',
-            'send_password_email'
+            'send_password_email', 'generate_password', 'user_permissions'
         ]
+
+    user_permissions = serializers.JSONField(write_only=True, required=False)
     
     def validate_dob(self, value):
         if value:
@@ -328,12 +338,22 @@ class UserUpdateSerializer(serializers.ModelSerializer):
     def update(self, instance, validated_data):
         password = validated_data.pop('password', None)
         send_password_email = validated_data.pop('send_password_email', False)
+        generate_password = validated_data.pop('generate_password', False)
+        user_permissions = validated_data.pop('user_permissions', None)
         
         # Robustly handle string 'true' from FormData
         if isinstance(send_password_email, str):
             send_password_email = send_password_email.lower() == 'true'
+        
+        if isinstance(generate_password, str):
+            generate_password = generate_password.lower() == 'true'
             
-        # Permissions removal logic
+        
+        if generate_password:
+            password_length = 12
+            characters = string.ascii_letters + string.digits + string.punctuation
+            password = ''.join(random.choice(characters) for _ in range(password_length))
+            send_password_email = True
 
         
         if password:
@@ -344,10 +364,28 @@ class UserUpdateSerializer(serializers.ModelSerializer):
         
         instance.save()
 
-
+        # Handle user permissions saving
+        if user_permissions is not None:
+            # Clear existing direct permissions
+            UserPermission.objects.filter(user=instance).delete()
+            
+            # Create new permissions
+            new_perms = []
+            for perm_data in user_permissions:
+                new_perms.append(UserPermission(
+                    user=instance,
+                    page=perm_data.get('page'),
+                    can_view=perm_data.get('can_view', False),
+                    can_add=perm_data.get('can_add', False),
+                    can_edit=perm_data.get('can_edit', False),
+                    can_delete=perm_data.get('can_delete', False),
+                ))
+            
+            if new_perms:
+                UserPermission.objects.bulk_create(new_perms)
 
         if send_password_email and password:
-            print(f"DEBUG: Attempting to send update email to {instance.email}")
+            print(f"DEBUG: Attempting to send update email to {instance.email} in background")
             subject = 'Your Account Credentials Updated'
             message = f"""Hello {instance.name},
 
@@ -361,19 +399,7 @@ Please change your password after logging in.
 
 Best regards,
 HR Team"""
-            
-            try:
-                send_mail(
-                    subject, 
-                    message, 
-                    settings.DEFAULT_FROM_EMAIL, 
-                    [instance.email],
-                    fail_silently=False
-                )
-                print(f"DEBUG: Update email sent successfully to {instance.email}")
-            except Exception as e:
-                print(f"DEBUG: Failed to send update email: {e}")
-                logger.error(f"Failed to send update email to {instance.email}: {e}")
+            _send_email_async(subject, message, [instance.email])
         
         return instance
 

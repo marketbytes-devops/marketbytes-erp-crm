@@ -187,11 +187,7 @@ class ProjectViewSet(viewsets.ModelViewSet):
         user = self.request.user
 
         if not user.is_superuser and not user.is_staff and not (user.role and user.role.name == 'HR'):
-            query = Q(members=user)
-            if user.department:
-                query |= Q(department=user.department)
-
-            queryset = queryset.filter(query).distinct()
+            queryset = queryset.filter(members=user).distinct()
 
         project_name = self.request.query_params.get("project_name", None)
         if project_name:
@@ -252,15 +248,20 @@ class ProjectViewSet(viewsets.ModelViewSet):
 
     def destroy(self, request, *args, **kwargs):
         """
-        Soft delete or archive project instead of hard delete
+        Permanently delete project
+        """
+        return super().destroy(request, *args, **kwargs)
+
+    @action(detail=True, methods=["post"])
+    def archive(self, request, pk=None):
+        """
+        Archive (soft delete) project
         """
         instance = self.get_object()
-
         instance.is_active = False
         instance.save()
-
         return Response(
-            {"message": "Project has been deactivated successfully."},
+            {"message": "Project has been archived successfully."},
             status=status.HTTP_200_OK,
         )
 
@@ -295,7 +296,7 @@ class ProjectViewSet(viewsets.ModelViewSet):
         """
         Get all inactive projects
         """
-        inactive_projects = Project.objects.filter(is_active=False)
+        inactive_projects = self.get_queryset().filter(is_active=False)
         serializer = self.get_serializer(inactive_projects, many=True)
         return Response(serializer.data)
 

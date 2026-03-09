@@ -157,8 +157,8 @@ class Performance(models.Model):
 
 class WorkSession(models.Model):
     employee = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='work_sessions', null=True, blank=True)
-    project = models.ForeignKey(Project, on_delete=models.PROTECT, null=True, blank=True)
-    task = models.ForeignKey(Task, on_delete=models.PROTECT, null=True, blank=True)
+    project = models.ForeignKey(Project, on_delete=models.CASCADE, null=True, blank=True)
+    task = models.ForeignKey(Task, on_delete=models.CASCADE, null=True, blank=True)
     memo = models.TextField(blank=True, null=True)
     start_time = models.DateTimeField(null=True, blank=True)
     end_time = models.DateTimeField(null=True, blank=True)
