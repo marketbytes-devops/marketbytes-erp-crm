@@ -94,6 +94,10 @@ class AttendanceViewSet(viewsets.ModelViewSet):
                 continue
             
             for employee in all_employees:
+                # Skip if date is before employee's joining date
+                if employee.joining_date and current_date < employee.joining_date:
+                    continue
+
                 attendance = attendances.filter(employee=employee, date=current_date).first()
                 
                 if attendance:
@@ -147,6 +151,11 @@ class AttendanceViewSet(viewsets.ModelViewSet):
         )
         
         if action == 'in':
+            if request.user.joining_date and today < request.user.joining_date:
+                return Response({
+                    "error": f"You cannot clock in before your joining date ({request.user.joining_date})"
+                }, status=400)
+
             if attendance.clock_in and attendance.clock_out:
                 attendance.clock_in = current_time_utc # Store UTC
                 attendance.clock_out = None
@@ -248,9 +257,22 @@ class AttendanceViewSet(viewsets.ModelViewSet):
     def status(self, request):
         now = timezone.now()
         local_now = timezone.localtime(now)
+        local_date = local_now.date()
+        
+        # Check if today is before joining date
+        if request.user.joining_date and local_date < request.user.joining_date:
+            return Response({
+                "checked_in": False,
+                "clock_in": None,
+                "clock_out": None,
+                "productive_hours": "0:00:00",
+                "status": "not_joined",
+                "message": f"Your attendance will start on your joining date: {request.user.joining_date}"
+            })
+
         start_of_day = local_now.replace(hour=0, minute=0, second=0, microsecond=0)
         
-        att = Attendance.objects.filter(employee=request.user, date=local_now.date()).first()
+        att = Attendance.objects.filter(employee=request.user, date=local_date).first()
         
         work_sessions = WorkSession.objects.filter(
             employee=request.user,

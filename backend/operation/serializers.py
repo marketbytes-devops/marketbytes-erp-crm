@@ -243,16 +243,20 @@ class ProjectSerializer(serializers.ModelSerializer):
             )
             validated_data["client"] = client
 
-        members_ids = validated_data.pop("members_ids", [])
+        members = validated_data.pop("members", [])
         project = super().create(validated_data)
 
         if self.context.get("request"):
             user = self.context["request"].user
-            if user not in members_ids:
-                members_ids.append(user)
+            if user not in members:
+                members.append(user)
 
-        if members_ids:
-            project.members.set(members_ids)
+        if members:
+            project.members.set(members)
+
+        # Ensure the project is active by default upon creation
+        project.is_active = True
+        project.save()
 
         if files and self.context.get("request"):
             user = self.context["request"].user
@@ -304,11 +308,15 @@ class ProjectSerializer(serializers.ModelSerializer):
             )
             validated_data["client"] = client
 
-        members_ids = validated_data.pop("members_ids", None)
+        members = validated_data.pop("members", None)
         project = super().update(instance, validated_data)
 
-        if members_ids is not None:
-            project.members.set(members_ids)
+        if members is not None:
+            project.members.set(members)
+
+        # Force is_active to be True on update
+        project.is_active = True
+        project.save()
 
         if files and self.context.get("request"):
             user = self.context["request"].user
