@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   MdAdd,
   MdClose,
@@ -13,6 +14,7 @@ import toast from "react-hot-toast";
 import apiClient from "../../../helpers/apiClient";
 
 const CreateProjectPage = () => {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     projectName: "",
     projectCategory: "",
@@ -33,7 +35,7 @@ const CreateProjectPage = () => {
     budget: "",
     currency: "",
     hoursAllocated: "",
-    status: "Not Started",
+    status: "",
     stage: "",
     summary: "",
     note: "",
@@ -147,6 +149,7 @@ const CreateProjectPage = () => {
 
       toast.success("Project created successfully!");
       handleReset();
+      navigate("/operations/projects");
     } catch (error) {
       toast.error("Failed to create project");
     }
@@ -411,7 +414,13 @@ const CreateProjectPage = () => {
                   required
                   options={[{ value: "", label: "Select department" }, ...departments.map(d => ({ value: d.id, label: d.name }))]}
                   value={formData.department}
-                  onChange={v => setFormData(prev => ({ ...prev, department: v }))}
+                  onChange={v => {
+                    setFormData(prev => ({
+                      ...prev,
+                      department: v,
+                      projectMembers: [] // Reset members when department changes
+                    }));
+                  }}
                 />
               </div>
               <Input label="Start Date" required type="date" value={formData.startDate} onChange={e => setFormData(prev => ({ ...prev, startDate: e.target.value }))} />
@@ -481,10 +490,13 @@ const CreateProjectPage = () => {
               <Input
                 type="select"
                 multiple
-                options={users.map(u => ({ value: u.id.toString(), label: u.name || u.email }))}
+                options={users
+                  .filter(u => !formData.department || u.department?.id?.toString() === formData.department.toString())
+                  .map(u => ({ value: u.id.toString(), label: u.name || u.email }))
+                }
                 value={formData.projectMembers}
                 onChange={v => setFormData(prev => ({ ...prev, projectMembers: v }))}
-                placeholder="Select members"
+                placeholder={formData.department ? "Select members" : "Please select a department first"}
               />
             </div>
           </div>
