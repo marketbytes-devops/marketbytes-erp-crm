@@ -83,10 +83,8 @@ const WorkTimerController = () => {
   const handleCheckIn = async () => {
     try {
       const res = await apiClient.post("/hr/attendance/check_in_out/", { action: "in" });
-      await apiClient.post("/hr/timer/start_break/", { type: "break" });
-      // Show popup with clock-in time from response or current time
+      // Backend automatically starts a break session, no need to call /hr/timer/start_break/ here
       const time = res?.data?.time || new Date().toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", hour12: true });
-      // Show toast notification
       toast.success("Attendance Marked!", {
         position: "top-right",
         duration: 3000,
@@ -146,7 +144,7 @@ const WorkTimerController = () => {
   const stopWork = async () => {
     try {
       await apiClient.post("/hr/timer/stop_work/");
-      await apiClient.post("/hr/timer/start_break/", { type: "break" });
+      // Backend automatically starts a break session, no need to call /hr/timer/start_break/ here
       setModalOpen(false);
       fetchStatus();
     } catch (e) {
@@ -177,7 +175,8 @@ const WorkTimerController = () => {
 
   const handleStartStopClick = () => {
     if (status?.is_on_break) {
-      stopBreak();
+      // Instead of stopping break, open modal to allow project selection
+      setModalOpen(true);
       return;
     }
     setModalOpen(true);

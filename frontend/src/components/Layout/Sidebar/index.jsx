@@ -33,11 +33,11 @@ const Sidebar = ({ toggleSidebar }) => {
   const location = useLocation();
   const { hasPermission, isLoaded } = usePermission();
 
-  const [isHROpen, setIsHROpen] = useState(false);
-  const [isOperationOpen, setOperationOpen] = useState(false);
-  const [isTasksOpen, setTasksOpen] = useState(false);
-  const [isUserRolesOpen, setIsUserRolesOpen] = useState(false);
-  const [isSalesOpen, setSalesOpen] = useState(false);
+  const [openDropdown, setOpenDropdown] = useState("");
+
+  const handleToggle = (label) => {
+    setOpenDropdown((prev) => (prev === label ? "" : label));
+  };
 
   const isMobile = () => window.innerWidth < 768;
 
@@ -52,8 +52,8 @@ const Sidebar = ({ toggleSidebar }) => {
     {
       label: "HR Management",
       icon: <MdWork className="w-6 h-6" />,
-      isOpen: isHROpen,
-      toggle: () => setIsHROpen((prev) => !prev),
+      isOpen: openDropdown === "HR Management",
+      toggle: () => handleToggle("HR Management"),
       subItems: [
         {
           to: "/hr/employees",
@@ -123,8 +123,8 @@ const Sidebar = ({ toggleSidebar }) => {
     {
       label: "Operations",
       icon: <MdSettings className="w-6 h-6" />,
-      isOpen: isOperationOpen,
-      toggle: () => setOperationOpen((prev) => !prev),
+      isOpen: openDropdown === "Operations",
+      toggle: () => handleToggle("Operations"),
       subItems: [
         {
           to: "/operations/projects",
@@ -181,8 +181,8 @@ const Sidebar = ({ toggleSidebar }) => {
     {
       label: "Sales",
       icon: <MdAttachMoney className="w-6 h-6" />,
-      isOpen: isSalesOpen,
-      toggle: () => setSalesOpen((prev) => !prev),
+      isOpen: openDropdown === "Sales",
+      toggle: () => handleToggle("Sales"),
       subItems: [
         {
           to: "/sales/leads",
@@ -232,8 +232,8 @@ const Sidebar = ({ toggleSidebar }) => {
     {
       label: "User Roles",
       icon: <MdShield className="w-6 h-6" />,
-      isOpen: isUserRolesOpen,
-      toggle: () => setIsUserRolesOpen((prev) => !prev),
+      isOpen: openDropdown === "User Roles",
+      toggle: () => handleToggle("User Roles"),
       subItems: [
         {
           to: "/user-roles/roles",
@@ -271,8 +271,8 @@ const Sidebar = ({ toggleSidebar }) => {
       icon: <MdGroup className="w-6 h-6" />,
       page: "team_listing",
       action: "view",
-      isOpen: isOperationOpen, // Reusing state or creating new
-      toggle: () => setOperationOpen((prev) => !prev),
+      isOpen: openDropdown === "Leading Members",
+      toggle: () => handleToggle("Leading Members"),
       subItems: [
         {
           to: "/team/employees",
@@ -309,8 +309,8 @@ const Sidebar = ({ toggleSidebar }) => {
       icon: <MdPerson className="w-6 h-6" />,
       page: "employee_dashboard", // Using a parent page check
       action: "view",
-      isOpen: isHROpen,
-      toggle: () => setIsHROpen((prev) => !prev),
+      isOpen: openDropdown === "Self Management",
+      toggle: () => handleToggle("Self Management"),
       subItems: [
         {
           to: "/employee/projects",

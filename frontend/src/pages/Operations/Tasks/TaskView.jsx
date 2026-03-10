@@ -24,7 +24,7 @@ import toast from "react-hot-toast";
 import Input from "../../../components/Input";
 import { usePermission } from "../../../context/PermissionContext";
 
-const TasksPage = () => {
+const TasksPage = ({ employeeScope = false, leadScope = false }) => {
   const navigate = useNavigate();
   const { hasPermission } = usePermission();
   const location = useLocation();
@@ -82,7 +82,13 @@ const TasksPage = () => {
   const fetchTasks = async () => {
     try {
       setLoading(true);
-      const response = await apiClient.get("/operation/tasks/?is_active=true");
+      let url = "/operation/tasks/?is_active=true";
+      if (employeeScope) {
+        url += "&employee_scope=true";
+      } else if (leadScope) {
+        url += "&lead_scope=true";
+      }
+      const response = await apiClient.get(url);
       const data = Array.isArray(response.data) ? response.data : response.data.results || [];
       setTasks(data);
       setFilteredTasks(data);

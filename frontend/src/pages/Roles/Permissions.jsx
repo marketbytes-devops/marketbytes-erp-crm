@@ -44,6 +44,19 @@ const pageNameMap = {
 
   // Profile
   profile: { apiName: "profile", displayName: "Profile", route: "/profile" },
+
+  // Lead Section
+  lead_dashboard: { apiName: "lead_dashboard", displayName: "Lead Dashboard", route: "/lead-dashboard" },
+  team_listing: { apiName: "team_listing", displayName: "Team Members", route: "/team/employees" },
+  lead_attendance: { apiName: "lead_attendance", displayName: "Team Attendance", route: "/lead/attendance" },
+  lead_leaves: { apiName: "lead_leaves", displayName: "Team Leaves", route: "/lead/leaves" },
+
+  // Employee Section
+  employee_dashboard: { apiName: "employee_dashboard", displayName: "My Dashboard", route: "/employee-dashboard" },
+  employee_projects: { apiName: "employee_projects", displayName: "My Projects", route: "/employee/projects" },
+  employee_tasks: { apiName: "employee_tasks", displayName: "My Tasks", route: "/employee/tasks" },
+  employee_attendance: { apiName: "employee_attendance", displayName: "My Attendance", route: "/employee/attendance" },
+  employee_leaves: { apiName: "employee_leaves", displayName: "My Leaves", route: "/employee/leaves" },
 };
 
 const Permissions = () => {
