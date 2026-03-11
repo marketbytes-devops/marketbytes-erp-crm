@@ -85,11 +85,28 @@ const ProtectedRoute = ({
   }
 
   // If logged in but no permission, go to home
-  if (!hasPermission(requiredPage, requiredAction)) {
+  if (requiredPage && !hasPermission(requiredPage, requiredAction)) {
     return <Navigate to="/" replace />;
   }
 
   return children;
+};
+
+const RootDashboardRedirect = () => {
+  const { hasPermission, isSuperadmin } = usePermission();
+
+  if (isSuperadmin || hasPermission("admin", "view")) {
+    return <Admin />;
+  }
+  if (hasPermission("lead_dashboard", "view")) {
+    return <LeadDashboard />;
+  }
+  if (hasPermission("employee_dashboard", "view")) {
+    return <EmployeeDashboard />;
+  }
+
+  // Fallback if no dashboard permission at all
+  return <div className="p-10 text-center">No dashboard access granted.</div>;
 };
 
 function App() {
@@ -109,7 +126,7 @@ function App() {
     {
       path: "/",
       element: (
-        <ProtectedRoute requiredPage="admin">
+        <ProtectedRoute>
           <Layout
             isAuthenticated={isAuthenticated}
             setIsAuthenticated={setIsAuthenticated}
@@ -122,12 +139,20 @@ function App() {
         </div>
       ),
       children: [
-        { index: true, element: <Admin /> },
+        { index: true, element: <RootDashboardRedirect /> },
         {
           path: "/lead-dashboard",
           element: (
             <ProtectedRoute requiredPage="lead_dashboard">
               <LeadDashboard />
+            </ProtectedRoute>
+          )
+        },
+        {
+          path: "/employee-dashboard",
+          element: (
+            <ProtectedRoute requiredPage="employee_dashboard">
+              <EmployeeDashboard />
             </ProtectedRoute>
           )
         },
