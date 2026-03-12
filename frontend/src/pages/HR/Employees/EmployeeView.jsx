@@ -311,7 +311,7 @@ const EmployeeView = ({ leadScope, employeeScope }) => {
                   </AnimatePresence>
                 </div>
 
-                {hasPermission("employees", "add") && (
+                {hasPermission("employees", "add") && !leadScope && (
                   <Link
                     to="/hr/employees/create"
                     className="flex items-center gap-3 px-6 py-3 bg-black text-white rounded-xl hover:bg-gray-900 transition text-sm font-medium"
