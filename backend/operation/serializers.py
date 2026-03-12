@@ -15,6 +15,7 @@ from .models import (
 )
 from authapp.serializers import ProfileSerializer, DepartmentSerializer
 from authapp.models import CustomUser, Department
+from django.db.models import Sum, F
 from .models import Scrum
 from django.utils import timezone
 class ProjectCategorySerializer(serializers.ModelSerializer):
@@ -91,6 +92,11 @@ class ProjectSerializer(serializers.ModelSerializer):
     members = ProfileSerializer(many=True, read_only=True)
     project_files = ProjectFileSerializer(many=True, read_only=True)
     currency = CurrencySerializer(read_only=True)
+    total_hours_spent = serializers.SerializerMethodField()
+    total_actual_cost = serializers.SerializerMethodField()
+    profit_loss = serializers.SerializerMethodField()
+    progress_percentage = serializers.SerializerMethodField()
+    member_contributions = serializers.SerializerMethodField()
     category_id = serializers.PrimaryKeyRelatedField(
         queryset=ProjectCategory.objects.all(),
         source="category",
@@ -203,8 +209,70 @@ class ProjectSerializer(serializers.ModelSerializer):
             "is_active",
             "created_at",
             "updated_at",
+            "total_hours_spent",
+            "total_actual_cost",
+            "profit_loss",
+            "progress_percentage",
+            "member_contributions",
         ]
-        read_only_fields = ["id", "created_at", "updated_at", "project_files"]
+        read_only_fields = ["id", "created_at", "updated_at", "project_files", "total_hours_spent", "total_actual_cost", "profit_loss", "progress_percentage", "member_contributions"]
+
+    def get_total_hours_spent(self, obj):
+        from hr.models import WorkSession
+        sessions = WorkSession.objects.filter(project=obj, end_time__isnull=False)
+        total_seconds = sessions.aggregate(total=Sum('duration_seconds'))['total'] or 0
+        return round(total_seconds / 3600, 2)
+
+    def get_total_actual_cost(self, obj):
+        from hr.models import WorkSession
+        sessions = WorkSession.objects.filter(project=obj, end_time__isnull=False)
+        total_cost = 0
+        for session in sessions:
+            rate = session.employee.hourly_rate or 0
+            duration = session.duration_seconds or 0
+            hours = duration / 3600
+            total_cost += float(rate) * hours
+        return round(total_cost, 2)
+
+    def get_profit_loss(self, obj):
+        budget = float(obj.budget or 0)
+        actual_cost = self.get_total_actual_cost(obj)
+        return round(budget - actual_cost, 2)
+
+    def get_progress_percentage(self, obj):
+        allocated = float(obj.hours_allocated or 0)
+        if allocated == 0:
+            return 0
+        spent = self.get_total_hours_spent(obj)
+        return round((spent / allocated) * 100, 2)
+
+    def get_member_contributions(self, obj):
+        from hr.models import WorkSession
+        sessions = WorkSession.objects.filter(project=obj, end_time__isnull=False)
+        contributions = {}
+        for session in sessions:
+            emp = session.employee
+            if not emp: continue
+            emp_id = emp.id
+            if emp_id not in contributions:
+                contributions[emp_id] = {
+                    'id': emp_id,
+                    'name': emp.name or emp.email.split('@')[0],
+                    'profile_picture': emp.image.url if emp.image else None,
+                    'hours': 0,
+                    'cost': 0
+                }
+            duration = session.duration_seconds or 0
+            hours = duration / 3600
+            contributions[emp_id]['hours'] += round(hours, 2)
+            contributions[emp_id]['cost'] += round(hours * float(emp.hourly_rate or 0), 2)
+        
+        # Format hours and cost to 2 decimal places in the final list
+        result = list(contributions.values())
+        for r in result:
+            r['hours'] = round(r['hours'], 2)
+            r['cost'] = round(r['cost'], 2)
+        return result
 
     def create(self, validated_data):
         files = validated_data.pop("files", [])
