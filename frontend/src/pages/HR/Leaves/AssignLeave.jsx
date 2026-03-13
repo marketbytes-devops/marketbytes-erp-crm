@@ -8,6 +8,7 @@ import { usePermission } from "../../../context/PermissionContext";
 
 const AssignLeave = ({ leadScope, employeeScope }) => {
   const { hasPermission } = usePermission();
+  const permissionPage = employeeScope ? "employee_leaves" : (leadScope ? "lead_leaves" : "leaves");
   const [employees, setEmployees] = useState([]);
   const [leaveTypes, setLeaveTypes] = useState([]);
   const [showAddTypeModal, setShowAddTypeModal] = useState(false);
@@ -161,7 +162,7 @@ const AssignLeave = ({ leadScope, employeeScope }) => {
                   <label className="text-sm font-medium text-black">
                     Leave Type <span className="text-red-500">*</span>
                   </label>
-                  {hasPermission("leaves", "add") && (
+                  {hasPermission(permissionPage, "add") && (
                     <button
                       type="button"
                       onClick={() => setShowAddTypeModal(true)}
@@ -316,7 +317,7 @@ const AssignLeave = ({ leadScope, employeeScope }) => {
             >
               Cancel
             </button>
-            {hasPermission("leaves", "add") && (
+            {hasPermission(permissionPage, "add") && (
               <button
                 type="submit"
                 disabled={loading}

@@ -122,9 +122,9 @@ class ClientViewSet(viewsets.ModelViewSet):
         return Client.objects.all()
 
 
-class CurrencyViewSet(viewsets.ReadOnlyModelViewSet):
+class CurrencyViewSet(viewsets.ModelViewSet):
     """
-    List all active currencies (used in project creation)
+    ViewSet for Currency CRUD operations (used in project creation)
     """
 
     queryset = Currency.objects.filter(is_active=True).order_by("code")
@@ -578,8 +578,10 @@ class ScrumViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         queryset = super().get_queryset()
         user = self.request.user
-
-        if not user.is_superuser and not user.is_staff:
+        
+        if self.request.query_params.get('employee_scope'):
+            queryset = queryset.filter(employee=user).distinct()
+        elif not user.is_superuser and not user.is_staff:
             query = Q(task__project__members=user) | \
                     Q(task__project__department=user.department) | \
                     Q(task__assignees=user) | \

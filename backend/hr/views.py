@@ -21,7 +21,7 @@ class AttendanceViewSet(viewsets.ModelViewSet):
     queryset = Attendance.objects.all().select_related('employee')
     serializer_class = AttendanceSerializer
     permission_classes = [HasPermission]
-    page_names = ['attendance', 'employee_attendance', 'lead_attendance']
+    page_names = ['attendance', 'employee_attendance', 'lead_attendance', 'employee_timelogs']
     
     def get_queryset(self):
         user = self.request.user
@@ -939,8 +939,7 @@ class TimerViewSet(viewsets.ViewSet):
 class WorkSessionViewSet(viewsets.ModelViewSet):
     queryset = WorkSession.objects.all().select_related('employee', 'project', 'task').order_by('-start_time')
     serializer_class = WorkSessionSerializer
-    permission_classes = [HasPermission]
-    page_name = 'timelogs'
+    page_names = ['timelogs', 'employee_timelogs']
 
     def get_queryset(self):
         user = self.request.user
@@ -981,6 +980,9 @@ class WorkSessionViewSet(viewsets.ModelViewSet):
                 queryset = queryset.filter(start_time__lte=ed_aware)
             except ValueError:
                 pass
+
+        if self.request.query_params.get('employee_scope'):
+            return queryset.filter(employee=user)
 
         if user.is_superuser or (getattr(user, 'role', None) and user.role.name == "Superadmin"):
             return queryset

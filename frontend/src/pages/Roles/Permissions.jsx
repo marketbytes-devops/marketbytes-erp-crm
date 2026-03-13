@@ -50,6 +50,9 @@ const pageNameMap = {
   team_listing: { apiName: "team_listing", displayName: "Team Members", route: "/team/employees" },
   lead_attendance: { apiName: "lead_attendance", displayName: "Team Attendance", route: "/lead/attendance" },
   lead_leaves: { apiName: "lead_leaves", displayName: "Team Leaves", route: "/lead/leaves" },
+  lead_projects: { apiName: "lead_projects", displayName: "Lead Projects", route: "/lead/projects" },
+  lead_tasks: { apiName: "lead_tasks", displayName: "Lead Tasks", route: "/lead/tasks" },
+  lead_scrum: { apiName: "lead_scrum", displayName: "Lead Scrum", route: "/lead/scrum" },
 
   // Employee Section
   employee_dashboard: { apiName: "employee_dashboard", displayName: "My Dashboard", route: "/employee-dashboard" },
@@ -57,6 +60,9 @@ const pageNameMap = {
   employee_tasks: { apiName: "employee_tasks", displayName: "My Tasks", route: "/employee/tasks" },
   employee_attendance: { apiName: "employee_attendance", displayName: "My Attendance", route: "/employee/attendance" },
   employee_leaves: { apiName: "employee_leaves", displayName: "My Leaves", route: "/employee/leaves" },
+  employee_timelogs: { apiName: "employee_timelogs", displayName: "My Time Logs", route: "/employee/time-logs" },
+  employee_scrum: { apiName: "employee_scrum", displayName: "My Scrum", route: "/employee/scrum" },
+  employee_taskcalendar: { apiName: "employee_taskcalendar", displayName: "Task Calendar", route: "/employee/task-calendar" },
 };
 
 const Permissions = () => {

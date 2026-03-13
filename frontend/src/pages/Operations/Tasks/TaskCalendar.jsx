@@ -12,7 +12,7 @@ const months = [
   "July", "August", "September", "October", "November", "December"
 ];
 
-const TaskCalendarPage = () => {
+const TaskCalendarPage = ({ employeeScope = false, leadScope = false }) => {
   const currentDate = new Date();
   const [currentYear, setCurrentYear] = useState(currentDate.getFullYear());
   const [currentMonth, setCurrentMonth] = useState(currentDate.getMonth() + 1); // 1–12
@@ -33,6 +33,8 @@ const TaskCalendarPage = () => {
           params: {
             year: currentYear,
             month: currentMonth,
+            ...(employeeScope ? { employee_scope: true } : {}),
+            ...(leadScope ? { lead_scope: true } : {}),
           },
         });
 

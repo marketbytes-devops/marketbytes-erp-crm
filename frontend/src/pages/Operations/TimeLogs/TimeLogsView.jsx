@@ -25,7 +25,7 @@ import autoTable from "jspdf-autotable";
 import * as XLSX from "xlsx";
 import { usePermission } from "../../../context/PermissionContext";
 
-const TimeLogs = () => {
+const TimeLogs = ({ employeeScope = false, leadScope = false }) => {
   const { hasPermission } = usePermission();
   const [loading, setLoading] = useState(true);
   const [timeEntries, setTimeEntries] = useState([]);
@@ -148,7 +148,7 @@ const TimeLogs = () => {
     const m = Math.floor((totalSeconds % 3600) / 60);
     const s = totalSeconds % 60;
 
-   const parts = [];
+    const parts = [];
     if (h > 0) parts.push(`${h}h`);
     if (m > 0 || h > 0) parts.push(`${m}m`);
     parts.push(`${s}s`);
@@ -182,8 +182,8 @@ const TimeLogs = () => {
       setLoading(true);
       const [attendanceRes, sessionRes, projectsRes, tasksRes, employeesRes] =
         await Promise.all([
-          apiClient.get("/hr/attendance/"),
-          apiClient.get("/hr/work-sessions/"),
+          apiClient.get("/hr/attendance/", { params: (employeeScope || leadScope) ? { [employeeScope ? 'employee_scope' : 'lead_scope']: true } : {} }),
+          apiClient.get("/hr/work-sessions/", { params: (employeeScope || leadScope) ? { [employeeScope ? 'employee_scope' : 'lead_scope']: true } : {} }),
           apiClient.get("/operation/projects/"),
           apiClient.get("/operation/tasks/"),
           apiClient.get("/auth/users/"),

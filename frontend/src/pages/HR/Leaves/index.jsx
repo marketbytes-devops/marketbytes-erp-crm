@@ -20,6 +20,7 @@ import autoTable from "jspdf-autotable";
 
 const Leaves = ({ leadScope, employeeScope }) => {
   const { hasPermission } = usePermission();
+  const permissionPage = employeeScope ? "employee_leaves" : (leadScope ? "lead_leaves" : "leaves");
   const [leaves, setLeaves] = useState([]);
   const [filter, setFilter] = useState("all");
   const [loading, setLoading] = useState(true);
@@ -267,7 +268,7 @@ const Leaves = ({ leadScope, employeeScope }) => {
                 <MdDownload className="w-5 h-5" />
                 Export
               </button>
-              {hasPermission("leaves", "add") && (
+              {hasPermission(permissionPage, "add") && (
                 <Link
                   to={leadScope ? "/lead/leaves/assign" : employeeScope ? "/employee/leaves/assign" : "/hr/leaves/assign"}
                   className="flex items-center gap-3 px-6 py-3 bg-black text-white rounded-xl hover:bg-gray-900 transition font-medium"
@@ -476,7 +477,7 @@ const Leaves = ({ leadScope, employeeScope }) => {
                                     </button>
                                   </>
                                 )}
-                                {!leadScope && hasPermission("leaves", "edit") && (
+                                {!leadScope && hasPermission(permissionPage, "edit") && (
                                   <>
                                     <button
                                       onClick={() => handleStatusUpdate(leave.id, "approved")}

@@ -314,11 +314,6 @@ class ProjectSerializer(serializers.ModelSerializer):
         members = validated_data.pop("members", [])
         project = super().create(validated_data)
 
-        if self.context.get("request"):
-            user = self.context["request"].user
-            if user not in members:
-                members.append(user)
-
         if members:
             project.members.set(members)
 

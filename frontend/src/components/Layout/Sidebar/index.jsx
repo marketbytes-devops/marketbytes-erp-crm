@@ -31,7 +31,7 @@ import { usePermission } from "../../../context/PermissionContext";
 
 const Sidebar = ({ toggleSidebar }) => {
   const location = useLocation();
-  const { hasPermission, isLoaded } = usePermission();
+  const { hasPermission, isLoaded, isSuperadmin, user } = usePermission();
 
   const [openDropdown, setOpenDropdown] = useState("");
 
@@ -340,17 +340,48 @@ const Sidebar = ({ toggleSidebar }) => {
           page: "employee_leaves",
           action: "view",
         },
+        {
+          to: "/employee/time-logs",
+          label: "My Time Logs",
+          icon: <MdAccessTime className="w-6 h-6" />,
+          page: "employee_timelogs",
+          action: "view",
+        },
+        {
+          to: "/employee/scrum",
+          label: "My Scrum",
+          icon: <MdPendingActions className="w-6 h-6" />,
+          page: "employee_scrum",
+          action: "view",
+        },
+        {
+          to: "/employee/task-calendar",
+          label: "Task Calendar",
+          icon: <MdCalendarToday className="w-6 h-6" />,
+          page: "employee_taskcalendar",
+          action: "view",
+        },
       ].filter((item) => hasPermission(item.page, item.action)),
     },
     {
       to: "/profile",
       label: "Profile",
       icon: <MdPerson className="w-6 h-6" />,
-      page: "profile",
-      action: "view",
+      page: null,   // always visible to any authenticated user
+      action: null,
     },
   ].filter((item) => {
+    const isCEO = user?.role?.name?.toLowerCase() === 'ceo';
+    const isRegularEmployee = hasPermission("employee_dashboard", "view") && !isSuperadmin && !isCEO;
+
+    // For employees, show ONLY My Dashboard, Self Management, and Profile
+    if (isRegularEmployee) {
+      const allowed = ["My Dashboard", "Self Management", "Profile"];
+      if (!allowed.includes(item.label)) return false;
+    }
+
     if (item.subItems) return item.subItems.length > 0;
+    if (!item.page) return true;  // always show items with no permission guard
     return hasPermission(item.page, item.action);
   });
 

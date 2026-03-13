@@ -213,7 +213,7 @@ class PermissionDetailView(APIView):
 
 class UserManagementView(APIView):
     permission_classes = [HasPermission]
-    page_name = 'users'
+    page_names = ['users', 'employees', 'employee_scrum', 'employee_timelogs', 'employee_taskcalendar', 'lead_scrum', 'lead_projects', 'lead_tasks']
     
     def get(self, request):
         users = CustomUser.objects.all().select_related('role', 'department', 'reports_to')

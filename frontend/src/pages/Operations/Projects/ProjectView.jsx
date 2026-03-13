@@ -24,6 +24,7 @@ import { usePermission } from "../../../context/PermissionContext";
 const ProjectsView = ({ employeeScope = false, leadScope = false }) => {
   const navigate = useNavigate();
   const { hasPermission } = usePermission();
+  const permissionPage = employeeScope ? "employee_projects" : (leadScope ? "lead_projects" : "projects");
 
   const [projects, setProjects] = useState([]);
   const [filtered, setFiltered] = useState([]);
@@ -328,7 +329,7 @@ const ProjectsView = ({ employeeScope = false, leadScope = false }) => {
                   <p className="text-sm text-gray-600">Completed</p>
                 </div>
               </div>
-              {hasPermission("projects", "add") && (
+              {hasPermission(permissionPage, "add") && (
                 <Link
                   to="/operations/projects/projectcreate"
                   className="flex items-center gap-3 px-6 py-3 bg-black text-white rounded-xl hover:bg-gray-900 transition text-sm font-medium"
@@ -632,7 +633,7 @@ const ProjectsView = ({ employeeScope = false, leadScope = false }) => {
                             </div>
                           </td>
                           <td className="px-6 py-5 whitespace-nowrap min-w-[180px]">
-                            {hasPermission("projects", "edit") ? (
+                            {hasPermission(permissionPage, "edit") ? (
                               <Input
                                 type="select"
                                 value={project.status_id ? project.status_id.toString() : ""}
@@ -660,7 +661,7 @@ const ProjectsView = ({ employeeScope = false, leadScope = false }) => {
                                 <MdVisibility className="w-5 h-5 text-gray-600 group-hover:text-blue-600" />
                               </Link>
 
-                              {hasPermission("projects", "edit") && (
+                              {hasPermission(permissionPage, "edit") && (
                                 <Link
                                   to={`/operations/projects/edit/${project.id}`}
                                   className="p-2 hover:bg-amber-50 rounded-lg transition group"
@@ -679,7 +680,7 @@ const ProjectsView = ({ employeeScope = false, leadScope = false }) => {
                                 />
                               </button>
 
-                              {hasPermission("projects", "edit") && (
+                              {hasPermission(permissionPage, "edit") && (
                                 <button
                                   onClick={() => handleArchive(project.id)}
                                   className="p-2 hover:bg-red-50 rounded-lg transition group"
@@ -688,7 +689,7 @@ const ProjectsView = ({ employeeScope = false, leadScope = false }) => {
                                 </button>
                               )}
 
-                              {hasPermission("projects", "delete") && (
+                              {hasPermission(permissionPage, "delete") && (
                                 <button
                                   onClick={() => handleDelete(project.id)}
                                   className="p-2 hover:bg-red-50 rounded-lg transition group"
