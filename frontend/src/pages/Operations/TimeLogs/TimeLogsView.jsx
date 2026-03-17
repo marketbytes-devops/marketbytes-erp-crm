@@ -516,11 +516,13 @@ const TimeLogs = ({ employeeScope = false, leadScope = false }) => {
               </div>
 
               <div className="flex flex-col sm:flex-row gap-3">
-                <Link to="/operations/time-logs/active-timers">
-                  <button className="flex items-center justify-center gap-2 px-6 py-3 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition text-sm font-medium whitespace-nowrap">
-                    <MdTimer className="w-5 h-5" /> Active Timers
-                  </button>
-                </Link>
+                {!employeeScope && hasPermission('timelogs', 'view') && (
+                  <Link to="/operations/time-logs/active-timers">
+                    <button className="flex items-center justify-center gap-2 px-6 py-3 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition text-sm font-medium whitespace-nowrap">
+                      <MdTimer className="w-5 h-5" /> Active Timers
+                    </button>
+                  </Link>
+                )}
               </div>
             </div>
           </div>
@@ -549,18 +551,22 @@ const TimeLogs = ({ employeeScope = false, leadScope = false }) => {
             </div>
 
             <div className="flex gap-3">
-              <Link
-                to="/operations/time-logs/calendar-view"
-                className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition text-sm font-medium"
-              >
-                <MdCalendarToday className="w-4 h-4" /> Calendar
-              </Link>
-              <Link
-                to="/operations/time-logs/emplyees-time"
-                className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition text-sm font-medium"
-              >
-                <MdPerson className="w-4 h-4" /> Employee View
-              </Link>
+              {!employeeScope && hasPermission('timelogs', 'view') && (
+                <>
+                  <Link
+                    to="/operations/time-logs/calendar-view"
+                    className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition text-sm font-medium"
+                  >
+                    <MdCalendarToday className="w-4 h-4" /> Calendar
+                  </Link>
+                  <Link
+                    to="/operations/time-logs/emplyees-time"
+                    className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition text-sm font-medium"
+                  >
+                    <MdPerson className="w-4 h-4" /> Employee View
+                  </Link>
+                </>
+              )}
             </div>
           </div>
 
@@ -887,14 +893,7 @@ const TimeLogs = ({ employeeScope = false, leadScope = false }) => {
                                 <MdVisibility className="w-5 h-5 text-gray-600 group-hover:text-blue-600" />
                               </button>
                             )}
-                            <button
-                              onClick={() => handleDelete(entry.id)}
-                              className="p-2 hover:bg-red-50 rounded-lg transition group"
-                              title="Delete Log"
-                            >
-                              <MdDelete className="w-5 h-5 text-gray-600 group-hover:text-red-600" />
-                            </button>
-                            {hasPermission("timelogs", "delete") && (
+                            {hasPermission(employeeScope ? 'employee_timelogs' : leadScope ? 'lead_timelogs' : 'timelogs', 'delete') && (
                               <button
                                 onClick={() => handleDelete(entry.id)}
                                 className="p-2 hover:bg-red-50 rounded-lg transition group"
