@@ -104,7 +104,11 @@ const Leaves = ({ leadScope, employeeScope }) => {
     if (!window.confirm(`Are you sure you want to ${verb} this leave request?`)) return;
 
     try {
-      const res = await apiClient.post(`/hr/leaves/${leaveId}/lead_${action}/`);
+      let url = `/hr/leaves/${leaveId}/lead_${action}/`;
+      if (leadScope) {
+        url += "?lead_scope=true";
+      }
+      const res = await apiClient.post(url);
       setLeaves(prev =>
         prev.map(leave => {
           if (leave.id === leaveId) {

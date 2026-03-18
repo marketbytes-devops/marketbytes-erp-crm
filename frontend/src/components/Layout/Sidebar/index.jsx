@@ -289,6 +289,13 @@ const Sidebar = ({ toggleSidebar }) => {
           action: "view",
         },
         {
+          to: "/lead/time-logs",
+          label: "Team Timelogs",
+          icon: <MdAssignment className="w-6 h-6" />,
+          page: "lead_timelogs",
+          action: "view",
+        },
+        {
           to: "/lead/leaves",
           label: "Team Leaves",
           icon: <MdAssignmentLate className="w-6 h-6" />,
@@ -334,6 +341,13 @@ const Sidebar = ({ toggleSidebar }) => {
           action: "view",
         },
         {
+          to: "/employee/holidays",
+          label: "My Holidays",
+          icon: <MdCalendarToday className="w-6 h-6" />,
+          page: "employee_holidays",
+          action: "view",
+        },
+        {
           to: "/employee/leaves",
           label: "My Leaves",
           icon: <MdAssignmentLate className="w-6 h-6" />,
@@ -359,6 +373,13 @@ const Sidebar = ({ toggleSidebar }) => {
           label: "Task Calendar",
           icon: <MdCalendarToday className="w-6 h-6" />,
           page: "employee_taskcalendar",
+          action: "view",
+        },
+        {
+          to: "/operations/common-calendar",
+          label: "Common Calendar",
+          icon: <MdCalendarToday className="w-5 h-5" />,
+          page: "common_calendar",
           action: "view",
         },
       ].filter((item) => hasPermission(item.page, item.action)),

@@ -61,6 +61,7 @@ import EditScrumPage from "./pages/Operations/Scrum/EditScrum";
 import ContractsList from "./pages/Operations/Contracts/ContractsList";
 import ContractCreate from "./pages/Operations/Contracts/ContractCreate";
 import ContractEdit from "./pages/Operations/Contracts/ContractEdit";
+import CommonCalendar from "./pages/CommonCalendar";
 
 
 
@@ -675,6 +676,18 @@ function App() {
           ),
         },
         {
+          path: "/operations/common-calendar",
+          element: (
+            <ProtectedRoute
+              isAuthenticated={isAuthenticated}
+              requiredPage="common_calendar"
+              requiredAction="view"
+            >
+              <CommonCalendar />
+            </ProtectedRoute>
+          ),
+        },
+        {
           path: "/operations/scrum",
           element: (
             <ProtectedRoute
@@ -817,14 +830,6 @@ function App() {
           ),
         },
         {
-          path: "/lead/holidays",
-          element: (
-            <ProtectedRoute requiredPage="lead_holidays">
-              <HolidayView leadScope={true} />
-            </ProtectedRoute>
-          ),
-        },
-        {
           path: "/lead/time-logs",
           element: (
             <ProtectedRoute requiredPage="lead_timelogs">
@@ -879,6 +884,18 @@ function App() {
           element: (
             <ProtectedRoute requiredPage="employee_tasks">
               <TaskView employeeScope={true} />
+            </ProtectedRoute>
+          ),
+        },
+        {
+          path: "/employee/holidays",
+          element: (
+            <ProtectedRoute
+              isAuthenticated={isAuthenticated}
+              requiredPage="employee_holidays"
+              requiredAction="view"
+            >
+              <HolidayView employeeScope={true} />
             </ProtectedRoute>
           ),
         },

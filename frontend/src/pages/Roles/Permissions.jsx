@@ -26,6 +26,7 @@ const pageNameMap = {
   task_board: { apiName: "task_board", displayName: "Task Board", route: "/operations/task-board" },
   timelogs: { apiName: "timelogs", displayName: "Time Log", route: "/operations/time-logs" },
   task_calendar: { apiName: "task_calendar", displayName: "Task Calendar", route: "/operations/task-calendar" },
+  common_calendar: { apiName: "common_calendar", displayName: "Common Calendar", route: "/operations/common-calendar" },
   scrum: { apiName: "scrum", displayName: "Scrum", route: "/operations/scrum" },
   contracts: { apiName: "contracts", displayName: "Contracts", route: "/operations/contracts" },
 
@@ -50,6 +51,7 @@ const pageNameMap = {
   team_listing: { apiName: "team_listing", displayName: "Team Members", route: "/team/employees" },
   lead_attendance: { apiName: "lead_attendance", displayName: "Team Attendance", route: "/lead/attendance" },
   lead_leaves: { apiName: "lead_leaves", displayName: "Team Leaves", route: "/lead/leaves" },
+  lead_timelogs: { apiName: "lead_timelogs", displayName: "Team Timelogs", route: "/lead/time-logs" },
   lead_projects: { apiName: "lead_projects", displayName: "Lead Projects", route: "/lead/projects" },
   lead_tasks: { apiName: "lead_tasks", displayName: "Lead Tasks", route: "/lead/tasks" },
   lead_scrum: { apiName: "lead_scrum", displayName: "Lead Scrum", route: "/lead/scrum" },
@@ -59,6 +61,7 @@ const pageNameMap = {
   employee_projects: { apiName: "employee_projects", displayName: "My Projects", route: "/employee/projects" },
   employee_tasks: { apiName: "employee_tasks", displayName: "My Tasks", route: "/employee/tasks" },
   employee_attendance: { apiName: "employee_attendance", displayName: "My Attendance", route: "/employee/attendance" },
+  employee_holidays: { apiName: "employee_holidays", displayName: "My Holidays", route: "/employee/holidays" },
   employee_leaves: { apiName: "employee_leaves", displayName: "My Leaves", route: "/employee/leaves" },
   employee_timelogs: { apiName: "employee_timelogs", displayName: "My Time Logs", route: "/employee/time-logs" },
   employee_scrum: { apiName: "employee_scrum", displayName: "My Scrum", route: "/employee/scrum" },

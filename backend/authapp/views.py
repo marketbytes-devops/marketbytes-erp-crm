@@ -11,7 +11,7 @@ import random
 import string
 from django.core.mail import send_mail
 from django.conf import settings
-from django.db.models import Count
+from django.db.models import Count, Q
 from .models import CustomUser, Role, Permission, Department, UserPermission, PermissionOverride, has_user_permission, get_user_effective_permissions, Designation
 from .serializers import (
     LoginSerializer, RequestOTPSerializer, ResetPasswordSerializer,
@@ -112,6 +112,11 @@ class RoleView(APIView):
             roles = roles.exclude(name='Superadmin')
         serializer = RoleSerializer(roles, many=True)
         return Response(serializer.data)
+    
+    def get_permissions(self):
+        if self.request.method == 'GET':
+            return [IsAuthenticated()]
+        return [HasPermission()]
     
     def post(self, request):
         if not has_permission(request.user, 'roles', 'add'):
@@ -227,7 +232,7 @@ class UserManagementView(APIView):
                 users = users.filter(reports_to_id=reports_to_id)
         elif 'lead_scope' in request.query_params:
             # Automatic scoping if lead_scope is passed
-            users = users.filter(reports_to=request.user)
+            users = users.filter(Q(id=request.user.id) | Q(reports_to=request.user))
 
         if not (request.user.is_superuser or (request.user.role and request.user.role.name == 'Superadmin')):
             users = users.exclude(role__name='Superadmin').exclude(is_superuser=True)
@@ -305,11 +310,19 @@ class UserDetailView(APIView):
 class DepartmentViewSet(viewsets.ModelViewSet):
     queryset = Department.objects.all()
     serializer_class = DepartmentSerializer
-    permission_classes = [HasPermission]
     page_name = 'departments'
+
+    def get_permissions(self):
+        if self.action in ['list', 'retrieve']:
+            return [IsAuthenticated()]
+        return [HasPermission()]
 
 class DesignationViewSet(viewsets.ModelViewSet):
     queryset = Designation.objects.all()
     serializer_class = DesignationSerializer
-    permission_classes = [HasPermission]
     page_name = 'designations'
+
+    def get_permissions(self):
+        if self.action in ['list', 'retrieve']:
+            return [IsAuthenticated()]
+        return [HasPermission()]

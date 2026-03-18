@@ -255,4 +255,4 @@ def notify_leave_status(sender, instance, created, **kwargs):
                     title='Leave Declined by Lead',
                     message=f'Your leave request has been declined by your lead.',
                     priority='medium'
-                )
+                )

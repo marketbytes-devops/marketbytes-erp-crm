@@ -24,6 +24,7 @@ import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
 import * as XLSX from "xlsx";
 import { usePermission } from "../../../context/PermissionContext";
+import TimeLogGraph from "./TimeLogGraph";
 
 const TimeLogs = ({ employeeScope = false, leadScope = false }) => {
   const { hasPermission } = usePermission();
@@ -548,6 +549,15 @@ const TimeLogs = ({ employeeScope = false, leadScope = false }) => {
               >
                 Detailed Logs
               </button>
+              <button
+                onClick={() => setViewMode("graph")}
+                className={`px-5 py-2 rounded-lg text-sm font-medium transition-all ${viewMode === "graph"
+                  ? "bg-white text-black shadow-sm"
+                  : "text-gray-500 hover:text-gray-800"
+                  }`}
+              >
+                Graph View
+              </button>
             </div>
 
             <div className="flex gap-3">
@@ -726,8 +736,11 @@ const TimeLogs = ({ employeeScope = false, leadScope = false }) => {
             )}
           </AnimatePresence>
 
-          {/* Table Container */}
-          <div className="bg-white rounded-2xl shadow-sm overflow-hidden border border-gray-200">
+          {/* Data Display: Table or Graph */}
+          {viewMode === "graph" ? (
+            <TimeLogGraph data={filteredEntries} />
+          ) : (
+            <div className="bg-white rounded-2xl shadow-sm overflow-hidden border border-gray-200">
             <div className="overflow-x-auto">
               <table className="w-full min-w-[1000px]">
                 <thead className="bg-gray-50 border-b border-gray-200">
@@ -931,6 +944,7 @@ const TimeLogs = ({ employeeScope = false, leadScope = false }) => {
               </div>
             )}
           </div>
+          )}
         </div>
       </LayoutComponents>
 

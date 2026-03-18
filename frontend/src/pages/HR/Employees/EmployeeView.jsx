@@ -133,11 +133,11 @@ const EmployeeView = ({ leadScope, employeeScope }) => {
         }
 
         const [empRes, deptRes, roleRes, desigRes, profileRes] = await Promise.all([
-          apiClient.get(userUrl),
-          apiClient.get("/auth/departments/"),
-          apiClient.get("/auth/roles/"),
-          apiClient.get("/auth/designations/"),
-          employeeScope ? apiClient.get("/auth/profile/") : Promise.resolve({ data: null })
+          apiClient.get(userUrl).catch(err => { console.error("Emps fail:", err); return { data: [] }; }),
+          apiClient.get("/auth/departments/").catch(() => ({ data: [] })),
+          apiClient.get("/auth/roles/").catch(() => ({ data: [] })),
+          apiClient.get("/auth/designations/").catch(() => ({ data: [] })),
+          employeeScope ? apiClient.get("/auth/profile/").catch(() => ({ data: null })) : Promise.resolve({ data: null })
         ]);
 
         const extract = (d) => (Array.isArray(d) ? d : d.results || []);
