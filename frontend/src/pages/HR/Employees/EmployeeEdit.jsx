@@ -83,7 +83,7 @@ const EmployeeEdit = () => {
           role_id: empData.role?.id || "",
           designation_id: empData.designation?.id || "",
           department_id: empData.department?.id || "",
-          reports_to: empData.reports_to || "",
+          reports_to: empData.reports_to?.id || "",
           joining_date: empData.joining_date || "",
           dob: empData.dob || "",
           gender: empData.gender || "",
@@ -216,7 +216,11 @@ const EmployeeEdit = () => {
 
     Object.entries(formData).forEach(([key, value]) => {
       if (value !== null && value !== undefined && value !== "") {
-        data.append(key, value);
+        if (key === 'reports_to') {
+          data.append('reports_to_id', value);
+        } else {
+          data.append(key, value);
+        }
       }
     });
 

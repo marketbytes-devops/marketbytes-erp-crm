@@ -56,7 +56,7 @@ const EmployeeCreate = () => {
     role_id: "",
     designation_id: "",
     department_id: "",
-    reports_to_id: "",
+    reports_to: "",
     joining_date: "",
     dob: "",
     gender: "",

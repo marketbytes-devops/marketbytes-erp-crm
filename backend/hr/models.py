@@ -1,4 +1,6 @@
 from django.db import models
+from django.db.models.signals import post_save
+from django.dispatch import receiver
 from django.utils import timezone
 from authapp.models import CustomUser, Department
 from operation.models import Project
@@ -84,6 +86,11 @@ class Leave(models.Model):
     rejection_reason = models.TextField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True, null=True, blank=True)
     updated_at = models.DateTimeField(auto_now=True, null=True, blank=True)
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.__original_status = self.status
+        self.__original_lead_status = self.lead_status
 
     class Meta:
         ordering = ['-created_at']
@@ -193,3 +200,59 @@ class BreakSession(models.Model):
 
     def __str__(self):
         return f"{self.employee.name} - {self.get_type_display()} ({self.duration_seconds or 0}s)"
+
+
+@receiver(post_save, sender=Leave)
+def notify_leave_status(sender, instance, created, **kwargs):
+    from notifications.models import Notification
+    
+    if created:
+        # Notify Lead that a new leave request is pending
+        if instance.employee and instance.employee.reports_to:
+            Notification.objects.create(
+                user=instance.employee.reports_to,
+                notification_type='system',
+                title='New Leave Request',
+                message=f'{instance.employee.name} has requested leave from {instance.start_date} to {instance.end_date}. Please review.',
+                priority='medium',
+                link_url=f'/hr/leaves?leave_id={instance.id}',
+                link_text='Review Leave'
+            )
+    else:
+        # Status changed to Approved/Rejected (by HR)
+        if instance.status != instance._Leave__original_status:
+            if instance.status == 'approved':
+                Notification.objects.create(
+                    user=instance.employee,
+                    notification_type='leave_approved',
+                    title='Leave Request Approved',
+                    message=f'Your leave request from {instance.start_date} to {instance.end_date} has been approved by HR.',
+                    priority='medium'
+                )
+            elif instance.status == 'rejected':
+                Notification.objects.create(
+                    user=instance.employee,
+                    notification_type='leave_rejected',
+                    title='Leave Request Rejected',
+                    message=f'Your leave request from {instance.start_date} to {instance.end_date} has been rejected by HR.',
+                    priority='medium'
+                )
+
+        # Lead status changed (Confirmed/Declined by Lead)
+        if instance.lead_status != instance._Leave__original_lead_status:
+            if instance.lead_status == 'confirmed':
+                Notification.objects.create(
+                    user=instance.employee,
+                    notification_type='system',
+                    title='Leave Confirmed by Lead',
+                    message=f'Your leave request has been confirmed by your lead and sent to HR for final approval.',
+                    priority='low'
+                )
+            elif instance.lead_status == 'declined':
+                Notification.objects.create(
+                    user=instance.employee,
+                    notification_type='leave_rejected',
+                    title='Leave Declined by Lead',
+                    message=f'Your leave request has been declined by your lead.',
+                    priority='medium'
+                )

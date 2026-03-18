@@ -534,12 +534,15 @@ class LeaveViewSet(viewsets.ModelViewSet):
             return queryset.filter(employee=user)
             
         if user.is_superuser or (getattr(user, 'role', None) and user.role.name == "Superadmin"):
-            return queryset
+            # HR/Superadmin should only see leaves after Lead confirmation, 
+            # OR if the employee doesn't report to anyone.
+            return queryset.filter(Q(employee__reports_to__isnull=True) | Q(lead_status='confirmed'))
             
         if 'lead_scope' in self.request.query_params:
-            # Lead sees own + direct reports
+            # Lead sees own + direct reports (pending and processed)
             return queryset.filter(Q(employee=user) | Q(employee__reports_to=user))
             
+        # Default fallback
         return queryset.filter(employee=user)
 
     @action(detail=True, methods=['post'])

@@ -7,7 +7,7 @@ import apiClient from "../../../helpers/apiClient";
 import { usePermission } from "../../../context/PermissionContext";
 
 const AssignLeave = ({ leadScope, employeeScope }) => {
-  const { hasPermission } = usePermission();
+  const { hasPermission, user } = usePermission();
   const permissionPage = employeeScope ? "employee_leaves" : (leadScope ? "lead_leaves" : "leaves");
   const [employees, setEmployees] = useState([]);
   const [leaveTypes, setLeaveTypes] = useState([]);
@@ -31,6 +31,16 @@ const AssignLeave = ({ leadScope, employeeScope }) => {
     fetchEmployees();
     fetchLeaveTypes();
   }, []);
+
+  useEffect(() => {
+    if (employeeScope && user) {
+      setForm((prev) => ({
+        ...prev,
+        employee: user.id,
+        status: "pending",
+      }));
+    }
+  }, [employeeScope, user]);
 
   const fetchEmployees = async () => {
     try {
@@ -85,10 +95,10 @@ const AssignLeave = ({ leadScope, employeeScope }) => {
 
     try {
       await apiClient.post("/hr/leaves/", payload);
-      alert("Leave assigned successfully!");
+      alert(employeeScope ? "Leave application submitted successfully!" : "Leave assigned successfully!");
       window.history.back();
     } catch (err) {
-      const msg = err.response?.data?.detail || "Failed to assign leave";
+      const msg = err.response?.data?.detail || (employeeScope ? "Failed to apply for leave" : "Failed to assign leave");
       alert(msg);
       console.error(err);
     } finally {
@@ -126,8 +136,8 @@ const AssignLeave = ({ leadScope, employeeScope }) => {
   return (
     <div className="p-4 md:p-6 max-w-full mx-auto">
       <LayoutComponents
-        title="Assign Leave"
-        subtitle="Manually assign leave to an employee"
+        title={employeeScope ? "Apply Leave" : "Assign Leave"}
+        subtitle={employeeScope ? "Submit a new leave request" : "Manually assign leave to an employee"}
         variant="card"
       >
         <div className="mb-8">
@@ -144,17 +154,26 @@ const AssignLeave = ({ leadScope, employeeScope }) => {
           <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 md:p-8">
             <h3 className="text-lg font-medium text-gray-900 mb-6">Leave Details</h3>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className={`grid grid-cols-1 ${employeeScope ? "md:grid-cols-2" : "md:grid-cols-3"} gap-6`}>
               {/* Employee */}
-              <Input
-                label="Employee"
-                type="select"
-                required
-                value={form.employee}
-                onChange={(v) => setForm({ ...form, employee: v })}
-                options={[{ value: "", label: "Select Employee" }, ...employeeOptions]}
-                placeholder="Select Employee"
-              />
+              {!employeeScope ? (
+                <Input
+                  label="Employee"
+                  type="select"
+                  required
+                  value={form.employee}
+                  onChange={(v) => setForm({ ...form, employee: v })}
+                  options={[{ value: "", label: "Select Employee" }, ...employeeOptions]}
+                  placeholder="Select Employee"
+                />
+              ) : (
+                <div className="flex flex-col">
+                  <label className="text-sm font-medium text-black mb-2">Employee</label>
+                  <div className="px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-700 font-medium">
+                    {user?.name || user?.email}
+                  </div>
+                </div>
+              )}
 
               {/* Leave Type */}
               <div>
@@ -183,13 +202,15 @@ const AssignLeave = ({ leadScope, employeeScope }) => {
               </div>
 
               {/* Status */}
-              <Input
-                label="Status"
-                type="select"
-                value={form.status}
-                onChange={(v) => setForm({ ...form, status: v })}
-                options={statusOptions}
-              />
+              {!employeeScope && (
+                <Input
+                  label="Status"
+                  type="select"
+                  value={form.status}
+                  onChange={(v) => setForm({ ...form, status: v })}
+                  options={statusOptions}
+                />
+              )}
             </div>
 
             {/* Duration Selection */}
@@ -323,7 +344,7 @@ const AssignLeave = ({ leadScope, employeeScope }) => {
                 disabled={loading}
                 className="px-6 py-3 bg-black text-white font-medium rounded-xl hover:bg-gray-900 transition disabled:opacity-50"
               >
-                {loading ? "Assigning Leave..." : "Assign Leave"}
+                {loading ? (employeeScope ? "Submitting..." : "Assigning Leave...") : (employeeScope ? "Apply Leave" : "Assign Leave")}
               </button>
             )}
           </div>
