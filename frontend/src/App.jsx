@@ -620,7 +620,7 @@ function App() {
           element: (
             <ProtectedRoute
               isAuthenticated={isAuthenticated}
-              requiredPage="timelogs"
+              requiredPage={["timelogs", "lead_timelogs"]}
               requiredAction="view"
             >
               <TimeLogs />
@@ -632,7 +632,7 @@ function App() {
           element: (
             <ProtectedRoute
               isAuthenticated={isAuthenticated}
-              requiredPage="timelogs"
+              requiredPage={["timelogs", "lead_timelogs"]}
               requiredAction="view"
             >
               <ActiveTimers />
@@ -644,7 +644,7 @@ function App() {
           element: (
             <ProtectedRoute
               isAuthenticated={isAuthenticated}
-              requiredPage="timelogs"
+              requiredPage={["timelogs", "lead_timelogs"]}
               requiredAction="view"
             >
               <CalendarView />
@@ -656,7 +656,7 @@ function App() {
           element: (
             <ProtectedRoute
               isAuthenticated={isAuthenticated}
-              requiredPage="timelogs"
+              requiredPage={["timelogs", "lead_timelogs"]}
               requiredAction="view"
             >
               <EmployeeTimeLogs />

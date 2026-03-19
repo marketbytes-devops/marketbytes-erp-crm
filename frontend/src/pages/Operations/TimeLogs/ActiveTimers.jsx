@@ -18,8 +18,11 @@ import Loading from "../../../components/Loading";
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
 import * as XLSX from "xlsx";
+import { usePermission } from "../../../context/PermissionContext";
 
 const ActiveTimers = () => {
+    const { hasPermission } = usePermission();
+    const canEdit = hasPermission('timelogs', 'edit') || hasPermission('lead_timelogs', 'edit');
     const [search, setSearch] = useState("");
     const [filtersOpen, setFiltersOpen] = useState(false);
     const [timers, setTimers] = useState([]);
@@ -476,7 +479,7 @@ const ActiveTimers = () => {
                                         <th className="px-6 py-5 text-left text-xs font-medium text-gray-700 uppercase tracking-wider whitespace-nowrap">Employee</th>
                                         <th className="px-6 py-5 text-left text-xs font-medium text-gray-700 uppercase tracking-wider whitespace-nowrap">Start Time</th>
                                         <th className="px-6 py-5 text-left text-xs font-medium text-gray-700 uppercase tracking-wider whitespace-nowrap">Duration</th>
-                                        <th className="px-6 py-5 text-left text-xs font-medium text-gray-700 uppercase tracking-wider whitespace-nowrap">Actions</th>
+                                        {canEdit && <th className="px-6 py-5 text-left text-xs font-medium text-gray-700 uppercase tracking-wider whitespace-nowrap">Actions</th>}
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-gray-200">
@@ -540,6 +543,7 @@ const ActiveTimers = () => {
                                                         <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
                                                     </div>
                                                 </td>
+                                                {canEdit && (
                                                 <td className="px-6 py-5">
                                                     <button
                                                         onClick={() => handleStop(t.id)}
@@ -549,6 +553,7 @@ const ActiveTimers = () => {
                                                         <MdTimerOff className="w-5 h-5" />
                                                     </button>
                                                 </td>
+                                                )}
                                             </motion.tr>
                                         ))
                                     )}

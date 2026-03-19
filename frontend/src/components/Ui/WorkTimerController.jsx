@@ -55,6 +55,14 @@ const WorkTimerController = () => {
   }, [fetchStatus]);
 
   useEffect(() => {
+    const handleUpdate = () => {
+      fetchStatus();
+    };
+    window.addEventListener('timer-status-updated', handleUpdate);
+    return () => window.removeEventListener('timer-status-updated', handleUpdate);
+  }, [fetchStatus]);
+
+  useEffect(() => {
     if (!status) return;
     if (!status.is_working && !status.is_on_break) return;
 

@@ -7,7 +7,7 @@ from django.utils import timezone
 from datetime import timedelta, datetime, time, timezone as dt_timezone
 from django.db.models import Q, Count, Exists, OuterRef
 from .models import Attendance, Holiday, LeaveType, Leave, Overtime, Candidate, Performance, Project, Task, WorkSession, BreakSession
-from authapp.models import CustomUser
+from authapp.models import CustomUser, has_user_permission
 from notifications.models import Notification
 from .serializers import *
 import csv
@@ -22,7 +22,7 @@ class AttendanceViewSet(viewsets.ModelViewSet):
     queryset = Attendance.objects.all().select_related('employee')
     serializer_class = AttendanceSerializer
     permission_classes = [HasPermission]
-    page_names = ['attendance', 'employee_attendance', 'lead_attendance', 'employee_timelogs']
+    page_names = ['attendance', 'employee_attendance', 'lead_attendance', 'employee_timelogs', 'lead_timelogs']
     
     def get_queryset(self):
         user = self.request.user
@@ -248,6 +248,56 @@ class AttendanceViewSet(viewsets.ModelViewSet):
                 "message": "Checked out successfully",
                 "time": attendance.clock_out.strftime("%H:%M")
             })
+
+    @action(detail=True, methods=['post'], url_path='force-checkout')
+    def force_checkout(self, request, pk=None):
+        """Allow Team Leads or HR/Superadmin to force-checkout an employee"""
+        try:
+            attendance = self.get_object()
+        except Exception:
+            return Response({"error": "Attendance record not found"}, status=404)
+            
+        employee = attendance.employee
+        user = request.user
+        
+        # Permission check: Requester must be Superadmin, HR, or the direct Team Lead
+        user_role = getattr(user, 'role', None)
+        is_privileged = user.is_superuser or (user_role and user_role.name in ["Superadmin", "HR"])
+        is_team_lead = employee.reports_to == user
+        
+        if not (is_privileged or is_team_lead):
+            return Response({"error": "You do not have permission to checkout this employee"}, status=403)
+            
+        if attendance.clock_out:
+            return Response({"error": "Employee is already checked out for this day"}, status=400)
+            
+        if not attendance.clock_in:
+            return Response({"error": "Employee has not checked in for this day"}, status=400)
+            
+        now = timezone.now()
+        current_time_utc = now.time()
+        
+        # Update attendance record
+        attendance.clock_out = current_time_utc
+        attendance.clock_out_ip = "FORCED_BY_LEAD"
+        attendance.save()
+        
+        # Close any active work and break sessions
+        WorkSession.objects.filter(employee=employee, end_time__isnull=True).update(end_time=now)
+        BreakSession.objects.filter(employee=employee, end_time__isnull=True).update(end_time=now)
+        
+        # Create a notification for the employee
+        Notification.objects.create(
+            user=employee,
+            notification_type='system',
+            title='Forced Checkout',
+            message=f"You have been manually checked out by your Team Lead ({user.name or user.email}) at {now.strftime('%H:%M')}."
+        )
+        
+        return Response({
+            "message": f"Successfully checked out {employee.name or employee.email}",
+            "time": attendance.clock_out.strftime("%H:%M")
+        })
     
     
     def _calculate_status(self, check_in_time):
@@ -783,6 +833,7 @@ class PerformanceViewSet(viewsets.ModelViewSet):
 
 class TimerViewSet(viewsets.ViewSet):
     permission_classes = [IsAuthenticated]
+    page_names = ['timelogs', 'lead_timelogs']
     
     @action(detail=False, methods=['get'], permission_classes=[IsAuthenticated])
     def status(self, request):
@@ -916,10 +967,47 @@ class TimerViewSet(viewsets.ViewSet):
         
         break_session.end_time = timezone.now()
         break_session.save()
-
-
-
         return Response(BreakSessionSerializer(break_session).data)
+
+
+    @action(detail=False, methods=['post'], url_path='inactivity-pause')
+    def inactivity_pause(self, request):
+        user = request.user
+        now = timezone.now()
+        # The user has been idle for 15 minutes, so we stop the timer 15 minutes ago
+        fifteen_minutes_ago = now - timedelta(minutes=15)
+        
+        active_work = WorkSession.objects.filter(employee=user, end_time__isnull=True).first()
+        
+        if active_work:
+            # Stop work session 15 minutes ago
+            active_work.end_time = fifteen_minutes_ago
+            active_work.save()
+            
+            # Start break session 15 minutes ago
+            BreakSession.objects.create(
+                employee=user,
+                type='break',
+                start_time=fifteen_minutes_ago
+            )
+            
+            # Notifications
+            Notification.objects.create(
+                user=user,
+                title="Timer Paused (Inactivity)",
+                message="Your project timer was paused due to 15 minutes of inactivity. Break timer started automatically."
+            )
+            
+            if user.reports_to:
+                Notification.objects.create(
+                    user=user.reports_to,
+                    title="Employee Inactivity Alert",
+                    message=f"Employee {user.name} has been moved to break due to inactivity."
+                )
+                
+            return Response({"message": "Inactivity pause successful"}, status=200)
+        
+        return Response({"message": "No active work session to pause"}, status=200)
     
     @action(detail=False, methods=['get'], permission_classes=[IsAuthenticated])
     def projects_tasks(self, request):
@@ -1026,6 +1114,9 @@ class WorkSessionViewSet(viewsets.ModelViewSet):
 
         if is_privileged:
             return queryset
+        # Only include direct reports' sessions if user has lead_timelogs permission
+        if has_user_permission(user, 'lead_timelogs', 'view'):
+            return queryset.filter(Q(employee=user) | Q(employee__reports_to=user))
         return queryset.filter(employee=user)
 
     def perform_update(self, serializer):
