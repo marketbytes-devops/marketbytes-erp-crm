@@ -27,6 +27,7 @@ import { usePermission } from "../../../context/PermissionContext";
 const TasksPage = ({ employeeScope = false, leadScope = false }) => {
   const navigate = useNavigate();
   const { hasPermission } = usePermission();
+  const permissionPage = employeeScope ? "employee_tasks" : (leadScope ? "lead_tasks" : "tasks");
   const location = useLocation();
 
   const [tasks, setTasks] = useState([]);
@@ -283,7 +284,7 @@ const TasksPage = ({ employeeScope = false, leadScope = false }) => {
         >
           Close
         </button>
-        {hasPermission("tasks", "edit") && (
+        {hasPermission(permissionPage, "edit") && (
           <Link
             to={`/operations/tasks/edit/${selectedTask.id}`}
             className="px-6 py-2.5 bg-black text-white rounded-xl hover:bg-gray-900 transition font-medium text-sm flex items-center gap-2"
@@ -329,7 +330,7 @@ const TasksPage = ({ employeeScope = false, leadScope = false }) => {
                 </div>
               </div>
 
-              {hasPermission("tasks", "add") && (
+              {hasPermission(permissionPage, "add") && (
                 <Link
                   to="/operations/tasks/new-task"
                   className="flex items-center gap-3 px-6 py-3 bg-black text-white rounded-xl hover:bg-gray-900 transition text-sm font-medium"
@@ -541,7 +542,7 @@ const TasksPage = ({ employeeScope = false, leadScope = false }) => {
                             {task.due_date ? new Date(task.due_date).toLocaleDateString("en-GB") : "No due date"}
                           </td>
                           <td className="px-6 py-5 whitespace-nowrap min-w-[180px]">
-                            {hasPermission("tasks", "edit") ? (
+                            {hasPermission(permissionPage, "edit") ? (
                               <Input
                                 type="select"
                                 value={task.status}
@@ -567,7 +568,7 @@ const TasksPage = ({ employeeScope = false, leadScope = false }) => {
                                 <MdVisibility className="w-5 h-5 text-gray-600 group-hover:text-blue-600" />
                               </button>
 
-                              {hasPermission("tasks", "edit") && (
+                              {hasPermission(permissionPage, "edit") && (
                                 <Link
                                   to={`/operations/tasks/edit/${task.id}`}
                                   className="p-2 hover:bg-amber-50 rounded-lg transition group"
@@ -586,7 +587,7 @@ const TasksPage = ({ employeeScope = false, leadScope = false }) => {
                                 />
                               </button>
 
-                              {hasPermission("tasks", "delete") && (
+                              {hasPermission(permissionPage, "delete") && (
                                 <button
                                   onClick={async () => {
                                     if (window.confirm("Archive this task?")) {

@@ -29,8 +29,9 @@ import {
 } from "react-icons/md";
 import { usePermission } from "../../../context/PermissionContext";
 
-const HolidayView = () => {
+const HolidayView = ({ leadScope, employeeScope }) => {
   const { hasPermission } = usePermission();
+  const permissionPage = employeeScope ? "employee_holidays" : "holidays";
   const [holidays, setHolidays] = useState([]);
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth());
@@ -310,7 +311,7 @@ const HolidayView = () => {
                     </td>
                     <td className="px-6 py-5 text-right">
                       <div className="flex items-center justify-end gap-3">
-                        {hasPermission("holidays", "edit") && (
+                        {hasPermission(permissionPage, "edit") && (
                           <button
                             onClick={() => toggleDefaultStatus(holiday.id)}
                             className="p-2 hover:bg-yellow-50 rounded-lg transition group"
@@ -323,7 +324,7 @@ const HolidayView = () => {
                             )}
                           </button>
                         )}
-                        {hasPermission("holidays", "edit") && (
+                        {hasPermission(permissionPage, "edit") && (
                           <button
                             onClick={() => openEditModal(holiday)}
                             className="p-2 hover:bg-amber-50 rounded-lg transition group"
@@ -331,7 +332,7 @@ const HolidayView = () => {
                             <MdOutlineEdit className="w-5 h-5 text-gray-600 group-hover:text-amber-600" />
                           </button>
                         )}
-                        {hasPermission("holidays", "delete") && (
+                        {hasPermission(permissionPage, "delete") && (
                           <button
                             onClick={() => deleteHoliday(holiday.id)}
                             className="p-2 hover:bg-red-50 rounded-lg transition group"
@@ -424,7 +425,7 @@ const HolidayView = () => {
                   )}
                 </AnimatePresence>
               </div>
-              {hasPermission("holidays", "add") && (
+              {hasPermission(permissionPage, "add") && (
                 <button
                   onClick={() => {
                     setNewHoliday({ date: "", occasion: "", is_default: false });

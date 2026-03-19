@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'sales',
     'gmail',
     'notifications.apps.NotificationsConfig',
+    'events',
 ]
  
 MIDDLEWARE = [

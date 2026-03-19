@@ -20,8 +20,9 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { usePermission } from "../../../context/PermissionContext";
 
-const Scrum = () => {
-  const { hasPermission } = usePermission();
+const Scrum = ({ employeeScope = false, leadScope = false }) => {
+  const { hasPermission, user } = usePermission();
+  const permissionPage = employeeScope ? "employee_scrum" : (leadScope ? "lead_scrum" : "scrum");
   const navigate = useNavigate();
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -80,10 +81,10 @@ const Scrum = () => {
       setIsLoading(true);
       try {
         const [projRes, empRes, tasksRes, scrumRes] = await Promise.allSettled([
-          apiClient.get("/operation/projects/"),
+          apiClient.get("/operation/projects/", { params: (employeeScope || leadScope) ? { [employeeScope ? 'employee_scope' : 'lead_scope']: true } : {} }),
           apiClient.get("/auth/users/"),
-          apiClient.get("/operation/tasks/"),
-          apiClient.get("/operation/scrum/"),
+          apiClient.get("/operation/tasks/", { params: (employeeScope || leadScope) ? { [employeeScope ? 'employee_scope' : 'lead_scope']: true } : {} }),
+          apiClient.get("/operation/scrum/", { params: (employeeScope || leadScope) ? { [employeeScope ? 'employee_scope' : 'lead_scope']: true } : {} }),
         ]);
 
         if (!isMounted) return;
@@ -157,7 +158,7 @@ const Scrum = () => {
     setFormData({
       project: "",
       task: "",
-      employeeName: "",
+      employeeName: employeeScope ? (user?.id ? String(user.id) : "") : "",
       status: "todo",
       morning_memo: "",
       evening_memo: "",
@@ -299,7 +300,7 @@ const Scrum = () => {
               </div>
 
               <div className="flex gap-3">
-                {hasPermission("scrum", "add") && (
+                {hasPermission(permissionPage, "add") && (
                   <button
                     onClick={prepareCreate}
                     className="flex items-center gap-3 px-6 py-3 bg-black text-white rounded-xl hover:bg-gray-900 transition text-sm font-medium whitespace-nowrap"
@@ -471,12 +472,12 @@ const Scrum = () => {
                         </td>
                         <td className="px-6 py-5">
                           <textarea
-                            className={`w-full text-sm bg-transparent border-b border-transparent hover:border-gray-300 focus:border-blue-500 focus:bg-white focus:outline-none transition-colors resize-none overflow-hidden h-8 focus:h-20 ${!hasPermission("scrum", "edit") ? "opacity-50 cursor-not-allowed" : ""}`}
-                            placeholder={hasPermission("scrum", "edit") ? "Add memo..." : "No memo"}
+                            className={`w-full text-sm bg-transparent border-b border-transparent hover:border-gray-300 focus:border-blue-500 focus:bg-white focus:outline-none transition-colors resize-none overflow-hidden h-8 focus:h-20 ${!hasPermission(permissionPage, "edit") ? "opacity-50 cursor-not-allowed" : ""}`}
+                            placeholder={hasPermission(permissionPage, "edit") ? "Add memo..." : "No memo"}
                             defaultValue={item.evening_memo}
-                            readOnly={!hasPermission("scrum", "edit")}
+                            readOnly={!hasPermission(permissionPage, "edit")}
                             onBlur={(e) => {
-                              if (e.target.value !== item.evening_memo && hasPermission("scrum", "edit")) {
+                              if (e.target.value !== item.evening_memo && hasPermission(permissionPage, "edit")) {
                                 updateField(item.id, 'evening_memo', e.target.value);
                               }
                             }}
@@ -489,12 +490,12 @@ const Scrum = () => {
                             onChange={(v) => updateField(item.id, 'status', v)}
                             options={statusOptions}
                             className="text-xs font-medium"
-                            disabled={!hasPermission("scrum", "edit")}
+                            disabled={!hasPermission(permissionPage, "edit")}
                           />
                         </td>
                         <td className="px-6 py-5 whitespace-nowrap">
                           <div className="flex items-center justify-end gap-3">
-                            {hasPermission("scrum", "edit") && (
+                            {hasPermission(permissionPage, "edit") && (
                               <button onClick={() => navigate(`/operations/scrum/edit/${item.id}`)} className="p-2 hover:bg-amber-50 rounded-lg transition group">
                                 <MdEdit className="w-5 h-5 text-gray-600 group-hover:text-amber-600" />
                               </button>
@@ -502,7 +503,7 @@ const Scrum = () => {
                             <button onClick={() => togglePin(item.id)} className="p-2 hover:bg-yellow-50 rounded-lg transition group">
                               <MdPushPin className={`w-5 h-5 ${pinnedItems.includes(item.id) ? 'text-yellow-600' : 'text-gray-600'} group-hover:text-yellow-600`} />
                             </button>
-                            {hasPermission("scrum", "delete") && (
+                            {hasPermission(permissionPage, "delete") && (
                               <button onClick={() => handleDelete(item.id)} className="p-2 hover:bg-red-50 rounded-lg transition group">
                                 <MdDelete className="w-5 h-5 text-gray-600 group-hover:text-red-600" />
                               </button>
@@ -548,7 +549,7 @@ const Scrum = () => {
                         <p className="text-[10px] font-medium text-gray-400 uppercase">{item.task_name || "Task"}</p>
                       </div>
                       <div className="flex gap-2">
-                        {hasPermission("scrum", "edit") && (
+                        {hasPermission(permissionPage, "edit") && (
                           <button
                             onClick={() => {
                               setPinnedModalOpen(false);
@@ -607,7 +608,12 @@ const Scrum = () => {
                   />
                 </div>
 
-                <Input label="Employee" type="select" value={formData.employeeName} onChange={(v) => handleFormChange("employeeName", v)}
+                <Input 
+                  label="Employee" 
+                  type="select" 
+                  value={formData.employeeName} 
+                  onChange={(v) => handleFormChange("employeeName", v)}
+                  disabled={employeeScope}
                   options={[
                     { label: "Select Employee", value: "" },
                     ...employees.map(e => ({

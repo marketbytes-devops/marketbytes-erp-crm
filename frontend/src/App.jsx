@@ -61,6 +61,7 @@ import EditScrumPage from "./pages/Operations/Scrum/EditScrum";
 import ContractsList from "./pages/Operations/Contracts/ContractsList";
 import ContractCreate from "./pages/Operations/Contracts/ContractCreate";
 import ContractEdit from "./pages/Operations/Contracts/ContractEdit";
+import CommonCalendar from "./pages/CommonCalendar";
 
 
 
@@ -85,15 +86,39 @@ const ProtectedRoute = ({
   }
 
   // If logged in but no permission, go to home
-  if (requiredPage && !hasPermission(requiredPage, requiredAction)) {
-    return <Navigate to="/" replace />;
+  if (requiredPage) {
+    const pages = Array.isArray(requiredPage) ? requiredPage : [requiredPage];
+    const hasAnyPermission = pages.some(page => hasPermission(page, requiredAction));
+    if (!hasAnyPermission) {
+      return <Navigate to="/" replace />;
+    }
   }
 
   return children;
 };
 
 const RootDashboardRedirect = () => {
-  const { hasPermission, isSuperadmin } = usePermission();
+  const { hasPermission, isSuperadmin, isLoaded, user } = usePermission();
+
+  // Wait for permissions to load before deciding which dashboard to render
+  if (!isLoaded) {
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        <Loading />
+      </div>
+    );
+  }
+
+  // Prioritize specific dashboards for regular users (not Superadmin/CEO)
+  const isCEO = user?.role?.name?.toLowerCase() === 'ceo';
+  if (!isSuperadmin && !isCEO) {
+    if (hasPermission("lead_dashboard", "view")) {
+      return <LeadDashboard />;
+    }
+    if (hasPermission("employee_dashboard", "view")) {
+      return <EmployeeDashboard />;
+    }
+  }
 
   if (isSuperadmin || hasPermission("admin", "view")) {
     return <Admin />;
@@ -277,7 +302,7 @@ function App() {
           element: (
             <ProtectedRoute
               isAuthenticated={isAuthenticated}
-              requiredPage="attendance"
+              requiredPage={["attendance", "employee_attendance", "lead_attendance"]}
               requiredAction="view"
             >
               <Attendance />
@@ -301,7 +326,7 @@ function App() {
           element: (
             <ProtectedRoute
               isAuthenticated={isAuthenticated}
-              requiredPage="leaves"
+              requiredPage={["leaves", "employee_leaves", "lead_leaves"]}
               requiredAction="view"
             >
               <Leaves />
@@ -313,7 +338,7 @@ function App() {
           element: (
             <ProtectedRoute
               isAuthenticated={isAuthenticated}
-              requiredPage="leaves"
+              requiredPage={["leaves", "employee_leaves", "lead_leaves"]}
               requiredAction="add"
             >
               <AssignLeave />
@@ -426,11 +451,7 @@ function App() {
         {
           path: "/profile",
           element: (
-            <ProtectedRoute
-              isAuthenticated={isAuthenticated}
-              requiredPage="profile"
-              requiredAction="view"
-            >
+            <ProtectedRoute>
               <Profile />
             </ProtectedRoute>
           ),
@@ -440,7 +461,7 @@ function App() {
           element: (
             <ProtectedRoute
               isAuthenticated={isAuthenticated}
-              requiredPage="projects"
+              requiredPage={["projects", "employee_projects", "lead_projects"]}
               requiredAction="view"
             >
               <Projects />
@@ -452,7 +473,7 @@ function App() {
           element: (
             <ProtectedRoute
               isAuthenticated={isAuthenticated}
-              requiredPage="projects"
+              requiredPage={["projects", "employee_projects", "lead_projects"]}
               requiredAction="view"
             >
               <ProjectDetails />
@@ -465,7 +486,7 @@ function App() {
           element: (
             <ProtectedRoute
               isAuthenticated={isAuthenticated}
-              requiredPage="projects"
+              requiredPage={["projects", "employee_projects", "lead_projects"]}
               requiredAction="add"
             >
               <ProjectCreate />
@@ -478,7 +499,7 @@ function App() {
           element: (
             <ProtectedRoute
               isAuthenticated={isAuthenticated}
-              requiredPage="projects"
+              requiredPage={["projects", "employee_projects", "lead_projects"]}
               requiredAction="edit"
             >
               <ProjectEdit />
@@ -528,7 +549,7 @@ function App() {
           path: "/operations/tasks",
           element: (
             <ProtectedRoute
-              requiredPage="tasks"
+              requiredPage={["tasks", "employee_tasks", "lead_tasks"]}
               requiredAction="view"
             >
               <TaskView />
@@ -563,7 +584,7 @@ function App() {
           element: (
             <ProtectedRoute
               isAuthenticated={isAuthenticated}
-              requiredPage="tasks"
+              requiredPage={["tasks", "employee_tasks", "lead_tasks"]}
               requiredAction="add"
             >
               <NewTask />
@@ -575,7 +596,7 @@ function App() {
           element: (
             <ProtectedRoute
               isAuthenticated={isAuthenticated}
-              requiredPage="tasks"
+              requiredPage={["tasks", "employee_tasks", "lead_tasks"]}
               requiredAction="edit"
             >
               <TaskEdit />
@@ -655,11 +676,23 @@ function App() {
           ),
         },
         {
+          path: "/operations/common-calendar",
+          element: (
+            <ProtectedRoute
+              isAuthenticated={isAuthenticated}
+              requiredPage="common_calendar"
+              requiredAction="view"
+            >
+              <CommonCalendar />
+            </ProtectedRoute>
+          ),
+        },
+        {
           path: "/operations/scrum",
           element: (
             <ProtectedRoute
               isAuthenticated={isAuthenticated}
-              requiredPage="scrum"
+              requiredPage={["scrum", "employee_scrum", "lead_scrum"]}
               requiredAction="view"
             >
               <ScrumView />
@@ -671,7 +704,7 @@ function App() {
           element: (
             <ProtectedRoute
               isAuthenticated={isAuthenticated}
-              requiredPage="scrum"
+              requiredPage={["scrum", "employee_scrum", "lead_scrum"]}
               requiredAction="edit"
             >
               <EditScrumPage />
@@ -797,14 +830,6 @@ function App() {
           ),
         },
         {
-          path: "/lead/holidays",
-          element: (
-            <ProtectedRoute requiredPage="lead_holidays">
-              <HolidayView leadScope={true} />
-            </ProtectedRoute>
-          ),
-        },
-        {
           path: "/lead/time-logs",
           element: (
             <ProtectedRoute requiredPage="lead_timelogs">
@@ -831,7 +856,7 @@ function App() {
         {
           path: "/lead/leaves/assign",
           element: (
-            <ProtectedRoute requiredPage="lead_leaves">
+            <ProtectedRoute requiredPage={["leaves", "employee_leaves", "lead_leaves"]}>
               <AssignLeave leadScope={true} />
             </ProtectedRoute>
           ),
@@ -859,6 +884,18 @@ function App() {
           element: (
             <ProtectedRoute requiredPage="employee_tasks">
               <TaskView employeeScope={true} />
+            </ProtectedRoute>
+          ),
+        },
+        {
+          path: "/employee/holidays",
+          element: (
+            <ProtectedRoute
+              isAuthenticated={isAuthenticated}
+              requiredPage="employee_holidays"
+              requiredAction="view"
+            >
+              <HolidayView employeeScope={true} />
             </ProtectedRoute>
           ),
         },
@@ -897,8 +934,16 @@ function App() {
         {
           path: "/employee/leaves/assign",
           element: (
-            <ProtectedRoute requiredPage="employee_leaves">
+            <ProtectedRoute requiredPage={["leaves", "employee_leaves", "lead_leaves"]}>
               <AssignLeave employeeScope={true} />
+            </ProtectedRoute>
+          ),
+        },
+        {
+          path: "/employee/task-calendar",
+          element: (
+            <ProtectedRoute requiredPage="employee_taskcalendar">
+              <TaskCalendarPage employeeScope={true} />
             </ProtectedRoute>
           ),
         },

@@ -177,6 +177,7 @@ const AttendanceModal = ({ record, date, onClose }) => {
 
 const Attendance = ({ leadScope, employeeScope }) => {
   const { hasPermission } = usePermission();
+  const permissionPage = employeeScope ? "employee_attendance" : (leadScope ? "lead_attendance" : "attendance");
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [attendances, setAttendances] = useState([]);
   const [summary, setSummary] = useState({
@@ -531,7 +532,7 @@ const Attendance = ({ leadScope, employeeScope }) => {
                 <MdRefresh className="w-5 h-5" />
                 Refresh
               </button>
-              {hasPermission("attendance", "view") && (
+              {hasPermission(permissionPage, "view") && (
                 <Dropdown
                   trigger={
                     <button className="flex items-center gap-3 px-6 py-3.5 border border-gray-400 rounded-xl hover:bg-gray-50 transition font-medium">

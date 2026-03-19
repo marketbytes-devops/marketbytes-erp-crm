@@ -72,6 +72,13 @@ const CreateProjectPage = () => {
   const [showStageModal, setShowStageModal] = useState(false);
   const [newStageName, setNewStageName] = useState("");
 
+  const [showCurrencyModal, setShowCurrencyModal] = useState(false);
+  const [newCurrencyData, setNewCurrencyData] = useState({
+    code: "",
+    name: "",
+    symbol: "",
+  });
+
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
     setFormData((prev) => ({
@@ -356,6 +363,46 @@ const CreateProjectPage = () => {
     }
   };
 
+  const handleAddCurrency = async () => {
+    const { code, name, symbol } = newCurrencyData;
+    if (!code.trim() || !name.trim()) {
+      toast.error("Code and Name are required");
+      return;
+    }
+    try {
+      const postRes = await apiClient.post("/operation/currencies/", {
+        code: code.trim().toUpperCase(),
+        name: name.trim(),
+        symbol: symbol.trim(),
+        is_active: true
+      });
+      const res = await apiClient.get("/operation/currencies/");
+      setCurrencies(Array.isArray(res.data) ? res.data : res.data?.results || []);
+      setFormData((prev) => ({
+        ...prev,
+        currency: postRes.data.id.toString(),
+      }));
+      setNewCurrencyData({ code: "", name: "", symbol: "" });
+      setShowCurrencyModal(false);
+      toast.success("Currency added successfully");
+    } catch (error) {
+      toast.error(error.response?.data?.code?.[0] || "Failed to add currency");
+    }
+  };
+
+  const handleRemoveCurrency = async (id) => {
+    try {
+      await apiClient.delete(`/operation/currencies/${id}/`);
+      setCurrencies(currencies.filter((c) => c.id !== id));
+      if (formData.currency === id.toString()) {
+        setFormData(prev => ({ ...prev, currency: "" }));
+      }
+      toast.success("Currency removed");
+    } catch (error) {
+      toast.error("Failed to remove currency");
+    }
+  };
+
   return (
     <div className="p-4 md:p-6 max-w-7xl mx-auto">
       <LayoutComponents title="Add New Project" subtitle="Fill in the details to create a new project" variant="card">
@@ -541,13 +588,24 @@ const CreateProjectPage = () => {
             <h3 className="text-lg font-medium text-gray-900 mb-6">Budget & Status</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               <Input label="Budget" type="number" placeholder="0.00" value={formData.budget} onChange={e => setFormData(prev => ({ ...prev, budget: e.target.value }))} />
-              <Input
-                label="Currency"
-                type="select"
-                options={[{ value: "", label: "Select currency" }, ...currencies.map(c => ({ value: c.id, label: `${c.symbol || ''} ${c.code} - ${c.name}` }))]}
-                value={formData.currency}
-                onChange={v => setFormData(prev => ({ ...prev, currency: v }))}
-              />
+              <div className="relative top-0 sm:-top-1.5">
+                <div className="flex items-center gap-2 mb-2">
+                  <label className="text-sm font-medium text-black">Currency</label>
+                  <button
+                    type="button"
+                    onClick={() => setShowCurrencyModal(true)}
+                    className="p-1 rounded-full border border-green-600 text-green-600 hover:bg-green-600 hover:text-white transition"
+                  >
+                    <MdAdd className="w-4 h-4" />
+                  </button>
+                </div>
+                <Input
+                  type="select"
+                  options={[{ value: "", label: "Select currency" }, ...currencies.map(c => ({ value: c.id, label: `${c.symbol || ''} ${c.code} - ${c.name}` }))]}
+                  value={formData.currency}
+                  onChange={v => setFormData(prev => ({ ...prev, currency: v }))}
+                />
+              </div>
               <div className="relative top-0 sm:-top-1.5">
                 <div className="flex items-center gap-2 mb-2">
                   <label className="text-sm font-medium text-black">Status</label>
@@ -810,6 +868,62 @@ const CreateProjectPage = () => {
               <button onClick={handleAddStage} className="w-full py-3 bg-black text-white rounded-lg hover:bg-gray-900 font-medium">
                 Save Stage
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showCurrencyModal && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full max-h-[80vh] overflow-y-auto">
+            <div className="flex justify-between items-center p-6 border-b border-gray-200">
+              <h3 className="text-xl font-medium">Manage Currencies</h3>
+              <button onClick={() => setShowCurrencyModal(false)} className="p-2 hover:bg-gray-100 rounded-lg">
+                <MdClose className="w-6 h-6" />
+              </button>
+            </div>
+            <div className="p-6 space-y-6">
+              <div className="space-y-3">
+                {currencies.map(c => (
+                  <div key={c.id} className="flex justify-between items-center p-4 bg-gray-50 rounded-lg">
+                    <div>
+                      <div className="font-medium">{c.code} - {c.name}</div>
+                      <div className="text-sm text-gray-500">Symbol: {c.symbol || 'None'}</div>
+                    </div>
+                    <button onClick={() => handleRemoveCurrency(c.id)} className="text-red-600 hover:text-red-800">Remove</button>
+                  </div>
+                ))}
+              </div>
+              <div className="space-y-4 border-t pt-6">
+                <div className="grid grid-cols-2 gap-4">
+                  <Input
+                    label="Currency Code"
+                    required
+                    placeholder="e.g. USD"
+                    value={newCurrencyData.code}
+                    onChange={e => setNewCurrencyData(prev => ({ ...prev, code: e.target.value }))}
+                  />
+                  <Input
+                    label="Symbol"
+                    placeholder="e.g. $"
+                    value={newCurrencyData.symbol}
+                    onChange={e => setNewCurrencyData(prev => ({ ...prev, symbol: e.target.value }))}
+                  />
+                </div>
+                <Input
+                  label="Currency Name"
+                  required
+                  placeholder="e.g. US Dollar"
+                  value={newCurrencyData.name}
+                  onChange={e => setNewCurrencyData(prev => ({ ...prev, name: e.target.value }))}
+                />
+                <button
+                  onClick={handleAddCurrency}
+                  className="w-full py-3 bg-black text-white rounded-lg hover:bg-gray-900 font-medium"
+                >
+                  Add Currency
+                </button>
+              </div>
             </div>
           </div>
         </div>

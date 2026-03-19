@@ -7,7 +7,8 @@ from django.utils import timezone
 from datetime import timedelta, datetime, time, timezone as dt_timezone
 from django.db.models import Q, Count, Exists, OuterRef
 from .models import Attendance, Holiday, LeaveType, Leave, Overtime, Candidate, Performance, Project, Task, WorkSession, BreakSession
-from .models import Attendance, Holiday, LeaveType, Leave, Overtime, Candidate, Performance, Project, Task, WorkSession, BreakSession
+from authapp.models import CustomUser
+from notifications.models import Notification
 from .serializers import *
 import csv
 from django.http import HttpResponse
@@ -21,7 +22,7 @@ class AttendanceViewSet(viewsets.ModelViewSet):
     queryset = Attendance.objects.all().select_related('employee')
     serializer_class = AttendanceSerializer
     permission_classes = [HasPermission]
-    page_names = ['attendance', 'employee_attendance', 'lead_attendance']
+    page_names = ['attendance', 'employee_attendance', 'lead_attendance', 'employee_timelogs']
     
     def get_queryset(self):
         user = self.request.user
@@ -44,7 +45,13 @@ class AttendanceViewSet(viewsets.ModelViewSet):
         if self.request.query_params.get('employee_scope'):
             return queryset.filter(employee=user)
             
-        if user.is_superuser or (getattr(user, 'role', None) and user.role.name == "Superadmin"):
+        if self.request.query_params.get('lead_scope'):
+            return queryset.filter(Q(employee=user) | Q(employee__reports_to=user))
+
+        user_role = getattr(user, 'role', None)
+        is_privileged = user.is_superuser or (user_role and user_role.name in ["Superadmin", "HR"])
+
+        if is_privileged:
             return queryset
         return queryset.filter(employee=user)
     
@@ -68,7 +75,8 @@ class AttendanceViewSet(viewsets.ModelViewSet):
             'holiday': 0
         }
         
-        is_super = request.user.is_superuser or (getattr(request.user, 'role', None) and request.user.role.name == "Superadmin")
+        user_role = getattr(request.user, 'role', None)
+        is_super = request.user.is_superuser or (user_role and user_role.name in ["Superadmin", "HR"])
         lead_scope = 'lead_scope' in request.query_params
         employee_scope = 'employee_scope' in request.query_params
         
@@ -430,7 +438,24 @@ class HolidayViewSet(viewsets.ModelViewSet):
     queryset = Holiday.objects.all()
     serializer_class = HolidaySerializer
     permission_classes = [HasPermission]
-    page_names = ['holidays', 'employee_holidays', 'lead_holidays']
+    page_names = ['holidays', 'employee_holidays']
+
+    def perform_create(self, serializer):
+        holiday = serializer.save()
+        active_users = CustomUser.objects.filter(status='active', is_active=True)
+        notifications = []
+        message = f"A new holiday '{holiday.occasion}' has been added on {holiday.date} ({holiday.day})."
+        for user in active_users:
+            notifications.append(
+                Notification(
+                    user=user,
+                    notification_type='system',
+                    title='New Holiday Added',
+                    message=message
+                )
+            )
+        if notifications:
+            Notification.objects.bulk_create(notifications)
 
     @action(detail=False, methods=['get'], permission_classes=[IsAuthenticated])
     def export_csv(self, request):
@@ -533,13 +558,19 @@ class LeaveViewSet(viewsets.ModelViewSet):
         if 'employee_scope' in self.request.query_params:
             return queryset.filter(employee=user)
             
-        if user.is_superuser or (getattr(user, 'role', None) and user.role.name == "Superadmin"):
-            return queryset
+        user_role = getattr(user, 'role', None)
+        is_privileged = user.is_superuser or (user_role and user_role.name in ["Superadmin", "HR"])
+
+        if is_privileged:
+            # HR/Superadmin should only see leaves after Lead confirmation, 
+            # OR if the employee doesn't report to anyone.
+            return queryset.filter(Q(employee__reports_to__isnull=True) | Q(lead_status='confirmed'))
             
         if 'lead_scope' in self.request.query_params:
-            # Lead sees own + direct reports
+            # Lead sees own + direct reports (pending and processed)
             return queryset.filter(Q(employee=user) | Q(employee__reports_to=user))
             
+        # Default fallback
         return queryset.filter(employee=user)
 
     @action(detail=True, methods=['post'])
@@ -584,7 +615,10 @@ class OvertimeViewSet(viewsets.ModelViewSet):
         if month and year:
             queryset = queryset.filter(date__month=month, date__year=year)
         
-        if user.is_superuser or (getattr(user, 'role', None) and user.role.name == "Superadmin"):
+        user_role = getattr(user, 'role', None)
+        is_privileged = user.is_superuser or (user_role and user_role.name in ["Superadmin", "HR"])
+
+        if is_privileged:
             return queryset
             
         if 'lead_scope' in self.request.query_params:
@@ -939,8 +973,7 @@ class TimerViewSet(viewsets.ViewSet):
 class WorkSessionViewSet(viewsets.ModelViewSet):
     queryset = WorkSession.objects.all().select_related('employee', 'project', 'task').order_by('-start_time')
     serializer_class = WorkSessionSerializer
-    permission_classes = [HasPermission]
-    page_name = 'timelogs'
+    page_names = ['timelogs', 'employee_timelogs', 'lead_timelogs']
 
     def get_queryset(self):
         user = self.request.user
@@ -982,7 +1015,16 @@ class WorkSessionViewSet(viewsets.ModelViewSet):
             except ValueError:
                 pass
 
-        if user.is_superuser or (getattr(user, 'role', None) and user.role.name == "Superadmin"):
+        if self.request.query_params.get('employee_scope'):
+            return queryset.filter(employee=user)
+
+        if self.request.query_params.get('lead_scope'):
+            return queryset.filter(Q(employee=user) | Q(employee__reports_to=user))
+
+        user_role = getattr(user, 'role', None)
+        is_privileged = user.is_superuser or (user_role and user_role.name in ["Superadmin", "HR"])
+
+        if is_privileged:
             return queryset
         return queryset.filter(employee=user)
 
