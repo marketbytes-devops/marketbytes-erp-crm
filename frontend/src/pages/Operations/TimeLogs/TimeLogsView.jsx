@@ -26,6 +26,40 @@ import * as XLSX from "xlsx";
 import { usePermission } from "../../../context/PermissionContext";
 import TimeLogGraph from "./TimeLogGraph";
 
+const formatDate = (dateStr) => {
+  if (!dateStr) return "";
+  const date = new Date(dateStr);
+  return date.toLocaleDateString("en-GB", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  });
+};
+
+const formatTime = (dateStr) => {
+  if (!dateStr) return "Running...";
+  const date = new Date(dateStr);
+  return date.toLocaleTimeString("en-US", {
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: true,
+  });
+};
+
+const formatDetailedDuration = (hoursDecimal) => {
+  if (!hoursDecimal && hoursDecimal !== 0) return "--";
+  const totalSeconds = Math.round(parseFloat(hoursDecimal) * 3600);
+  const h = Math.floor(totalSeconds / 3600);
+  const m = Math.floor((totalSeconds % 3600) / 60);
+  const s = totalSeconds % 60;
+
+  const parts = [];
+  if (h > 0) parts.push(`${h}h`);
+  if (m > 0 || h > 0) parts.push(`${m}m`);
+  parts.push(`${s}s`);
+  return parts.join(" ");
+};
+
 const TimeLogs = ({ employeeScope = false, leadScope = false }) => {
   const { hasPermission } = usePermission();
   const [loading, setLoading] = useState(true);
@@ -44,9 +78,7 @@ const TimeLogs = ({ employeeScope = false, leadScope = false }) => {
     project: "",
     task: "",
     employee: "",
-    status: "",
-    startDate: "",
-    endDate: "",
+    date: new Date().toISOString().split('T')[0],
   });
 
   const [selectedEntry, setSelectedEntry] = useState(null);
@@ -61,6 +93,14 @@ const TimeLogs = ({ employeeScope = false, leadScope = false }) => {
 
   const filteredEntries = useMemo(() => {
     let result = viewMode === "daily" ? timeEntries : detailedEntries;
+
+    if (filters.date) {
+      const filterDateFormatted = formatDate(filters.date);
+      result = result.filter((entry) => {
+        const entryDateStr = viewMode === "daily" ? entry.date : entry.start_time;
+        return formatDate(entryDateStr) === filterDateFormatted;
+      });
+    }
 
     if (search.trim()) {
       const term = search.toLowerCase();
@@ -122,39 +162,7 @@ const TimeLogs = ({ employeeScope = false, leadScope = false }) => {
     };
   }, [filteredEntries]);
 
-  const formatDate = (dateStr) => {
-    if (!dateStr) return "";
-    const date = new Date(dateStr);
-    return date.toLocaleDateString("en-GB", {
-      day: "2-digit",
-      month: "2-digit",
-      year: "numeric",
-    });
-  };
 
-  const formatTime = (dateStr) => {
-    if (!dateStr) return "Running...";
-    const date = new Date(dateStr);
-    return date.toLocaleTimeString("en-US", {
-      hour: "2-digit",
-      minute: "2-digit",
-      hour12: true,
-    });
-  };
-
-  const formatDetailedDuration = (hoursDecimal) => {
-    if (!hoursDecimal && hoursDecimal !== 0) return "--";
-    const totalSeconds = Math.round(parseFloat(hoursDecimal) * 3600);
-    const h = Math.floor(totalSeconds / 3600);
-    const m = Math.floor((totalSeconds % 3600) / 60);
-    const s = totalSeconds % 60;
-
-    const parts = [];
-    if (h > 0) parts.push(`${h}h`);
-    if (m > 0 || h > 0) parts.push(`${m}m`);
-    parts.push(`${s}s`);
-    return parts.join(" ");
-  };
 
 
 
@@ -170,9 +178,7 @@ const TimeLogs = ({ employeeScope = false, leadScope = false }) => {
       project: "",
       task: "",
       employee: "",
-      status: "",
-      startDate: "",
-      endDate: "",
+      date: viewMode === "daily" ? new Date().toISOString().split('T')[0] : "",
     });
     setSearch("");
   };
@@ -243,6 +249,17 @@ const TimeLogs = ({ employeeScope = false, leadScope = false }) => {
     setIsViewModalOpen(true);
   };
 
+  const handleForceCheckout = async (id) => {
+    if (!window.confirm("Are you sure you want to force checkout this employee? This will stop all their active timers.")) return;
+    try {
+      await apiClient.post(`/hr/attendance/${id}/force-checkout/`);
+      toast.success("Employee checked out successfully");
+      fetchData();
+    } catch (err) {
+      toast.error(err.response?.data?.error || "Failed to force checkout");
+    }
+  };
+
   const handleExportPDF = () => {
     const doc = new jsPDF();
 
@@ -272,6 +289,7 @@ const TimeLogs = ({ employeeScope = false, leadScope = false }) => {
     let tableData, headers;
     if (viewMode === "daily") {
       headers = [
+        "Date",
         "Task / Project",
         "Employee",
         "Start Time",
@@ -279,9 +297,11 @@ const TimeLogs = ({ employeeScope = false, leadScope = false }) => {
         "Duration",
         "Break Timer",
         "Productive Hours",
+        "Memo",
         "Type",
       ];
       tableData = filteredEntries.map((entry) => [
+        formatDate(entry.date),
         entry.tasks || "Daily Work",
         entry.employee?.name || "Unknown",
         entry.first_clock_in || "N/A",
@@ -289,10 +309,12 @@ const TimeLogs = ({ employeeScope = false, leadScope = false }) => {
         formatDetailedDuration(entry.total_hours),
         formatDetailedDuration(entry.break_hours),
         formatDetailedDuration(entry.productive_hours),
+        "-",
         entry.is_billable ? "Billable" : "Internal",
       ]);
     } else {
       headers = [
+        "Date",
         "Task / Project",
         "Employee",
         "Start Time",
@@ -300,9 +322,11 @@ const TimeLogs = ({ employeeScope = false, leadScope = false }) => {
         "Duration",
         "Break Timer",
         "Productive Hours",
+        "Memo",
         "Type",
       ];
       tableData = filteredEntries.map((entry) => [
+        formatDate(entry.start_time),
         `${entry.task_name || "Internal"} / ${entry.project_name || "General"}`,
         entry.employee?.name || "Unknown",
         formatTime(entry.start_time),
@@ -310,6 +334,7 @@ const TimeLogs = ({ employeeScope = false, leadScope = false }) => {
         formatDetailedDuration(entry.total_hours),
         formatDetailedDuration(entry.break_hours),
         formatDetailedDuration(entry.productive_hours),
+        entry.memo || "-",
         entry.is_billable ? "Billable" : "Internal",
       ]);
     }
@@ -347,6 +372,7 @@ const TimeLogs = ({ employeeScope = false, leadScope = false }) => {
     let data;
     if (viewMode === "daily") {
       data = filteredEntries.map((entry) => ({
+        Date: formatDate(entry.date),
         "Task / Project": entry.tasks || "Daily Work",
         Employee: entry.employee?.name || "Unknown",
         Email: entry.employee?.email || "N/A",
@@ -355,10 +381,12 @@ const TimeLogs = ({ employeeScope = false, leadScope = false }) => {
         Duration: formatDetailedDuration(entry.total_hours),
         "Break Timer": formatDetailedDuration(entry.break_hours),
         "Productive Hours": formatDetailedDuration(entry.productive_hours),
+        Memo: viewMode === "detailed" ? entry.memo || "-" : "-",
         Type: entry.is_billable ? "Billable" : "Internal",
       }));
     } else {
       data = filteredEntries.map((entry) => ({
+        Date: formatDate(entry.start_time),
         "Task / Project": `${entry.task_name || "Internal"} / ${entry.project_name || "General"}`,
         Employee: entry.employee?.name || "Unknown",
         Email: entry.employee?.email || "N/A",
@@ -367,6 +395,7 @@ const TimeLogs = ({ employeeScope = false, leadScope = false }) => {
         Duration: formatDetailedDuration(entry.total_hours),
         "Break Timer": formatDetailedDuration(entry.break_hours),
         "Productive Hours": formatDetailedDuration(entry.productive_hours),
+        Memo: viewMode === "detailed" ? entry.memo || "-" : "-",
         Type: entry.is_billable ? "Billable" : "Internal",
       }));
     }
@@ -378,6 +407,7 @@ const TimeLogs = ({ employeeScope = false, leadScope = false }) => {
     const colWidths =
       viewMode === "daily"
         ? [
+          { wch: 15 }, // Date
           { wch: 8 },
           { wch: 20 },
           { wch: 25 },
@@ -391,6 +421,7 @@ const TimeLogs = ({ employeeScope = false, leadScope = false }) => {
           { wch: 12 },
         ]
         : [
+          { wch: 15 }, // Date
           { wch: 8 },
           { wch: 25 },
           { wch: 20 },
@@ -427,6 +458,7 @@ const TimeLogs = ({ employeeScope = false, leadScope = false }) => {
 
     if (viewMode === "daily") {
       data = filteredEntries.map((entry) => ({
+        Date: formatDate(entry.date),
         "Task / Project": entry.tasks || "Daily Work",
         Employee: entry.employee?.name || "Unknown",
         Email: entry.employee?.email || "N/A",
@@ -435,10 +467,12 @@ const TimeLogs = ({ employeeScope = false, leadScope = false }) => {
         Duration: formatDetailedDuration(entry.total_hours),
         "Break Timer": formatDetailedDuration(entry.break_hours),
         "Productive Hours": formatDetailedDuration(entry.productive_hours),
+        Memo: viewMode === "detailed" ? entry.memo || "-" : "-",
         Type: entry.is_billable ? "Billable" : "Internal",
       }));
     } else {
       data = filteredEntries.map((entry) => ({
+        Date: formatDate(entry.start_time),
         "Task / Project": `${entry.task_name || "Internal"} / ${entry.project_name || "General"}`,
         Employee: entry.employee?.name || "Unknown",
         Email: entry.employee?.email || "N/A",
@@ -447,6 +481,7 @@ const TimeLogs = ({ employeeScope = false, leadScope = false }) => {
         Duration: formatDetailedDuration(entry.total_hours),
         "Break Timer": formatDetailedDuration(entry.break_hours),
         "Productive Hours": formatDetailedDuration(entry.productive_hours),
+        Memo: entry.memo || "-",
         Type: entry.is_billable ? "Billable" : "Internal",
       }));
     }
@@ -517,7 +552,7 @@ const TimeLogs = ({ employeeScope = false, leadScope = false }) => {
               </div>
 
               <div className="flex flex-col sm:flex-row gap-3">
-                {!employeeScope && hasPermission('timelogs', 'view') && (
+                {!employeeScope && (hasPermission('timelogs', 'view') || (leadScope && hasPermission('lead_timelogs', 'view'))) && (
                   <Link to="/operations/time-logs/active-timers">
                     <button className="flex items-center justify-center gap-2 px-6 py-3 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition text-sm font-medium whitespace-nowrap">
                       <MdTimer className="w-5 h-5" /> Active Timers
@@ -532,7 +567,10 @@ const TimeLogs = ({ employeeScope = false, leadScope = false }) => {
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
             <div className="flex p-1 bg-gray-100 rounded-xl w-fit">
               <button
-                onClick={() => setViewMode("daily")}
+                onClick={() => {
+                  setViewMode("daily");
+                  setFilters((prev) => ({ ...prev, date: new Date().toISOString().split('T')[0] }));
+                }}
                 className={`px-5 py-2 rounded-lg text-sm font-medium transition-all ${viewMode === "daily"
                   ? "bg-white text-black shadow-sm"
                   : "text-gray-500 hover:text-gray-800"
@@ -541,7 +579,10 @@ const TimeLogs = ({ employeeScope = false, leadScope = false }) => {
                 Daily Summary
               </button>
               <button
-                onClick={() => setViewMode("detailed")}
+                onClick={() => {
+                  setViewMode("detailed");
+                  setFilters((prev) => ({ ...prev, date: "" }));
+                }}
                 className={`px-5 py-2 rounded-lg text-sm font-medium transition-all ${viewMode === "detailed"
                   ? "bg-white text-black shadow-sm"
                   : "text-gray-500 hover:text-gray-800"
@@ -561,7 +602,7 @@ const TimeLogs = ({ employeeScope = false, leadScope = false }) => {
             </div>
 
             <div className="flex gap-3">
-              {!employeeScope && hasPermission('timelogs', 'view') && (
+              {!employeeScope && (hasPermission('timelogs', 'view') || (leadScope && hasPermission('lead_timelogs', 'view'))) && (
                 <>
                   <Link
                     to="/operations/time-logs/calendar-view"
@@ -710,17 +751,15 @@ const TimeLogs = ({ employeeScope = false, leadScope = false }) => {
                         })),
                       ]}
                     />
-                    <Input
-                      label="Status"
-                      type="select"
-                      value={filters.status}
-                      onChange={(v) => handleFilterChange("status", v)}
-                      options={[
-                        { label: "All Logs", value: "" },
-                        { label: "Verified", value: "approved" },
-                        { label: "Pending", value: "pending" },
-                      ]}
-                    />
+                    <div className="flex flex-col gap-1.5">
+                      <label className="text-sm font-medium text-gray-700">Date</label>
+                      <input
+                        type="date"
+                        value={filters.date}
+                        onChange={(e) => handleFilterChange("date", e.target.value)}
+                        className="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-black outline-none text-sm bg-white transition"
+                      />
+                    </div>
                   </div>
 
                   <div className="flex flex-col sm:flex-row gap-4 mt-8 pt-6 border-t border-gray-200">
@@ -766,6 +805,9 @@ const TimeLogs = ({ employeeScope = false, leadScope = false }) => {
                     </th>
                     <th className="px-6 py-5 text-left text-xs font-medium text-gray-700 uppercase tracking-wider whitespace-nowrap">
                       Productive Hours
+                    </th>
+                    <th className="px-6 py-5 text-left text-xs font-medium text-gray-700 uppercase tracking-wider whitespace-nowrap">
+                      Memo
                     </th>
                     <th className="px-6 py-5 text-left text-xs font-medium text-gray-700 uppercase tracking-wider whitespace-nowrap">
                       Type
@@ -885,6 +927,11 @@ const TimeLogs = ({ employeeScope = false, leadScope = false }) => {
                           </span>
                         </td>
                         <td className="px-6 py-5 whitespace-nowrap">
+                          <span className="text-sm text-gray-600 max-w-[200px] truncate block" title={viewMode === "detailed" ? entry.memo : ""}>
+                            {viewMode === "detailed" ? entry.memo || "-" : "-"}
+                          </span>
+                        </td>
+                        <td className="px-6 py-5 whitespace-nowrap">
                           {entry.is_billable ? (
                             <span className="px-3 py-1 bg-green-50 text-green-700 rounded-full text-xs font-medium border border-green-100">
                               Billable
@@ -904,6 +951,15 @@ const TimeLogs = ({ employeeScope = false, leadScope = false }) => {
                                 title="View Details"
                               >
                                 <MdVisibility className="w-5 h-5 text-gray-600 group-hover:text-blue-600" />
+                              </button>
+                            )}
+                            {viewMode === "daily" && leadScope && !entry.last_clock_out && (
+                              <button
+                                onClick={() => handleForceCheckout(entry.id)}
+                                className="p-2 hover:bg-orange-50 rounded-lg transition group"
+                                title="Force Checkout"
+                              >
+                                <MdTimer className="w-5 h-5 text-gray-600 group-hover:text-orange-600" />
                               </button>
                             )}
                             {hasPermission(employeeScope ? 'employee_timelogs' : leadScope ? 'lead_timelogs' : 'timelogs', 'delete') && (

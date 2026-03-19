@@ -134,58 +134,30 @@ class AttendanceSerializer(serializers.ModelSerializer):
         return history
     
     def get_total_hours(self, obj):
-        """Calculate total hours from first check-in to last check-out (or now if active) Soft-capped at end of day for past dates."""
-        work_sessions = self._get_work_sessions_for_date(obj)
-        first_session = work_sessions.first()
-        
-        now = timezone.now()
-        
-        # If we have sessions, prioritize using their range
-        if first_session:
-            end_time = now
-            if obj.clock_out:
-                # If checked out, use the actual clock out time
-                clock_out_dt = datetime.combine(obj.date, obj.clock_out)
-                clock_out_dt = clock_out_dt.replace(tzinfo=dt_timezone.utc)
-                end_time = clock_out_dt
-            elif obj.date < now.date():
-                # If past date and no clock out, cap at end of that day
-                end_of_day = datetime.combine(obj.date, datetime.max.time().replace(microsecond=0))
-                end_time = timezone.make_aware(end_of_day, timezone.get_current_timezone())
-            
-            total_seconds = (end_time - first_session.start_time).total_seconds()
-            return round(max(0, total_seconds / 3600), 2)
-        
-        # Fallback to attendance record clock-in/out
-        if obj.clock_in:
-            clock_in_dt = datetime.combine(obj.date, obj.clock_in)
-            clock_in_dt = clock_in_dt.replace(tzinfo=dt_timezone.utc)
-            
-            if obj.clock_out:
-                clock_out_dt = datetime.combine(obj.date, obj.clock_out)
-                clock_out_dt = clock_out_dt.replace(tzinfo=dt_timezone.utc)
-                end_time = clock_out_dt
-            elif obj.date == now.date():
-                end_time = now
-            elif obj.date < now.date():
-                # Cap fallback at end of day
-                end_of_day = datetime.combine(obj.date, datetime.max.time().replace(microsecond=0))
-                end_time = timezone.make_aware(end_of_day, timezone.get_current_timezone())
-            else:
-                return 0
-                
-            total_seconds = (end_time - clock_in_dt).total_seconds()
-            return round(max(0, total_seconds / 3600), 2)
-            
-        return 0
-    
+        """Calculate total hours as the sum of productive work and break time."""
+        productive = self.get_productive_hours(obj)
+        breaks = self.get_break_hours(obj)
+        return round(productive + breaks, 2)
+
     def get_productive_hours(self, obj):
-        """Calculate productive hours (Total Hours - Break Hours)"""
-        total_hours = self.get_total_hours(obj)
-        break_hours = self.get_break_hours(obj)
+        """Calculate active work time as the sum of all individual work sessions' durations for the day."""
+        work_sessions = self._get_work_sessions_for_date(obj)
         
-        productive = total_hours - break_hours
-        return round(max(0, productive), 2)
+        total_seconds = 0
+        now = timezone.now()
+        for session in work_sessions:
+            if session.end_time:
+                total_seconds += (session.end_time - session.start_time).total_seconds()
+            elif obj.date == now.date():
+                total_seconds += (now - session.start_time).total_seconds()
+            elif obj.date < now.date():
+                # For past dates with no end time, cap at the end of that day
+                local_start = timezone.localtime(session.start_time)
+                end_of_day = datetime.combine(local_start.date(), datetime.max.time().replace(microsecond=0))
+                end_time = timezone.make_aware(end_of_day, timezone.get_current_timezone())
+                total_seconds += (end_time - session.start_time).total_seconds()
+                
+        return round(max(0, total_seconds / 3600), 2)
     
     def get_break_hours(self, obj):
         """Calculate break hours from break sessions, capped at end of day for past dates."""
@@ -326,8 +298,8 @@ class WorkSessionSerializer(serializers.ModelSerializer):
             return str(obj.end_time - obj.start_time).split('.')[0]
         return "Running..."
 
-    def get_total_hours(self, obj):
-        """Calculate total hours for the work session, capped at end of day for past dates."""
+    def get_productive_hours(self, obj):
+        """Calculate productive hours for the work session, capped at end of day for past dates."""
         if obj.duration_seconds:
             return round(obj.duration_seconds / 3600, 2)
         if obj.start_time and not obj.end_time:
@@ -345,8 +317,11 @@ class WorkSessionSerializer(serializers.ModelSerializer):
             return round(max(0, duration_seconds / 3600), 2)
         return 0
 
-    def get_productive_hours(self, obj):
-        return self.get_total_hours(obj)
+    def get_total_hours(self, obj):
+        """Calculate total hours as the sum of productive work and break time."""
+        productive = self.get_productive_hours(obj)
+        breaks = self.get_break_hours(obj)
+        return round(productive + breaks, 2)
 
     def get_break_hours(self, obj):
         """Calculate total break hours for the employee on the date of this work session"""
