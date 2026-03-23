@@ -127,6 +127,8 @@ const Scrum = ({ employeeScope = false, leadScope = false }) => {
       if (field === 'project') {
         const p = projects.find(x => String(x.id) === value);
         updates.project_name = p?.name || "";
+        updates.task = "";
+        updates.task_name = "";
       }
       if (field === 'task') {
         const t = tasks.find(x => String(x.id) === value);
@@ -391,7 +393,7 @@ const Scrum = ({ employeeScope = false, leadScope = false }) => {
                       options={[{ label: "All Tasks", value: "" }, ...tasks.map(t => ({ label: t.name, value: String(t.id) }))]}
                     />
                     <Input label="Employee" type="select" value={filters.employees} onChange={(v) => handleFilterChange("employees", v)}
-                      options={[{ label: "All Members", value: "" }, ...employees.map(e => ({ label: [e.first_name || "", e.last_name || ""].join(" ").trim() || e.username || "Unknown", value: String(e.id) }))]}
+                      options={[{ label: "All Members", value: "" }, ...employees.map(e => ({ label: e.name || e.email || "Unknown", value: String(e.id) }))]}
                     />
                   </div>
 
@@ -601,7 +603,7 @@ const Scrum = ({ employeeScope = false, leadScope = false }) => {
 
                 <div className="grid grid-cols-2 gap-5">
                   <Input label="Task" type="select" value={formData.task} onChange={(v) => handleFormChange("task", v)}
-                    options={[{ label: "Select Task", value: "" }, ...tasks.map(t => ({ label: t.name, value: String(t.id) }))]}
+                    options={[{ label: "Select Task", value: "" }, ...tasks.filter(t => formData.project && String(t.project) === formData.project).map(t => ({ label: t.name, value: String(t.id) }))]}
                   />
                   <Input label="Status" type="select" value={formData.status} onChange={(v) => handleFormChange("status", v)}
                     options={statusOptions}
@@ -617,7 +619,7 @@ const Scrum = ({ employeeScope = false, leadScope = false }) => {
                   options={[
                     { label: "Select Employee", value: "" },
                     ...employees.map(e => ({
-                      label: [e.first_name || "", e.last_name || ""].join(" ").trim() || e.username || "Unknown",
+                      label: e.name || e.email || "Unknown",
                       value: String(e.id),
                     }))
                   ]}

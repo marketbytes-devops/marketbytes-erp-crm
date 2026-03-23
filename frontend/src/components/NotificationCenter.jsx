@@ -146,7 +146,7 @@ const NotificationCenter = () => {
                 className={`relative p-3 rounded-full transition-all duration-300 group ${isOpen ? "bg-black text-white" : "hover:bg-gray-100 text-gray-600"
                     }`}
             >
-                <MdNotifications className={`w-6 h-6 transition-transform duration-300 ${isOpen ? "scale-110" : "group-hover:rotate-12"}`} />
+                <MdNotifications className={`w-6 h-6 transition-transform duration-300 ${isOpen ? "scale-110" : unreadCount > 0 ? "bell-shake" : "group-hover:rotate-12"}`} />
                 <AnimatePresence>
                     {unreadCount > 0 && (
                         <motion.span
