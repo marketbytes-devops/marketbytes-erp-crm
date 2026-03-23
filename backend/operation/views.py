@@ -545,6 +545,7 @@ class ScrumViewSet(viewsets.ModelViewSet):
     
     serializer_class = ScrumSerializer
     permission_classes = [IsAuthenticated]
+    page_names = ['scrum', 'employee_scrum', 'lead_scrum']
     
     filter_backends = [
         DjangoFilterBackend,

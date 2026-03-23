@@ -54,7 +54,7 @@ const pageNameMap = {
   lead_timelogs: { apiName: "lead_timelogs", displayName: "Team Timelogs", route: "/lead/time-logs" },
   lead_projects: { apiName: "lead_projects", displayName: "Lead Projects", route: "/lead/projects" },
   lead_tasks: { apiName: "lead_tasks", displayName: "Lead Tasks", route: "/lead/tasks" },
-  lead_scrum: { apiName: "lead_scrum", displayName: "Lead Scrum", route: "/lead/scrum" },
+  lead_scrum: { apiName: "lead_scrum", displayName: "Team Scrum", route: "/lead/scrum" },
 
   // Employee Section
   employee_dashboard: { apiName: "employee_dashboard", displayName: "My Dashboard", route: "/employee-dashboard" },
