@@ -970,44 +970,6 @@ class TimerViewSet(viewsets.ViewSet):
         return Response(BreakSessionSerializer(break_session).data)
 
 
-    @action(detail=False, methods=['post'], url_path='inactivity-pause')
-    def inactivity_pause(self, request):
-        user = request.user
-        now = timezone.now()
-        # The user has been idle for 15 minutes, so we stop the timer 15 minutes ago
-        fifteen_minutes_ago = now - timedelta(minutes=15)
-        
-        active_work = WorkSession.objects.filter(employee=user, end_time__isnull=True).first()
-        
-        if active_work:
-            # Stop work session 15 minutes ago
-            active_work.end_time = fifteen_minutes_ago
-            active_work.save()
-            
-            # Start break session 15 minutes ago
-            BreakSession.objects.create(
-                employee=user,
-                type='break',
-                start_time=fifteen_minutes_ago
-            )
-            
-            # Notifications
-            Notification.objects.create(
-                user=user,
-                title="Timer Paused (Inactivity)",
-                message="Your project timer was paused due to 15 minutes of inactivity. Break timer started automatically."
-            )
-            
-            if user.reports_to:
-                Notification.objects.create(
-                    user=user.reports_to,
-                    title="Employee Inactivity Alert",
-                    message=f"Employee {user.name} has been moved to break due to inactivity."
-                )
-                
-            return Response({"message": "Inactivity pause successful"}, status=200)
-        
-        return Response({"message": "No active work session to pause"}, status=200)
     
     @action(detail=False, methods=['get'], permission_classes=[IsAuthenticated])
     def projects_tasks(self, request):
