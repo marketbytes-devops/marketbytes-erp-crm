@@ -5,12 +5,33 @@ import LayoutComponents from "../../../components/LayoutComponents";
 import apiClient from "../../../helpers/apiClient";
 import toast from "react-hot-toast";
 import { Link } from "react-router-dom";
+import * as XLSX from "xlsx";
 
 const ProjectsPage = () => {
   const [projects, setProjects] = useState([]);
   const [filtered, setFiltered] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
+
+  const handleExport = () => {
+    if (filtered.length === 0) {
+      toast.error("No data to export");
+      return;
+    }
+    const wb = XLSX.utils.book_new();
+    const rows = filtered.map((p, i) => ({
+      "SL No": i + 1,
+      Project: p.name,
+      Client: p.client?.name || "—",
+      Deadline: p.deadline ? new Date(p.deadline).toLocaleDateString("en-GB") : "—",
+      Summary: p.summary || ""
+    }));
+
+    const ws = XLSX.utils.json_to_sheet(rows);
+    XLSX.utils.book_append_sheet(wb, ws, "Archived Projects");
+    XLSX.writeFile(wb, "Archived_Projects_Report.xlsx");
+  };
+
 
   useEffect(() => {
     const fetchArchivedProjects = async () => {
@@ -116,10 +137,14 @@ const ProjectsPage = () => {
               </span>
             </div>
             <div className="flex gap-3">
-              <button className="flex items-center gap-2 px-5 py-4 border border-gray-300 rounded-xl hover:bg-gray-50 transition text-sm font-medium">
+              <button
+                onClick={handleExport}
+                className="flex items-center gap-2 px-5 py-4 border border-gray-300 rounded-xl hover:bg-gray-50 transition text-sm font-medium"
+              >
                 <MdDownload className="w-5 h-5" /> Export
               </button>
             </div>
+
           </div>
         </div>
 

@@ -617,8 +617,8 @@ class LeaveViewSet(viewsets.ModelViewSet):
             return queryset.filter(Q(employee__reports_to__isnull=True) | Q(lead_status='confirmed'))
             
         if 'lead_scope' in self.request.query_params:
-            # Lead sees own + direct reports (pending and processed)
-            return queryset.filter(Q(employee=user) | Q(employee__reports_to=user))
+            # Lead sees ONLY direct reports (pending and processed)
+            return queryset.filter(employee__reports_to=user)
             
         # Default fallback
         return queryset.filter(employee=user)

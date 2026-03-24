@@ -384,11 +384,12 @@ const Sidebar = ({ toggleSidebar }) => {
         },
         {
           to: "/operations/common-calendar",
-          label: "Common Calendar",
+          label: "Events",
           icon: <MdCalendarToday className="w-5 h-5" />,
           page: "common_calendar",
           action: "view",
         },
+
       ].filter((item) => hasPermission(item.page, item.action)),
     },
     {
@@ -400,7 +401,11 @@ const Sidebar = ({ toggleSidebar }) => {
     },
   ].filter((item) => {
     const isCEO = user?.role?.name?.toLowerCase() === 'ceo';
-    const isRegularEmployee = hasPermission("employee_dashboard", "view") && !isSuperadmin && !isCEO;
+    const isLead = hasPermission("lead_dashboard", "view");
+    const isRegularEmployee = hasPermission("employee_dashboard", "view") && !isLead && !isSuperadmin && !isCEO;
+
+    // For leads, hide "Dashboard" (Admin) and "My Dashboard" (Employee) to avoid dual dashboards
+    if (isLead && !isSuperadmin && (item.label === "My Dashboard" || item.label === "Dashboard")) return false;
 
     // For employees, show ONLY My Dashboard, Self Management, and Profile
     if (isRegularEmployee) {

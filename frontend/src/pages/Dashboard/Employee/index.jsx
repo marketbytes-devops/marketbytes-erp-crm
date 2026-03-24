@@ -254,7 +254,7 @@ const EmployeeDashboard = () => {
                                 { label: 'Task Listing', path: '/employee/tasks', icon: <MdAssignment /> },
                                 { label: 'Scrum Listing', path: '/employee/scrum', icon: <MdTimeline /> },
                                 { label: 'Apply Leave', path: '/employee/leaves', icon: <MdPendingActions /> },
-                                { label: 'Common Calendar', path: '/operations/common-calendar', icon: <MdCalendarMonth /> },
+                                { label: 'Events', path: '/operations/common-calendar', icon: <MdCalendarMonth /> },
                                 { label: 'Attendance', path: '/employee/attendance', icon: <MdWorkOutline /> }
                             ].map((link, idx) => (
                                 <button

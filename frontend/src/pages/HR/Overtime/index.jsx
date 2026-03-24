@@ -24,6 +24,7 @@ import {
 import Input from "../../../components/Input";
 import toast from "react-hot-toast";
 import { usePermission } from "../../../context/PermissionContext";
+import * as XLSX from "xlsx";
 
 const Overtime = ({ leadScope, employeeScope }) => {
   const { hasPermission } = usePermission();
@@ -34,6 +35,29 @@ const Overtime = ({ leadScope, employeeScope }) => {
   const [availableYears, setAvailableYears] = useState([{ value: new Date().getFullYear(), label: String(new Date().getFullYear()) }]);
   const [calculating, setCalculating] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
+
+  const handleExportLedger = () => {
+    if (filteredOvertime.length === 0) {
+      toast.error("No records to export");
+      return;
+    }
+    const wb = XLSX.utils.book_new();
+    const rows = filteredOvertime.map((ot, i) => ({
+      "ID": ot.id || i + 1,
+      "Employee": ot.employee?.name || "Anonymous",
+      "Designation": ot.employee?.designation?.name || "—",
+      "Date": ot.date ? new Date(ot.date).toLocaleDateString("en-GB") : "—",
+      "Project": ot.project || "General Operations",
+      "Hours": parseFloat(ot.hours || 0).toFixed(2),
+      "Effort Detail": ot.effort || ""
+    }));
+
+    const ws = XLSX.utils.json_to_sheet(rows);
+    XLSX.utils.book_append_sheet(wb, ws, "Overtime Ledger");
+    const monthLabel = months.find(m => m.value === month)?.label || month;
+    XLSX.writeFile(wb, `Overtime_Ledger_${monthLabel}_${year}.xlsx`);
+  };
+
 
   const months = [
     { value: 1, label: "January" },
@@ -52,7 +76,7 @@ const Overtime = ({ leadScope, employeeScope }) => {
 
   useEffect(() => {
     fetchOvertime();
-  }, [month, year]);
+  }, [month, year, leadScope, employeeScope]);
 
   useEffect(() => {
     fetchAvailableYears();
@@ -333,13 +357,17 @@ const Overtime = ({ leadScope, employeeScope }) => {
             </p>
           </div>
           <div className="flex gap-4 relative z-10">
-            <button className="flex items-center gap-3 px-6 py-3 bg-white border border-gray-200 text-black text-[10px] font-medium uppercase tracking-widest rounded-2xl hover:bg-gray-100 transition shadow-xs active:scale-95">
+            <button
+              onClick={handleExportLedger}
+              className="flex items-center gap-3 px-6 py-3 bg-white border border-gray-200 text-black text-[10px] font-medium uppercase tracking-widest rounded-2xl hover:bg-gray-100 transition shadow-xs active:scale-95"
+            >
               <MdDownload /> Export Ledger
             </button>
             <button className="flex items-center gap-3 px-6 py-3 bg-black text-white text-[10px] font-medium uppercase tracking-widest rounded-2xl hover:bg-gray-800 transition shadow-xl shadow-black/10 active:scale-95">
               <ChevronRight size={14} /> Audit History
             </button>
           </div>
+
         </div>
       </LayoutComponents>
     </div>

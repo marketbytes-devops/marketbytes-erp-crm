@@ -27,7 +27,7 @@ const pageNameMap = {
   taskboard: { apiName: "task_board", displayName: "Task Board", route: "/operations/task-board" },
   timelogs: { apiName: "timelogs", displayName: "Time Log", route: "/operations/time-logs" },
   task_calendar: { apiName: "task_calendar", displayName: "Task Calendar", route: "/operations/task-calendar" },
-  common_calendar: { apiName: "common_calendar", displayName: "Common Calendar", route: "/operations/common-calendar" },
+  common_calendar: { apiName: "common_calendar", displayName: "Events", route: "/operations/common-calendar" },
   scrum: { apiName: "scrum", displayName: "Scrum", route: "/operations/scrum" },
 
   // Sales

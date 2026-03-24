@@ -7,6 +7,8 @@ import apiClient from "../../../helpers/apiClient";
 import toast from "react-hot-toast";
 import { CalendarIcon, ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/24/outline";
 
+import * as XLSX from "xlsx";
+
 const months = [
   "January", "February", "March", "April", "May", "June",
   "July", "August", "September", "October", "November", "December"
@@ -20,6 +22,25 @@ const TaskCalendarPage = ({ employeeScope = false, leadScope = false }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  const handleExport = () => {
+    if (tasks.length === 0) {
+      toast.error("No tasks to export");
+      return;
+    }
+    const wb = XLSX.utils.book_new();
+    const rows = tasks.map((task, i) => ({
+      "SL No": i + 1,
+      Task: task.name,
+      Project: task.project_name || "—",
+      "Due Date": task.due_date ? new Date(task.due_date).toLocaleDateString("en-GB") : "—",
+      Status: task.status,
+      Assignees: task.assignees?.map(a => a.name || a.username).join(", ") || "—"
+    }));
+
+    const ws = XLSX.utils.json_to_sheet(rows);
+    XLSX.utils.book_append_sheet(wb, ws, "Tasks");
+    XLSX.writeFile(wb, `Tasks_Calendar_${months[currentMonth - 1]}_${currentYear}.xlsx`);
+  };
 
   useEffect(() => {
     let isMounted = true;
@@ -140,12 +161,16 @@ const TaskCalendarPage = ({ employeeScope = false, leadScope = false }) => {
         </div>
 
         <div className="flex items-center gap-3">
-          <button className="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">
+          <button
+            onClick={handleExport}
+            className="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+          >
             <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4 4m0 0l-4-4m4 4V4" />
             </svg>
             Export
           </button>
+
 
           <button className="inline-flex items-center gap-1 rounded-lg bg-gray-900 px-5 py-2 text-sm font-medium text-white hover:bg-gray-800">
             + Add Task

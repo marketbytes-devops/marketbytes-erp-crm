@@ -223,6 +223,22 @@ const EmployeeTimeLogs = () => {
     setExportDropdownOpen(false);
   };
 
+  const handleExportCSV = () => {
+    const data = filteredEmployees.map(emp => ({
+      'Employee Name': emp.name || 'Unknown',
+      'Email': emp.email || 'No Email',
+      'Role': emp.role || 'Employee',
+      'Work Frequency': `${emp.clockin_count} Sessions`,
+      'Est. Earnings': `₹${emp.earnings || 0}`
+    }));
+    const ws = XLSX.utils.json_to_sheet(data);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Employee Time Logs');
+    XLSX.writeFile(wb, `employee-time-logs-${new Date().toISOString().split('T')[0]}.csv`);
+    setExportDropdownOpen(false);
+  };
+
+
   // Close export dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -375,6 +391,14 @@ const EmployeeTimeLogs = () => {
                         <MdDownload className="w-4 h-4" />
                         Export as Excel
                       </button>
+                      <button
+                        onClick={handleExportCSV}
+                        className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 transition flex items-center gap-2"
+                      >
+                        <MdDownload className="w-4 h-4" />
+                        Export as CSV
+                      </button>
+
                     </div>
                   )}
                 </div>

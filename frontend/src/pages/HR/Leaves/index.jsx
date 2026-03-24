@@ -17,8 +17,10 @@ import { format } from "date-fns";
 import { usePermission } from "../../../context/PermissionContext";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
+import * as XLSX from "xlsx";
 
 const Leaves = ({ leadScope, employeeScope }) => {
+
   const { hasPermission } = usePermission();
   const permissionPage = employeeScope ? "employee_leaves" : (leadScope ? "lead_leaves" : "leaves");
   const [leaves, setLeaves] = useState([]);
@@ -34,7 +36,7 @@ const Leaves = ({ leadScope, employeeScope }) => {
 
   useEffect(() => {
     fetchLeaves();
-  }, []);
+  }, [leadScope, employeeScope]);
 
   const fetchLeaves = async () => {
     setLoading(true);
@@ -231,13 +233,37 @@ const Leaves = ({ leadScope, employeeScope }) => {
   };
 
   const handleExportExcel = () => {
-    alert("Excel export not implemented yet");
+    if (filteredLeaves.length === 0) {
+      alert("No leave records to export.");
+      return;
+    }
+
+    const data = filteredLeaves.map((leave) => ({
+      Employee: leave.employee?.name || "Unknown",
+      "Leave Type": leave.leave_type_name || leave.leave_type?.name || "N/A",
+      From: leave.start_date ? format(new Date(leave.start_date), "dd/MM/yyyy") : "-",
+      To: leave.end_date ? format(new Date(leave.end_date), "dd/MM/yyyy") : "-",
+      Duration: leave.duration === "half_day"
+        ? "Half Day"
+        : (leave.total_days
+          ? `${leave.total_days} Day${leave.total_days > 1 ? "s" : ""}`
+          : "Full Day"),
+      Status: (leave.status || "pending").toUpperCase(),
+      "Applied On": leave.created_at ? format(new Date(leave.created_at), "dd/MM/yyyy") : "-",
+      Reason: leave.reason || ""
+    }));
+
+    const ws = XLSX.utils.json_to_sheet(data);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Leaves");
+    XLSX.writeFile(wb, `Leaves_${format(new Date(), "yyyy-MM-dd")}.xlsx`);
     setShowExportMenu(false);
   };
 
   const toggleExpand = (id) => {
     setExpandedId(expandedId === id ? null : id);
   };
+
 
   return (
     <div className="p-6">

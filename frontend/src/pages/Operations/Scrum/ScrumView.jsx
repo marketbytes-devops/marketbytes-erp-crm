@@ -19,6 +19,10 @@ import Loading from "../../../components/Loading";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { usePermission } from "../../../context/PermissionContext";
+import { jsPDF } from "jspdf";
+import autoTable from "jspdf-autotable";
+import * as XLSX from "xlsx";
+import { useRef } from "react";
 
 const Scrum = ({ employeeScope = false, leadScope = false }) => {
   const { hasPermission, user } = usePermission();
@@ -47,6 +51,10 @@ const Scrum = ({ employeeScope = false, leadScope = false }) => {
     startDate: "",
     status: "",
   });
+
+  // Export dropdown state
+  const [exportDropdownOpen, setExportDropdownOpen] = useState(false);
+  const exportDropdownRef = useRef(null);
 
   const [formData, setFormData] = useState({
     project: "",
@@ -114,6 +122,20 @@ const Scrum = ({ employeeScope = false, leadScope = false }) => {
     if (savedPins) setPinnedItems(JSON.parse(savedPins));
 
     return () => { isMounted = false; };
+  }, []);
+
+  // Close export dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (
+        exportDropdownRef.current &&
+        !exportDropdownRef.current.contains(event.target)
+      ) {
+        setExportDropdownOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   // --- Handlers ---
@@ -231,6 +253,119 @@ const Scrum = ({ employeeScope = false, leadScope = false }) => {
       setScrumData(previousData); // Revert
       toast.error("Update failed");
     }
+  };
+
+  const handleExportPDF = () => {
+    const doc = new jsPDF();
+
+    // Add title
+    doc.setFontSize(18);
+    doc.text("Scrum Report", 14, 20);
+
+    // Add filters info
+    doc.setFontSize(10);
+    let yPos = 30;
+    if (filters.project) {
+      const proj = projects.find((p) => String(p.id) === filters.project);
+      doc.text(`Project: ${proj?.name || "N/A"}`, 14, yPos);
+      yPos += 6;
+    }
+    if (filters.status) {
+      const statusLabel = statusOptions.find(s => s.value === filters.status)?.label;
+      doc.text(`Status: ${statusLabel || "N/A"}`, 14, yPos);
+      yPos += 6;
+    }
+
+    const headers = [
+      "Project / Task",
+      "Employee",
+      "Date",
+      "Morning Memo",
+      "Evening Memo",
+      "Status",
+    ];
+
+    const tableData = filteredData.map((item) => [
+      `${item.project_name}\n${item.task_name}`,
+      item.employee_name,
+      item.date ? new Date(item.date).toLocaleDateString() : "—",
+      item.morning_memo || "—",
+      item.evening_memo || "—",
+      statusOptions.find(s => s.value === item.status)?.label || item.status,
+    ]);
+
+    autoTable(doc, {
+      startY: yPos + 5,
+      head: [headers],
+      body: tableData,
+      theme: "grid",
+      headStyles: { fillColor: [0, 0, 0] },
+      styles: { fontSize: 9 },
+    });
+
+    const pageCount = doc.internal.getNumberOfPages();
+    for (let i = 1; i <= pageCount; i++) {
+      doc.setPage(i);
+      doc.setFontSize(8);
+      doc.text(
+        `Page ${i} of ${pageCount} | Generated on ${new Date().toLocaleString()}`,
+        14,
+        doc.internal.pageSize.height - 10,
+      );
+    }
+
+    doc.save(`scrum-report-${new Date().toISOString().split("T")[0]}.pdf`);
+    setExportDropdownOpen(false);
+  };
+
+  const handleExportExcel = () => {
+    const data = filteredData.map((item) => ({
+      Project: item.project_name,
+      Task: item.task_name,
+      Employee: item.employee_name,
+      Date: item.date ? new Date(item.date).toLocaleDateString() : "—",
+      "Morning Memo": item.morning_memo || "—",
+      "Evening Memo": item.evening_memo || "—",
+      Status: statusOptions.find(s => s.value === item.status)?.label || item.status,
+    }));
+
+    const ws = XLSX.utils.json_to_sheet(data);
+    const colWidths = [
+      { wch: 20 }, // Project
+      { wch: 20 }, // Task
+      { wch: 20 }, // Employee
+      { wch: 15 }, // Date
+      { wch: 40 }, // Morning Memo
+      { wch: 40 }, // Evening Memo
+      { wch: 15 }, // Status
+    ];
+    ws["!cols"] = colWidths;
+
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Scrum Data");
+    XLSX.writeFile(wb, `scrum-report-${new Date().toISOString().split("T")[0]}.xlsx`);
+    setExportDropdownOpen(false);
+  };
+
+  const handleExportCSV = () => {
+    const data = filteredData.map((item) => ({
+      Project: item.project_name,
+      Task: item.task_name,
+      Employee: item.employee_name,
+      Date: item.date ? new Date(item.date).toLocaleDateString() : "—",
+      "Morning Memo": item.morning_memo || "—",
+      "Evening Memo": item.evening_memo || "—",
+      Status: statusOptions.find(s => s.value === item.status)?.label || item.status,
+    }));
+
+    const ws = XLSX.utils.json_to_sheet(data);
+    const csv = XLSX.utils.sheet_to_csv(ws);
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = `scrum-report-${new Date().toISOString().split("T")[0]}.csv`;
+    link.click();
+    setExportDropdownOpen(false);
   };
 
   // --- Filtering Logic ---
@@ -359,9 +494,42 @@ const Scrum = ({ employeeScope = false, leadScope = false }) => {
                   <MdPushPin className="w-5 h-5 text-yellow-600" />
                   Pinned ({pinnedItems.length})
                 </button>
-                <button className="flex items-center gap-2 px-5 py-4 border border-gray-300 rounded-xl hover:bg-gray-50 transition text-sm font-medium">
-                  <MdDownload className="w-5 h-5" /> Export
-                </button>
+                <div className="relative" ref={exportDropdownRef}>
+                  <button
+                    onClick={() => setExportDropdownOpen(!exportDropdownOpen)}
+                    className="flex items-center gap-2 px-5 py-4 border border-gray-300 rounded-xl hover:bg-gray-50 transition text-sm font-medium"
+                  >
+                    <MdDownload className="w-5 h-5" /> Export
+                    <MdKeyboardArrowDown
+                      className={`w-4 h-4 transition-transform ${exportDropdownOpen ? "rotate-180" : ""}`}
+                    />
+                  </button>
+                  {exportDropdownOpen && (
+                    <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg border border-gray-200 py-2 z-50">
+                      <button
+                        onClick={handleExportPDF}
+                        className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 transition flex items-center gap-2"
+                      >
+                        <MdDownload className="w-4 h-4" />
+                        Export as PDF
+                      </button>
+                      <button
+                        onClick={handleExportExcel}
+                        className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 transition flex items-center gap-2"
+                      >
+                        <MdDownload className="w-4 h-4" />
+                        Export as Excel
+                      </button>
+                      <button
+                        onClick={handleExportCSV}
+                        className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 transition flex items-center gap-2"
+                      >
+                        <MdDownload className="w-4 h-4" />
+                        Export as CSV
+                      </button>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           </div>

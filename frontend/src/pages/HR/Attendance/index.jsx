@@ -209,7 +209,7 @@ const Attendance = ({ leadScope, employeeScope }) => {
 
   useEffect(() => {
     fetchAttendance();
-  }, [month, year, filterEmployeeId, filterDepartmentId]);
+  }, [month, year, filterEmployeeId, filterDepartmentId, leadScope, employeeScope]);
 
   useEffect(() => {
     const fetchLists = async () => {
@@ -230,7 +230,7 @@ const Attendance = ({ leadScope, employeeScope }) => {
       }
     };
     fetchLists();
-  }, []);
+  }, [leadScope, employeeScope]);
 
   const fetchAttendance = () => {
     setLoading(true);

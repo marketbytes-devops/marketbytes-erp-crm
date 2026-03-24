@@ -20,6 +20,10 @@ import toast from "react-hot-toast";
 import Input from "../../../components/Input";
 import Loading from "../../../components/Loading";
 import { usePermission } from "../../../context/PermissionContext";
+import jsPDF from "jspdf";
+import "jspdf-autotable";
+import * as XLSX from "xlsx";
+
 
 const ProjectsView = ({ employeeScope = false, leadScope = false }) => {
   const navigate = useNavigate();
@@ -30,6 +34,8 @@ const ProjectsView = ({ employeeScope = false, leadScope = false }) => {
   const [filtered, setFiltered] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isPinnedModalOpen, setIsPinnedModalOpen] = useState(false);
+  const [isExportOpen, setIsExportOpen] = useState(false);
+
 
   const [pinnedProjects, setPinnedProjects] = useState([]);
 
@@ -165,6 +171,72 @@ const ProjectsView = ({ employeeScope = false, leadScope = false }) => {
 
     setFiltered(result);
   }, [search, filters, projects, statuses]);
+
+  const exportToPDF = () => {
+    const doc = new jsPDF({ orientation: "landscape" });
+    doc.setFontSize(20);
+    doc.text("Projects Report", 14, 20);
+    doc.setFontSize(12);
+    doc.text(`Generated on: ${new Date().toLocaleString()}`, 14, 30);
+
+    const tableColumns = ["#", "Project", "Client", "Deadline", "Progress", "Status"];
+    const tableRows = filtered.map((p, i) => [
+      i + 1,
+      p.name,
+      p.client?.name || "—",
+      p.deadline ? new Date(p.deadline).toLocaleDateString("en-GB") : "—",
+      `${p.progress_percentage || 0}%`,
+      p.status?.name || "Not Started"
+    ]);
+
+    doc.autoTable({
+      head: [tableColumns],
+      body: tableRows,
+      startY: 40,
+      theme: "grid",
+      headStyles: { fillColor: [0, 0, 0] }
+    });
+
+    doc.save("Projects_Report.pdf");
+    setIsExportOpen(false);
+  };
+
+  const exportToExcel = () => {
+    const rows = filtered.map((p, i) => ({
+      "#": i + 1,
+      Project: p.name,
+      Client: p.client?.name || "",
+      Category: p.category?.name || "",
+      Deadline: p.deadline ? new Date(p.deadline).toLocaleDateString("en-GB") : "",
+      Progress: `${p.progress_percentage || 0}%`,
+      Status: p.status?.name || "Not Started",
+      Members: p.members?.map(m => m.name || m.email).join(", ") || ""
+    }));
+
+    const ws = XLSX.utils.json_to_sheet(rows);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Projects");
+    XLSX.writeFile(wb, "Projects_Report.xlsx");
+    setIsExportOpen(false);
+  };
+
+  const exportToCSV = () => {
+    const rows = filtered.map((p, i) => ({
+      "#": i + 1,
+      Project: p.name,
+      Client: p.client?.name || "",
+      Deadline: p.deadline ? new Date(p.deadline).toLocaleDateString("en-GB") : "",
+      Progress: `${p.progress_percentage || 0}%`,
+      Status: p.status?.name || "Not Started"
+    }));
+
+    const ws = XLSX.utils.json_to_sheet(rows);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Projects");
+    XLSX.writeFile(wb, "Projects_Report.csv");
+    setIsExportOpen(false);
+  };
+
 
   const stats = useMemo(() => {
     const total = projects.length;
@@ -390,9 +462,42 @@ const ProjectsView = ({ employeeScope = false, leadScope = false }) => {
                 >
                   View Archive
                 </button>
-                <button className="flex items-center gap-2 px-5 py-4 border border-gray-300 rounded-xl hover:bg-gray-50 transition text-sm font-medium">
-                  <MdDownload className="w-5 h-5" /> Export
-                </button>
+                <div className="relative">
+                  <button
+                    onClick={() => setIsExportOpen(!isExportOpen)}
+                    className="flex items-center gap-2 px-5 py-4 border border-gray-300 rounded-xl hover:bg-gray-50 transition text-sm font-medium"
+                  >
+                    <MdDownload className="w-5 h-5" /> Export
+                    <MdKeyboardArrowDown className={`transition-transform duration-300 ${isExportOpen ? "rotate-180" : ""}`} />
+                  </button>
+
+                  <AnimatePresence>
+                    {isExportOpen && (
+                      <motion.div
+                        initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                        className="absolute right-0 mt-3 w-56 bg-white rounded-2xl shadow-2xl border border-gray-100 z-50 overflow-hidden p-2"
+                      >
+                        {[
+                          { id: "pdf", label: "Export as PDF", color: "bg-red-500", action: exportToPDF },
+                          { id: "excel", label: "Export as Excel", color: "bg-emerald-500", action: exportToExcel },
+                          { id: "csv", label: "Export as CSV", color: "bg-blue-500", action: exportToCSV },
+                        ].map((item) => (
+                          <button
+                            key={item.id}
+                            onClick={item.action}
+                            className="w-full text-left px-4 py-3 text-sm font-medium text-gray-700 hover:bg-gray-50 rounded-xl transition-all flex items-center gap-3"
+                          >
+                            <div className={`w-2 h-2 rounded-full ${item.color}`}></div>
+                            {item.label}
+                          </button>
+                        ))}
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+
               </div>
             </div>
           </div>

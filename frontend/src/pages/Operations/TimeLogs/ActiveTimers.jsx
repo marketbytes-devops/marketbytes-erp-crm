@@ -266,6 +266,25 @@ const ActiveTimers = () => {
         setExportDropdownOpen(false);
     };
 
+    const handleExportCSV = () => {
+        const data = filteredTimers.map(timer => ({
+            'ID': `#${timer.id}`,
+            'Task': timer.task || 'N/A',
+            'Project': timer.project || 'N/A',
+            'Employee': timer.employee || 'Unknown',
+            'Start Date': timer.startDate,
+            'Start Time': timer.startTime,
+            'Duration': formatDuration(timer.duration),
+            'Status': timer.taskStatus || 'N/A'
+        }));
+        const ws = XLSX.utils.json_to_sheet(data);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, 'Active Timers');
+        XLSX.writeFile(wb, `active-timers-${new Date().toISOString().split('T')[0]}.csv`);
+        setExportDropdownOpen(false);
+    };
+
+
     if (loading && !timers.length) {
         return (
             <div className="min-h-screen flex items-center justify-center bg-gray-50">
@@ -385,6 +404,14 @@ const ActiveTimers = () => {
                                             <MdDownload className="w-4 h-4" />
                                             Export as Excel
                                         </button>
+                                        <button
+                                            onClick={handleExportCSV}
+                                            className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 transition flex items-center gap-2"
+                                        >
+                                            <MdDownload className="w-4 h-4" />
+                                            Export as CSV
+                                        </button>
+
                                     </div>
                                 )}
                             </div>

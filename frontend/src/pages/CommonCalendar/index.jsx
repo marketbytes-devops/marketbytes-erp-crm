@@ -108,7 +108,7 @@ const CommonCalendar = () => {
         <div className="p-8 h-[calc(100vh-100px)] flex flex-col bg-gray-50/50">
             <div className="flex justify-between items-center mb-8">
                 <div>
-                    <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight">Common Calendar</h1>
+                    <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight">Events</h1>
                     <p className="text-gray-500 mt-1">Manage and view all company events and holidays</p>
                 </div>
                 {canAddEvent && (

@@ -31,6 +31,11 @@ import {
   MdLeaderboard
 } from "react-icons/md";
 import { FiTrendingUp, FiPieChart, FiBarChart2, FiUsers } from "react-icons/fi";
+import { MdKeyboardArrowDown } from "react-icons/md";
+import jsPDF from "jspdf";
+import "jspdf-autotable";
+import * as XLSX from "xlsx";
+
 
 // Mock Data for Analytics
 const PERFORMANCE_STATS = [
@@ -74,6 +79,84 @@ const Reports = () => {
   const [activeTab, setActiveTab] = useState("overview");
   const [timeRange, setTimeRange] = useState("Last 6 Months");
   const [isLoading, setIsLoading] = useState(false);
+  const [isExportOpen, setIsExportOpen] = useState(false);
+
+  const exportToPDF = () => {
+    const doc = new jsPDF({ orientation: "portrait" });
+    doc.setFontSize(20);
+    doc.text("Sales Analytics Report", 14, 20);
+    doc.setFontSize(12);
+    doc.text(`Generated on: ${new Date().toLocaleString()}`, 14, 30);
+    doc.text(`Time Range: ${timeRange}`, 14, 38);
+
+    // Section 1: Key Performance Stats
+    doc.setFontSize(16);
+    doc.text("Key Performance Indicators", 14, 50);
+    const statsData = PERFORMANCE_STATS.map(stat => [stat.label, stat.value, stat.growth]);
+    doc.autoTable({
+      startY: 55,
+      head: [["Metric", "Value", "Growth"]],
+      body: statsData,
+      theme: "grid",
+      headStyles: { fillColor: [0, 0, 0] }
+    });
+
+    // Section 2: Revenue Trend
+    doc.setFontSize(16);
+    doc.text("Revenue Trend", 14, doc.lastAutoTable.finalY + 15);
+    const revenueData = REVENUE_TREND.map(item => [item.month, `₹${item.revenue.toLocaleString()}`, item.leads]);
+    doc.autoTable({
+      startY: doc.lastAutoTable.finalY + 20,
+      head: [["Month", "Revenue", "Leads"]],
+      body: revenueData,
+      theme: "grid",
+      headStyles: { fillColor: [0, 0, 0] }
+    });
+
+    // Section 3: Lead Sources
+    doc.setFontSize(16);
+    doc.text("Lead Sources", 14, doc.lastAutoTable.finalY + 15);
+    const sourcesData = LEAD_SOURCES.map(source => [source.name, source.value]);
+    doc.autoTable({
+      startY: doc.lastAutoTable.finalY + 20,
+      head: [["Source", "Count"]],
+      body: sourcesData,
+      theme: "grid",
+      headStyles: { fillColor: [0, 0, 0] }
+    });
+
+    doc.save("Sales_Reports.pdf");
+    setIsExportOpen(false);
+  };
+
+  const exportToExcel = () => {
+    const wb = XLSX.utils.book_new();
+
+    // Stats Sheet
+    const statsWS = XLSX.utils.json_to_sheet(PERFORMANCE_STATS.map(s => ({ Metric: s.label, Value: s.value, Growth: s.growth })));
+    XLSX.utils.book_append_sheet(wb, statsWS, "KPIs");
+
+    // Revenue Sheet
+    const revenueWS = XLSX.utils.json_to_sheet(REVENUE_TREND.map(r => ({ Month: r.month, Revenue: r.revenue, Leads: r.leads })));
+    XLSX.utils.book_append_sheet(wb, revenueWS, "Revenue Trend");
+
+    // Agents Sheet
+    const agentsWS = XLSX.utils.json_to_sheet(AGENT_PERFORMANCE.map(a => ({ Agent: a.name, Revenue: a.revenue, Deals: a.deals, SuccessRate: `${a.rate}%` })));
+    XLSX.utils.book_append_sheet(wb, agentsWS, "Agent Performance");
+
+    XLSX.writeFile(wb, "Sales_Reports.xlsx");
+    setIsExportOpen(false);
+  };
+
+  const exportToCSV = () => {
+    // For CSV, we'll just export the Revenue Trend as it's the primary time-series data
+    const ws = XLSX.utils.json_to_sheet(REVENUE_TREND.map(r => ({ Month: r.month, Revenue: r.revenue, Leads: r.leads })));
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Revenue");
+    XLSX.writeFile(wb, "Sales_Revenue_Trend.csv");
+    setIsExportOpen(false);
+  };
+
 
   const CustomTooltip = ({ active, payload, label }) => {
     if (active && payload && payload.length) {
@@ -134,9 +217,42 @@ const Reports = () => {
                 <option>Last Year</option>
               </select>
             </div>
-            <button className="flex items-center gap-2 px-6 py-2.5 bg-white border border-gray-100 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-50 transition-all active:scale-95 shadow-sm">
-              <MdFileDownload className="w-5 h-5" /> Export
-            </button>
+            <div className="relative">
+              <button
+                onClick={() => setIsExportOpen(!isExportOpen)}
+                className="flex items-center gap-2 px-6 py-2.5 bg-white border border-gray-100 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-50 transition-all active:scale-95 shadow-sm"
+              >
+                <MdFileDownload className="w-5 h-5" /> Export
+                <MdKeyboardArrowDown className={`w-4 h-4 transition-transform ${isExportOpen ? "rotate-180" : ""}`} />
+              </button>
+
+              <AnimatePresence>
+                {isExportOpen && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                    className="absolute right-0 mt-2 w-48 bg-white rounded-2xl shadow-xl border border-gray-100 z-50 overflow-hidden p-2"
+                  >
+                    {[
+                      { id: "pdf", label: "Export as PDF", color: "bg-red-500", action: exportToPDF },
+                      { id: "excel", label: "Export as Excel", color: "bg-emerald-500", action: exportToExcel },
+                      { id: "csv", label: "Export as CSV", color: "bg-blue-500", action: exportToCSV },
+                    ].map((item) => (
+                      <button
+                        key={item.id}
+                        onClick={item.action}
+                        className="w-full text-left px-4 py-3 text-sm font-medium text-gray-700 hover:bg-gray-50 rounded-xl transition-all flex items-center gap-3"
+                      >
+                        <div className={`w-2 h-2 rounded-full ${item.color}`}></div>
+                        {item.label}
+                      </button>
+                    ))}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+
           </div>
         </div>
 

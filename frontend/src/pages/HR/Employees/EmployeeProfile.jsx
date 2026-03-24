@@ -12,6 +12,9 @@ import {
 import { FaUserTie, FaIdBadge, FaChartLine } from "react-icons/fa";
 import apiClient from "../../../helpers/apiClient";
 import Loading from "../../../components/Loading";
+import jsPDF from "jspdf";
+import "jspdf-autotable";
+
 
 const EmployeeProfile = () => {
   const { id } = useParams();
@@ -34,6 +37,65 @@ const EmployeeProfile = () => {
     };
     fetchEmployee();
   }, [id]);
+
+  const handleExportProfile = () => {
+    const doc = new jsPDF();
+    const pageWidth = doc.internal.pageSize.getWidth();
+
+    // Header
+    doc.setFillColor(0, 0, 0);
+    doc.rect(0, 0, pageWidth, 40, "F");
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(24);
+    doc.text(employee.name || "Employee Profile", 20, 25);
+    doc.setFontSize(12);
+    doc.text(employee.designation?.name || "MB ERP CRM Platform", 20, 35);
+
+    // Profile Details
+    doc.setTextColor(0, 0, 0);
+    doc.setFontSize(16);
+    doc.text("Personal Information", 20, 55);
+
+    const personalData = [
+      ["Employee ID", employee.employee_id || "—"],
+      ["Email", employee.email || "—"],
+      ["Phone", employee.mobile || "—"],
+      ["DOB", employee.dob ? new Date(employee.dob).toLocaleDateString() : "—"],
+      ["Gender", employee.gender || "—"],
+      ["Address", employee.address || "—"]
+    ];
+
+    doc.autoTable({
+      startY: 60,
+      body: personalData,
+      theme: "plain",
+      styles: { fontSize: 10, cellPadding: 3 },
+      columnStyles: { 0: { fontStyle: "bold", width: 50 } }
+    });
+
+    doc.setFontSize(16);
+    doc.text("Employment Details", 20, doc.lastAutoTable.finalY + 15);
+
+    const employmentData = [
+      ["Department", employee.department?.name || "—"],
+      ["Designation", employee.designation?.name || "—"],
+      ["Role", employee.role?.name || "—"],
+      ["Joining Date", employee.joining_date ? new Date(employee.joining_date).toLocaleDateString() : "—"],
+      ["Hourly Rate", employee.hourly_rate ? `$${employee.hourly_rate}/hr` : "—"],
+      ["Status", employee.status || "—"]
+    ];
+
+    doc.autoTable({
+      startY: doc.lastAutoTable.finalY + 20,
+      body: employmentData,
+      theme: "plain",
+      styles: { fontSize: 10, cellPadding: 3 },
+      columnStyles: { 0: { fontStyle: "bold", width: 50 } }
+    });
+
+    doc.save(`${employee.name || "Employee"}_Profile.pdf`);
+  };
+
 
   const fetchPerformance = async () => {
     setPerfLoading(true);
@@ -152,10 +214,14 @@ const EmployeeProfile = () => {
               <MdPrint className="w-5 h-5" />
               <span className="hidden sm:inline">Print</span>
             </button>
-            <button className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border border-gray-300 text-gray-700 hover:bg-gray-50 transition-all">
+            <button
+              onClick={handleExportProfile}
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border border-gray-300 text-gray-700 hover:bg-gray-50 transition-all"
+            >
               <MdDownload className="w-5 h-5" />
               <span className="hidden sm:inline">Export</span>
             </button>
+
             <Link
               to={`/hr/employees/${id}/edit`}
               className="inline-flex items-center gap-3 px-6 py-3 bg-linear-to-r from-black to-gray-800 text-white font-medium rounded-xl hover:opacity-90 transition-all shadow-lg hover:shadow-xl"
