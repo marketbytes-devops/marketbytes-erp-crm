@@ -327,7 +327,7 @@ const EmployeeCreate = () => {
   const QuickAddModal = ({ isOpen, onClose, title, value, onChange, onSubmit, placeholder, loading }) => {
     if (!isOpen) return null;
     return (
-      <div className="fixed inset-0 z-[2000] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+      <div className="fixed inset-0 z-2000 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
         <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden">
           <div className="flex items-center justify-between p-6 border-b border-gray-100">
             <h3 className="text-xl font-semibold text-gray-900">{title}</h3>

@@ -4,69 +4,8 @@ import { toast } from "react-hot-toast";
 import { Search, Loader2, X, Shield, Lock, ChevronRight, AlertCircle } from "lucide-react";
 import apiClient from "../../helpers/apiClient";
 import { usePermission } from "../../context/PermissionContext";
-
-const pageNameMap = {
-  // Common / Home
-  admin: { apiName: "admin", displayName: "Dashboard", route: "/Dashboard" },
-
-  // HR Management
-  employees: { apiName: "employees", displayName: "Employees", route: "/hr/employees" },
-  departments: { apiName: "departments", displayName: "Departments", route: "/hr/departments" },
-  designations: { apiName: "designations", displayName: "Designations", route: "/hr/designations" },
-  attendance: { apiName: "attendance", displayName: "Attendance", route: "/hr/attendance" },
-  holidays: { apiName: "holidays", displayName: "Holidays", route: "/hr/holidays" },
-  leaves: { apiName: "leaves", displayName: "Leaves", route: "/hr/leaves" },
-  overtime: { apiName: "overtime", displayName: "Overtime", route: "/hr/overtime" },
-  recruitment: { apiName: "recruitment", displayName: "Recruitment", route: "/hr/recruitment" },
-  performance: { apiName: "performance", displayName: "Performance", route: "/hr/performance" },
-
-  // Operations
-  projects: { apiName: "projects", displayName: "Projects", route: "/operations/projects" },
-  tasks: { apiName: "tasks", displayName: "Tasks", route: "/operations/tasks" },
-  task_board: { apiName: "task_board", displayName: "Task Board", route: "/operations/task-board" },
-  timelogs: { apiName: "timelogs", displayName: "Time Log", route: "/operations/time-logs" },
-  task_calendar: { apiName: "task_calendar", displayName: "Task Calendar", route: "/operations/task-calendar" },
-  common_calendar: { apiName: "common_calendar", displayName: "Common Calendar", route: "/operations/common-calendar" },
-  scrum: { apiName: "scrum", displayName: "Scrum", route: "/operations/scrum" },
-  contracts: { apiName: "contracts", displayName: "Contracts", route: "/operations/contracts" },
-
-  // Sales
-  leads: { apiName: "leads", displayName: "Leads", route: "/sales/leads" },
-  pipeline: { apiName: "pipeline", displayName: "Pipeline", route: "/sales/pipeline" },
-  communication_tools: { apiName: "communication_tools", displayName: "Communication Tools", route: "/sales/communication-tools" },
-  invoices: { apiName: "invoices", displayName: "Invoices", route: "/sales/invoices" },
-  reports: { apiName: "reports", displayName: "Reports", route: "/sales/reports" },
-  customer: { apiName: "customer", displayName: "Clients & Companies", route: "/sales/customer" },
-
-  // User Roles
-  roles: { apiName: "roles", displayName: "Roles", route: "/user-roles/roles" },
-  users: { apiName: "users", displayName: "Users", route: "/user-roles/users" },
-  permissions: { apiName: "permissions", displayName: "Permissions", route: "/user-roles/permissions" },
-
-  // Profile
-  profile: { apiName: "profile", displayName: "Profile", route: "/profile" },
-
-  // Lead Section
-  lead_dashboard: { apiName: "lead_dashboard", displayName: "Lead Dashboard", route: "/lead-dashboard" },
-  team_listing: { apiName: "team_listing", displayName: "Team Members", route: "/team/employees" },
-  lead_attendance: { apiName: "lead_attendance", displayName: "Team Attendance", route: "/lead/attendance" },
-  lead_leaves: { apiName: "lead_leaves", displayName: "Team Leaves", route: "/lead/leaves" },
-  lead_timelogs: { apiName: "lead_timelogs", displayName: "Team Timelogs", route: "/lead/time-logs" },
-  lead_projects: { apiName: "lead_projects", displayName: "Lead Projects", route: "/lead/projects" },
-  lead_tasks: { apiName: "lead_tasks", displayName: "Lead Tasks", route: "/lead/tasks" },
-  lead_scrum: { apiName: "lead_scrum", displayName: "Team Scrum", route: "/lead/scrum" },
-
-  // Employee Section
-  employee_dashboard: { apiName: "employee_dashboard", displayName: "My Dashboard", route: "/employee-dashboard" },
-  employee_projects: { apiName: "employee_projects", displayName: "My Projects", route: "/employee/projects" },
-  employee_tasks: { apiName: "employee_tasks", displayName: "My Tasks", route: "/employee/tasks" },
-  employee_attendance: { apiName: "employee_attendance", displayName: "My Attendance", route: "/employee/attendance" },
-  employee_holidays: { apiName: "employee_holidays", displayName: "My Holidays", route: "/employee/holidays" },
-  employee_leaves: { apiName: "employee_leaves", displayName: "My Leaves", route: "/employee/leaves" },
-  employee_timelogs: { apiName: "employee_timelogs", displayName: "My Time Logs", route: "/employee/time-logs" },
-  employee_scrum: { apiName: "employee_scrum", displayName: "My Scrum", route: "/employee/scrum" },
-  employee_taskcalendar: { apiName: "employee_taskcalendar", displayName: "Task Calendar", route: "/employee/task-calendar" },
-};
+import { PAGE_NAME_MAP as pageNameMap } from "../../helpers/permissionConstants";
+import PermissionMatrix from "../../components/PermissionMatrix";
 
 const Permissions = () => {
   const { hasPermission, isSuperadmin } = usePermission();
@@ -300,7 +239,7 @@ const Permissions = () => {
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
-              className="bg-white rounded-[2.5rem] w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col shadow-2xl shadow-black/30"
+              className="bg-white rounded-[2.5rem] w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col shadow-2xl shadow-black/30"
               onClick={(e) => e.stopPropagation()}
             >
               {/* Modal Header */}
@@ -353,48 +292,11 @@ const Permissions = () => {
                 </div>
 
                 {/* Permissions Grid */}
-                <div className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden">
-                  <table className="w-full text-left border-collapse">
-                    <thead className="bg-[#fafbff]">
-                      <tr>
-                        <th className="px-6 py-4 text-xs font-medium text-gray-400 uppercase tracking-widest pl-8">Module / Page</th>
-                        {["view", "add", "edit", "delete"].map(action => (
-                          <th key={action} className="px-4 py-4 text-xs font-medium text-gray-400 uppercase tracking-widest text-center">{action}</th>
-                        ))}
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-gray-50">
-                      {Object.keys(pageNameMap).map((key) => (
-                        <tr key={key} className="hover:bg-gray-50/50 group transition-colors">
-                          <td className="px-6 py-5 pl-8">
-                            <div className="flex flex-col">
-                              <span className="font-medium text-gray-900 leading-none mb-1">{pageNameMap[key].displayName}</span>
-                              <span className="text-[10px] text-gray-400 font-mono tracking-tight">{pageNameMap[key].route}</span>
-                            </div>
-                          </td>
-                          {["view", "add", "edit", "delete"].map((action) => (
-                            <td key={action} className="px-4 py-5 text-center">
-                              <div className="flex justify-center">
-                                <button
-                                  type="button"
-                                  onClick={() => handleToggleChange(key, action, !userPermissions[key]?.[action])}
-                                  className={`${userPermissions[key]?.[action] ? 'bg-[#50728c]' : 'bg-gray-300'
-                                    } relative inline-flex h-7 w-12 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-0`}
-                                >
-                                  <span
-                                    aria-hidden="true"
-                                    className={`${userPermissions[key]?.[action] ? 'translate-x-5' : 'translate-x-0'
-                                      } pointer-events-none inline-block h-6 w-6 transform rounded-full bg-white shadow-sm ring-0 transition duration-200 ease-in-out`}
-                                  />
-                                </button>
-                              </div>
-                            </td>
-                          ))}
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
+                <PermissionMatrix
+                  permissions={userPermissions}
+                  onChange={handleToggleChange}
+                  pageNameMap={pageNameMap}
+                />
               </div>
 
               {/* Modal Footer */}

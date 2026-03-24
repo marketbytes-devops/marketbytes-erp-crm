@@ -57,7 +57,7 @@ const AdminDashboard = () => {
           apiClient.get("/operation/projects/dashboard_stats/"),
           apiClient.get("/sales/leads/dashboard_stats/"),
           apiClient.get("/hr/timer/status/"),
-          apiClient.get("/operation/tasks/")
+            apiClient.get("/operation/tasks/")
         ]);
 
         if (profileRes.status === 'fulfilled') setProfile(profileRes.value.data);

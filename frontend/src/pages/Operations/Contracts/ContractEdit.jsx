@@ -345,7 +345,7 @@ const ContractEdit = () => {
                     </div>
 
                     {/* Additional Details */}
-                    <div className="space-y-8 bg-gray-50/50 p-8 rounded-[2rem] border border-gray-100">
+                    <div className="space-y-8 bg-gray-50/50 p-8 rounded-4xl border border-gray-100">
                         <h3 className="text-xl font-bold text-black font-syne pb-4">Additional Information</h3>
 
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -411,7 +411,7 @@ const ContractEdit = () => {
             {/* Sub-modal for Contract Types */}
             <AnimatePresence>
                 {isModalOpen && (
-                    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+                    <div className="fixed inset-0 z-100 flex items-center justify-center p-4">
                         <motion.div
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}

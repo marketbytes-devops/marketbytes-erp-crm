@@ -64,7 +64,7 @@ const LeadDashboard = () => {
                     apiClient.get("/auth/profile/"),
                     apiClient.get("/operation/projects/dashboard_stats/", { params: { lead_scope: true } }),
                     apiClient.get("/operation/tasks/", { params: { lead_scope: true } }),
-                    apiClient.get("/operation/scrum/", { params: { lead_scope: true } })
+                        apiClient.get("/operation/scrum/", { params: { lead_scope: true } })
                 ]);
 
                 if (profileRes.status === 'fulfilled') setProfile(profileRes.value.data);
@@ -329,7 +329,7 @@ const LeadDashboard = () => {
                         <div className="space-y-6">
                             {timeline.map((act, idx) => (
                                 <div key={idx} className="flex gap-4 relative">
-                                    {idx !== timeline.length - 1 && <div className="absolute left-4 top-8 bottom-0 w-[1px] bg-gray-100" />}
+                                    {idx !== timeline.length - 1 && <div className="absolute left-4 top-8 bottom-0 w-px bg-gray-100" />}
                                     <div className="w-8 h-8 rounded-full bg-indigo-50 border border-indigo-100 flex items-center justify-center shrink-0 z-10">
                                         <div className="w-2 h-2 rounded-full bg-indigo-600" />
                                     </div>

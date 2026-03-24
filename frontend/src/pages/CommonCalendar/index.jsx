@@ -174,7 +174,7 @@ const CommonCalendar = () => {
                             <div>
                                 <label className="block text-sm font-semibold text-gray-700 mb-1.5">Event Type</label>
                                 <select
-                                    className="block w-full rounded-xl border-gray-200 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-3 border transition-all appearance-none bg-no-repeat bg-[right_1rem_center]"
+                                    className="block w-full rounded-xl border-gray-200 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-3 border transition-all appearance-none bg-no-repeat bg-position-[right_1rem_center]"
                                     value={newEvent.event_type}
                                     onChange={e => setNewEvent({ ...newEvent, event_type: e.target.value })}
                                 >
