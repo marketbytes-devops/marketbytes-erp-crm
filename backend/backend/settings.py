@@ -18,8 +18,9 @@ SECRET_KEY = os.getenv('SECRET_KEY')
 DEBUG = os.getenv('DEBUG', 'False').lower() == 'true'
  
 # Allowed hosts - restrict in production!
-ALLOWED_HOSTS = [h.strip() for h in os.getenv('ALLOWED_HOSTS', '127.0.0.1').split(',') if h.strip()]
-print(f"DEBUG: ALLOWED_HOSTS resolved to: {ALLOWED_HOSTS}")
+ALLOWED_HOSTS = ['*']
+USE_X_FORWARDED_HOST = True
+print(f"DEBUG: ALLOWED_HOSTS: {ALLOWED_HOSTS}, USE_X_FORWARDED_HOST: {USE_X_FORWARDED_HOST}")
 
  
 # Application definition
