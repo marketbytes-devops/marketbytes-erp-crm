@@ -712,6 +712,22 @@ function App() {
           ),
         },
         {
+          path: "/employee/scrum/edit/:id",
+          element: (
+            <ProtectedRoute requiredPage="employee_scrum" requiredAction="edit">
+              <EditScrumPage />
+            </ProtectedRoute>
+          ),
+        },
+        {
+          path: "/lead/scrum/edit/:id",
+          element: (
+            <ProtectedRoute requiredPage="lead_scrum" requiredAction="edit">
+              <EditScrumPage />
+            </ProtectedRoute>
+          ),
+        },
+        {
           path: "/operations/contracts",
           element: (
             <ProtectedRoute

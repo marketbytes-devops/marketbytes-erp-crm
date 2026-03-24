@@ -23,6 +23,7 @@ import { usePermission } from "../../../context/PermissionContext";
 const Scrum = ({ employeeScope = false, leadScope = false }) => {
   const { hasPermission, user } = usePermission();
   const permissionPage = employeeScope ? "employee_scrum" : (leadScope ? "lead_scrum" : "scrum");
+  const editBasePath = employeeScope ? "/employee/scrum/edit" : (leadScope ? "/lead/scrum/edit" : "/operations/scrum/edit");
   const navigate = useNavigate();
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -276,7 +277,7 @@ const Scrum = ({ employeeScope = false, leadScope = false }) => {
   return (
     <div className="p-6">
       <Toaster position="top-right" />
-      <LayoutComponents title="Scrum Board" subtitle="Manage daily standups and sprint progress" variant="table">
+      <LayoutComponents title={leadScope ? "Team Scrum Board" : "Scrum Board"} subtitle="Manage daily standups and sprint progress" variant="table">
         <div className="max-w-full mx-auto">
 
           {/* Stats Row */}
@@ -498,7 +499,7 @@ const Scrum = ({ employeeScope = false, leadScope = false }) => {
                         <td className="px-6 py-5 whitespace-nowrap">
                           <div className="flex items-center justify-end gap-3">
                             {hasPermission(permissionPage, "edit") && (
-                              <button onClick={() => navigate(`/operations/scrum/edit/${item.id}`)} className="p-2 hover:bg-amber-50 rounded-lg transition group">
+                              <button onClick={() => navigate(`${editBasePath}/${item.id}`)} className="p-2 hover:bg-amber-50 rounded-lg transition group">
                                 <MdEdit className="w-5 h-5 text-gray-600 group-hover:text-amber-600" />
                               </button>
                             )}
@@ -555,7 +556,7 @@ const Scrum = ({ employeeScope = false, leadScope = false }) => {
                           <button
                             onClick={() => {
                               setPinnedModalOpen(false);
-                              navigate(`/operations/scrum/edit/${item.id}`);
+                              navigate(`${editBasePath}/${item.id}`);
                             }}
                             className="p-3 bg-white text-amber-600 rounded-xl shadow-xs hover:bg-amber-600 hover:text-white transition"
                           >

@@ -302,6 +302,13 @@ const Sidebar = ({ toggleSidebar }) => {
           page: "lead_leaves",
           action: "view",
         },
+        {
+          to: "/lead/scrum",
+          label: "Team Scrum",
+          icon: <MdPendingActions className="w-6 h-6" />,
+          page: "lead_scrum",
+          action: "view",
+        },
       ].filter((item) => hasPermission(item.page, item.action)),
     },
     {
