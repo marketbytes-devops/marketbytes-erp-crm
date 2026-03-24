@@ -5,24 +5,23 @@ from pathlib import Path
 from datetime import timedelta
 import os
 from dotenv import load_dotenv
- 
+
+# Load environment variables from .env file
+# override=True ensures that values in .env take precedence over existing env vars
 load_dotenv(override=True)
- 
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
- 
+
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.getenv('SECRET_KEY')
- 
+
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv('DEBUG', 'False').lower() == 'true'
- 
-# Allowed hosts - restrict in production!
-ALLOWED_HOSTS = ['*']
-USE_X_FORWARDED_HOST = True
-print(f"DEBUG: ALLOWED_HOSTS: {ALLOWED_HOSTS}, USE_X_FORWARDED_HOST: {USE_X_FORWARDED_HOST}")
 
- 
+# Allowed hosts - restrict in production!
+ALLOWED_HOSTS = [h.strip() for h in os.getenv('ALLOWED_HOSTS', '127.0.0.1').split(',') if h.strip()]
+
 # Application definition
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -31,14 +30,14 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
- 
+
     # Third-party
     'rest_framework',
     'rest_framework_simplejwt',
     'drf_yasg',
     'corsheaders',
     'django_filters',
- 
+
     # Local
     'authapp',
     'hr',
@@ -48,7 +47,7 @@ INSTALLED_APPS = [
     'notifications.apps.NotificationsConfig',
     'events',
 ]
- 
+
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
@@ -61,9 +60,9 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
- 
+
 ROOT_URLCONF = 'backend.urls'
- 
+
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
@@ -78,9 +77,9 @@ TEMPLATES = [
         },
     },
 ]
- 
+
 WSGI_APPLICATION = 'backend.wsgi.application'
- 
+
 # Database
 DATABASES = {
     'default': {
@@ -96,7 +95,7 @@ DATABASES = {
         },
     }
 }
- 
+
 # Password validation
 AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
@@ -104,20 +103,20 @@ AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator'},
     {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator'},
 ]
- 
+
 # Internationalization
 LANGUAGE_CODE = 'en-us'
 TIME_ZONE = 'Asia/Kolkata'
 USE_I18N = True
 USE_TZ = True
- 
+
 # Static files (CSS, JavaScript, Images)
 STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'  # For collectstatic in production
- 
+
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
- 
+
 # Default primary key field type
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
@@ -130,9 +129,9 @@ STORAGES = {
         "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
     },
 }
- 
+
 AUTH_USER_MODEL = 'authapp.CustomUser'
- 
+
 # DRF Configuration
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
@@ -144,7 +143,7 @@ REST_FRAMEWORK = {
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 20,
 }
- 
+
 # Simple JWT
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(hours=2),
@@ -154,7 +153,7 @@ SIMPLE_JWT = {
     'AUTH_HEADER_TYPES': ('Bearer',),
     'AUTH_TOKEN_CLASSES': ('rest_framework_simplejwt.tokens.AccessToken',),
 }
- 
+
 # Frontend URL
 FRONTEND_URL = os.getenv('FRONTEND_URL', 'http://localhost:5173')
 
@@ -162,7 +161,7 @@ FRONTEND_URL = os.getenv('FRONTEND_URL', 'http://localhost:5173')
 CORS_ALLOWED_ORIGINS = [
     FRONTEND_URL,
 ]
- 
+
 CORS_ALLOW_METHODS = [
     "DELETE",
     "GET",
@@ -171,7 +170,7 @@ CORS_ALLOW_METHODS = [
     "POST",
     "PUT",
 ]
- 
+
 CORS_ALLOW_HEADERS = [
     "accept",
     "authorization",
@@ -180,16 +179,17 @@ CORS_ALLOW_HEADERS = [
     "x-csrftoken",
     "x-requested-with",
 ]
- 
+
 # Allow credentials if needed (for cookies, auth)
 CORS_ALLOW_CREDENTIALS = True
 
+# CSRF Trusted Origins
 CSRF_TRUSTED_ORIGINS = [o.strip() for o in os.getenv('CSRF_TRUSTED_ORIGINS', 'http://localhost').split(',') if o.strip()]
 
 # File Upload Size Limit
 DATA_UPLOAD_MAX_MEMORY_SIZE = int(os.getenv('DATA_UPLOAD_MAX_MEMORY_SIZE', 20971520))
 FILE_UPLOAD_MAX_MEMORY_SIZE = int(os.getenv('FILE_UPLOAD_MAX_MEMORY_SIZE', 20971520))
- 
+
 # Email Configuration
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = os.getenv('EMAIL_HOST')
@@ -200,17 +200,19 @@ EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 ADMIN_EMAIL = os.getenv('ADMIN_EMAIL')
 SERVER_EMAIL = os.getenv('COMPANY_FROM_EMAIL', 'no-reply@primearabiagroup.com')
- 
+
 # Gmail Integration Configuration
 GMAIL_CLIENT_ID = os.getenv('GMAIL_CLIENT_ID')
 GMAIL_CLIENT_SECRET = os.getenv('GMAIL_CLIENT_SECRET')
 GMAIL_REDIRECT_URI = os.getenv('GMAIL_REDIRECT_URI', 'http://127.0.0.1:8000/api/gmail/callback/')
- 
+
 # Encryption Key for storing OAuth tokens securely
 FERNET_KEY = os.getenv('FERNET_KEY')
- 
-# Tell Django that Nginx is forwarding HTTPS requests
+
+# Tells Django that Nginx is forwarding HTTPS requests
+# This is critical for getting correct absolute URLs and protocol detection behind a proxy
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+USE_X_FORWARDED_HOST = True
 
 # Security settings (enable in production)
 if not DEBUG:
