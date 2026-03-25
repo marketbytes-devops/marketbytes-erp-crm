@@ -10,8 +10,8 @@ import { CalendarIcon, ChevronLeftIcon, ChevronRightIcon } from "@heroicons/reac
 import * as XLSX from "xlsx";
 
 const months = [
-  "January", "February", "March", "April", "May", "June",
-  "July", "August", "September", "October", "November", "December"
+ "January", "February", "March", "April", "May", "June",
+ "July", "August", "September", "October", "November", "December"
 ];
 
 const TaskCalendarPage = ({ employeeScope = false, leadScope = false }) => {

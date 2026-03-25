@@ -10,10 +10,13 @@ const apiClient = axios.create({
   },
 });
 
-const getAbsoluteImageUrl = (url) => {
+export const getAbsoluteImageUrl = (url) => {
   if (!url) return null;
-  if (url.startsWith("http")) return url;
-  return `${API_URL}${url}`;
+  if (typeof url !== 'string') return url;
+  if (url.startsWith("http") || url.startsWith("blob:") || url.startsWith("data:")) return url;
+  // Ensure we don't double the slash if url starts with /
+  const path = url.startsWith("/") ? url : `/${url}`;
+  return `${API_URL}${path}`;
 };
 
 apiClient.interceptors.request.use(
@@ -34,8 +37,27 @@ apiClient.interceptors.request.use(
 
 apiClient.interceptors.response.use(
   (response) => {
-    if (response.data && response.data.image) {
-      response.data.image = getAbsoluteImageUrl(response.data.image);
+    const transformImages = (data) => {
+      if (!data) return data;
+      if (Array.isArray(data)) {
+        return data.map(transformImages);
+      }
+      if (typeof data === "object") {
+        const newData = { ...data };
+        Object.keys(newData).forEach((key) => {
+          if ((key === "image" || key === "image_url") && typeof newData[key] === "string") {
+            newData[key] = getAbsoluteImageUrl(newData[key]);
+          } else if (typeof newData[key] === "object") {
+            newData[key] = transformImages(newData[key]);
+          }
+        });
+        return newData;
+      }
+      return data;
+    };
+
+    if (response.data) {
+      response.data = transformImages(response.data);
     }
     return response;
   },

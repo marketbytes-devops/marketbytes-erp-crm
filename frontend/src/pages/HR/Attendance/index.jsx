@@ -5,18 +5,18 @@ import apiClient from "../../../helpers/apiClient";
 import { MdDownload, MdRefresh, MdClose, MdAccessTime, MdKeyboardArrowDown, MdKeyboardArrowUp } from "react-icons/md";
 import { usePermission } from "../../../context/PermissionContext";
 import {
-  format,
-  startOfMonth,
-  endOfMonth,
-  eachDayOfInterval,
-  getDay,
-  addMonths,
-  subMonths,
-  isBefore,
-  isToday,
-  isSunday,
-  isSaturday,
-  startOfToday
+ format,
+ startOfMonth,
+ endOfMonth,
+ eachDayOfInterval,
+ getDay,
+ addMonths,
+ subMonths,
+ isBefore,
+ isToday,
+ isSunday,
+ isSaturday,
+ startOfToday
 } from "date-fns";
 import Dropdown from "../../../components/Dropdown";
 import Input from "../../../components/Input";
@@ -26,153 +26,153 @@ import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
 
 const AttendanceModal = ({ record, date, onClose }) => {
-  if (!record) return null;
+ if (!record) return null;
 
-  const formatDate = (dateStr) => {
-    const d = new Date(dateStr);
-    const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-    const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
-    return `${days[d.getDay()]}, ${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}`;
-  };
+ const formatDate = (dateStr) => {
+ const d = new Date(dateStr);
+ const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+ const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+ return `${days[d.getDay()]}, ${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}`;
+ };
 
-  const formatTime = (time) => (!time ? "Nil" : time);
-  const formatHours = (hours) => {
-    if (!hours || hours <= 0) return "Nil";
-    const h = Math.floor(hours);
-    const m = Math.round((hours % 1) * 60);
-    return h === 0 ? `${m}m` : m === 0 ? `${h}h` : `${h}h ${m}m`;
-  };
+ const formatTime = (time) => (!time ? "Nil" : time);
+ const formatHours = (hours) => {
+ if (!hours || hours <= 0) return "Nil";
+ const h = Math.floor(hours);
+ const m = Math.round((hours % 1) * 60);
+ return h === 0 ? `${m}m` : m === 0 ? `${h}h` : `${h}h ${m}m`;
+ };
 
-  const firstCheckIn = record.first_clock_in || record.clock_in;
-  const lastCheckOut = record.last_clock_out || record.clock_out;
-  const hasHistory = record.check_in_out_history && record.check_in_out_history.length > 0;
+ const firstCheckIn = record.first_clock_in || record.clock_in;
+ const lastCheckOut = record.last_clock_out || record.clock_out;
+ const hasHistory = record.check_in_out_history && record.check_in_out_history.length > 0;
 
-  return createPortal(
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
-      <motion.div
-        initial={{ scale: 0.9, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        exit={{ scale: 0.9, opacity: 0 }}
-        transition={{ type: "spring", damping: 25, stiffness: 300 }}
-        className="bg-white rounded-xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="flex justify-between items-center p-6 border-b border-gray-200 sticky top-0 bg-white z-10">
-          <h3 className="text-2xl font-medium">Attendance Details</h3>
-          <button
-            onClick={onClose}
-            className="p-3 hover:bg-gray-100 rounded-xl transition"
-          >
-            <MdClose className="w-6 h-6 text-gray-600" />
-          </button>
-        </div>
+ return createPortal(
+ <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
+ <motion.div
+ initial={{ scale: 0.9, opacity: 0 }}
+ animate={{ scale: 1, opacity: 1 }}
+ exit={{ scale: 0.9, opacity: 0 }}
+ transition={{ type: "spring", damping: 25, stiffness: 300 }}
+ className="bg-white rounded-xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto"
+ onClick={(e) => e.stopPropagation()}
+ >
+ <div className="flex justify-between items-center p-6 border-b border-gray-200 sticky top-0 bg-white z-10">
+ <h3 className="text-2xl font-medium">Attendance Details</h3>
+ <button
+ onClick={onClose}
+ className="p-3 hover:bg-gray-100 rounded-xl transition"
+ >
+ <MdClose className="w-6 h-6 text-gray-600" />
+ </button>
+ </div>
 
-        <div className="p-8 space-y-8">
-          <div className="text-center">
-            <h4 className="text-2xl font-medium">{formatDate(date)}</h4>
-          </div>
+ <div className="p-8 space-y-8">
+ <div className="text-center">
+ <h4 className="text-2xl font-medium">{formatDate(date)}</h4>
+ </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 text-sm">
-            <div className="space-y-4">
-              <div className="flex justify-between">
-                <span className="font-medium text-gray-600">Employee</span>
-                <span className="font-medium">{record.employee?.name || "Unknown"}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="font-medium text-gray-600">Status</span>
-                <span className="capitalize font-medium">{record.status.replace(/_/g, " ")}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="font-medium text-gray-600">First Clock In</span>
-                <span className="font-mono text-green-600 font-medium">{formatTime(firstCheckIn)}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="font-medium text-gray-600">Last Clock Out</span>
-                <span className="font-mono text-red-600 font-medium">
-                  {lastCheckOut ? formatTime(lastCheckOut) : "Still Working"}
-                </span>
-              </div>
-            </div>
+ <div className="grid grid-cols-1 md:grid-cols-2 gap-8 text-sm">
+ <div className="space-y-4">
+ <div className="flex justify-between">
+ <span className="font-medium text-gray-600">Employee</span>
+ <span className="font-medium">{record.employee?.name || "Unknown"}</span>
+ </div>
+ <div className="flex justify-between">
+ <span className="font-medium text-gray-600">Status</span>
+ <span className="capitalize font-medium">{record.status.replace(/_/g, " ")}</span>
+ </div>
+ <div className="flex justify-between">
+ <span className="font-medium text-gray-600">First Clock In</span>
+ <span className="font-mono text-green-600 font-medium">{formatTime(firstCheckIn)}</span>
+ </div>
+ <div className="flex justify-between">
+ <span className="font-medium text-gray-600">Last Clock Out</span>
+ <span className="font-mono text-red-600 font-medium">
+ {lastCheckOut ? formatTime(lastCheckOut) : "Still Working"}
+ </span>
+ </div>
+ </div>
 
-            <div className="space-y-4">
-              <div className="flex justify-between">
-                <span className="font-medium text-gray-600">Total Hours</span>
-                <span className="font-mono">{formatHours(record.total_hours)}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="font-medium text-gray-600">Productive Hours</span>
-                <span className="font-mono text-blue-600 font-medium">{formatHours(record.productive_hours)}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="font-medium text-gray-600">Break Hours</span>
-                <span className="font-mono text-orange-600">{formatHours(record.break_hours)}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="font-medium text-gray-600">Work From</span>
-                <span className={record.working_from !== "Office" ? "text-indigo-600 font-medium" : ""}>
-                  {record.working_from || "Office"}
-                </span>
-              </div>
-            </div>
-          </div>
+ <div className="space-y-4">
+ <div className="flex justify-between">
+ <span className="font-medium text-gray-600">Total Hours</span>
+ <span className="font-mono">{formatHours(record.total_hours)}</span>
+ </div>
+ <div className="flex justify-between">
+ <span className="font-medium text-gray-600">Productive Hours</span>
+ <span className="font-mono text-blue-600 font-medium">{formatHours(record.productive_hours)}</span>
+ </div>
+ <div className="flex justify-between">
+ <span className="font-medium text-gray-600">Break Hours</span>
+ <span className="font-mono text-orange-600">{formatHours(record.break_hours)}</span>
+ </div>
+ <div className="flex justify-between">
+ <span className="font-medium text-gray-600">Work From</span>
+ <span className={record.working_from !== "Office" ? "text-indigo-600 font-medium" : ""}>
+ {record.working_from || "Office"}
+ </span>
+ </div>
+ </div>
+ </div>
 
-          {record.notes && (
-            <div className="pt-4 border-t border-gray-200">
-              <p className="font-medium text-gray-600 mb-2">Notes</p>
-              <p className="text-gray-700 italic">"{record.notes}"</p>
-            </div>
-          )}
+ {record.notes && (
+ <div className="pt-4 border-t border-gray-200">
+ <p className="font-medium text-gray-600 mb-2">Notes</p>
+ <p className="text-gray-700 italic">"{record.notes}"</p>
+ </div>
+ )}
 
-          {hasHistory && (
-            <div className="mt-8">
-              <h4 className="text-lg font-medium mb-4 flex items-center justify-center gap-2">
-                <MdAccessTime className="w-5 h-5" />
-                Check-In & Check-Out History
-              </h4>
+ {hasHistory && (
+ <div className="mt-8">
+ <h4 className=" font-medium mb-4 flex items-center justify-center gap-2">
+ <MdAccessTime className="w-5 h-5" />
+ Check-In & Check-Out History
+ </h4>
 
-              <div className="overflow-x-auto rounded-lg border border-gray-200">
-                <table className="w-full text-sm text-left">
-                  <thead className="bg-gray-50 text-gray-700 uppercase text-xs">
-                    <tr>
-                      <th className="px-4 py-3">Session</th>
-                      <th className="px-4 py-3">Project</th>
-                      <th className="px-4 py-3">Check In</th>
-                      <th className="px-4 py-3">Check Out</th>
-                      <th className="px-4 py-3">Task</th>
-                      <th className="px-4 py-3">Memo</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-200">
-                    {record.check_in_out_history.map((session, idx) => (
-                      <tr key={idx} className="hover:bg-gray-50">
-                        <td className="px-4 py-3 font-medium">{idx + 1}</td>
-                        <td className="px-4 py-3">
-                          {session.project ? (
-                            <span className="inline-block px-2 py-1 text-xs font-medium bg-indigo-100 text-indigo-700 rounded">
-                              {session.project}
-                            </span>
-                          ) : "No project selected"}
-                        </td>
-                        <td className="px-4 py-3 font-mono text-green-600">{formatTime(session.check_in)}</td>
-                        <td className="px-4 py-3 font-mono">
-                          <span className={session.check_out === "Still Working" ? "text-orange-600" : "text-red-600"}>
-                            {session.check_out === "Still Working" ? session.check_out : formatTime(session.check_out)}
-                          </span>
-                        </td>
-                        <td className="px-4 py-3 max-w-xs truncate">{session.task || "No task selected"}</td>
-                        <td className="px-4 py-3 text-gray-600 italic max-w-xs truncate">{session.memo || "No memo written"}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          )}
-        </div>
-      </motion.div>
-    </div>,
-    document.body
-  );
+ <div className="overflow-x-auto rounded-lg border border-gray-200">
+ <table className="w-full text-sm text-left">
+ <thead className="bg-gray-50 text-gray-700 uppercase text-xs">
+ <tr>
+ <th className="px-4 py-3">Session</th>
+ <th className="px-4 py-3">Project</th>
+ <th className="px-4 py-3">Check In</th>
+ <th className="px-4 py-3">Check Out</th>
+ <th className="px-4 py-3">Task</th>
+ <th className="px-4 py-3">Memo</th>
+ </tr>
+ </thead>
+ <tbody className="divide-y divide-gray-200">
+ {record.check_in_out_history.map((session, idx) => (
+ <tr key={idx} className="hover:bg-gray-50">
+ <td className="px-4 py-3 font-medium">{idx + 1}</td>
+ <td className="px-4 py-3">
+ {session.project ? (
+ <span className="inline-block px-2 py-1 text-xs font-medium bg-indigo-100 text-indigo-700 rounded">
+ {session.project}
+ </span>
+ ) : "No project selected"}
+ </td>
+ <td className="px-4 py-3 font-mono text-green-600">{formatTime(session.check_in)}</td>
+ <td className="px-4 py-3 font-mono">
+ <span className={session.check_out === "Still Working" ? "text-orange-600" : "text-red-600"}>
+ {session.check_out === "Still Working" ? session.check_out : formatTime(session.check_out)}
+ </span>
+ </td>
+ <td className="px-4 py-3 max-w-xs truncate">{session.task || "No task selected"}</td>
+ <td className="px-4 py-3 text-gray-600 italic max-w-xs truncate">{session.memo || "No memo written"}</td>
+ </tr>
+ ))}
+ </tbody>
+ </table>
+ </div>
+ </div>
+ )}
+ </div>
+ </motion.div>
+ </div>,
+ document.body
+ );
 };
 
 const Attendance = ({ leadScope, employeeScope }) => {
