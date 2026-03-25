@@ -24,6 +24,7 @@ import {
 import Input from "../../../components/Input";
 import toast from "react-hot-toast";
 import { usePermission } from "../../../context/PermissionContext";
+import * as XLSX from "xlsx";
 
 const Overtime = ({ leadScope, employeeScope }) => {
  const { hasPermission } = usePermission();
@@ -35,24 +36,47 @@ const Overtime = ({ leadScope, employeeScope }) => {
  const [calculating, setCalculating] = useState(false);
  const [searchTerm, setSearchTerm] = useState("");
 
- const months = [
- { value: 1, label: "January" },
- { value: 2, label: "February" },
- { value: 3, label: "March" },
- { value: 4, label: "April" },
- { value: 5, label: "May" },
- { value: 6, label: "June" },
- { value: 7, label: "July" },
- { value: 8, label: "August" },
- { value: 9, label: "September" },
- { value: 10, label: "October" },
- { value: 11, label: "November" },
- { value: 12, label: "December" },
- ];
+  const handleExportLedger = () => {
+    if (filteredOvertime.length === 0) {
+      toast.error("No records to export");
+      return;
+    }
+    const wb = XLSX.utils.book_new();
+    const rows = filteredOvertime.map((ot, i) => ({
+      "ID": ot.id || i + 1,
+      "Employee": ot.employee?.name || "Anonymous",
+      "Designation": ot.employee?.designation?.name || "—",
+      "Date": ot.date ? new Date(ot.date).toLocaleDateString("en-GB") : "—",
+      "Project": ot.project || "General Operations",
+      "Hours": parseFloat(ot.hours || 0).toFixed(2),
+      "Effort Detail": ot.effort || ""
+    }));
 
- useEffect(() => {
- fetchOvertime();
- }, [month, year]);
+    const ws = XLSX.utils.json_to_sheet(rows);
+    XLSX.utils.book_append_sheet(wb, ws, "Overtime Ledger");
+    const monthLabel = months.find(m => m.value === month)?.label || month;
+    XLSX.writeFile(wb, `Overtime_Ledger_${monthLabel}_${year}.xlsx`);
+  };
+
+
+  const months = [
+    { value: 1, label: "January" },
+    { value: 2, label: "February" },
+    { value: 3, label: "March" },
+    { value: 4, label: "April" },
+    { value: 5, label: "May" },
+    { value: 6, label: "June" },
+    { value: 7, label: "July" },
+    { value: 8, label: "August" },
+    { value: 9, label: "September" },
+    { value: 10, label: "October" },
+    { value: 11, label: "November" },
+    { value: 12, label: "December" },
+  ];
+
+  useEffect(() => {
+    fetchOvertime();
+  }, [month, year, leadScope, employeeScope]);
 
  useEffect(() => {
  fetchAvailableYears();
@@ -316,34 +340,38 @@ const Overtime = ({ leadScope, employeeScope }) => {
  )}
  </div>
 
- {/* Protocol Footer */}
- <div className="mt-12 p-8 bg-gray-50 border border-gray-100 rounded-[2.5rem] flex flex-col md:flex-row gap-8 items-start justify-between relative overflow-hidden group">
- <div className="absolute right-0 bottom-0 opacity-5 group-hover:opacity-10 transition-opacity">
- <Clock size={240} />
- </div>
- <div className="space-y-4 max-w-xl relative z-10">
- <div className="flex items-center gap-3 text-black">
- <MdInfoOutline className="text-2xl" />
- <h4 className=" font-medium font-syne uppercase tracking-tighter leading-none">Standard Operating Procedure</h4>
- </div>
- <p className="text-xs text-gray-600 font-medium leading-relaxed">
- Impact records are generated through a high-precision synchronization between the daily timer and the platform threshold.
- Only <strong>productive work units</strong> (Active Timer status) are counted towards the 8-hour window.
- Support tickets and Break sessions are excluded from the lifecycle to ensure elite performance metrics.
- </p>
- </div>
- <div className="flex gap-4 relative z-10">
- <button className="flex items-center gap-3 px-5 py-2.5 text-sm bg-white border border-gray-200 text-black text-[10px] font-medium uppercase tracking-widest rounded-xl hover:bg-gray-100 transition shadow-xs active:scale-95">
- <MdDownload /> Export Ledger
- </button>
- <button className="flex items-center gap-3 px-5 py-2.5 text-sm bg-black text-white text-[10px] font-medium uppercase tracking-widest rounded-xl hover:bg-gray-800 transition shadow-xl shadow-black/10 active:scale-95">
- <ChevronRight size={14} /> Audit History
- </button>
- </div>
- </div>
- </LayoutComponents>
- </div>
- );
+        {/* Protocol Footer */}
+        <div className="mt-12 p-8 bg-gray-50 border border-gray-100 rounded-[2.5rem] flex flex-col md:flex-row gap-8 items-start justify-between relative overflow-hidden group">
+          <div className="absolute right-0 bottom-0 opacity-5 group-hover:opacity-10 transition-opacity">
+            <Clock size={240} />
+          </div>
+          <div className="space-y-4 max-w-xl relative z-10">
+            <div className="flex items-center gap-3 text-black">
+              <MdInfoOutline className="text-2xl" />
+              <h4 className="text-lg font-medium font-syne uppercase tracking-tighter leading-none">Standard Operating Procedure</h4>
+            </div>
+            <p className="text-xs text-gray-600 font-medium leading-relaxed">
+              Impact records are generated through a high-precision synchronization between the daily timer and the platform threshold.
+              Only <strong>productive work units</strong> (Active Timer status) are counted towards the 8-hour window.
+              Support tickets and Break sessions are excluded from the lifecycle to ensure elite performance metrics.
+            </p>
+          </div>
+          <div className="flex gap-4 relative z-10">
+            <button
+              onClick={handleExportLedger}
+              className="flex items-center gap-3 px-6 py-3 bg-white border border-gray-200 text-black text-[10px] font-medium uppercase tracking-widest rounded-2xl hover:bg-gray-100 transition shadow-xs active:scale-95"
+            >
+              <MdDownload /> Export Ledger
+            </button>
+            <button className="flex items-center gap-3 px-6 py-3 bg-black text-white text-[10px] font-medium uppercase tracking-widest rounded-2xl hover:bg-gray-800 transition shadow-xl shadow-black/10 active:scale-95">
+              <ChevronRight size={14} /> Audit History
+            </button>
+          </div>
+
+        </div>
+      </LayoutComponents>
+    </div>
+  );
 };
 
 export default Overtime;

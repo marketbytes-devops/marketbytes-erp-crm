@@ -5,6 +5,7 @@ import LayoutComponents from "../../../components/LayoutComponents";
 import apiClient from "../../../helpers/apiClient";
 import toast from "react-hot-toast";
 import { Link } from "react-router-dom";
+import * as XLSX from "xlsx";
 
 const ProjectsPage = () => {
  const [projects, setProjects] = useState([]);
@@ -12,25 +13,45 @@ const ProjectsPage = () => {
  const [loading, setLoading] = useState(true);
  const [search, setSearch] = useState("");
 
- useEffect(() => {
- const fetchArchivedProjects = async () => {
- try {
- setLoading(true);
- const response = await apiClient.get("/operation/projects/inactive/");
- const extract = (d) => (Array.isArray(d) ? d : d.results || []);
- const data = extract(response.data);
- setProjects(data);
- setFiltered(data);
- } catch (error) {
- toast.error("Failed to load archived projects");
- setProjects([]);
- setFiltered([]);
- } finally {
- setLoading(false);
- }
- };
- fetchArchivedProjects();
- }, []);
+  const handleExport = () => {
+    if (filtered.length === 0) {
+      toast.error("No data to export");
+      return;
+    }
+    const wb = XLSX.utils.book_new();
+    const rows = filtered.map((p, i) => ({
+      "SL No": i + 1,
+      Project: p.name,
+      Client: p.client?.name || "—",
+      Deadline: p.deadline ? new Date(p.deadline).toLocaleDateString("en-GB") : "—",
+      Summary: p.summary || ""
+    }));
+
+    const ws = XLSX.utils.json_to_sheet(rows);
+    XLSX.utils.book_append_sheet(wb, ws, "Archived Projects");
+    XLSX.writeFile(wb, "Archived_Projects_Report.xlsx");
+  };
+
+
+  useEffect(() => {
+    const fetchArchivedProjects = async () => {
+      try {
+        setLoading(true);
+        const response = await apiClient.get("/operation/projects/inactive/");
+        const extract = (d) => (Array.isArray(d) ? d : d.results || []);
+        const data = extract(response.data);
+        setProjects(data);
+        setFiltered(data);
+      } catch (error) {
+        toast.error("Failed to load archived projects");
+        setProjects([]);
+        setFiltered([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchArchivedProjects();
+  }, []);
 
  useEffect(() => {
  const term = search.toLowerCase();
@@ -98,30 +119,34 @@ const ProjectsPage = () => {
  </Link>
  </div>
 
- <div className="bg-white rounded-xl shadow-sm p-6 mb-6">
- <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
- <div className="flex items-center gap-4 flex-1">
- <div className="relative flex-1 max-w-2xl">
- <FiSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 w-5 h-5" />
- <input
- type="text"
- placeholder="Search by project name or client..."
- value={search}
- onChange={(e) => setSearch(e.target.value)}
- className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-black outline-none text-base transition"
- />
- </div>
- <span className="text-sm font-medium text-gray-600 hidden lg:block">
- {filtered.length} {filtered.length === 1 ? "project" : "projects"}
- </span>
- </div>
- <div className="flex gap-3">
- <button className="flex items-center gap-2 px-5 py-4 border border-gray-300 rounded-xl hover:bg-gray-50 transition text-sm font-medium">
- <MdDownload className="w-5 h-5" /> Export
- </button>
- </div>
- </div>
- </div>
+        <div className="bg-white rounded-2xl shadow-sm p-6 mb-6">
+          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+            <div className="flex items-center gap-4 flex-1">
+              <div className="relative flex-1 max-w-2xl">
+                <FiSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 w-5 h-5" />
+                <input
+                  type="text"
+                  placeholder="Search by project name or client..."
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-black outline-none text-base transition"
+                />
+              </div>
+              <span className="text-sm font-medium text-gray-600 hidden lg:block">
+                {filtered.length} {filtered.length === 1 ? "project" : "projects"}
+              </span>
+            </div>
+            <div className="flex gap-3">
+              <button
+                onClick={handleExport}
+                className="flex items-center gap-2 px-5 py-4 border border-gray-300 rounded-xl hover:bg-gray-50 transition text-sm font-medium"
+              >
+                <MdDownload className="w-5 h-5" /> Export
+              </button>
+            </div>
+
+          </div>
+        </div>
 
  <div className="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-200">
  <div className="overflow-x-auto">

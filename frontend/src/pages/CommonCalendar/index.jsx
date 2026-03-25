@@ -103,23 +103,23 @@ const CommonCalendar = () => {
  };
  };
 
- return (
- <div className="p-8 h-[calc(100vh-100px)] flex flex-col bg-gray-50/50">
- <div className="flex justify-between items-center mb-8">
- <div>
- <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight">Common Calendar</h1>
- <p className="text-gray-500 mt-1">Manage and view all company events and holidays</p>
- </div>
- {canAddEvent && (
- <button
- onClick={() => setShowModal(true)}
- className="flex items-center gap-2 bg-indigo-600 text-white px-5 py-2.5 text-sm.5 rounded-xl font-semibold shadow-lg shadow-indigo-200 hover:bg-indigo-700 hover:shadow-indigo-300 transition-all active:scale-95"
- >
- <PlusIcon className="w-5 h-5 stroke-2" />
- Add Event
- </button>
- )}
- </div>
+    return (
+        <div className="p-8 h-[calc(100vh-100px)] flex flex-col bg-gray-50/50">
+            <div className="flex justify-between items-center mb-8">
+                <div>
+                    <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight">Events</h1>
+                    <p className="text-gray-500 mt-1">Manage and view all company events and holidays</p>
+                </div>
+                {canAddEvent && (
+                    <button
+                        onClick={() => setShowModal(true)}
+                        className="flex items-center gap-2 bg-indigo-600 text-white px-6 py-2.5 rounded-xl font-semibold shadow-lg shadow-indigo-200 hover:bg-indigo-700 hover:shadow-indigo-300 transition-all active:scale-95"
+                    >
+                        <PlusIcon className="w-5 h-5 stroke-2" />
+                        Add Event
+                    </button>
+                )}
+            </div>
 
  <div className="flex-1 bg-white rounded-xl shadow-sm border border-gray-100 p-6 overflow-hidden">
  {loading ? (

@@ -6,7 +6,59 @@ import apiClient from "../../helpers/apiClient";
 import Input from "../../components/Input";
 import PermissionMatrix from "../../components/PermissionMatrix";
 import { usePermission } from "../../context/PermissionContext";
-import { PAGE_NAME_MAP as pageNameMap } from "../../helpers/permissionConstants";
+
+const pageNameMap = {
+  // Common / Home
+  admin: { apiName: "admin", displayName: "Dashboard", route: "/Dashboard" },
+
+  // HR Management
+  employees: { apiName: "employees", displayName: "Employees", route: "/hr/employees" },
+  departments: { apiName: "departments", displayName: "Departments", route: "/hr/departments" },
+  designations: { apiName: "designations", displayName: "Designations", route: "/hr/designations" },
+  attendance: { apiName: "attendance", displayName: "Attendance", route: "/hr/attendance" },
+  holidays: { apiName: "holidays", displayName: "Holidays", route: "/hr/holidays" },
+  leaves: { apiName: "leaves", displayName: "Leaves", route: "/hr/leaves" },
+  overtime: { apiName: "overtime", displayName: "Overtime", route: "/hr/overtime" },
+  recruitment: { apiName: "recruitment", displayName: "Recruitment", route: "/hr/recruitment" },
+  performance: { apiName: "performance", displayName: "Performance", route: "/hr/performance" },
+
+  projects: { apiName: "projects", displayName: "Projects", route: "/operations/projects" },
+  tasks: { apiName: "tasks", displayName: "Tasks", route: "/operations/tasks" },
+  taskboard: { apiName: "task_board", displayName: "Task Board", route: "/operations/task-board" },
+  timelogs: { apiName: "timelogs", displayName: "Time Log", route: "/operations/time-logs" },
+  task_calendar: { apiName: "task_calendar", displayName: "Task Calendar", route: "/operations/task-calendar" },
+  common_calendar: { apiName: "common_calendar", displayName: "Events", route: "/operations/common-calendar" },
+  scrum: { apiName: "scrum", displayName: "Scrum", route: "/operations/scrum" },
+
+  // Sales
+  leads: { apiName: "leads", displayName: "Leads", route: "/sales/leads" },
+  pipeline: { apiName: "pipeline", displayName: "Pipeline", route: "/sales/pipeline" },
+  communication_tools: { apiName: "communication_tools", displayName: "Communication Tools", route: "/sales/communication-tools" },
+  invoices: { apiName: "invoices", displayName: "Invoices", route: "/sales/invoices" },
+  reports: { apiName: "reports", displayName: "Reports", route: "/sales/reports" },
+  customer: { apiName: "customer", displayName: "Customer", route: "/sales/customer" },
+
+  // User Roles
+  roles: { apiName: "roles", displayName: "Roles", route: "/user-roles/roles" },
+  users: { apiName: "users", displayName: "Users", route: "/user-roles/users" },
+  permissions: { apiName: "permissions", displayName: "Permissions", route: "/user-roles/permissions" },
+
+  // Profile
+  profile: { apiName: "profile", displayName: "Profile", route: "/profile" },
+
+  // Lead Section
+  lead_dashboard: { apiName: "lead_dashboard", displayName: "Lead Dashboard", route: "/lead-dashboard" },
+  team_listing: { apiName: "team_listing", displayName: "Team Members", route: "/team/employees" },
+  lead_attendance: { apiName: "lead_attendance", displayName: "Team Attendance", route: "/lead/attendance" },
+  lead_leaves: { apiName: "lead_leaves", displayName: "Team Leaves", route: "/lead/leaves" },
+
+  // Employee Section
+  employee_dashboard: { apiName: "employee_dashboard", displayName: "My Dashboard", route: "/employee-dashboard" },
+  employee_projects: { apiName: "employee_projects", displayName: "My Projects", route: "/employee/projects" },
+  employee_tasks: { apiName: "employee_tasks", displayName: "My Tasks", route: "/employee/tasks" },
+  employee_attendance: { apiName: "employee_attendance", displayName: "My Attendance", route: "/employee/attendance" },
+  employee_leaves: { apiName: "employee_leaves", displayName: "My Leaves", route: "/employee/leaves" },
+};
 
 const Users = () => {
  const { hasPermission, isSuperadmin } = usePermission();

@@ -176,667 +176,667 @@ const AttendanceModal = ({ record, date, onClose }) => {
 };
 
 const Attendance = ({ leadScope, employeeScope }) => {
- const { hasPermission } = usePermission();
- const permissionPage = employeeScope ? "employee_attendance" : (leadScope ? "lead_attendance" : "attendance");
- const [selectedDate, setSelectedDate] = useState(new Date());
- const [attendances, setAttendances] = useState([]);
- const [summary, setSummary] = useState({
- present: 0,
- late: 0,
- absent: 0,
- half_day: 0,
- leave: 0,
- holiday: 0,
- });
- const [loading, setLoading] = useState(false);
- const [selectedRecord, setSelectedRecord] = useState(null);
- const [selectedDay, setSelectedDay] = useState(null);
- const [currentPage, setCurrentPage] = useState(1);
- const [itemsPerPage] = useState(10);
- const [expandedEmployeeId, setExpandedEmployeeId] = useState(null);
+  const { hasPermission } = usePermission();
+  const permissionPage = employeeScope ? "employee_attendance" : (leadScope ? "lead_attendance" : "attendance");
+  const [selectedDate, setSelectedDate] = useState(new Date());
+  const [attendances, setAttendances] = useState([]);
+  const [summary, setSummary] = useState({
+    present: 0,
+    late: 0,
+    absent: 0,
+    half_day: 0,
+    leave: 0,
+    holiday: 0,
+  });
+  const [loading, setLoading] = useState(false);
+  const [selectedRecord, setSelectedRecord] = useState(null);
+  const [selectedDay, setSelectedDay] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(10);
+  const [expandedEmployeeId, setExpandedEmployeeId] = useState(null);
 
 
- const [showFilters, setShowFilters] = useState(false);
- const [filterEmployeeId, setFilterEmployeeId] = useState("");
- const [filterDepartmentId, setFilterDepartmentId] = useState("");
+  const [showFilters, setShowFilters] = useState(false);
+  const [filterEmployeeId, setFilterEmployeeId] = useState("");
+  const [filterDepartmentId, setFilterDepartmentId] = useState("");
 
- const [departments, setDepartments] = useState([]);
- const [employees, setEmployees] = useState([]);
- const [loadingLists, setLoadingLists] = useState(false);
+  const [departments, setDepartments] = useState([]);
+  const [employees, setEmployees] = useState([]);
+  const [loadingLists, setLoadingLists] = useState(false);
 
- const month = selectedDate.getMonth() + 1;
- const year = selectedDate.getFullYear();
+  const month = selectedDate.getMonth() + 1;
+  const year = selectedDate.getFullYear();
 
- useEffect(() => {
- fetchAttendance();
- }, [month, year, filterEmployeeId, filterDepartmentId]);
+  useEffect(() => {
+    fetchAttendance();
+  }, [month, year, filterEmployeeId, filterDepartmentId, leadScope, employeeScope]);
 
- useEffect(() => {
- const fetchLists = async () => {
- setLoadingLists(true);
- try {
- const usersUrl = leadScope ? "/auth/users/?lead_scope=true" : "/auth/users/";
- const [deptRes, empRes] = await Promise.all([
- apiClient.get("/auth/departments/"),
- apiClient.get(usersUrl),
- ]);
- const extract = (d) => (Array.isArray(d) ? d : d.results || []);
- setDepartments(extract(deptRes.data));
- setEmployees(extract(empRes.data));
- } catch (err) {
- console.error("Failed to fetch filter lists", err);
- } finally {
- setLoadingLists(false);
- }
- };
- fetchLists();
- }, []);
+  useEffect(() => {
+    const fetchLists = async () => {
+      setLoadingLists(true);
+      try {
+        const usersUrl = leadScope ? "/auth/users/?lead_scope=true" : "/auth/users/";
+        const [deptRes, empRes] = await Promise.all([
+          apiClient.get("/auth/departments/"),
+          apiClient.get(usersUrl),
+        ]);
+        const extract = (d) => (Array.isArray(d) ? d : d.results || []);
+        setDepartments(extract(deptRes.data));
+        setEmployees(extract(empRes.data));
+      } catch (err) {
+        console.error("Failed to fetch filter lists", err);
+      } finally {
+        setLoadingLists(false);
+      }
+    };
+    fetchLists();
+  }, [leadScope, employeeScope]);
 
- const fetchAttendance = () => {
- setLoading(true);
- const params = {
- month,
- year,
- employee_id: filterEmployeeId || undefined,
- department_id: filterDepartmentId || undefined,
- lead_scope: leadScope ? true : undefined,
- employee_scope: employeeScope ? true : undefined
- };
- apiClient
- .get("/hr/attendance/", { params })
- .then((res) => {
- const data = Array.isArray(res.data) ? res.data : res.data.results || [];
- setAttendances(data);
- })
- .catch(() => setAttendances([]));
+  const fetchAttendance = () => {
+    setLoading(true);
+    const params = {
+      month,
+      year,
+      employee_id: filterEmployeeId || undefined,
+      department_id: filterDepartmentId || undefined,
+      lead_scope: leadScope ? true : undefined,
+      employee_scope: employeeScope ? true : undefined
+    };
+    apiClient
+      .get("/hr/attendance/", { params })
+      .then((res) => {
+        const data = Array.isArray(res.data) ? res.data : res.data.results || [];
+        setAttendances(data);
+      })
+      .catch(() => setAttendances([]));
 
- apiClient
- .get("/hr/attendance/summary/", { params })
- .then((res) => setSummary(res.data))
- .catch(() =>
- setSummary({ present: 0, late: 0, absent: 0, half_day: 0, leave: 0, holiday: 0 })
- )
- .finally(() => setLoading(false));
- };
+    apiClient
+      .get("/hr/attendance/summary/", { params })
+      .then((res) => setSummary(res.data))
+      .catch(() =>
+        setSummary({ present: 0, late: 0, absent: 0, half_day: 0, leave: 0, holiday: 0 })
+      )
+      .finally(() => setLoading(false));
+  };
 
- const monthStart = startOfMonth(selectedDate);
- const monthEnd = endOfMonth(selectedDate);
- const startDate = new Date(monthStart);
- startDate.setDate(startDate.getDate() - getDay(monthStart));
- const endDate = new Date(monthEnd);
- endDate.setDate(endDate.getDate() + (6 - getDay(monthEnd)));
+  const monthStart = startOfMonth(selectedDate);
+  const monthEnd = endOfMonth(selectedDate);
+  const startDate = new Date(monthStart);
+  startDate.setDate(startDate.getDate() - getDay(monthStart));
+  const endDate = new Date(monthEnd);
+  endDate.setDate(endDate.getDate() + (6 - getDay(monthEnd)));
 
- const calendarDays = eachDayOfInterval({ start: startDate, end: endDate });
-
-
- const employeesMap = attendances.reduce((acc, att) => {
- const empId = att.employee?.id || att.employee_id || "unknown";
-
- // Better name fallback logic
- const getBestName = (emp) => {
- if (!emp) return "Deleted Employee";
- if (emp.name) return emp.name;
- if (emp.first_name || emp.last_name) return `${emp.first_name || ""} ${emp.last_name || ""}`.trim();
- return emp.username || emp.email || "Unknown Employee";
- };
-
- const empName = getBestName(att.employee);
-
- // Since backend now filters, we just map everything that comes back
- if (!acc[empId]) {
- acc[empId] = { employee: { id: empId, name: empName }, records: [] };
- }
- acc[empId].records.push(att);
- return acc;
- }, {});
-
- const employeeList = Object.values(employeesMap);
-
- const indexOfLastEmployee = currentPage * itemsPerPage;
- const indexOfFirstEmployee = indexOfLastEmployee - itemsPerPage;
- const currentEmployees = employeeList.slice(indexOfFirstEmployee, indexOfLastEmployee);
- const totalPages = Math.ceil(employeeList.length / itemsPerPage);
-
- const paginate = (pageNumber) => setCurrentPage(pageNumber);
-
- useEffect(() => {
- setCurrentPage(1);
- setExpandedEmployeeId(null);
- }, [month, year, filterEmployeeId, filterDepartmentId]); // reset page and expanded row when filters change
-
- const getRecordForDate = (records, date) => {
- const formatted = format(date, "yyyy-MM-dd");
- return records.find(
- (r) => r.date === formatted || format(new Date(r.date), "yyyy-MM-dd") === formatted
- );
- };
-
- const getStatusBadge = (status) => {
- const badges = {
- present: { label: "P", bg: "bg-black text-white", border: "" },
- late: { label: "L", bg: "bg-white text-black", border: "border-2 border-black" },
- absent: { label: "A", bg: "bg-white text-black", border: "border-2 border-black" },
- half_day: { label: "H", bg: "bg-white text-black", border: "border-2 border-black" },
- leave: { label: "LV", bg: "bg-white text-black", border: "border-2 border-black" },
- half_day_late: { label: "HL", bg: "bg-white text-black", border: "border-2 border-black" },
- holiday: { label: "HD", bg: "bg-gray-200 text-black", border: "" },
- };
- return badges[status] || { label: "-", bg: "bg-gray-100 text-gray-500", border: "" };
- };
-
- const calculateTotals = (records) => {
- const monthDays = eachDayOfInterval({ start: startOfMonth(selectedDate), end: endOfMonth(selectedDate) });
- const today = startOfToday();
-
- const counts = {
- present: 0,
- half_day_late: 0,
- absent: 0,
- total: 0
- };
-
- // 1. Count from existing records
- records.forEach(r => {
- if (['present', 'late'].includes(r.status)) counts.present++;
- if (r.status === 'half_day_late') counts.half_day_late++;
-
- // Total is any working status
- if (['present', 'late', 'half_day', 'half_day_late'].includes(r.status)) {
- counts.total++;
- }
- });
-
- // 2. Count Absent (A) - Missing Mon-Fri records up to today
- monthDays.forEach(day => {
- if (isBefore(day, today) || isToday(day)) {
- const isWeekday = !isSunday(day) && !isSaturday(day);
- const record = getRecordForDate(records, day);
- if (isWeekday && !record) {
- counts.absent++;
- }
- }
- });
-
- return counts;
- };
-
- const exportData = (type) => {
- const monthName = format(selectedDate, "MMMM");
- const yearName = format(selectedDate, "yyyy");
-
- const data = employeeList.map((emp, index) => {
- const stats = calculateTotals(emp.records);
- return {
- "SL No": index + 1,
- "Employee Name": emp.employee.name,
- "Month": `${monthName} ${yearName}`,
- "Present (P)": stats.present,
- "Half Day Late (HL)": stats.half_day_late,
- "Absent (A)": stats.absent,
- "Total Attendance": stats.total
- };
- });
-
- if (type === "CSV" || type === "Excel") {
- const ws = XLSX.utils.json_to_sheet(data);
- const wb = XLSX.utils.book_new();
- XLSX.utils.book_append_sheet(wb, ws, "Attendance Summary");
- XLSX.writeFile(wb, `Attendance_Summary_${monthName}_${yearName}.${type === "CSV" ? "csv" : "xlsx"}`);
- } else if (type === "PDF") {
- const doc = new jsPDF('l', 'mm', 'a4');
- const now = new Date();
-
- // Title
- doc.setFontSize(18);
- doc.setTextColor(0, 0, 0);
- doc.text(`Attendance Summary Report`, 14, 20);
-
- // Filter Information
- doc.setFontSize(10);
- doc.setTextColor(100, 100, 100);
- let yPos = 28;
-
- doc.text(`Month: ${monthName} ${yearName}`, 14, yPos);
- yPos += 6;
-
- if (filterDepartmentId) {
- const dept = departments.find(d => d.id.toString() === filterDepartmentId.toString());
- doc.text(`Department: ${dept?.name || 'All'}`, 14, yPos);
- yPos += 6;
- }
-
- if (filterEmployeeId) {
- const emp = employees.find(e => e.id.toString() === filterEmployeeId.toString());
- doc.text(`Employee: ${emp?.name || 'All'}`, 14, yPos);
- yPos += 6;
- }
-
- const tableData = data.map(item => [
- item["SL No"],
- item["Employee Name"],
- item["Month"],
- item["Present (P)"],
- item["Half Day Late (HL)"],
- item["Absent (A)"],
- item["Total Attendance"]
- ]);
-
- autoTable(doc, {
- head: [["SL No", "Employee Name", "Month", "P", "HL", "A", "Total"]],
- body: tableData,
- startY: yPos + 5,
- theme: 'grid',
- headStyles: { fillColor: [0, 0, 0], fontSize: 11, halign: 'center' },
- bodyStyles: { fontSize: 10 },
- columnStyles: {
- 0: { halign: 'center' },
- 3: { halign: 'center' },
- 4: { halign: 'center' },
- 5: { halign: 'center' },
- 6: { halign: 'center', fontStyle: 'bold' }
- }
- });
-
- // Footer with page numbers
- const pageCount = doc.internal.getNumberOfPages();
- for (let i = 1; i <= pageCount; i++) {
- doc.setPage(i);
- doc.setFontSize(8);
- doc.setTextColor(150, 150, 150);
- doc.text(
- `Page ${i} of ${pageCount} | Generated on ${now.toLocaleString()}`,
- 14,
- doc.internal.pageSize.height - 10
- );
- }
-
- doc.save(`Attendance_Summary_${monthName}_${yearName}.pdf`);
- }
- };
-
- const openModal = (record, date) => {
- setSelectedRecord(record);
- setSelectedDay(date);
- };
-
- const closeModal = () => {
- setSelectedRecord(null);
- setSelectedDay(null);
- };
-
- const resetFilters = () => {
- setFilterEmployeeId("");
- setFilterDepartmentId("");
- setSelectedDate(new Date()); // Resets to current month/year
- setShowFilters(false);
- };
-
- return (
- <div className="p-6">
- <LayoutComponents
- title="Attendance"
- subtitle="Monthly attendance overview with productive hours tracking"
- variant="card"
- >
- <div className="grid grid-cols-2 md:grid-cols-6 gap-6 mb-8">
- {[
- { label: "Present", value: summary.present, color: "bg-black", desc: "On time" },
- { label: "Late", value: summary.late, color: "bg-black", desc: "After 9:30 AM" },
- { label: "Absent", value: summary.absent, color: "bg-black", desc: "No check-in" },
- { label: "Half Day", value: summary.half_day, color: "bg-black", desc: "Left early" },
- { label: "Leave", value: summary.leave, color: "bg-black", desc: "Approved" },
- { label: "Holiday", value: summary.holiday, color: "bg-black", desc: "Public holiday" },
- ].map((item, i) => (
- <motion.div
- key={i}
- whileHover={{ scale: 1.05 }}
- className="bg-white rounded-xl p-6 shadow-lg border border-gray-100"
- >
- <p className="text-gray-600 text-sm">{item.label}</p>
- <p className="text-4xl font-medium mt-3">{item.value}</p>
- <p className="text-xs text-gray-500 mt-2">{item.desc}</p>
- </motion.div>
- ))}
- </div>
-
- <div className="bg-white rounded-xl shadow-sm p-6 mb-6">
- <div className="flex flex-wrap gap-4 justify-between items-center">
- <div className="flex items-center gap-4">
- <button
- onClick={() => setSelectedDate(subMonths(selectedDate, 1))}
- className="p-2 bg-gray-100 hover:bg-white text-black border border-gray-100 hover:border-black transition-all duration-300 rounded-xl text-sm font-medium"
- >
- Previous
- </button>
- <h2 className="text-2xl font-medium text-black">
- {format(selectedDate, "MMMM yyyy")}
- </h2>
- <button
- onClick={() => setSelectedDate(addMonths(selectedDate, 1))}
- className="p-2 bg-gray-100 hover:bg-white text-black border border-gray-100 hover:border-black transition-all duration-300 rounded-xl text-sm font-medium"
- >
- Next
- </button>
- </div>
- <div className="flex gap-3">
- <button
- onClick={() => setShowFilters(!showFilters)}
- className="flex items-center gap-2 px-5 py-3 border border-gray-400 rounded-xl hover:bg-gray-50 transition font-medium"
- >
- <span>Filters {showFilters ? "▲" : "▼"}</span>
- </button>
- <button
- onClick={fetchAttendance}
- className="flex items-center gap-3 px-5 py-2.5 text-sm.5 bg-black text-white rounded-xl hover:bg-black transition font-medium"
- >
- <MdRefresh className="w-5 h-5" />
- Refresh
- </button>
- {hasPermission(permissionPage, "view") && (
- <Dropdown
- trigger={
- <button className="flex items-center gap-3 px-5 py-2.5 text-sm.5 border border-gray-400 rounded-xl hover:bg-gray-50 transition font-medium">
- <MdDownload className="w-5 h-5" /> Export
- </button>
- }
- dropdownId="export-attendance"
- align="right"
- >
- <Dropdown.Item onClick={() => exportData("CSV")}>Export as CSV</Dropdown.Item>
- <Dropdown.Item onClick={() => exportData("Excel")}>Export as Excel</Dropdown.Item>
- <Dropdown.Item onClick={() => exportData("PDF")}>Export as PDF</Dropdown.Item>
- </Dropdown>
- )}
- </div>
- </div>
- </div>
+  const calendarDays = eachDayOfInterval({ start: startDate, end: endDate });
 
 
- {showFilters && (
- <div className="bg-white rounded-xl shadow-sm p-6 mb-6 border border-gray-200">
- <div className="flex justify-between items-center mb-5">
- <h3 className="text-xl font-semibold text-gray-900">Advanced Filters</h3>
- <button
- onClick={() => setShowFilters(false)}
- className="p-2 hover:bg-gray-100 rounded-full transition"
- >
- <MdClose className="w-6 h-6 text-gray-500" />
- </button>
- </div>
+  const employeesMap = attendances.reduce((acc, att) => {
+    const empId = att.employee?.id || att.employee_id || "unknown";
 
- <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
- <Input
- label="Month"
- type="select"
- value={month}
- onChange={(val) => {
- const newDate = new Date(selectedDate);
- newDate.setMonth(parseInt(val) - 1);
- setSelectedDate(newDate);
- }}
- options={[
- { label: "January", value: 1 },
- { label: "February", value: 2 },
- { label: "March", value: 3 },
- { label: "April", value: 4 },
- { label: "May", value: 5 },
- { label: "June", value: 6 },
- { label: "July", value: 7 },
- { label: "August", value: 8 },
- { label: "September", value: 9 },
- { label: "October", value: 10 },
- { label: "November", value: 11 },
- { label: "December", value: 12 },
- ]}
- />
+    // Better name fallback logic
+    const getBestName = (emp) => {
+      if (!emp) return "Deleted Employee";
+      if (emp.name) return emp.name;
+      if (emp.first_name || emp.last_name) return `${emp.first_name || ""} ${emp.last_name || ""}`.trim();
+      return emp.username || emp.email || "Unknown Employee";
+    };
 
- <Input
- label="Department"
- type="select"
- value={filterDepartmentId}
- onChange={setFilterDepartmentId}
- options={[
- { label: "All Departments", value: "" },
- ...departments.map(d => ({ label: d.name, value: d.id }))
- ]}
- />
+    const empName = getBestName(att.employee);
 
- <Input
- label="Employee"
- type="select"
- value={filterEmployeeId}
- onChange={setFilterEmployeeId}
- options={[
- { label: "All Employees", value: "" },
- ...employees.map(e => ({ label: e.name, value: e.id }))
- ]}
- />
- </div>
+    // Since backend now filters, we just map everything that comes back
+    if (!acc[empId]) {
+      acc[empId] = { employee: { id: empId, name: empName }, records: [] };
+    }
+    acc[empId].records.push(att);
+    return acc;
+  }, {});
 
- <div className="mt-8 flex justify-end gap-3 pt-6 border-t border-gray-100">
- <button
- onClick={resetFilters}
- className="px-5 py-2.5 text-sm border border-gray-300 text-gray-700 font-medium rounded-xl hover:bg-gray-50 transition"
- >
- Reset All Filters
- </button>
- <button
- onClick={() => setShowFilters(false)}
- className="px-5 py-2.5 text-sm bg-black text-white font-medium rounded-xl hover:bg-gray-900 transition shadow-lg shadow-black/10"
- >
- Close Filters
- </button>
- </div>
- </div>
- )}
+  const employeeList = Object.values(employeesMap);
+
+  const indexOfLastEmployee = currentPage * itemsPerPage;
+  const indexOfFirstEmployee = indexOfLastEmployee - itemsPerPage;
+  const currentEmployees = employeeList.slice(indexOfFirstEmployee, indexOfLastEmployee);
+  const totalPages = Math.ceil(employeeList.length / itemsPerPage);
+
+  const paginate = (pageNumber) => setCurrentPage(pageNumber);
+
+  useEffect(() => {
+    setCurrentPage(1);
+    setExpandedEmployeeId(null);
+  }, [month, year, filterEmployeeId, filterDepartmentId]); // reset page and expanded row when filters change
+
+  const getRecordForDate = (records, date) => {
+    const formatted = format(date, "yyyy-MM-dd");
+    return records.find(
+      (r) => r.date === formatted || format(new Date(r.date), "yyyy-MM-dd") === formatted
+    );
+  };
+
+  const getStatusBadge = (status) => {
+    const badges = {
+      present: { label: "P", bg: "bg-black text-white", border: "" },
+      late: { label: "L", bg: "bg-white text-black", border: "border-2 border-black" },
+      absent: { label: "A", bg: "bg-white text-black", border: "border-2 border-black" },
+      half_day: { label: "H", bg: "bg-white text-black", border: "border-2 border-black" },
+      leave: { label: "LV", bg: "bg-white text-black", border: "border-2 border-black" },
+      half_day_late: { label: "HL", bg: "bg-white text-black", border: "border-2 border-black" },
+      holiday: { label: "HD", bg: "bg-gray-200 text-black", border: "" },
+    };
+    return badges[status] || { label: "-", bg: "bg-gray-100 text-gray-500", border: "" };
+  };
+
+  const calculateTotals = (records) => {
+    const monthDays = eachDayOfInterval({ start: startOfMonth(selectedDate), end: endOfMonth(selectedDate) });
+    const today = startOfToday();
+
+    const counts = {
+      present: 0,
+      half_day_late: 0,
+      absent: 0,
+      total: 0
+    };
+
+    // 1. Count from existing records
+    records.forEach(r => {
+      if (['present', 'late'].includes(r.status)) counts.present++;
+      if (r.status === 'half_day_late') counts.half_day_late++;
+
+      // Total is any working status
+      if (['present', 'late', 'half_day', 'half_day_late'].includes(r.status)) {
+        counts.total++;
+      }
+    });
+
+    // 2. Count Absent (A) - Missing Mon-Fri records up to today
+    monthDays.forEach(day => {
+      if (isBefore(day, today) || isToday(day)) {
+        const isWeekday = !isSunday(day) && !isSaturday(day);
+        const record = getRecordForDate(records, day);
+        if (isWeekday && !record) {
+          counts.absent++;
+        }
+      }
+    });
+
+    return counts;
+  };
+
+  const exportData = (type) => {
+    const monthName = format(selectedDate, "MMMM");
+    const yearName = format(selectedDate, "yyyy");
+
+    const data = employeeList.map((emp, index) => {
+      const stats = calculateTotals(emp.records);
+      return {
+        "SL No": index + 1,
+        "Employee Name": emp.employee.name,
+        "Month": `${monthName} ${yearName}`,
+        "Present (P)": stats.present,
+        "Half Day Late (HL)": stats.half_day_late,
+        "Absent (A)": stats.absent,
+        "Total Attendance": stats.total
+      };
+    });
+
+    if (type === "CSV" || type === "Excel") {
+      const ws = XLSX.utils.json_to_sheet(data);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "Attendance Summary");
+      XLSX.writeFile(wb, `Attendance_Summary_${monthName}_${yearName}.${type === "CSV" ? "csv" : "xlsx"}`);
+    } else if (type === "PDF") {
+      const doc = new jsPDF('l', 'mm', 'a4');
+      const now = new Date();
+
+      // Title
+      doc.setFontSize(18);
+      doc.setTextColor(0, 0, 0);
+      doc.text(`Attendance Summary Report`, 14, 20);
+
+      // Filter Information
+      doc.setFontSize(10);
+      doc.setTextColor(100, 100, 100);
+      let yPos = 28;
+
+      doc.text(`Month: ${monthName} ${yearName}`, 14, yPos);
+      yPos += 6;
+
+      if (filterDepartmentId) {
+        const dept = departments.find(d => d.id.toString() === filterDepartmentId.toString());
+        doc.text(`Department: ${dept?.name || 'All'}`, 14, yPos);
+        yPos += 6;
+      }
+
+      if (filterEmployeeId) {
+        const emp = employees.find(e => e.id.toString() === filterEmployeeId.toString());
+        doc.text(`Employee: ${emp?.name || 'All'}`, 14, yPos);
+        yPos += 6;
+      }
+
+      const tableData = data.map(item => [
+        item["SL No"],
+        item["Employee Name"],
+        item["Month"],
+        item["Present (P)"],
+        item["Half Day Late (HL)"],
+        item["Absent (A)"],
+        item["Total Attendance"]
+      ]);
+
+      autoTable(doc, {
+        head: [["SL No", "Employee Name", "Month", "P", "HL", "A", "Total"]],
+        body: tableData,
+        startY: yPos + 5,
+        theme: 'grid',
+        headStyles: { fillColor: [0, 0, 0], fontSize: 11, halign: 'center' },
+        bodyStyles: { fontSize: 10 },
+        columnStyles: {
+          0: { halign: 'center' },
+          3: { halign: 'center' },
+          4: { halign: 'center' },
+          5: { halign: 'center' },
+          6: { halign: 'center', fontStyle: 'bold' }
+        }
+      });
+
+      // Footer with page numbers
+      const pageCount = doc.internal.getNumberOfPages();
+      for (let i = 1; i <= pageCount; i++) {
+        doc.setPage(i);
+        doc.setFontSize(8);
+        doc.setTextColor(150, 150, 150);
+        doc.text(
+          `Page ${i} of ${pageCount} | Generated on ${now.toLocaleString()}`,
+          14,
+          doc.internal.pageSize.height - 10
+        );
+      }
+
+      doc.save(`Attendance_Summary_${monthName}_${yearName}.pdf`);
+    }
+  };
+
+  const openModal = (record, date) => {
+    setSelectedRecord(record);
+    setSelectedDay(date);
+  };
+
+  const closeModal = () => {
+    setSelectedRecord(null);
+    setSelectedDay(null);
+  };
+
+  const resetFilters = () => {
+    setFilterEmployeeId("");
+    setFilterDepartmentId("");
+    setSelectedDate(new Date()); // Resets to current month/year
+    setShowFilters(false);
+  };
+
+  return (
+    <div className="p-6">
+      <LayoutComponents
+        title="Attendance"
+        subtitle="Monthly attendance overview with productive hours tracking"
+        variant="card"
+      >
+        <div className="grid grid-cols-2 md:grid-cols-6 gap-6 mb-8">
+          {[
+            { label: "Present", value: summary.present, color: "bg-black", desc: "On time" },
+            { label: "Late", value: summary.late, color: "bg-black", desc: "After 9:30 AM" },
+            { label: "Absent", value: summary.absent, color: "bg-black", desc: "No check-in" },
+            { label: "Half Day", value: summary.half_day, color: "bg-black", desc: "Left early" },
+            { label: "Leave", value: summary.leave, color: "bg-black", desc: "Approved" },
+            { label: "Holiday", value: summary.holiday, color: "bg-black", desc: "Public holiday" },
+          ].map((item, i) => (
+            <motion.div
+              key={i}
+              whileHover={{ scale: 1.05 }}
+              className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100"
+            >
+              <p className="text-gray-600 text-sm">{item.label}</p>
+              <p className="text-4xl font-medium mt-3">{item.value}</p>
+              <p className="text-xs text-gray-500 mt-2">{item.desc}</p>
+            </motion.div>
+          ))}
+        </div>
+
+        <div className="bg-white rounded-2xl shadow-sm p-6 mb-6">
+          <div className="flex flex-wrap gap-4 justify-between items-center">
+            <div className="flex items-center gap-4">
+              <button
+                onClick={() => setSelectedDate(subMonths(selectedDate, 1))}
+                className="p-2 bg-gray-100 hover:bg-white text-black border border-gray-100 hover:border-black transition-all duration-300 rounded-xl text-sm font-medium"
+              >
+                Previous
+              </button>
+              <h2 className="text-2xl font-medium text-black">
+                {format(selectedDate, "MMMM yyyy")}
+              </h2>
+              <button
+                onClick={() => setSelectedDate(addMonths(selectedDate, 1))}
+                className="p-2 bg-gray-100 hover:bg-white text-black border border-gray-100 hover:border-black transition-all duration-300 rounded-xl text-sm font-medium"
+              >
+                Next
+              </button>
+            </div>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowFilters(!showFilters)}
+                className="flex items-center gap-2 px-5 py-3 border border-gray-400 rounded-xl hover:bg-gray-50 transition font-medium"
+              >
+                <span>Filters {showFilters ? "▲" : "▼"}</span>
+              </button>
+              <button
+                onClick={fetchAttendance}
+                className="flex items-center gap-3 px-6 py-3.5 bg-black text-white rounded-xl hover:bg-black transition font-medium"
+              >
+                <MdRefresh className="w-5 h-5" />
+                Refresh
+              </button>
+              {hasPermission(permissionPage, "view") && (
+                <Dropdown
+                  trigger={
+                    <button className="flex items-center gap-3 px-6 py-3.5 border border-gray-400 rounded-xl hover:bg-gray-50 transition font-medium">
+                      <MdDownload className="w-5 h-5" /> Export
+                    </button>
+                  }
+                  dropdownId="export-attendance"
+                  align="right"
+                >
+                  <Dropdown.Item onClick={() => exportData("CSV")}>Export as CSV</Dropdown.Item>
+                  <Dropdown.Item onClick={() => exportData("Excel")}>Export as Excel</Dropdown.Item>
+                  <Dropdown.Item onClick={() => exportData("PDF")}>Export as PDF</Dropdown.Item>
+                </Dropdown>
+              )}
+            </div>
+          </div>
+        </div>
 
 
- <div className="bg-white rounded-xl shadow-sm overflow-hidden">
- {loading ? (
- <div className="p-16 text-center">
- <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-black border-t-transparent"></div>
- <p className="mt-6 text-gray-600">Loading attendance...</p>
- </div>
- ) : employeeList.length === 0 ? (
- <div className="p-16 text-center text-gray-500">
- <p className="text-xl font-medium">No records found</p>
- <p className="text-sm mt-2">Try selecting a different month or adjusting filters</p>
- </div>
- ) : (
- <div className="overflow-x-auto overflow-y-hidden">
- <div className="min-w-[1000px] p-6">
- {/* Simple Table Header */}
- <div className="grid grid-cols-[80px_350px_150px_1fr] gap-0 border border-gray-400 bg-white">
- <div className="border-r border-gray-400 px-4 py-5 text-sm font-medium text-black text-center whitespace-nowrap">
- SL No
- </div>
- <div className="border-r border-gray-400 px-5 py-2.5 text-sm text-sm font-medium text-black whitespace-nowrap">
- Employee Name
- </div>
- <div className="border-r border-gray-400 px-4 py-5 text-sm font-medium text-black text-center whitespace-nowrap">
- Total Attendance
- </div>
- <div className="px-4 py-5 text-sm font-medium text-black text-center whitespace-nowrap">
- Actions
- </div>
- </div>
+        {showFilters && (
+          <div className="bg-white rounded-2xl shadow-sm p-6 mb-6 border border-gray-200">
+            <div className="flex justify-between items-center mb-5">
+              <h3 className="text-xl font-semibold text-gray-900">Advanced Filters</h3>
+              <button
+                onClick={() => setShowFilters(false)}
+                className="p-2 hover:bg-gray-100 rounded-full transition"
+              >
+                <MdClose className="w-6 h-6 text-gray-500" />
+              </button>
+            </div>
 
- {currentEmployees.map((emp, index) => {
- const stats = calculateTotals(emp.records);
- const isExpanded = expandedEmployeeId === emp.employee.id;
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              <Input
+                label="Month"
+                type="select"
+                value={month}
+                onChange={(val) => {
+                  const newDate = new Date(selectedDate);
+                  newDate.setMonth(parseInt(val) - 1);
+                  setSelectedDate(newDate);
+                }}
+                options={[
+                  { label: "January", value: 1 },
+                  { label: "February", value: 2 },
+                  { label: "March", value: 3 },
+                  { label: "April", value: 4 },
+                  { label: "May", value: 5 },
+                  { label: "June", value: 6 },
+                  { label: "July", value: 7 },
+                  { label: "August", value: 8 },
+                  { label: "September", value: 9 },
+                  { label: "October", value: 10 },
+                  { label: "November", value: 11 },
+                  { label: "December", value: 12 },
+                ]}
+              />
 
- return (
- <div key={emp.employee.id} className="contents shadow-none">
- {/* Summary Row */}
- <div className="grid grid-cols-[80px_350px_150px_1fr] gap-0 border-x border-b border-gray-400 bg-white hover:bg-gray-50 transition-colors">
- <div className="border-r border-gray-400 px-4 py-5 text-sm text-center text-gray-600 whitespace-nowrap flex items-center justify-center">
- {index + 1 + (currentPage - 1) * itemsPerPage}
- </div>
- <div className="border-r border-gray-400 px-5 py-2.5 text-sm text-sm font-medium text-black whitespace-nowrap flex items-center">
- {emp.employee.name}
- </div>
- <div className="border-r border-gray-400 px-4 py-5 font-bold text-black text-center whitespace-nowrap flex items-center justify-center">
- {stats.total}
- </div>
- <div className="px-4 py-5 flex items-center justify-center">
- <button
- onClick={() => setExpandedEmployeeId(isExpanded ? null : emp.employee.id)}
- className={`px-4 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all
- ${isExpanded
- ? "bg-red-50 text-red-600 border border-red-200"
- : "bg-black text-white hover:bg-gray-800 shadow-sm"}
- `}
- >
- {isExpanded ? (
- <>
- <MdClose className="w-3.5 h-3.5" /> Close
- </>
- ) : (
- <>
- <MdKeyboardArrowDown className="w-4 h-4" /> View Calendar
- </>
- )}
- </button>
- </div>
- </div>
+              <Input
+                label="Department"
+                type="select"
+                value={filterDepartmentId}
+                onChange={setFilterDepartmentId}
+                options={[
+                  { label: "All Departments", value: "" },
+                  ...departments.map(d => ({ label: d.name, value: d.id }))
+                ]}
+              />
 
- {/* Expanded Calendar View */}
- {isExpanded && (
- <motion.div
- initial={{ opacity: 0, y: -10 }}
- animate={{ opacity: 1, y: 0 }}
- className="col-span-full bg-gray-50 p-6 border-x border-b border-gray-400"
- >
- <div className="bg-white border border-gray-400">
- <div className="grid grid-cols-7 border-b border-gray-400 bg-gray-50/50">
- {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day) => (
- <div key={day} className="py-2.5 text-center text-[10px] font-bold uppercase tracking-wider text-gray-500 border-r border-gray-400 last:border-r-0">
- {day}
- </div>
- ))}
- </div>
- <div className="grid grid-cols-7">
- {calendarDays.map((date, idx) => {
- const isCurrentMonth = date.getMonth() === selectedDate.getMonth();
- const record = isCurrentMonth ? getRecordForDate(emp.records, date) : null;
- const badge = getStatusBadge(record?.status);
- const isPresentOrPast = isBefore(date, startOfToday()) || isToday(date);
- const isWeekend = isSunday(date) || isSaturday(date);
+              <Input
+                label="Employee"
+                type="select"
+                value={filterEmployeeId}
+                onChange={setFilterEmployeeId}
+                options={[
+                  { label: "All Employees", value: "" },
+                  ...employees.map(e => ({ label: e.name, value: e.id }))
+                ]}
+              />
+            </div>
 
- let displayBadge = badge;
- if (!record && isCurrentMonth && isPresentOrPast && !isWeekend) {
- displayBadge = getStatusBadge('absent');
- }
+            <div className="mt-8 flex justify-end gap-3 pt-6 border-t border-gray-100">
+              <button
+                onClick={resetFilters}
+                className="px-6 py-3 border border-gray-300 text-gray-700 font-medium rounded-xl hover:bg-gray-50 transition"
+              >
+                Reset All Filters
+              </button>
+              <button
+                onClick={() => setShowFilters(false)}
+                className="px-8 py-3 bg-black text-white font-medium rounded-xl hover:bg-gray-900 transition shadow-lg shadow-black/10"
+              >
+                Close Filters
+              </button>
+            </div>
+          </div>
+        )}
 
- return (
- <div
- key={idx}
- onClick={() => record && openModal(record, date)}
- className={`h-20 p-2 flex flex-col items-center justify-center gap-1 border-r border-b border-gray-400 last:border-r-0
- ${!isCurrentMonth ? "bg-gray-100/30 text-gray-300" : "bg-white"}
- ${isWeekend ? "bg-gray-50" : ""}
- ${record ? "cursor-pointer hover:bg-gray-50 transition-colors" : ""}
- `}
- >
- <div className={`text-[10px] font-bold ${!isCurrentMonth ? "text-gray-300" : "text-gray-500"}`}>
- {format(date, "d")}
- </div>
- {displayBadge.label !== "-" && (
- <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold border-2 ${displayBadge.bg} ${displayBadge.border}`}>
- {displayBadge.label}
- </div>
- )}
- </div>
- );
- })}
- </div>
- </div>
- </motion.div>
- )}
- </div>
- );
- })}
- </div>
- </div>
- )}
- </div>
 
- {/* Pagination */}
- {totalPages > 1 && (
- <div className="flex justify-center items-center mt-6 pb-4">
- <nav className="flex items-center space-x-1">
- <button
- onClick={() => paginate(1)}
- disabled={currentPage === 1}
- className="px-3 py-1 rounded-lg border border-gray-300 disabled:opacity-50 disabled:cursor-not-allowed"
- >
- «
- </button>
- <button
- onClick={() => paginate(currentPage - 1)}
- disabled={currentPage === 1}
- className="px-3 py-1 rounded-lg border border-gray-300 disabled:opacity-50 disabled:cursor-not-allowed"
- >
- ‹
- </button>
+        <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
+          {loading ? (
+            <div className="p-16 text-center">
+              <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-black border-t-transparent"></div>
+              <p className="mt-6 text-gray-600">Loading attendance...</p>
+            </div>
+          ) : employeeList.length === 0 ? (
+            <div className="p-16 text-center text-gray-500">
+              <p className="text-xl font-medium">No records found</p>
+              <p className="text-sm mt-2">Try selecting a different month or adjusting filters</p>
+            </div>
+          ) : (
+            <div className="overflow-x-auto overflow-y-hidden">
+              <div className="min-w-[1000px] p-6">
+                {/* Simple Table Header */}
+                <div className="grid grid-cols-[80px_350px_150px_1fr] gap-0 border border-gray-400 bg-white">
+                  <div className="border-r border-gray-400 px-4 py-5 text-sm font-medium text-black text-center whitespace-nowrap">
+                    SL No
+                  </div>
+                  <div className="border-r border-gray-400 px-6 py-5 text-sm font-medium text-black whitespace-nowrap">
+                    Employee Name
+                  </div>
+                  <div className="border-r border-gray-400 px-4 py-5 text-sm font-medium text-black text-center whitespace-nowrap">
+                    Total Attendance
+                  </div>
+                  <div className="px-4 py-5 text-sm font-medium text-black text-center whitespace-nowrap">
+                    Actions
+                  </div>
+                </div>
 
- {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
- let pageNum;
- if (totalPages <= 5) {
- pageNum = i + 1;
- } else if (currentPage <= 3) {
- pageNum = i + 1;
- } else if (currentPage >= totalPages - 2) {
- pageNum = totalPages - 4 + i;
- } else {
- pageNum = currentPage - 2 + i;
- }
+                {currentEmployees.map((emp, index) => {
+                  const stats = calculateTotals(emp.records);
+                  const isExpanded = expandedEmployeeId === emp.employee.id;
 
- return (
- <button
- key={pageNum}
- onClick={() => paginate(pageNum)}
- className={`px-3 py-1 rounded-lg border ${currentPage === pageNum
- ? 'bg-black text-white border-black'
- : 'border-gray-300 hover:bg-gray-50'
- }`}
- >
- {pageNum}
- </button>
- );
- })}
+                  return (
+                    <div key={emp.employee.id} className="contents shadow-none">
+                      {/* Summary Row */}
+                      <div className="grid grid-cols-[80px_350px_150px_1fr] gap-0 border-x border-b border-gray-400 bg-white hover:bg-gray-50 transition-colors">
+                        <div className="border-r border-gray-400 px-4 py-5 text-sm text-center text-gray-600 whitespace-nowrap flex items-center justify-center">
+                          {index + 1 + (currentPage - 1) * itemsPerPage}
+                        </div>
+                        <div className="border-r border-gray-400 px-6 py-5 text-sm font-medium text-black whitespace-nowrap flex items-center">
+                          {emp.employee.name}
+                        </div>
+                        <div className="border-r border-gray-400 px-4 py-5 text-lg font-bold text-black text-center whitespace-nowrap flex items-center justify-center">
+                          {stats.total}
+                        </div>
+                        <div className="px-4 py-5 flex items-center justify-center">
+                          <button
+                            onClick={() => setExpandedEmployeeId(isExpanded ? null : emp.employee.id)}
+                            className={`px-4 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all
+                              ${isExpanded
+                                ? "bg-red-50 text-red-600 border border-red-200"
+                                : "bg-black text-white hover:bg-gray-800 shadow-sm"}
+                            `}
+                          >
+                            {isExpanded ? (
+                              <>
+                                <MdClose className="w-3.5 h-3.5" /> Close
+                              </>
+                            ) : (
+                              <>
+                                <MdKeyboardArrowDown className="w-4 h-4" /> View Calendar
+                              </>
+                            )}
+                          </button>
+                        </div>
+                      </div>
 
- <button
- onClick={() => paginate(currentPage + 1)}
- disabled={currentPage === totalPages}
- className="px-3 py-1 rounded-lg border border-gray-300 disabled:opacity-50 disabled:cursor-not-allowed"
- >
- ›
- </button>
- <button
- onClick={() => paginate(totalPages)}
- disabled={currentPage === totalPages}
- className="px-3 py-1 rounded-lg border border-gray-300 disabled:opacity-50 disabled:cursor-not-allowed"
- >
- »
- </button>
- </nav>
- <div className="ml-4 text-sm text-gray-600">
- {indexOfFirstEmployee + 1}-{Math.min(indexOfLastEmployee, employeeList.length)} of {employeeList.length} employees
- </div>
- </div>
- )}
- </LayoutComponents>
+                      {/* Expanded Calendar View */}
+                      {isExpanded && (
+                        <motion.div
+                          initial={{ opacity: 0, y: -10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          className="col-span-full bg-gray-50 p-6 border-x border-b border-gray-400"
+                        >
+                          <div className="bg-white border border-gray-400">
+                            <div className="grid grid-cols-7 border-b border-gray-400 bg-gray-50/50">
+                              {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day) => (
+                                <div key={day} className="py-2.5 text-center text-[10px] font-bold uppercase tracking-wider text-gray-500 border-r border-gray-400 last:border-r-0">
+                                  {day}
+                                </div>
+                              ))}
+                            </div>
+                            <div className="grid grid-cols-7">
+                              {calendarDays.map((date, idx) => {
+                                const isCurrentMonth = date.getMonth() === selectedDate.getMonth();
+                                const record = isCurrentMonth ? getRecordForDate(emp.records, date) : null;
+                                const badge = getStatusBadge(record?.status);
+                                const isPresentOrPast = isBefore(date, startOfToday()) || isToday(date);
+                                const isWeekend = isSunday(date) || isSaturday(date);
 
- {selectedRecord && (
- <AttendanceModal
- record={selectedRecord}
- date={selectedDay}
- onClose={closeModal}
- />
- )}
- </div>
- );
+                                let displayBadge = badge;
+                                if (!record && isCurrentMonth && isPresentOrPast && !isWeekend) {
+                                  displayBadge = getStatusBadge('absent');
+                                }
+
+                                return (
+                                  <div
+                                    key={idx}
+                                    onClick={() => record && openModal(record, date)}
+                                    className={`h-20 p-2 flex flex-col items-center justify-center gap-1 border-r border-b border-gray-400 last:border-r-0
+                                      ${!isCurrentMonth ? "bg-gray-100/30 text-gray-300" : "bg-white"}
+                                      ${isWeekend ? "bg-gray-50" : ""}
+                                      ${record ? "cursor-pointer hover:bg-gray-50 transition-colors" : ""}
+                                    `}
+                                  >
+                                    <div className={`text-[10px] font-bold ${!isCurrentMonth ? "text-gray-300" : "text-gray-500"}`}>
+                                      {format(date, "d")}
+                                    </div>
+                                    {displayBadge.label !== "-" && (
+                                      <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold border-2 ${displayBadge.bg} ${displayBadge.border}`}>
+                                        {displayBadge.label}
+                                      </div>
+                                    )}
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        </motion.div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <div className="flex justify-center items-center mt-6 pb-4">
+            <nav className="flex items-center space-x-1">
+              <button
+                onClick={() => paginate(1)}
+                disabled={currentPage === 1}
+                className="px-3 py-1 rounded-lg border border-gray-300 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                «
+              </button>
+              <button
+                onClick={() => paginate(currentPage - 1)}
+                disabled={currentPage === 1}
+                className="px-3 py-1 rounded-lg border border-gray-300 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                ‹
+              </button>
+
+              {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                let pageNum;
+                if (totalPages <= 5) {
+                  pageNum = i + 1;
+                } else if (currentPage <= 3) {
+                  pageNum = i + 1;
+                } else if (currentPage >= totalPages - 2) {
+                  pageNum = totalPages - 4 + i;
+                } else {
+                  pageNum = currentPage - 2 + i;
+                }
+
+                return (
+                  <button
+                    key={pageNum}
+                    onClick={() => paginate(pageNum)}
+                    className={`px-3 py-1 rounded-lg border ${currentPage === pageNum
+                      ? 'bg-black text-white border-black'
+                      : 'border-gray-300 hover:bg-gray-50'
+                      }`}
+                  >
+                    {pageNum}
+                  </button>
+                );
+              })}
+
+              <button
+                onClick={() => paginate(currentPage + 1)}
+                disabled={currentPage === totalPages}
+                className="px-3 py-1 rounded-lg border border-gray-300 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                ›
+              </button>
+              <button
+                onClick={() => paginate(totalPages)}
+                disabled={currentPage === totalPages}
+                className="px-3 py-1 rounded-lg border border-gray-300 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                »
+              </button>
+            </nav>
+            <div className="ml-4 text-sm text-gray-600">
+              {indexOfFirstEmployee + 1}-{Math.min(indexOfLastEmployee, employeeList.length)} of {employeeList.length} employees
+            </div>
+          </div>
+        )}
+      </LayoutComponents>
+
+      {selectedRecord && (
+        <AttendanceModal
+          record={selectedRecord}
+          date={selectedDay}
+          onClose={closeModal}
+        />
+      )}
+    </div>
+  );
 };
 
 export default Attendance;

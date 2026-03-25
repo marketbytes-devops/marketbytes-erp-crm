@@ -257,150 +257,155 @@ const Sidebar = ({ toggleSidebar }) => {
  action: "view",
  },
 
- ].filter((item) => hasPermission(item.page, item.action)),
- },
- {
- to: "/lead-dashboard",
- label: "Lead Dashboard",
- icon: <MdDashboard className="w-6 h-6" />,
- page: "lead_dashboard",
- action: "view",
- },
- {
- label: "Leading Members",
- icon: <MdGroup className="w-6 h-6" />,
- page: "team_listing",
- action: "view",
- isOpen: openDropdown === "Leading Members",
- toggle: () => handleToggle("Leading Members"),
- subItems: [
- {
- to: "/team/employees",
- label: "Team Members",
- icon: <MdGroup className="w-6 h-6" />,
- page: "team_listing",
- action: "view",
- },
- {
- to: "/lead/attendance",
- label: "Team Attendance",
- icon: <MdAccessTime className="w-6 h-6" />,
- page: "lead_attendance",
- action: "view",
- },
- {
- to: "/lead/time-logs",
- label: "Team Timelogs",
- icon: <MdAssignment className="w-6 h-6" />,
- page: "lead_timelogs",
- action: "view",
- },
- {
- to: "/lead/leaves",
- label: "Team Leaves",
- icon: <MdAssignmentLate className="w-6 h-6" />,
- page: "lead_leaves",
- action: "view",
- },
- {
- to: "/lead/scrum",
- label: "Team Scrum",
- icon: <MdPendingActions className="w-6 h-6" />,
- page: "lead_scrum",
- action: "view",
- },
- ].filter((item) => hasPermission(item.page, item.action)),
- },
- {
- to: "/employee-dashboard",
- label: "My Dashboard",
- icon: <MdDashboard className="w-6 h-6" />,
- page: "employee_dashboard",
- action: "view",
- },
- {
- label: "Self Management",
- icon: <MdPerson className="w-6 h-6" />,
- page: "employee_dashboard", // Using a parent page check
- action: "view",
- isOpen: openDropdown === "Self Management",
- toggle: () => handleToggle("Self Management"),
- subItems: [
- {
- to: "/employee/projects",
- label: "My Projects",
- icon: <MdWork className="w-6 h-6" />,
- page: "employee_projects",
- action: "view",
- },
- {
- to: "/employee/tasks",
- label: "My Tasks",
- icon: <MdAssignment className="w-6 h-6" />,
- page: "employee_tasks",
- action: "view",
- },
- {
- to: "/employee/attendance",
- label: "My Attendance",
- icon: <MdAccessTime className="w-6 h-6" />,
- page: "employee_attendance",
- action: "view",
- },
- {
- to: "/employee/holidays",
- label: "My Holidays",
- icon: <MdCalendarToday className="w-6 h-6" />,
- page: "employee_holidays",
- action: "view",
- },
- {
- to: "/employee/leaves",
- label: "My Leaves",
- icon: <MdAssignmentLate className="w-6 h-6" />,
- page: "employee_leaves",
- action: "view",
- },
- {
- to: "/employee/time-logs",
- label: "My Time Logs",
- icon: <MdAccessTime className="w-6 h-6" />,
- page: "employee_timelogs",
- action: "view",
- },
- {
- to: "/employee/scrum",
- label: "My Scrum",
- icon: <MdPendingActions className="w-6 h-6" />,
- page: "employee_scrum",
- action: "view",
- },
- {
- to: "/employee/task-calendar",
- label: "Task Calendar",
- icon: <MdCalendarToday className="w-6 h-6" />,
- page: "employee_taskcalendar",
- action: "view",
- },
- {
- to: "/operations/common-calendar",
- label: "Common Calendar",
- icon: <MdCalendarToday className="w-5 h-5" />,
- page: "common_calendar",
- action: "view",
- },
- ].filter((item) => hasPermission(item.page, item.action)),
- },
- {
- to: "/profile",
- label: "Profile",
- icon: <MdPerson className="w-6 h-6" />,
- page: null, // always visible to any authenticated user
- action: null,
- },
- ].filter((item) => {
- const isCEO = user?.role?.name?.toLowerCase() === 'ceo';
- const isRegularEmployee = hasPermission("employee_dashboard", "view") && !isSuperadmin && !isCEO;
+      ].filter((item) => hasPermission(item.page, item.action)),
+    },
+    {
+      to: "/lead-dashboard",
+      label: "Lead Dashboard",
+      icon: <MdDashboard className="w-6 h-6" />,
+      page: "lead_dashboard",
+      action: "view",
+    },
+    {
+      label: "Leading Members",
+      icon: <MdGroup className="w-6 h-6" />,
+      page: "team_listing",
+      action: "view",
+      isOpen: openDropdown === "Leading Members",
+      toggle: () => handleToggle("Leading Members"),
+      subItems: [
+        {
+          to: "/team/employees",
+          label: "Team Members",
+          icon: <MdGroup className="w-6 h-6" />,
+          page: "team_listing",
+          action: "view",
+        },
+        {
+          to: "/lead/attendance",
+          label: "Team Attendance",
+          icon: <MdAccessTime className="w-6 h-6" />,
+          page: "lead_attendance",
+          action: "view",
+        },
+        {
+          to: "/lead/time-logs",
+          label: "Team Timelogs",
+          icon: <MdAssignment className="w-6 h-6" />,
+          page: "lead_timelogs",
+          action: "view",
+        },
+        {
+          to: "/lead/leaves",
+          label: "Team Leaves",
+          icon: <MdAssignmentLate className="w-6 h-6" />,
+          page: "lead_leaves",
+          action: "view",
+        },
+        {
+          to: "/lead/scrum",
+          label: "Team Scrum",
+          icon: <MdPendingActions className="w-6 h-6" />,
+          page: "lead_scrum",
+          action: "view",
+        },
+      ].filter((item) => hasPermission(item.page, item.action)),
+    },
+    {
+      to: "/employee-dashboard",
+      label: "My Dashboard",
+      icon: <MdDashboard className="w-6 h-6" />,
+      page: "employee_dashboard",
+      action: "view",
+    },
+    {
+      label: "Self Management",
+      icon: <MdPerson className="w-6 h-6" />,
+      page: "employee_dashboard", // Using a parent page check
+      action: "view",
+      isOpen: openDropdown === "Self Management",
+      toggle: () => handleToggle("Self Management"),
+      subItems: [
+        {
+          to: "/employee/projects",
+          label: "My Projects",
+          icon: <MdWork className="w-6 h-6" />,
+          page: "employee_projects",
+          action: "view",
+        },
+        {
+          to: "/employee/tasks",
+          label: "My Tasks",
+          icon: <MdAssignment className="w-6 h-6" />,
+          page: "employee_tasks",
+          action: "view",
+        },
+        {
+          to: "/employee/attendance",
+          label: "My Attendance",
+          icon: <MdAccessTime className="w-6 h-6" />,
+          page: "employee_attendance",
+          action: "view",
+        },
+        {
+          to: "/employee/holidays",
+          label: "My Holidays",
+          icon: <MdCalendarToday className="w-6 h-6" />,
+          page: "employee_holidays",
+          action: "view",
+        },
+        {
+          to: "/employee/leaves",
+          label: "My Leaves",
+          icon: <MdAssignmentLate className="w-6 h-6" />,
+          page: "employee_leaves",
+          action: "view",
+        },
+        {
+          to: "/employee/time-logs",
+          label: "My Time Logs",
+          icon: <MdAccessTime className="w-6 h-6" />,
+          page: "employee_timelogs",
+          action: "view",
+        },
+        {
+          to: "/employee/scrum",
+          label: "My Scrum",
+          icon: <MdPendingActions className="w-6 h-6" />,
+          page: "employee_scrum",
+          action: "view",
+        },
+        {
+          to: "/employee/task-calendar",
+          label: "Task Calendar",
+          icon: <MdCalendarToday className="w-6 h-6" />,
+          page: "employee_taskcalendar",
+          action: "view",
+        },
+        {
+          to: "/operations/common-calendar",
+          label: "Events",
+          icon: <MdCalendarToday className="w-5 h-5" />,
+          page: "common_calendar",
+          action: "view",
+        },
+
+      ].filter((item) => hasPermission(item.page, item.action)),
+    },
+    {
+      to: "/profile",
+      label: "Profile",
+      icon: <MdPerson className="w-6 h-6" />,
+      page: null,   // always visible to any authenticated user
+      action: null,
+    },
+  ].filter((item) => {
+    const isCEO = user?.role?.name?.toLowerCase() === 'ceo';
+    const isLead = hasPermission("lead_dashboard", "view");
+    const isRegularEmployee = hasPermission("employee_dashboard", "view") && !isLead && !isSuperadmin && !isCEO;
+
+    // For leads, hide "Dashboard" (Admin) and "My Dashboard" (Employee) to avoid dual dashboards
+    if (isLead && !isSuperadmin && (item.label === "My Dashboard" || item.label === "Dashboard")) return false;
 
  // For employees, show ONLY My Dashboard, Self Management, and Profile
  if (isRegularEmployee) {

@@ -245,32 +245,32 @@ const EmployeeDashboard = () => {
 
  <div className="space-y-8">
 
- {/* Quick Navigation */}
- <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
- <h3 className=" font-bold text-gray-800 mb-6">Quick Navigation</h3>
- <div className="grid grid-cols-1 gap-3">
- {[
- { label: 'Project Listing', path: '/employee/projects', icon: <MdAssessment /> },
- { label: 'Task Listing', path: '/employee/tasks', icon: <MdAssignment /> },
- { label: 'Scrum Listing', path: '/employee/scrum', icon: <MdTimeline /> },
- { label: 'Apply Leave', path: '/employee/leaves', icon: <MdPendingActions /> },
- { label: 'Common Calendar', path: '/operations/common-calendar', icon: <MdCalendarMonth /> },
- { label: 'Attendance', path: '/employee/attendance', icon: <MdWorkOutline /> }
- ].map((link, idx) => (
- <button
- key={idx}
- onClick={() => navigate(link.path)}
- className="flex items-center justify-between p-4 rounded-xl hover:bg-emerald-50/30 border border-transparent hover:border-emerald-100 transition-all group"
- >
- <div className="flex items-center gap-3">
- <span className="text-emerald-600 text-xl group-hover:scale-110 transition-transform">{link.icon}</span>
- <span className="text-sm font-medium text-gray-700">{link.label}</span>
- </div>
- <MdArrowForward className="text-gray-300 group-hover:text-emerald-600 group-hover:translate-x-1 transition-all" />
- </button>
- ))}
- </div>
- </div>
+                    {/* Quick Navigation */}
+                    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+                        <h3 className="text-lg font-bold text-gray-800 mb-6">Quick Navigation</h3>
+                        <div className="grid grid-cols-1 gap-3">
+                            {[
+                                { label: 'Project Listing', path: '/employee/projects', icon: <MdAssessment /> },
+                                { label: 'Task Listing', path: '/employee/tasks', icon: <MdAssignment /> },
+                                { label: 'Scrum Listing', path: '/employee/scrum', icon: <MdTimeline /> },
+                                { label: 'Apply Leave', path: '/employee/leaves', icon: <MdPendingActions /> },
+                                { label: 'Events', path: '/operations/common-calendar', icon: <MdCalendarMonth /> },
+                                { label: 'Attendance', path: '/employee/attendance', icon: <MdWorkOutline /> }
+                            ].map((link, idx) => (
+                                <button
+                                    key={idx}
+                                    onClick={() => navigate(link.path)}
+                                    className="flex items-center justify-between p-4 rounded-xl hover:bg-emerald-50/30 border border-transparent hover:border-emerald-100 transition-all group"
+                                >
+                                    <div className="flex items-center gap-3">
+                                        <span className="text-emerald-600 text-xl group-hover:scale-110 transition-transform">{link.icon}</span>
+                                        <span className="text-sm font-medium text-gray-700">{link.label}</span>
+                                    </div>
+                                    <MdArrowForward className="text-gray-300 group-hover:text-emerald-600 group-hover:translate-x-1 transition-all" />
+                                </button>
+                            ))}
+                        </div>
+                    </div>
 
  {/* Activity Timeline */}
  <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
