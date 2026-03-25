@@ -109,7 +109,6 @@ const RootDashboardRedirect = () => {
  );
  }
 
- // Prioritize specific dashboards for regular users (not Superadmin/CEO)
  const isCEO = user?.role?.name?.toLowerCase() === 'ceo';
  if (!isSuperadmin && !isCEO) {
  if (hasPermission("lead_dashboard", "view")) {
