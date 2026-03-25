@@ -130,7 +130,6 @@ const RootDashboardRedirect = () => {
  return <EmployeeDashboard />;
  }
 
- // Fallback if no dashboard permission at all
  return <div className="p-10 text-center">No dashboard access granted.</div>;
 };
 
