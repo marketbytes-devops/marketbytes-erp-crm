@@ -170,14 +170,15 @@ const Roles = () => {
  error={createErrors.description?.message}
  />
  <div className="md:col-span-2">
- <button
- type="submit"
- disabled={isCreating}
- className="inline-flex items-center gap-4 px-5 py-2.5 text-sm rounded-xl text-sm font-medium bg-black text-white hover:bg-white hover:text-black border transition-all duration-300 shadow-lg disabled:opacity-70"
- >
- {isCreating && <Loader2 className="w-6 h-6 animate-spin" />}
- {isCreating ? "Creating..." : "Create Role"}
- </button>
+   <button
+  type="submit"
+  disabled={isCreating}
+  className="inline-flex items-center gap-4 px-4 py-3 text-sm rounded-xl font-medium bg-black text-white hover:bg-gray-100 hover:text-black border border-black transition-all duration-300 shadow-lg disabled:opacity-70"
+  >
+  {isCreating && <Loader2 className="w-6 h-6 animate-spin" />}
+  {isCreating ? "Creating..." : "Create Role"}
+  </button>
+
  </div>
  </form>
  </div>
@@ -211,9 +212,10 @@ const Roles = () => {
  <table className="w-full">
  <thead className="bg-gray-100">
  <tr>
- <th className="px-5 py-2.5 text-sm text-left text-sm font-medium text-black uppercase tracking-wider">Role Name</th>
- <th className="px-5 py-2.5 text-sm text-left text-sm font-medium text-black uppercase tracking-wider">Description</th>
- <th className="px-5 py-2.5 text-sm text-left text-sm font-medium text-black uppercase tracking-wider">Actions</th>
+   <th className="px-5 py-2.5 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Role Name</th>
+  <th className="px-5 py-2.5 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Description</th>
+  <th className="px-5 py-2.5 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Actions</th>
+
  </tr>
  </thead>
  <tbody className="divide-y divide-gray-100">
@@ -225,11 +227,11 @@ const Roles = () => {
  </tr>
  ) : (
  filteredRoles.map((role) => (
- <motion.tr
- key={role.id}
- className="hover:bg-gray-50 transition"
- whileHover={{ x: 4 }}
- >
+   <motion.tr
+  key={role.id}
+  className="hover:bg-gray-50 transition"
+  >
+
  <td className="px-6 py-6">
  <div className="flex items-center gap-4">
  <span className=" font-medium text-black">{role.name}</span>
@@ -239,23 +241,25 @@ const Roles = () => {
  <td className="px-6 py-6">
  <div className="flex items-center gap-4">
  {hasPermission("roles", "edit") && role.name !== "Superadmin" && (
- <button
- onClick={() => openEditModal(role)}
- className="inline-flex items-center gap-3 px-5 py-2.5 text-sm rounded-xl text-sm font-medium transition-all duration-300 shadow-lg bg-black text-white hover:bg-white hover:text-black border"
- >
- <Edit className="w-5 h-5" />
- Edit
- </button>
+   <button
+  onClick={() => openEditModal(role)}
+  className="inline-flex items-center gap-3 px-4 py-3 text-sm rounded-xl font-medium transition-all duration-300 shadow-lg bg-black text-white hover:bg-gray-100 hover:text-black border border-black"
+  >
+  <Edit className="w-5 h-5" />
+  Edit
+  </button>
+
  )}
 
  {hasPermission("roles", "delete") && role.name !== "Superadmin" && (
- <button
- onClick={() => handleDeleteRole(role.id)}
- className="inline-flex items-center gap-3 px-5 py-2.5 text-sm rounded-xl text-sm font-medium transition-all duration-300 shadow-lg bg-red-600 text-white hover:bg-red-700"
- >
- <Trash2 className="w-5 h-5" />
- Delete
- </button>
+   <button
+  onClick={() => handleDeleteRole(role.id)}
+  className="inline-flex items-center gap-3 px-4 py-3 text-sm rounded-xl font-medium transition-all duration-300 shadow-lg bg-red-600 text-white hover:bg-red-700"
+  >
+  <Trash2 className="w-5 h-5" />
+  Delete
+  </button>
+
  )}
  </div>
  </td>
@@ -315,20 +319,22 @@ const Roles = () => {
  </div>
 
  <div className="flex justify-end gap-6 pt-6">
- <button
- type="button"
- onClick={() => setEditRole(null)}
- className="px-5 py-2.5 text-sm bg-gray-200 text-black font-medium rounded-xl hover:bg-gray-300 transition "
- >
- Cancel
- </button>
- <button
- type="submit"
- disabled={isEditing}
- className="px-5 py-2.5 text-sm bg-black text-white font-medium rounded-xl hover:bg-white hover:text-black border transition shadow-xl disabled:opacity-70"
- >
- {isEditing ? "Saving..." : "Save Changes"}
- </button>
+   <button
+  type="button"
+  onClick={() => setEditRole(null)}
+  className="px-4 py-3 text-sm bg-gray-200 text-black font-medium rounded-xl hover:bg-gray-300 transition"
+  >
+  Cancel
+  </button>
+
+   <button
+  type="submit"
+  disabled={isEditing}
+  className="px-4 py-3 text-sm bg-black text-white font-medium rounded-xl hover:bg-gray-100 hover:text-black border border-black transition shadow-xl disabled:opacity-70"
+  >
+  {isEditing ? "Saving..." : "Save Changes"}
+  </button>
+
  </div>
  </form>
  </div>

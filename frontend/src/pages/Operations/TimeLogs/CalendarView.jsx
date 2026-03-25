@@ -170,12 +170,13 @@ const CalendarView = () => {
  </button>
  </div>
 
- <button
- onClick={handleToday}
- className="px-4 py-2 bg-gray-100 text-gray-700 font-medium rounded-xl hover:bg-gray-200 transition text-sm flex items-center gap-2"
- >
- <MdToday className="w-4 h-4" /> Today
- </button>
+   <button
+  onClick={handleToday}
+  className="px-4 py-3 bg-gray-100 text-gray-700 font-medium rounded-xl hover:bg-gray-200 transition text-sm flex items-center gap-2"
+  >
+  <MdToday className="w-4 h-4" /> Today
+  </button>
+
 
  <span className="text-xl font-medium text-gray-900 ml-2">
  {view === "month" && formatMonth(currentDate)}
@@ -186,28 +187,30 @@ const CalendarView = () => {
  </div>
 
  <div className="flex gap-4">
- <div className="flex bg-gray-100 p-1 rounded-xl">
- {[
- { id: "month", icon: MdViewModule, label: "Month" },
- { id: "week", icon: MdViewWeek, label: "Week" },
- { id: "day", icon: MdViewDay, label: "Day" },
- { id: "list", icon: MdList, label: "List" }
- ].map((v) => (
- <button
- key={v.id}
- onClick={() => setView(v.id)}
- className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${view === v.id ? "bg-white text-black shadow-sm" : "text-gray-500 hover:text-black"
- }`}
- >
- <v.icon className="w-4 h-4" /> {v.label}
- </button>
- ))}
- </div>
- <Link to='/operations/time-logs'>
- <button className="flex items-center gap-2 px-5 py-2.5 text-sm bg-black text-white rounded-xl hover:bg-gray-900 transition text-sm font-medium">
- <MdAdd className="w-5 h-5" /> Log Time
- </button>
- </Link>
+   <div className="flex bg-gray-100 p-1 rounded-xl">
+  {[
+  { id: "month", icon: MdViewModule, label: "Month" },
+  { id: "week", icon: MdViewWeek, label: "Week" },
+  { id: "day", icon: MdViewDay, label: "Day" },
+  { id: "list", icon: MdList, label: "List" }
+  ].map((v) => (
+  <button
+  key={v.id}
+  onClick={() => setView(v.id)}
+  className={`flex items-center gap-2 px-4 py-3 rounded-lg text-sm font-medium transition-all ${view === v.id ? "bg-white text-black shadow-sm" : "text-gray-500 hover:text-black"
+  }`}
+  >
+  <v.icon className="w-4 h-4" /> {v.label}
+  </button>
+  ))}
+  </div>
+
+   <Link to='/operations/time-logs'>
+  <button className="flex items-center gap-2 px-4 py-3 text-sm bg-black text-white rounded-xl hover:bg-gray-100 hover:text-black transition font-medium">
+  <MdAdd className="w-5 h-5" /> Log Time
+  </button>
+  </Link>
+
  </div>
  </div>
 

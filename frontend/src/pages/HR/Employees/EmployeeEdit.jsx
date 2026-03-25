@@ -279,7 +279,8 @@ const EmployeeEdit = () => {
  const QuickAddModal = ({ isOpen, onClose, title, value, onChange, onSubmit, placeholder, loading }) => {
  if (!isOpen) return null;
  return (
- <div className="fixed inset-0 z-[2000] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+   <div className="fixed inset-0 z-2000 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+
  <div className="bg-white rounded-xl shadow-2xl w-full max-w-md overflow-hidden">
  <div className="flex items-center justify-between p-6 border-b border-gray-100">
  <h3 className="text-xl font-semibold text-gray-900">{title}</h3>
@@ -297,21 +298,22 @@ const EmployeeEdit = () => {
  autoFocus
  />
  <div className="flex gap-3 pt-2">
- <button
- type="button"
- onClick={onClose}
- className="flex-1 px-5 py-2.5 text-sm border border-gray-300 text-gray-700 font-medium rounded-xl hover:bg-gray-50 transition"
- disabled={loading}
- >
- Cancel
- </button>
- <button
- type="submit"
- className="flex-1 px-5 py-2.5 text-sm bg-black text-white font-medium rounded-xl hover:bg-gray-900 transition disabled:opacity-50"
- disabled={loading || !value.trim()}
- >
- {loading ? "Saving..." : "Save"}
- </button>
+   <button
+  type="button"
+  onClick={onClose}
+  className="flex-1 px-4 py-3 text-sm border border-gray-300 text-gray-700 font-medium rounded-xl hover:bg-gray-100 transition"
+  disabled={loading}
+  >
+  Cancel
+  </button>
+  <button
+  type="submit"
+  className="flex-1 px-4 py-3 text-sm bg-black text-white font-medium rounded-xl hover:bg-gray-100 hover:text-black transition disabled:opacity-50"
+  disabled={loading || !value.trim()}
+  >
+  {loading ? "Saving..." : "Save"}
+  </button>
+
  </div>
  </form>
  </div>
@@ -354,13 +356,14 @@ const EmployeeEdit = () => {
  />
  <LayoutComponents title="Edit Employee" subtitle="Update employee information and settings" variant="card">
  <div className="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
- <Link
- to="/hr/employees"
- className="inline-flex items-center gap-2 px-5 py-3 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 transition"
- >
- <MdArrowBack className="w-5 h-5" />
- Back to Employees
- </Link>
+   <Link
+  to="/hr/employees"
+  className="inline-flex items-center gap-2 px-4 py-3 rounded-lg border border-gray-300 text-gray-700 font-medium hover:bg-gray-100 transition"
+  >
+  <MdArrowBack className="w-5 h-5" />
+  Back to Employees
+  </Link>
+
 
  <div className="flex items-center gap-3">
  <div>
@@ -557,14 +560,15 @@ const EmployeeEdit = () => {
  If set, new password will be emailed
  </p>
  </div>
- <button
- type="button"
- onClick={handleGeneratePassword}
- className="px-5 py-2.5 text-sm bg-linear-to-r from-purple-600 to-pink-600 text-white rounded-xl hover:from-purple-700 hover:to-pink-700 transition font-medium flex items-center gap-2 shadow-md"
- >
- <MdAutoAwesome className="w-5 h-5" />
- Generate
- </button>
+   <button
+  type="button"
+  onClick={handleGeneratePassword}
+  className="px-4 py-3 text-sm bg-black text-white rounded-xl hover:bg-gray-100 hover:text-black transition font-medium flex items-center gap-2"
+  >
+  <MdAutoAwesome className="w-5 h-5" />
+  Generate
+  </button>
+
  </div>
  </div>
  )}
@@ -573,19 +577,20 @@ const EmployeeEdit = () => {
  </div>
 
  <div className="flex justify-end gap-4">
- <Link
- to="/hr/employees"
- className="px-5 py-2.5 text-sm border border-gray-300 text-gray-700 font-medium rounded-xl hover:bg-gray-50 transition"
- >
- Cancel
- </Link>
- <button
- type="submit"
- disabled={submitLoading}
- className="flex items-center gap-3 px-5 py-2.5 text-sm bg-black text-white rounded-xl hover:bg-gray-900 transition text-sm font-medium disabled:opacity-50"
- >
- {submitLoading ? "Updating..." : "Update Employee"}
- </button>
+   <Link
+  to="/hr/employees"
+  className="px-4 py-3 text-sm border border-gray-300 text-gray-700 font-medium rounded-xl hover:bg-gray-100 transition"
+  >
+  Cancel
+  </Link>
+  <button
+  type="submit"
+  disabled={submitLoading}
+  className="flex items-center gap-3 px-4 py-3 text-sm bg-black text-white rounded-xl hover:bg-gray-100 hover:text-black transition font-medium disabled:opacity-50"
+  >
+  {submitLoading ? "Updating..." : "Update Employee"}
+  </button>
+
  </div>
  </form>
  </LayoutComponents>

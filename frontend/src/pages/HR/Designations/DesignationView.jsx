@@ -78,13 +78,14 @@ const DesignationView = () => {
  </div>
 
  {hasPermission("designations", "add") && (
- <Link
- to="/hr/designations/create"
- className="flex items-center gap-3 px-5 py-2.5 text-sm bg-black text-white rounded-xl hover:bg-gray-800 transition-all shadow-md"
- >
- <MdAdd className="w-5 h-5" />
- Add Designation
- </Link>
+   <Link
+  to="/hr/designations/create"
+  className="flex items-center gap-3 px-4 py-3 text-sm font-medium bg-black text-white rounded-xl hover:bg-gray-100 hover:text-black transition-all shadow-md"
+  >
+  <MdAdd className="w-5 h-5" />
+  Add Designation
+  </Link>
+
  )}
  </div>
 
@@ -93,11 +94,12 @@ const DesignationView = () => {
  <table className="w-full">
  <thead className="bg-gray-50 border-b border-gray-200">
  <tr>
- <th className="px-5 py-2.5 text-sm text-left text-xs font-medium text-gray-600 uppercase tracking-wider">SL No</th>
- <th className="px-5 py-2.5 text-sm text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Designation Name</th>
- <th className="px-5 py-2.5 text-sm text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Designation Description</th>
- <th className="px-5 py-2.5 text-sm text-center text-xs font-medium text-gray-600 uppercase tracking-wider">Members</th>
- <th className="px-5 py-2.5 text-sm text-center text-xs font-medium text-gray-600 uppercase tracking-wider">Actions</th>
+   <th className="px-5 py-2.5 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">SL No</th>
+  <th className="px-5 py-2.5 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Designation Name</th>
+  <th className="px-5 py-2.5 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Designation Description</th>
+  <th className="px-5 py-2.5 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">Members</th>
+  <th className="px-5 py-2.5 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">Actions</th>
+
  </tr>
  </thead>
  <tbody className="divide-y divide-gray-200">
@@ -120,7 +122,8 @@ const DesignationView = () => {
  transition={{ delay: i * 0.05 }}
  className="hover:bg-gray-50"
  >
- <td className="px-5 py-2.5 text-sm text-sm text-gray-900">{i + 1}</td>
+   <td className="px-5 py-2.5 text-sm font-medium text-gray-900">{i + 1}</td>
+
  <td className="px-5 py-2.5 text-sm font-medium text-gray-900">{des.name}</td>
  <td className="px-5 py-2.5 text-sm font-medium text-gray-900">{des.description}</td>
  <td className="px-5 py-2.5 text-sm text-center">
@@ -203,18 +206,19 @@ const DesignationView = () => {
  This designation may be assigned to employees. Deleting it could affect records.
  </p>
  <div className="flex justify-end gap-4">
- <button
- onClick={() => setShowDeleteConfirm(null)}
- className="px-5 py-2.5 text-sm border border-gray-300 rounded-xl hover:bg-gray-50"
- >
- Cancel
- </button>
- <button
- onClick={() => handleDelete(showDeleteConfirm)}
- className="px-5 py-2.5 text-sm bg-red-600 text-white rounded-xl hover:bg-red-700"
- >
- Delete Anyway
- </button>
+   <button
+  onClick={() => setShowDeleteConfirm(null)}
+  className="px-4 py-3 text-sm font-medium border border-gray-300 rounded-xl hover:bg-gray-100 transition-all"
+  >
+  Cancel
+  </button>
+  <button
+  onClick={() => handleDelete(showDeleteConfirm)}
+  className="px-4 py-3 text-sm font-medium bg-red-600 text-white rounded-xl hover:bg-red-700 transition-all"
+  >
+  Delete Anyway
+  </button>
+
  </div>
  </div>
  }

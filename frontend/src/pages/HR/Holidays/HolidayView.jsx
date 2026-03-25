@@ -266,21 +266,12 @@ const HolidayView = ({ leadScope, employeeScope }) => {
  <table className="w-full min-w-full">
  <thead className="bg-gray-50 border-b border-gray-200">
  <tr>
- <th className="px-5 py-2.5 text-sm text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
- SL No
- </th>
- <th className="px-5 py-2.5 text-sm text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
- Date
- </th>
- <th className="px-5 py-2.5 text-sm text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
- Occasion
- </th>
- <th className="px-5 py-2.5 text-sm text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
- Day
- </th>
- <th className="px-5 py-2.5 text-sm text-right text-xs font-medium text-gray-700 uppercase tracking-wider">
- Actions
- </th>
+   <th className="px-5 py-2.5 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">SL No</th>
+  <th className="px-5 py-2.5 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Date</th>
+  <th className="px-5 py-2.5 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Occasion</th>
+  <th className="px-5 py-2.5 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Day</th>
+  <th className="px-5 py-2.5 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">Actions</th>
+
  </tr>
  </thead>
  <tbody className="divide-y divide-gray-200">
@@ -292,11 +283,14 @@ const HolidayView = ({ leadScope, employeeScope }) => {
  transition={{ delay: idx * 0.03 }}
  className="hover:bg-gray-50 transition"
  >
- <td className="px-5 py-2.5 text-sm text-sm text-gray-900">{idx + 1}</td>
- <td className="px-5 py-2.5 text-sm text-sm text-gray-900">
+   <td className="px-5 py-2.5 text-sm font-medium text-gray-900">{idx + 1}</td>
+
+   <td className="px-5 py-2.5 text-sm text-gray-900">
+
  {format(new Date(holiday.date), "MMMM d, yyyy")}
  </td>
- <td className="px-5 py-2.5 text-sm text-sm font-medium text-gray-900">
+   <td className="px-5 py-2.5 text-sm font-medium text-gray-900">
+
  <div className="flex items-center gap-2">
  {holiday.occasion}
  {holiday.is_default && (
@@ -306,7 +300,8 @@ const HolidayView = ({ leadScope, employeeScope }) => {
  )}
  </div>
  </td>
- <td className="px-5 py-2.5 text-sm text-sm text-gray-600">
+   <td className="px-5 py-2.5 text-sm text-gray-600">
+
  {format(new Date(holiday.date), "EEEE")}
  </td>
  <td className="px-5 py-2.5 text-sm text-right">
@@ -375,25 +370,27 @@ const HolidayView = ({ leadScope, employeeScope }) => {
  placeholder="Select year"
  />
 
- <button
- onClick={() => setIsCalendarView(!isCalendarView)}
- className="flex items-center gap-3 px-5 py-3 border border-gray-300 rounded-xl hover:bg-gray-50 transition font-medium"
- >
- <MdCalendarToday className="w-5 h-5" />
- {isCalendarView ? "Table View" : "Calendar View"}
- </button>
+   <button
+  onClick={() => setIsCalendarView(!isCalendarView)}
+  className="flex items-center gap-3 px-4 py-3 border border-gray-300 rounded-xl hover:bg-gray-100 transition font-medium"
+  >
+  <MdCalendarToday className="w-5 h-5" />
+  {isCalendarView ? "Table View" : "Calendar View"}
+  </button>
+
  </div>
 
  <div className="flex gap-3">
  <div className="relative">
- <button
- onClick={() => setShowExportMenu(!showExportMenu)}
- className="flex items-center gap-2 px-5 py-4 border border-gray-300 rounded-xl hover:bg-gray-50 transition font-medium"
- >
- <MdDownload className="w-5 h-5" />
- Export
- <MdArrowDropDown className="w-5 h-5" />
- </button>
+   <button
+  onClick={() => setShowExportMenu(!showExportMenu)}
+  className="flex items-center gap-2 px-4 py-3 border border-gray-300 rounded-xl hover:bg-gray-100 transition font-medium"
+  >
+  <MdDownload className="w-5 h-5" />
+  Export
+  <MdArrowDropDown className="w-5 h-5" />
+  </button>
+
 
  <AnimatePresence>
  {showExportMenu && (
@@ -426,16 +423,17 @@ const HolidayView = ({ leadScope, employeeScope }) => {
  </AnimatePresence>
  </div>
  {hasPermission(permissionPage, "add") && (
- <button
- onClick={() => {
- setNewHoliday({ date: "", occasion: "", is_default: false });
- setIsAddModalOpen(true);
- }}
- className="flex items-center gap-3 px-5 py-2.5 text-sm bg-black text-white rounded-xl hover:bg-gray-900 transition font-medium"
- >
- <MdAdd className="w-5 h-5" />
- Add Holiday
- </button>
+   <button
+  onClick={() => {
+  setNewHoliday({ date: "", occasion: "", is_default: false });
+  setIsAddModalOpen(true);
+  }}
+  className="flex items-center gap-3 px-4 py-3 text-sm bg-black text-white rounded-xl hover:bg-gray-100 hover:text-black transition font-medium"
+  >
+  <MdAdd className="w-5 h-5" />
+  Add Holiday
+  </button>
+
  )}
  </div>
  </div>
@@ -517,18 +515,19 @@ const HolidayView = ({ leadScope, employeeScope }) => {
  </div>
  </div>
  <div className="flex justify-end gap-3 mt-8">
- <button
- onClick={() => setIsAddModalOpen(false)}
- className="px-5 py-2.5 text-sm border border-gray-300 text-gray-700 font-medium rounded-xl hover:bg-gray-50 transition"
- >
- Cancel
- </button>
- <button
- onClick={handleAddHoliday}
- className="px-5 py-2.5 text-sm bg-black text-white font-medium rounded-xl hover:bg-gray-900 transition"
- >
- Save Holiday
- </button>
+   <button
+  onClick={() => setIsAddModalOpen(false)}
+  className="px-4 py-3 text-sm border border-gray-300 text-gray-700 font-medium rounded-xl hover:bg-gray-100 transition"
+  >
+  Cancel
+  </button>
+  <button
+  onClick={handleAddHoliday}
+  className="px-4 py-3 text-sm bg-black text-white font-medium rounded-xl hover:bg-gray-100 hover:text-black transition"
+  >
+  Save Holiday
+  </button>
+
  </div>
  </motion.div>
  </motion.div>
@@ -595,21 +594,22 @@ const HolidayView = ({ leadScope, employeeScope }) => {
  </div>
  </div>
  <div className="flex justify-end gap-3 mt-8">
- <button
- onClick={() => {
- setIsEditModalOpen(false);
- setEditingHoliday(null);
- }}
- className="px-5 py-2.5 text-sm border border-gray-300 text-gray-700 font-medium rounded-xl hover:bg-gray-50 transition"
- >
- Cancel
- </button>
- <button
- onClick={handleEditHoliday}
- className="px-5 py-2.5 text-sm bg-black text-white font-medium rounded-xl hover:bg-gray-900 transition"
- >
- Update Holiday
- </button>
+   <button
+  onClick={() => {
+  setIsEditModalOpen(false);
+  setEditingHoliday(null);
+  }}
+  className="px-4 py-3 text-sm border border-gray-300 text-gray-700 font-medium rounded-xl hover:bg-gray-100 transition"
+  >
+  Cancel
+  </button>
+  <button
+  onClick={handleEditHoliday}
+  className="px-4 py-3 text-sm bg-black text-white font-medium rounded-xl hover:bg-gray-100 hover:text-black transition"
+  >
+  Update Holiday
+  </button>
+
  </div>
  </motion.div>
  </motion.div>

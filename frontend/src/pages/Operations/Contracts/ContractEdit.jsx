@@ -379,7 +379,8 @@ const ContractEdit = () => {
  value={formData.notes}
  onChange={handleChange}
  rows="5"
- className="w-full px-5 py-2.5 text-sm bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-black/5 focus:border-black outline-none transition-all text-sm resize-none"
+   className="w-full px-5 py-3 text-sm bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-black/5 focus:border-black outline-none transition-all resize-none"
+
  placeholder="Specify specific terms, SLAs, or unique conditions..."
  />
  </div>
@@ -388,23 +389,24 @@ const ContractEdit = () => {
  </div>
 
  {/* Submission */}
- <div className="flex flex-col md:flex-row gap-4 pt-10">
- <button
- type="submit"
- disabled={loading}
- className="flex-1 md:flex-none flex items-center justify-center gap-3 bg-black text-white px-5 py-2.5 text-sm rounded-xl font-bold hover:bg-gray-900 transition-all shadow-xl shadow-black/10 disabled:opacity-50 active:scale-95"
- >
- {loading ? <MdRefresh size={24} className="animate-spin" /> : <MdSave size={24} />}
- {loading ? 'Processing...' : 'Save Contract Changes'}
- </button>
- <button
- type="button"
- onClick={() => navigate('/operations/contracts')}
- className="flex-1 md:flex-none flex items-center justify-center gap-3 bg-white border border-gray-200 text-black px-5 py-2.5 text-sm rounded-xl font-bold hover:bg-gray-50 transition-all active:scale-95"
- >
- Cancel
- </button>
- </div>
+   <div className="flex flex-col md:flex-row gap-4 pt-10">
+  <button
+  type="submit"
+  disabled={loading}
+  className="flex-1 md:flex-none flex items-center justify-center gap-3 bg-black text-white px-4 py-3 text-sm rounded-xl font-bold hover:bg-gray-100 hover:text-black transition-all shadow-xl shadow-black/10 disabled:opacity-50"
+  >
+  {loading ? <MdRefresh size={24} className="animate-spin" /> : <MdSave size={24} />}
+  {loading ? 'Processing...' : 'Save Contract Changes'}
+  </button>
+  <button
+  type="button"
+  onClick={() => navigate('/operations/contracts')}
+  className="flex-1 md:flex-none flex items-center justify-center gap-3 bg-white border border-gray-200 text-black px-4 py-3 text-sm rounded-xl font-bold hover:bg-gray-100 transition-all"
+  >
+  Cancel
+  </button>
+  </div>
+
  </form>
  </LayoutComponents>
 

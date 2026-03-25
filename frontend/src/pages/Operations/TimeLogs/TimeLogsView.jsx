@@ -553,11 +553,12 @@ const TimeLogs = ({ employeeScope = false, leadScope = false }) => {
 
  <div className="flex flex-col sm:flex-row gap-3">
  {!employeeScope && (hasPermission('timelogs', 'view') || (leadScope && hasPermission('lead_timelogs', 'view'))) && (
- <Link to="/operations/time-logs/active-timers">
- <button className="flex items-center justify-center gap-2 px-5 py-2.5 text-sm border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition text-sm font-medium whitespace-nowrap">
- <MdTimer className="w-5 h-5" /> Active Timers
- </button>
- </Link>
+   <Link to="/operations/time-logs/active-timers">
+  <button className="flex items-center justify-center gap-2 px-4 py-3 text-sm border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-100 transition font-medium whitespace-nowrap">
+  <MdTimer className="w-5 h-5" /> Active Timers
+  </button>
+  </Link>
+
  )}
  </div>
  </div>
@@ -604,18 +605,19 @@ const TimeLogs = ({ employeeScope = false, leadScope = false }) => {
  <div className="flex gap-3">
  {!employeeScope && (hasPermission('timelogs', 'view') || (leadScope && hasPermission('lead_timelogs', 'view'))) && (
  <>
- <Link
- to="/operations/time-logs/calendar-view"
- className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition text-sm font-medium"
- >
- <MdCalendarToday className="w-4 h-4" /> Calendar
- </Link>
- <Link
- to="/operations/time-logs/emplyees-time"
- className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition text-sm font-medium"
- >
- <MdPerson className="w-4 h-4" /> Employee View
- </Link>
+   <Link
+  to="/operations/time-logs/calendar-view"
+  className="flex items-center gap-2 px-4 py-3 bg-white border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-100 transition text-sm font-medium"
+  >
+  <MdCalendarToday className="w-4 h-4" /> Calendar
+  </Link>
+  <Link
+  to="/operations/time-logs/emplyees-time"
+  className="flex items-center gap-2 px-4 py-3 bg-white border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-100 transition text-sm font-medium"
+  >
+  <MdPerson className="w-4 h-4" /> Employee View
+  </Link>
+
  </>
  )}
  </div>
@@ -640,21 +642,22 @@ const TimeLogs = ({ employeeScope = false, leadScope = false }) => {
  />
  </div>
 
- <button
- onClick={() => setFiltersOpen(!filtersOpen)}
- className="flex items-center gap-3 px-5 py-3 border border-gray-300 rounded-xl hover:bg-gray-50 transition text-sm font-medium whitespace-nowrap"
- >
- <MdFilterList className="w-5 h-5" />
- Filters
- {activeFilterCount > 0 && (
- <span className="ml-2 bg-black text-white text-xs font-medium rounded-full w-6 h-6 flex items-center justify-center">
- {activeFilterCount}
- </span>
- )}
- <MdKeyboardArrowDown
- className={`w-5 h-5 transition-transform ${filtersOpen ? "rotate-180" : ""}`}
- />
- </button>
+   <button
+  onClick={() => setFiltersOpen(!filtersOpen)}
+  className="flex items-center gap-3 px-4 py-3 border border-gray-300 rounded-xl hover:bg-gray-100 transition text-sm font-medium whitespace-nowrap"
+  >
+  <MdFilterList className="w-5 h-5" />
+  Filters
+  {activeFilterCount > 0 && (
+  <span className="ml-2 bg-black text-white text-xs font-medium rounded-full w-6 h-6 flex items-center justify-center">
+  {activeFilterCount}
+  </span>
+  )}
+  <MdKeyboardArrowDown
+  className={`w-5 h-5 transition-transform ${filtersOpen ? "rotate-180" : ""}`}
+  />
+  </button>
+
 
  <span className="text-sm font-medium text-gray-600 hidden lg:block">
  {filteredEntries.length}{" "}
@@ -663,15 +666,16 @@ const TimeLogs = ({ employeeScope = false, leadScope = false }) => {
  </div>
 
  <div className="relative" ref={exportDropdownRef}>
- <button
- onClick={() => setExportDropdownOpen(!exportDropdownOpen)}
- className="flex items-center gap-2 px-5 py-3 border border-gray-300 rounded-xl hover:bg-gray-50 transition text-sm font-medium"
- >
- <MdDownload className="w-5 h-5" /> Export
- <MdKeyboardArrowDown
- className={`w-4 h-4 transition-transform ${exportDropdownOpen ? "rotate-180" : ""}`}
- />
- </button>
+   <button
+  onClick={() => setExportDropdownOpen(!exportDropdownOpen)}
+  className="flex items-center gap-2 px-4 py-3 border border-gray-300 rounded-xl hover:bg-gray-100 transition text-sm font-medium"
+  >
+  <MdDownload className="w-5 h-5" /> Export
+  <MdKeyboardArrowDown
+  className={`w-4 h-4 transition-transform ${exportDropdownOpen ? "rotate-180" : ""}`}
+  />
+  </button>
+
  {exportDropdownOpen && (
  <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg border border-gray-200 py-2 z-50">
  <button
@@ -762,14 +766,15 @@ const TimeLogs = ({ employeeScope = false, leadScope = false }) => {
  </div>
  </div>
 
- <div className="flex flex-col sm:flex-row gap-4 mt-8 pt-6 border-t border-gray-200">
- <button
- onClick={resetFilters}
- className="px-5 py-2.5 text-sm.5 border-2 border-gray-300 text-gray-700 font-medium rounded-xl hover:bg-gray-50 transition"
- >
- Reset All Filters
- </button>
- </div>
+   <div className="flex flex-col sm:flex-row gap-4 mt-8 pt-6 border-t border-gray-200">
+  <button
+  onClick={resetFilters}
+  className="px-4 py-3 text-sm border-2 border-gray-300 text-gray-700 font-medium rounded-xl hover:bg-gray-100 transition"
+  >
+  Reset All Filters
+  </button>
+  </div>
+
  </div>
  </motion.div>
  )}
@@ -785,36 +790,17 @@ const TimeLogs = ({ employeeScope = false, leadScope = false }) => {
  <thead className="bg-gray-50 border-b border-gray-200">
  <tr>
 
- <th className="px-5 py-2.5 text-sm text-left text-xs font-medium text-gray-700 uppercase tracking-wider whitespace-nowrap">
- Task / Project
- </th>
- <th className="px-5 py-2.5 text-sm text-left text-xs font-medium text-gray-700 uppercase tracking-wider whitespace-nowrap">
- Employee
- </th>
- <th className="px-5 py-2.5 text-sm text-left text-xs font-medium text-gray-700 uppercase tracking-wider whitespace-nowrap">
- Start Time
- </th>
- <th className="px-5 py-2.5 text-sm text-left text-xs font-medium text-gray-700 uppercase tracking-wider whitespace-nowrap">
- End Time
- </th>
- <th className="px-5 py-2.5 text-sm text-left text-xs font-medium text-gray-700 uppercase tracking-wider whitespace-nowrap">
- Duration
- </th>
- <th className="px-5 py-2.5 text-sm text-left text-xs font-medium text-gray-700 uppercase tracking-wider whitespace-nowrap">
- Break Timer
- </th>
- <th className="px-5 py-2.5 text-sm text-left text-xs font-medium text-gray-700 uppercase tracking-wider whitespace-nowrap">
- Productive Hours
- </th>
- <th className="px-5 py-2.5 text-sm text-left text-xs font-medium text-gray-700 uppercase tracking-wider whitespace-nowrap">
- Memo
- </th>
- <th className="px-5 py-2.5 text-sm text-left text-xs font-medium text-gray-700 uppercase tracking-wider whitespace-nowrap">
- Type
- </th>
- <th className="px-5 py-2.5 text-sm text-right text-xs font-medium text-gray-700 uppercase tracking-wider whitespace-nowrap">
- Actions
- </th>
+   <th className="px-5 py-2.5 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap">Task / Project</th>
+  <th className="px-5 py-2.5 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap">Employee</th>
+  <th className="px-5 py-2.5 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap">Start Time</th>
+  <th className="px-5 py-2.5 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap">End Time</th>
+  <th className="px-5 py-2.5 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap">Duration</th>
+  <th className="px-5 py-2.5 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap">Break Timer</th>
+  <th className="px-5 py-2.5 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap">Productive Hours</th>
+  <th className="px-5 py-2.5 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap">Memo</th>
+  <th className="px-5 py-2.5 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap">Type</th>
+  <th className="px-5 py-2.5 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap">Actions</th>
+
  </tr>
  </thead>
  <tbody className="divide-y divide-gray-200">
@@ -835,12 +821,13 @@ const TimeLogs = ({ employeeScope = false, leadScope = false }) => {
  Try adjusting your search or filters
  </p>
  {(search || activeFilterCount > 0) && (
- <button
- onClick={resetFilters}
- className="mt-5 px-5 py-2.5 text-sm bg-black text-white rounded-xl hover:bg-gray-900 transition font-medium"
- >
- Clear all filters
- </button>
+   <button
+  onClick={resetFilters}
+  className="mt-5 px-4 py-3 text-sm bg-black text-white rounded-xl hover:bg-gray-100 hover:text-black transition font-medium"
+  >
+  Clear all filters
+  </button>
+
  )}
  </div>
  </td>
@@ -981,23 +968,24 @@ const TimeLogs = ({ employeeScope = false, leadScope = false }) => {
  </div>
 
  {filteredEntries.length > 0 && (
- <div className="px-5 py-2.5 text-sm bg-gray-50 border-t border-gray-200 flex flex-col sm:flex-row justify-between items-center gap-3 text-sm text-gray-600">
- <span>
- Showing {filteredEntries.length} of{" "}
- {viewMode === "daily"
- ? timeEntries.length
- : detailedEntries.length}{" "}
- entries
- </span>
- {activeFilterCount > 0 && (
- <button
- onClick={resetFilters}
- className="text-blue-600 hover:text-blue-800 font-medium"
- >
- Clear all filters
- </button>
- )}
- </div>
+   <div className="px-5 py-4 bg-gray-50 border-t border-gray-200 flex flex-col sm:flex-row justify-between items-center gap-3 text-sm text-gray-600">
+  <span>
+  Showing {filteredEntries.length} of{" "}
+  {viewMode === "daily"
+  ? timeEntries.length
+  : detailedEntries.length}{" "}
+  entries
+  </span>
+  {activeFilterCount > 0 && (
+  <button
+  onClick={resetFilters}
+  className="text-blue-600 hover:text-blue-800 font-medium"
+  >
+  Clear all filters
+  </button>
+  )}
+  </div>
+
  )}
  </div>
  )}
@@ -1117,12 +1105,13 @@ const TimeLogs = ({ employeeScope = false, leadScope = false }) => {
  </div>
 
  <div className="p-6 border-t border-gray-200 bg-gray-50 rounded-b-2xl flex justify-end">
- <button
- onClick={() => setIsViewModalOpen(false)}
- className="px-5 py-2.5 text-sm.5 bg-white border border-gray-300 text-gray-700 font-medium rounded-xl hover:bg-gray-100 transition shadow-sm"
- >
- Close
- </button>
+   <button
+  onClick={() => setIsViewModalOpen(false)}
+  className="px-4 py-3 text-sm bg-white border border-gray-300 text-gray-700 font-medium rounded-xl hover:bg-gray-100 transition shadow-sm"
+  >
+  Close
+  </button>
+
  </div>
  </motion.div>
  </motion.div>

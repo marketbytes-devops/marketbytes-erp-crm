@@ -27,11 +27,12 @@ const StatCard = ({ title, value, subValue, icon, colorClass, bgClass, onClick }
  <div className={`p-3 rounded-xl ${bgClass} ${colorClass}`}>
  {React.cloneElement(icon, { className: "w-6 h-6" })}
  </div>
- {subValue && (
- <span className="text-xs font-medium text-gray-500 bg-gray-50 px-2 py-1 rounded-md">
- {subValue}
- </span>
- )}
+   {subValue && (
+  <span className="text-[10px] font-medium bg-black text-white px-3 py-1.5 rounded-full transition-all hover:bg-gray-100 hover:text-black cursor-pointer shadow-sm">
+  {subValue}
+  </span>
+  )}
+
  </div>
  <div>
  <h3 className="text-3xl font-medium text-gray-800 mb-1">{value}</h3>
@@ -166,13 +167,14 @@ const AdminDashboard = () => {
  <h2 className=" font-medium text-gray-800">Sales Pipeline Overview</h2>
  <p className="text-sm text-gray-500">Current status of all open leads</p>
  </div>
- <button
- onClick={() => navigate('/sales/pipeline')}
- className="p-2 text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"
- title="View Pipeline"
- >
- <MdLaunch className="" />
- </button>
+                             <button
+                                onClick={() => navigate('/sales/pipeline')}
+                                className="px-4 py-2 text-sm bg-black text-white hover:bg-gray-100 hover:text-black transition-all rounded-lg font-medium"
+                                title="View Pipeline"
+                            >
+                                View Pipeline
+                            </button>
+
  </div>
  <div className="p-6">
  {leadStats?.leads_by_status && leadStats.leads_by_status.length > 0 ? (
@@ -209,20 +211,22 @@ const AdminDashboard = () => {
  <h2 className=" font-medium text-gray-800">Recent Tasks</h2>
  <p className="text-sm text-gray-500">Your most recent assignments</p>
  </div>
- <button
- onClick={() => navigate('/operations/tasks')}
- className="text-sm font-medium text-indigo-600 hover:text-indigo-700 flex items-center gap-1"
- >
- View All <MdArrowForward />
- </button>
+                         <button
+                            onClick={() => navigate('/operations/tasks')}
+                            className="px-4 py-2 text-sm bg-black text-white hover:bg-gray-100 hover:text-black transition-all rounded-lg font-medium flex items-center gap-1"
+                        >
+                            View All <MdArrowForward />
+                        </button>
+
  </div>
  <div className="overflow-x-auto">
  <table className="w-full text-left border-collapse">
  <thead>
  <tr className="bg-gray-50 border-b border-gray-100">
- <th className="px-5 py-2.5 text-sm text-xs font-medium text-gray-500 uppercase">Task Details</th>
- <th className="px-5 py-2.5 text-sm text-xs font-medium text-gray-500 uppercase">Due Date</th>
- <th className="px-5 py-2.5 text-sm text-xs font-medium text-gray-500 uppercase text-right">Status</th>
+   <th className="px-5 py-2.5 text-xs font-medium text-gray-500 uppercase">Task Details</th>
+  <th className="px-5 py-2.5 text-xs font-medium text-gray-500 uppercase">Due Date</th>
+  <th className="px-5 py-2.5 text-xs font-medium text-gray-500 uppercase text-right">Status</th>
+
  </tr>
  </thead>
  <tbody className="divide-y divide-gray-100">
@@ -287,17 +291,18 @@ const AdminDashboard = () => {
  { label: 'Leave Requests', path: '/hr/leaves', icon: <MdPendingActions />, color: 'text-orange-600', bg: 'bg-orange-50' },
  { label: 'Financial Reports', path: '/sales/reports', icon: <MdTrendingUp />, color: 'text-emerald-600', bg: 'bg-emerald-50' },
  ].filter(a => hasPermission(a.label.includes('Projects') ? 'Projects' : a.label.split(' ')[0].toLowerCase())).map((action, i) => (
- <button
- key={i}
- onClick={() => navigate(action.path)}
- className="w-full flex items-center p-3 rounded-xl hover:bg-gray-50 border border-transparent hover:border-gray-200 transition-all text-left group"
- >
- <div className={`p-2 rounded-lg ${action.bg} ${action.color} mr-3 group-hover:scale-110 transition-transform`}>
- {action.icon}
- </div>
- <span className="font-medium text-gray-700 flex-1">{action.label}</span>
- <MdArrowForward className="text-gray-400 group-hover:text-gray-800 transition-colors" />
- </button>
+                     <button
+                        key={i}
+                        onClick={() => navigate(action.path)}
+                        className="w-full flex items-center px-4 py-3 rounded-xl bg-black text-white hover:bg-gray-100 hover:text-black transition-all text-left group font-medium"
+                    >
+                        <div className={`p-2 rounded-lg bg-white/10 text-white mr-3 transition-transform group-hover:text-black`}>
+                            {action.icon}
+                        </div>
+                        <span className="flex-1">{action.label}</span>
+                        <MdArrowForward className="text-gray-400 group-hover:text-black transition-colors" />
+                    </button>
+
  ))}
  </div>
  </div>

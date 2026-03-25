@@ -212,7 +212,8 @@ const Communication = () => {
  <button
  key={tab.id}
  onClick={() => setActiveTab(tab.id)}
- className={`relative flex items-center gap-3 px-5 py-2.5 text-sm.5 rounded-xl text-sm font-medium transition-all duration-300 ${isActive ? "text-black" : "text-gray-500 hover:text-gray-900 hover:bg-gray-50"
+   className={`relative flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-300 ${isActive ? "text-black" : "text-gray-500 hover:text-gray-900 hover:bg-gray-50"
+
  }`}
  >
  {isActive && (
@@ -246,12 +247,13 @@ const Communication = () => {
  <h3 className="text-xl font-medium text-gray-900">Proposal Library</h3>
  </div>
  {hasCommPerm("add") && (
- <button
- onClick={() => openProposalModal()}
- className="flex items-center gap-2 px-5 py-2.5 text-sm bg-black text-white rounded-xl hover:bg-gray-900 transition-all font-medium shadow-black/10 active:scale-95"
- >
- <MdAdd className="w-5 h-5" /> New Template
- </button>
+   <button
+  onClick={() => openProposalModal()}
+  className="flex items-center gap-2 px-4 py-3 text-sm bg-black text-white rounded-xl hover:bg-gray-100 hover:text-black transition-all font-medium shadow-black/10"
+  >
+  <MdAdd className="w-5 h-5" /> New Template
+  </button>
+
  )}
  </div>
 
@@ -314,12 +316,13 @@ const Communication = () => {
  <h3 className="text-xl font-medium text-gray-900">RFP Body Templates</h3>
  </div>
  {hasCommPerm("add") && (
- <button
- onClick={() => openRfpModal()}
- className="flex items-center gap-2 px-5 py-2.5 text-sm bg-black text-white rounded-xl hover:bg-gray-900 transition-all font-medium shadow-lg shadow-black/10 active:scale-95"
- >
- <MdAdd className="w-5 h-5" /> New Body Template
- </button>
+   <button
+  onClick={() => openRfpModal()}
+  className="flex items-center gap-2 px-4 py-3 text-sm bg-black text-white rounded-xl hover:bg-gray-100 hover:text-black transition-all font-medium shadow-lg shadow-black/10"
+  >
+  <MdAdd className="w-5 h-5" /> New Body Template
+  </button>
+
  )}
  </div>
 
@@ -381,12 +384,13 @@ const Communication = () => {
  <div className="relative z-10 space-y-4">
  {gmailConnected ? (
  <>
- <button
- onClick={() => setComposeModal(true)}
- className="w-full flex items-center justify-center gap-3 py-4 bg-white text-black rounded-xl font-medium hover:scale-[1.02] transition-transform active:scale-95"
- >
- <MdSend className="w-5 h-5" /> Start New Outreach
- </button>
+   <button
+  onClick={() => setComposeModal(true)}
+  className="w-full flex items-center justify-center gap-3 py-4 bg-white text-black rounded-xl font-medium transition-all"
+  >
+  <MdSend className="w-5 h-5" /> Start New Outreach
+  </button>
+
  <button
  onClick={handleDisconnectGmail}
  className="w-full flex items-center justify-center gap-3 py-4 bg-gray-900 text-gray-400 rounded-xl font-medium hover:text-red-400 transition-colors"
@@ -395,12 +399,13 @@ const Communication = () => {
  </button>
  </>
  ) : (
- <button
- onClick={handleConnectGmail}
- className="w-full flex items-center justify-center gap-3 py-4 bg-white text-black rounded-xl font-medium hover:scale-[1.02] transition-transform active:scale-95 shadow-[0_20px_40px_-10px_rgba(255,255,255,0.2)]"
- >
- <FiLink className="w-5 h-5" /> Connect with Google
- </button>
+   <button
+  onClick={handleConnectGmail}
+  className="w-full flex items-center justify-center gap-3 py-4 bg-white text-black rounded-xl font-medium transition-all shadow-[0_20px_40px_-10px_rgba(255,255,255,0.2)]"
+  >
+  <FiLink className="w-5 h-5" /> Connect with Google
+  </button>
+
  )}
  <div className="flex items-center justify-center gap-4 pt-4 text-[10px] uppercase font-medium text-gray-500 tracking-widest">
  <span className="flex items-center gap-1"><FiShield className="w-3 h-3" /> SSL Encrypted</span>
@@ -445,7 +450,8 @@ const Communication = () => {
  <div className="font-medium text-gray-900">{email.to}</div>
  <div className="text-[10px] text-gray-400 font-medium">{new Date(email.sent_at).toLocaleDateString()} at {new Date(email.sent_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
  </td>
- <td className="px-5 py-2.5 text-sm text-sm font-medium text-gray-600 truncate max-w-xs">{email.subject}</td>
+   <td className="px-5 py-2.5 text-sm font-medium text-gray-600 truncate max-w-xs">{email.subject}</td>
+
  <td className="px-5 py-2.5 text-sm text-right">
  <span className="bg-emerald-50 text-emerald-600 text-[10px] font-medium px-2.5 py-1 rounded-full uppercase tracking-tighter">Delivered</span>
  </td>
@@ -496,8 +502,9 @@ const Communication = () => {
  </div>
  </div>
  <div className="flex justify-end gap-3 pt-4">
- <button onClick={() => setShowProposalModal(false)} className="px-5 py-2.5 text-sm text-sm font-medium text-gray-600 hover:text-black transition">Discard Changes</button>
- <button onClick={handleSaveProposal} className="px-5 py-2.5 text-sm bg-black text-white rounded-xl font-medium shadow-xl shadow-black/10 active:scale-95">Save Document</button>
+   <button onClick={() => setShowProposalModal(false)} className="px-4 py-3 text-sm font-medium text-gray-600 hover:text-black transition">Discard Changes</button>
+  <button onClick={handleSaveProposal} className="px-4 py-3 text-sm bg-black text-white rounded-xl font-medium shadow-xl shadow-black/10 hover:bg-gray-100 hover:text-black">Save Document</button>
+
  </div>
  </div>
  }
@@ -530,8 +537,9 @@ const Communication = () => {
  </div>
  </div>
  <div className="flex justify-end gap-3 pt-4">
- <button onClick={() => setShowRfpModal(false)} className="px-5 py-2.5 text-sm text-sm font-medium text-gray-600 hover:text-black">Cancel</button>
- <button onClick={handleSaveRfp} className="px-5 py-2.5 text-sm bg-black text-white rounded-xl font-medium shadow-xl shadow-black/10">Commit Fragment</button>
+   <button onClick={() => setShowRfpModal(false)} className="px-4 py-3 text-sm font-medium text-gray-600 hover:text-black">Cancel</button>
+  <button onClick={handleSaveRfp} className="px-4 py-3 text-sm bg-black text-white rounded-xl font-medium shadow-xl shadow-black/10 hover:bg-gray-100 hover:text-black">Commit Fragment</button>
+
  </div>
  </div>
  }
@@ -584,10 +592,11 @@ const Communication = () => {
  </div>
 
  <div className="flex justify-end gap-3 pt-4">
- <button type="button" onClick={() => setComposeModal(false)} className="px-5 py-2.5 text-sm text-sm font-medium text-gray-600 hover:text-black">Discard</button>
- <button type="submit" className="flex items-center gap-2 px-5 py-2.5 text-sm bg-black text-white rounded-xl font-medium shadow-xl shadow-black/10 hover:translate-x-1 transition-transform">
- Dispatch <MdLaunch className="w-4 h-4" />
- </button>
+   <button type="button" onClick={() => setComposeModal(false)} className="px-4 py-3 text-sm font-medium text-gray-600 hover:text-black">Discard</button>
+  <button type="submit" className="flex items-center gap-2 px-4 py-3 text-sm bg-black text-white rounded-xl font-medium shadow-xl shadow-black/10 hover:bg-gray-100 hover:text-black transition-all">
+  Dispatch <MdLaunch className="w-4 h-4" />
+  </button>
+
  </div>
  </form>
  }

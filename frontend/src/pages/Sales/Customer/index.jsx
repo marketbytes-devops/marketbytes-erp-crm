@@ -226,9 +226,10 @@ const Customers = () => {
  className="bg-white p-6 rounded-4xl border border-gray-100 shadow-sm hover:shadow-md transition-all group"
  >
  <div className="flex items-center gap-4">
- <div className={`p-4 rounded-xl ${stat.bg} ${stat.color} transition-transform group-hover:scale-110`}>
- <stat.icon className="w-6 h-6" />
- </div>
+   <div className={`p-4 rounded-xl ${stat.bg} ${stat.color}`}>
+  <stat.icon className="w-6 h-6" />
+  </div>
+
  <div>
  <p className="text-xs font-medium text-gray-400 uppercase tracking-widest">{stat.label}</p>
  <p className="text-2xl font-medium text-gray-900">{stat.value}</p>
@@ -248,7 +249,8 @@ const Customers = () => {
  <button
  key={tab.id}
  onClick={() => setActiveTab(tab.id)}
- className={`relative flex items-center gap-3 px-5 py-2.5 text-sm rounded-xl text-sm font-medium transition-all duration-300 ${isActive ? "text-black" : "text-gray-500 hover:text-gray-900 hover:bg-white"
+   className={`relative flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-300 ${isActive ? "text-black" : "text-gray-500 hover:text-gray-900 hover:bg-white"
+
  }`}
  >
  {isActive && (
@@ -277,12 +279,13 @@ const Customers = () => {
  />
  </div>
  {hasPermission("customer", "add") && (
- <button
- onClick={() => activeTab === "companies" ? openCompanyModal() : openClientModal()}
- className="flex items-center justify-center gap-2 px-5 py-2.5 text-sm bg-black text-white rounded-xl hover:bg-gray-900 transition-all font-medium shadow-black/10 active:scale-95 whitespace-nowrap"
- >
- <MdAdd className="w-5 h-5" /> New {activeTab === "companies" ? "Company" : "Client"}
- </button>
+   <button
+  onClick={() => activeTab === "companies" ? openCompanyModal() : openClientModal()}
+  className="flex items-center justify-center gap-2 px-4 py-3 text-sm bg-black text-white rounded-xl hover:bg-gray-100 hover:text-black transition-all font-medium shadow-black/10 whitespace-nowrap"
+  >
+  <MdAdd className="w-5 h-5" /> New {activeTab === "companies" ? "Company" : "Client"}
+  </button>
+
  )}
  </div>
  </div>
@@ -295,17 +298,19 @@ const Customers = () => {
  <tr>
  {activeTab === "companies" ? (
  <>
- <th className="px-5 py-2.5 text-sm text-left text-[11px] font-medium text-gray-400 uppercase tracking-widest">Company Branding</th>
- <th className="px-5 py-2.5 text-sm text-left text-[11px] font-medium text-gray-400 uppercase tracking-widest">Industry & Reach</th>
- <th className="px-5 py-2.5 text-sm text-left text-[11px] font-medium text-gray-400 uppercase tracking-widest">Location</th>
- <th className="px-5 py-2.5 text-sm text-right text-[11px] font-medium text-gray-400 uppercase tracking-widest">Actions</th>
+   <th className="px-5 py-2.5 text-left text-xs font-semibold text-gray-400 uppercase tracking-widest">Company Branding</th>
+  <th className="px-5 py-2.5 text-left text-xs font-semibold text-gray-400 uppercase tracking-widest">Industry & Reach</th>
+  <th className="px-5 py-2.5 text-left text-xs font-semibold text-gray-400 uppercase tracking-widest">Location</th>
+  <th className="px-5 py-2.5 text-right text-xs font-semibold text-gray-400 uppercase tracking-widest">Actions</th>
+
  </>
  ) : (
  <>
- <th className="px-5 py-2.5 text-sm text-left text-[11px] font-medium text-gray-400 uppercase tracking-widest">Persona Details</th>
- <th className="px-5 py-2.5 text-sm text-left text-[11px] font-medium text-gray-400 uppercase tracking-widest">Associated Company</th>
- <th className="px-5 py-2.5 text-sm text-left text-[11px] font-medium text-gray-400 uppercase tracking-widest">Reach Out</th>
- <th className="px-5 py-2.5 text-sm text-right text-[11px] font-medium text-gray-400 uppercase tracking-widest">Actions</th>
+   <th className="px-5 py-2.5 text-left text-xs font-semibold text-gray-400 uppercase tracking-widest">Persona Details</th>
+  <th className="px-5 py-2.5 text-left text-xs font-semibold text-gray-400 uppercase tracking-widest">Associated Company</th>
+  <th className="px-5 py-2.5 text-left text-xs font-semibold text-gray-400 uppercase tracking-widest">Reach Out</th>
+  <th className="px-5 py-2.5 text-right text-xs font-semibold text-gray-400 uppercase tracking-widest">Actions</th>
+
  </>
  )}
  </tr>
@@ -401,7 +406,8 @@ const Customers = () => {
  </>
  )}
  <td className="px-8 py-6 text-right">
- <div className="flex justify-end gap-1 opacity-0 group-hover:opacity-100 transition-all transform translate-x-2 group-hover:translate-x-0">
+   <div className="flex justify-end gap-1 opacity-100 transition-all">
+
  {hasPermission("customer", "edit") && (
  <button
  onClick={() => activeTab === "companies" ? openCompanyModal(item) : openClientModal(item)}
@@ -463,10 +469,11 @@ const Customers = () => {
  </div>
 
  <div className="flex justify-end gap-4 pt-6">
- <button onClick={() => setShowCompanyModal(false)} className="px-5 py-2.5 text-sm text-sm font-medium text-gray-600 hover:text-black transition">Discard Changes</button>
- <button onClick={handleSaveCompany} className="px-5 py-2.5 text-sm bg-black text-white rounded-xl font-medium shadow-xl shadow-black/10 hover:translate-y-[-2px] transition-all">
- Commit Record
- </button>
+   <button onClick={() => setShowCompanyModal(false)} className="px-4 py-3 text-sm font-medium text-gray-600 hover:text-black transition">Discard Changes</button>
+  <button onClick={handleSaveCompany} className="px-4 py-3 text-sm bg-black text-white rounded-xl font-medium shadow-xl shadow-black/10 hover:bg-gray-100 hover:text-black transition-all">
+  Commit Record
+  </button>
+
  </div>
  </div>
  }
@@ -506,10 +513,11 @@ const Customers = () => {
  </div>
 
  <div className="flex justify-end gap-4 pt-8">
- <button onClick={() => setShowClientModal(false)} className="px-5 py-2.5 text-sm text-sm font-medium text-gray-600 hover:text-black transition">Cancel Outreach</button>
- <button onClick={handleSaveClient} className="px-5 py-2.5 text-sm bg-emerald-600 text-white rounded-xl font-medium shadow-xl shadow-emerald-600/10 hover:translate-y-[-2px] transition-all">
- {editingClient ? "Update Persona" : "Record Stakeholder"}
- </button>
+   <button onClick={() => setShowClientModal(false)} className="px-4 py-3 text-sm font-medium text-gray-600 hover:text-black transition">Cancel Outreach</button>
+  <button onClick={handleSaveClient} className="px-4 py-3 text-sm bg-black text-white rounded-xl font-medium shadow-xl shadow-black/10 hover:bg-gray-100 hover:text-black transition-all">
+  {editingClient ? "Update Persona" : "Record Stakeholder"}
+  </button>
+
  </div>
  </div>
  }

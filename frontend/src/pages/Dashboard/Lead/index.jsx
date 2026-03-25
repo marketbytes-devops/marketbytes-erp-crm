@@ -28,11 +28,12 @@ const StatCard = ({ title, value, subValue, icon, colorClass, bgClass, onClick }
  <div className={`p-3 rounded-xl ${bgClass} ${colorClass}`}>
  {React.cloneElement(icon, { className: "w-6 h-6" })}
  </div>
- {subValue && (
- <span className="text-xs font-medium text-gray-500 bg-gray-50 px-2 py-1 rounded-md">
- {subValue}
- </span>
- )}
+   {subValue && (
+  <span className="text-[10px] font-medium bg-black text-white px-3 py-1.5 rounded-full transition-all hover:bg-gray-100 hover:text-black cursor-pointer shadow-sm">
+  {subValue}
+  </span>
+  )}
+
  </div>
  <div>
  <h3 className="text-3xl font-bold text-gray-800 mb-1">{value}</h3>
@@ -188,29 +189,33 @@ const LeadDashboard = () => {
  <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
  <div className="px-5 py-2.5 text-sm border-b border-gray-100 flex items-center justify-between">
  <h2 className=" font-bold text-gray-800">Recent Tasks</h2>
- <button onClick={() => navigate('/lead/tasks')} className="text-sm text-indigo-600 font-medium">View All</button>
+                     <button onClick={() => navigate('/lead/tasks')} className="px-4 py-2 text-sm bg-black text-white hover:bg-gray-100 hover:text-black transition-all rounded-lg font-medium">View All</button>
+
  </div>
  <div className="overflow-x-auto">
  <table className="w-full text-left">
  <thead className="bg-gray-50">
  <tr>
- <th className="px-5 py-2.5 text-sm text-xs font-semibold text-gray-500 uppercase">S.No</th>
- <th className="px-5 py-2.5 text-sm text-xs font-semibold text-gray-500 uppercase">Task Details</th>
- <th className="px-5 py-2.5 text-sm text-xs font-semibold text-gray-500 uppercase">Due Date</th>
- <th className="px-5 py-2.5 text-sm text-xs font-semibold text-gray-500 uppercase text-right">Status</th>
+   <th className="px-5 py-2.5 text-xs font-semibold text-gray-500 uppercase">S.No</th>
+  <th className="px-5 py-2.5 text-xs font-semibold text-gray-500 uppercase">Task Details</th>
+  <th className="px-5 py-2.5 text-xs font-semibold text-gray-500 uppercase">Due Date</th>
+  <th className="px-5 py-2.5 text-xs font-semibold text-gray-500 uppercase text-right">Status</th>
+
  </tr>
  </thead>
  <tbody className="divide-y divide-gray-100">
  {recentTasks.map((task, i) => (
  <tr key={task.id} className="hover:bg-gray-50">
- <td className="px-5 py-2.5 text-sm text-sm text-gray-600">{i + 1}</td>
+   <td className="px-5 py-2.5 text-sm text-gray-600">{i + 1}</td>
+
  <td className="px-5 py-2.5 text-sm">
  <div className="flex flex-col">
  <span className="font-medium text-gray-800 text-sm">{task.title}</span>
  <span className="text-xs text-gray-500">{task.project_name}</span>
  </div>
  </td>
- <td className="px-5 py-2.5 text-sm text-sm text-gray-600">
+   <td className="px-5 py-2.5 text-sm text-gray-600">
+
  {task.due_date ? new Date(task.due_date).toLocaleDateString() : 'N/A'}
  </td>
  <td className="px-5 py-2.5 text-sm text-right">
@@ -229,24 +234,27 @@ const LeadDashboard = () => {
  <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
  <div className="px-5 py-2.5 text-sm border-b border-gray-100 flex items-center justify-between">
  <h2 className=" font-bold text-gray-800">Scrum</h2>
- <button onClick={() => navigate('/lead/scrum')} className="text-sm text-indigo-600 font-medium">View All</button>
+                     <button onClick={() => navigate('/lead/scrum')} className="px-4 py-2 text-sm bg-black text-white hover:bg-gray-100 hover:text-black transition-all rounded-lg font-medium">View All</button>
+
  </div>
  <div className="overflow-x-auto">
  <table className="w-full text-left">
  <thead className="bg-gray-50">
  <tr>
- <th className="px-5 py-2.5 text-sm text-xs font-semibold text-gray-500 uppercase">S.No</th>
- <th className="px-5 py-2.5 text-sm text-xs font-semibold text-gray-500 uppercase">Project/Task</th>
- <th className="px-5 py-2.5 text-sm text-xs font-semibold text-gray-500 uppercase">Memo</th>
- <th className="px-5 py-2.5 text-sm text-xs font-semibold text-gray-500 uppercase text-right">Status</th>
+   <th className="px-5 py-2.5 text-xs font-semibold text-gray-500 uppercase">S.No</th>
+  <th className="px-5 py-2.5 text-xs font-semibold text-gray-500 uppercase">Project/Task</th>
+  <th className="px-5 py-2.5 text-xs font-semibold text-gray-500 uppercase">Memo</th>
+  <th className="px-5 py-2.5 text-xs font-semibold text-gray-500 uppercase text-right">Status</th>
+
  </tr>
  </thead>
  <tbody className="divide-y divide-gray-100">
  {scrums.slice(0, 5).map((s, i) => (
  <tr key={s.id} className="hover:bg-gray-50">
- <td className="px-5 py-2.5 text-sm text-sm text-gray-600">{i + 1}</td>
- <td className="px-5 py-2.5 text-sm text-sm text-gray-800 font-medium">{s.title || s.project_name}</td>
- <td className="px-5 py-2.5 text-sm text-sm text-gray-500 truncate max-w-xs">{s.memo || 'No memo available'}</td>
+   <td className="px-5 py-2.5 text-sm text-gray-600">{i + 1}</td>
+  <td className="px-5 py-2.5 text-sm text-gray-800 font-medium">{s.title || s.project_name}</td>
+  <td className="px-5 py-2.5 text-sm text-gray-500 truncate max-w-xs">{s.memo || 'No memo available'}</td>
+
  <td className="px-5 py-2.5 text-sm text-right">
  <span className="px-2 py-1 rounded-full text-[10px] font-bold uppercase bg-gray-100 text-gray-600">
  {s.status}
@@ -268,17 +276,19 @@ const LeadDashboard = () => {
  <table className="w-full text-left">
  <thead className="bg-gray-50">
  <tr>
- <th className="px-5 py-2.5 text-sm text-xs font-semibold text-gray-500 uppercase">Title</th>
- <th className="px-5 py-2.5 text-sm text-xs font-semibold text-gray-500 uppercase">Total Time</th>
- <th className="px-5 py-2.5 text-sm text-xs font-semibold text-gray-500 uppercase text-right">Due Date</th>
+   <th className="px-5 py-2.5 text-xs font-semibold text-gray-500 uppercase">Title</th>
+  <th className="px-5 py-2.5 text-xs font-semibold text-gray-500 uppercase">Total Time</th>
+  <th className="px-5 py-2.5 text-xs font-semibold text-gray-500 uppercase text-right">Due Date</th>
+
  </tr>
  </thead>
  <tbody className="divide-y divide-gray-100">
  {overdueTasks.slice(0, 5).map((task) => (
  <tr key={task.id} className="hover:bg-gray-50">
- <td className="px-5 py-2.5 text-sm text-sm font-medium text-red-600">{task.title}</td>
- <td className="px-5 py-2.5 text-sm text-sm text-gray-600">{task.total_hours || '0h'}</td>
- <td className="px-5 py-2.5 text-sm text-sm text-gray-600 text-right font-medium">
+   <td className="px-5 py-2.5 text-sm font-medium text-red-600">{task.title}</td>
+  <td className="px-5 py-2.5 text-sm text-gray-600">{task.total_hours || '0h'}</td>
+  <td className="px-5 py-2.5 text-sm text-gray-600 text-right font-medium">
+
  {new Date(task.due_date).toLocaleDateString()}
  </td>
  </tr>
@@ -308,17 +318,18 @@ const LeadDashboard = () => {
  { label: 'Task Listing', path: '/lead/tasks', icon: <MdAssignment /> },
  { label: 'Scrum Listing', path: '/lead/scrum', icon: <MdTimeline /> }
  ].map((link, idx) => (
- <button
- key={idx}
- onClick={() => navigate(link.path)}
- className="flex items-center justify-between p-4 rounded-xl border border-gray-50 hover:border-indigo-100 hover:bg-indigo-50/30 transition-all group"
- >
- <div className="flex items-center gap-3">
- <span className="text-indigo-600 text-xl group-hover:scale-110 transition-transform">{link.icon}</span>
- <span className="text-sm font-medium text-gray-700">{link.label}</span>
- </div>
- <MdArrowForward className="text-gray-300 group-hover:text-indigo-600 group-hover:translate-x-1 transition-all" />
- </button>
+                                 <button
+                                    key={idx}
+                                    onClick={() => navigate(link.path)}
+                                    className="flex items-center justify-between px-4 py-3 rounded-xl bg-black text-white hover:bg-gray-100 hover:text-black transition-all group font-medium"
+                                >
+                                    <div className="flex items-center gap-3">
+                                        <span className="text-xl transition-transform">{link.icon}</span>
+                                        <span className="text-sm">{link.label}</span>
+                                    </div>
+                                    <MdArrowForward className="text-gray-400 group-hover:text-black group-hover:translate-x-1 transition-all" />
+                                </button>
+
  ))}
  </div>
  </div>

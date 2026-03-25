@@ -355,10 +355,11 @@ const Leads = () => {
  <div className="flex gap-3">
  {hasPermission("leads", "view") && (
  <div className="relative group">
- <button className="flex items-center gap-3 px-5 py-2.5 text-sm.5 border border-gray-300 rounded-xl hover:bg-gray-50 transition font-medium">
- <MdDownload className="w-5 h-5" /> Export
- <MdKeyboardArrowDown className="w-5 h-5 transition-transform group-hover:rotate-180" />
- </button>
+   <button className="flex items-center gap-3 px-4 py-3 text-sm border border-gray-300 rounded-xl hover:bg-gray-50 transition font-medium">
+  <MdDownload className="w-5 h-5" /> Export
+  <MdKeyboardArrowDown className="w-5 h-5 transition-transform group-hover:rotate-180" />
+  </button>
+
  <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg border border-gray-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-10">
  <button
  onClick={exportToCSV}
@@ -386,12 +387,13 @@ const Leads = () => {
  )}
 
  {hasPermission("leads", "add") && (
- <button
- onClick={() => openModal()}
- className="flex items-center gap-3 px-5 py-2.5 text-sm.5 bg-black text-white rounded-xl hover:bg-gray-900 transition font-medium"
- >
- <MdAdd className="w-5 h-5" /> Add Lead
- </button>
+   <button
+  onClick={() => openModal()}
+  className="flex items-center gap-3 px-4 py-3 text-sm bg-black text-white rounded-xl hover:bg-gray-100 hover:text-black transition font-medium"
+  >
+  <MdAdd className="w-5 h-5" /> Add Lead
+  </button>
+
  )}
  </div>
  </div>
@@ -402,30 +404,15 @@ const Leads = () => {
  <table className="w-full min-w-[1000px]">
  <thead className="bg-gray-50 border-b border-gray-200">
  <tr>
- <th className="px-5 py-2.5 text-sm text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
- Sl No
- </th>
- <th className="px-5 py-2.5 text-sm text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
- Client Name
- </th>
- <th className="px-5 py-2.5 text-sm text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
- Company
- </th>
- <th className="px-5 py-2.5 text-sm text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
- Lead Value
- </th>
- <th className="px-5 py-2.5 text-sm text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
- Next Follow Up
- </th>
- <th className="px-5 py-2.5 text-sm text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
- Lead Agent
- </th>
- <th className="px-5 py-2.5 text-sm text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
- Status
- </th>
- <th className="px-5 py-2.5 text-sm text-center text-xs font-medium text-gray-700 uppercase tracking-wider">
- Actions
- </th>
+   <th className="px-5 py-2.5 text-left text-xs font-semibold text-gray-500 uppercase tracking-widest">Sl No</th>
+  <th className="px-5 py-2.5 text-left text-xs font-semibold text-gray-500 uppercase tracking-widest">Client Name</th>
+  <th className="px-5 py-2.5 text-left text-xs font-semibold text-gray-500 uppercase tracking-widest">Company</th>
+  <th className="px-5 py-2.5 text-left text-xs font-semibold text-gray-500 uppercase tracking-widest">Lead Value</th>
+  <th className="px-5 py-2.5 text-left text-xs font-semibold text-gray-500 uppercase tracking-widest">Next Follow Up</th>
+  <th className="px-5 py-2.5 text-left text-xs font-semibold text-gray-500 uppercase tracking-widest">Lead Agent</th>
+  <th className="px-5 py-2.5 text-left text-xs font-semibold text-gray-500 uppercase tracking-widest">Status</th>
+  <th className="px-5 py-2.5 text-center text-xs font-semibold text-gray-500 uppercase tracking-widest">Actions</th>
+
  </tr>
  </thead>
  <tbody className="divide-y divide-gray-200">
@@ -687,24 +674,26 @@ const Leads = () => {
  />
 
  <div className="flex justify-end gap-4 pt-6">
- <button
- type="button"
- onClick={() => setShowModal(false)}
- className="px-5 py-2.5 text-sm.5 border border-gray-300 rounded-xl hover:bg-gray-50"
- >
- Cancel
- </button>
- <button
- type="submit"
- disabled={formLoading}
- className="px-5 py-2.5 text-sm.5 bg-black text-white rounded-xl hover:bg-gray-900 disabled:opacity-50"
- >
- {formLoading
- ? "Saving..."
- : editingLead
- ? "Update Lead"
- : "Save Lead"}
- </button>
+   <button
+  type="button"
+  onClick={() => setShowModal(false)}
+  className="px-4 py-3 text-sm border border-gray-300 rounded-xl hover:bg-gray-50"
+  >
+  Cancel
+  </button>
+
+   <button
+  type="submit"
+  disabled={formLoading}
+  className="px-4 py-3 text-sm bg-black text-white rounded-xl hover:bg-gray-100 hover:text-black disabled:opacity-50"
+  >
+  {formLoading
+  ? "Saving..."
+  : editingLead
+  ? "Update Lead"
+  : "Save Lead"}
+  </button>
+
  </div>
  </form>
  }

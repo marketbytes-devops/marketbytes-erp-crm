@@ -246,12 +246,13 @@ const EmployeeView = ({ leadScope, employeeScope }) => {
  />
  </div>
 
- <button
- onClick={() => setFiltersOpen(!filtersOpen)}
- className="flex items-center gap-3 px-5 py-4 border border-gray-300 rounded-xl hover:bg-gray-50 transition text-sm font-medium whitespace-nowrap"
- >
- <MdFilterList className="w-5 h-5" />
- Filters
+   <button
+  onClick={() => setFiltersOpen(!filtersOpen)}
+  className="flex items-center gap-3 px-4 py-3 border border-gray-300 rounded-xl hover:bg-gray-100 transition text-sm font-medium whitespace-nowrap"
+  >
+  <MdFilterList className="w-5 h-5" />
+  Filters
+
  {activeCount > 0 && (
  <span className="ml-2 bg-black text-white text-xs font-medium rounded-full w-6 h-6 flex items-center justify-center">
  {activeCount}
@@ -267,14 +268,15 @@ const EmployeeView = ({ leadScope, employeeScope }) => {
 
  <div className="flex gap-3">
  <div className="relative">
- <button
- onClick={() => setShowExport(prev => !prev)}
- className="flex items-center gap-2 px-5 py-4 border border-gray-300 rounded-xl hover:bg-gray-50 transition text-sm font-medium"
- >
- <MdDownload className="w-5 h-5" />
- Export
- <MdKeyboardArrowDown className="w-4 h-4" />
- </button>
+   <button
+  onClick={() => setShowExport(prev => !prev)}
+  className="flex items-center gap-2 px-4 py-3 border border-gray-300 rounded-xl hover:bg-gray-100 transition text-sm font-medium"
+  >
+  <MdDownload className="w-5 h-5" />
+  Export
+  <MdKeyboardArrowDown className="w-4 h-4" />
+  </button>
+
 
  <AnimatePresence>
  {showExport && (
@@ -311,12 +313,13 @@ const EmployeeView = ({ leadScope, employeeScope }) => {
  </div>
 
  {hasPermission("employees", "add") && !leadScope && (
- <Link
- to="/hr/employees/create"
- className="flex items-center gap-3 px-5 py-2.5 text-sm bg-black text-white rounded-xl hover:bg-gray-900 transition text-sm font-medium"
- >
- <MdAdd className="w-5 h-5" /> Add Employee
- </Link>
+   <Link
+  to="/hr/employees/create"
+  className="flex items-center gap-3 px-4 py-3 text-sm bg-black text-white rounded-xl hover:bg-gray-100 hover:text-black transition font-medium"
+  >
+  <MdAdd className="w-5 h-5" /> Add Employee
+  </Link>
+
  )}
  </div>
  </div>
@@ -417,14 +420,15 @@ const EmployeeView = ({ leadScope, employeeScope }) => {
  />
  </div>
 
- <div className="flex flex-col sm:flex-row gap-4 mt-8 pt-6 border-t border-gray-200">
- <button className="flex items-center justify-center gap-2 px-5 py-2.5 text-sm.5 bg-black text-white font-medium rounded-xl hover:bg-gray-900 transition">
- <FiCheck className="w-5 h-5" /> Apply Filters
- </button>
- <button onClick={resetFilters} className="px-5 py-2.5 text-sm.5 border-2 border-gray-300 text-gray-700 font-medium rounded-xl hover:bg-gray-50 transition">
- Reset All Filters
- </button>
- </div>
+   <div className="flex flex-col sm:flex-row gap-4 mt-8 pt-6 border-t border-gray-200">
+  <button className="flex items-center justify-center gap-2 px-4 py-3 text-sm bg-black text-white font-medium rounded-xl hover:bg-gray-100 hover:text-black transition">
+  <FiCheck className="w-5 h-5" /> Apply Filters
+  </button>
+  <button onClick={resetFilters} className="px-4 py-3 text-sm border-2 border-gray-300 text-gray-700 font-medium rounded-xl hover:bg-gray-100 transition">
+  Reset All Filters
+  </button>
+  </div>
+
 
  {activeCount > 0 && (
  <div className="mt-6 pt-6 border-t border-gray-200">
@@ -457,13 +461,14 @@ const EmployeeView = ({ leadScope, employeeScope }) => {
  <table className="w-full min-w-[1000px]">
  <thead className="bg-gray-50 border-b border-gray-200">
  <tr>
- <th className="px-5 py-2.5 text-sm text-left text-xs font-medium text-gray-700 uppercase tracking-wider whitespace-nowrap">ID</th>
- <th className="px-5 py-2.5 text-sm text-left text-xs font-medium text-gray-700 uppercase tracking-wider whitespace-nowrap">Employee</th>
- <th className="px-5 py-2.5 text-sm text-left text-xs font-medium text-gray-700 uppercase tracking-wider whitespace-nowrap">Email</th>
- <th className="px-5 py-2.5 text-sm text-left text-xs font-medium text-gray-700 uppercase tracking-wider whitespace-nowrap">Department</th>
- <th className="px-5 py-2.5 text-sm text-left text-xs font-medium text-gray-700 uppercase tracking-wider whitespace-nowrap">Role</th>
- <th className="px-5 py-2.5 text-sm text-left text-xs font-medium text-gray-700 uppercase tracking-wider whitespace-nowrap">Status</th>
- <th className="px-5 py-2.5 text-sm text-left text-xs font-medium text-gray-700 uppercase tracking-wider whitespace-nowrap">Actions</th>
+   <th className="px-5 py-2.5 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap">ID</th>
+  <th className="px-5 py-2.5 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap">Employee</th>
+  <th className="px-5 py-2.5 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap">Email</th>
+  <th className="px-5 py-2.5 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap">Department</th>
+  <th className="px-5 py-2.5 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap">Role</th>
+  <th className="px-5 py-2.5 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap">Status</th>
+  <th className="px-5 py-2.5 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap">Actions</th>
+
  </tr>
  </thead>
  <tbody className="divide-y divide-gray-200">
@@ -477,9 +482,10 @@ const EmployeeView = ({ leadScope, employeeScope }) => {
  <p className="text-xl font-medium text-gray-700">No employees found</p>
  <p className="text-gray-500 mt-2">Try adjusting your your search or filters</p>
  {(search || activeCount > 0) && (
- <button onClick={resetFilters} className="mt-5 px-5 py-2.5 text-sm bg-black text-white rounded-xl hover:bg-gray-900 transition font-medium">
- Clear all filters
- </button>
+   <button onClick={resetFilters} className="mt-5 px-4 py-3 text-sm bg-black text-white rounded-xl hover:bg-gray-100 hover:text-black transition font-medium">
+  Clear all filters
+  </button>
+
  )}
  </div>
  </td>
@@ -493,7 +499,8 @@ const EmployeeView = ({ leadScope, employeeScope }) => {
  transition={{ delay: i * 0.03 }}
  className="hover:bg-gray-50 transition"
  >
- <td className="px-5 py-2.5 text-sm text-sm font-medium text-blue-600 whitespace-nowrap">
+   <td className="px-5 py-2.5 text-sm font-medium text-blue-600 whitespace-nowrap">
+
  {emp.employee_id?.replace("EMP", "MB")}
  </td>
  <td className="px-5 py-2.5 text-sm whitespace-nowrap">
@@ -506,7 +513,8 @@ const EmployeeView = ({ leadScope, employeeScope }) => {
  </div>
  </div>
  </td>
- <td className="px-5 py-2.5 text-sm text-sm text-gray-700 whitespace-nowrap">{emp.email}</td>
+   <td className="px-5 py-2.5 text-sm text-gray-700 whitespace-nowrap">{emp.email}</td>
+
  <td className="px-5 py-2.5 text-sm whitespace-nowrap">
  <span className="px-3 py-1.5 bg-gray-100 text-gray-800 rounded-full text-xs font-medium">
  {getDepartmentName(emp)}
@@ -557,7 +565,8 @@ const EmployeeView = ({ leadScope, employeeScope }) => {
  </div>
 
  {filtered.length > 0 && (
- <div className="px-5 py-2.5 text-sm bg-gray-50 border-t border-gray-200 flex flex-col sm:flex-row justify-between items-center gap-3 text-sm text-gray-600">
+   <div className="px-5 py-4 bg-gray-50 border-t border-gray-200 flex flex-col sm:flex-row justify-between items-center gap-3 text-sm text-gray-600">
+
  <span>Showing {filtered.length} of {employees.length} employees</span>
  {activeCount > 0 && (
  <button onClick={resetFilters} className="text-blue-600 hover:text-blue-800 font-medium">

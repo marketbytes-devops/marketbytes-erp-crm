@@ -289,10 +289,11 @@ const Recruitment = () => {
 
  <div className="flex gap-3">
  <div className="relative group">
- <button className="flex items-center gap-3 px-5 py-2.5 text-sm.5 border border-gray-300 rounded-xl hover:bg-gray-50 transition font-medium">
- <MdDownload className="w-5 h-5" /> Export
- <MdKeyboardArrowDown className="w-5 h-5 transition-transform group-hover:rotate-180" />
- </button>
+   <button className="flex items-center gap-3 px-4 py-3 border border-gray-300 rounded-xl hover:bg-gray-100 transition font-medium">
+  <MdDownload className="w-5 h-5" /> Export
+  <MdKeyboardArrowDown className="w-5 h-5 transition-transform group-hover:rotate-180" />
+  </button>
+
  <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg border border-gray-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-10">
  <button onClick={exportToCSV} className="w-full text-left px-5 py-3 hover:bg-gray-50 transition flex items-center gap-3">
  <span className="text-green-600 font-medium">CSV</span> Download as .csv
@@ -307,12 +308,13 @@ const Recruitment = () => {
  </div>
 
  {hasPermission("recruitment", "add") && (
- <button
- onClick={() => openModal()}
- className="flex items-center gap-3 px-5 py-2.5 text-sm.5 bg-black text-white rounded-xl hover:bg-gray-900 transition font-medium"
- >
- <MdAdd className="w-5 h-5" /> Add Candidate
- </button>
+   <button
+  onClick={() => openModal()}
+  className="flex items-center gap-3 px-4 py-3 text-sm bg-black text-white rounded-xl hover:bg-gray-100 hover:text-black transition font-medium"
+  >
+  <MdAdd className="w-5 h-5" /> Add Candidate
+  </button>
+
  )}
  </div>
  </div>
@@ -323,14 +325,15 @@ const Recruitment = () => {
  <table className="w-full min-w-[1000px]">
  <thead className="bg-gray-50 border-b border-gray-200">
  <tr>
- <th className="px-5 py-2.5 text-sm text-left text-xs font-medium text-gray-700 uppercase tracking-wider">Name</th>
- <th className="px-5 py-2.5 text-sm text-left text-xs font-medium text-gray-700 uppercase tracking-wider">Email</th>
- <th className="px-5 py-2.5 text-sm text-left text-xs font-medium text-gray-700 uppercase tracking-wider">Mobile</th>
- <th className="px-5 py-2.5 text-sm text-left text-xs font-medium text-gray-700 uppercase tracking-wider">Designation</th>
- <th className="px-5 py-2.5 text-sm text-left text-xs font-medium text-gray-700 uppercase tracking-wider">Department</th>
- <th className="px-5 py-2.5 text-sm text-left text-xs font-medium text-gray-700 uppercase tracking-wider">Status</th>
- <th className="px-5 py-2.5 text-sm text-center text-xs font-medium text-gray-700 uppercase tracking-wider">Round</th>
- <th className="px-5 py-2.5 text-sm text-center text-xs font-medium text-gray-700 uppercase tracking-wider">Actions</th>
+   <th className="px-5 py-2.5 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Name</th>
+  <th className="px-5 py-2.5 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Email</th>
+  <th className="px-5 py-2.5 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Mobile</th>
+  <th className="px-5 py-2.5 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Designation</th>
+  <th className="px-5 py-2.5 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Department</th>
+  <th className="px-5 py-2.5 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Status</th>
+  <th className="px-5 py-2.5 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">Round</th>
+  <th className="px-5 py-2.5 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">Actions</th>
+
  </tr>
  </thead>
  <tbody className="divide-y divide-gray-200">
@@ -491,20 +494,21 @@ const Recruitment = () => {
  />
 
  <div className="flex justify-end gap-4 pt-6">
- <button
- type="button"
- onClick={() => setShowModal(false)}
- className="px-5 py-2.5 text-sm border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition"
- >
- Cancel
- </button>
- <button
- type="submit"
- disabled={formLoading}
- className="px-5 py-2.5 text-sm bg-black text-white rounded-xl hover:bg-gray-900 transition disabled:opacity-50"
- >
- {formLoading ? "Saving..." : editingCandidate ? "Update Candidate" : "Add Candidate"}
- </button>
+   <button
+  type="button"
+  onClick={() => setShowModal(false)}
+  className="px-4 py-3 text-sm border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-100 transition font-medium"
+  >
+  Cancel
+  </button>
+  <button
+  type="submit"
+  disabled={formLoading}
+  className="px-4 py-3 text-sm bg-black text-white rounded-xl hover:bg-gray-100 hover:text-black transition disabled:opacity-50 font-medium"
+  >
+  {formLoading ? "Saving..." : editingCandidate ? "Update Candidate" : "Add Candidate"}
+  </button>
+
  </div>
  </form>
  }

@@ -16,13 +16,14 @@ const WorkTimerButton = ({ onCheckIn, onCheckOut, onStartStop, status, timerSeco
 
  if (!checkedIn) {
  return (
- <button
- onClick={onCheckIn}
- className="flex items-center gap-2 px-5 py-2.5 bg-black text-white rounded-xl text-sm font-medium hover:bg-gray-800 transition active:scale-95 shadow-md"
- >
- <MdLogin className="w-5 h-5" />
- Check In
- </button>
+                 <button
+                    onClick={onCheckIn}
+                    className="flex items-center gap-2 px-4 py-3 bg-black text-white rounded-xl text-sm font-medium hover:bg-gray-100 hover:text-black transition-all shadow-md"
+                >
+                    <MdLogin className="w-5 h-5" />
+                    Check In
+                </button>
+
  );
  }
 
@@ -30,22 +31,22 @@ const WorkTimerButton = ({ onCheckIn, onCheckOut, onStartStop, status, timerSeco
  <div className="flex items-center gap-3">
  {/* ── Check Out Button — disabled while a task is running ── */}
  <div className="relative group">
- <button
- onClick={checkOutDisabled ? undefined : onCheckOut}
- disabled={checkOutDisabled}
- className={`flex items-center gap-2 px-4 py-2 border rounded-xl text-sm font-medium transition active:scale-95 shadow-sm select-none
- ${checkOutDisabled
- ? "bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed active:scale-100"
- : "bg-white text-gray-700 border-gray-200 hover:bg-gray-100 cursor-pointer"
- }`}
- >
- {checkOutDisabled ? (
- <MdLock className="w-4 h-4 text-gray-400" />
- ) : (
- <MdLogout className="w-5 h-5 text-gray-500" />
- )}
- <span className="hidden sm:inline">Check Out</span>
- </button>
+                 <button
+                    onClick={checkOutDisabled ? undefined : onCheckOut}
+                    disabled={checkOutDisabled}
+                    className={`flex items-center gap-2 px-4 py-3 rounded-xl text-sm font-medium transition-all shadow-sm select-none
+                    ${checkOutDisabled
+                        ? "bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed"
+                        : "bg-black text-white hover:bg-gray-100 hover:text-black cursor-pointer"
+                    }`}
+                >
+                    {checkOutDisabled ? (
+                        <MdLock className="w-4 h-4 text-gray-400" />
+                    ) : (
+                        <MdLogout className="w-5 h-5" />
+                    )}
+                    <span className="hidden sm:inline">Check Out</span>
+                </button>
 
  {/* Tooltip shown when disabled */}
  {checkOutDisabled && (
@@ -69,15 +70,16 @@ const WorkTimerButton = ({ onCheckIn, onCheckOut, onStartStop, status, timerSeco
  </div>
 
  {/* ── Start / Stop Work Timer Button ── */}
- <button
- onClick={onStartStop}
- className={`group flex items-center gap-3 px-5 py-2 rounded-xl text-sm font-medium transition-all duration-300 shadow-md active:scale-95 ${isOnBreak
- ? "bg-amber-50 text-amber-800 border-2 border-amber-300 hover:bg-amber-100"
- : isWorking
- ? "bg-black text-white hover:bg-gray-900"
- : "bg-black text-white hover:bg-gray-900 shadow-gray-100"
- }`}
- >
+             <button
+                onClick={onStartStop}
+                className={`group flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-300 shadow-md ${isOnBreak
+                        ? "bg-amber-50 text-amber-800 border-2 border-amber-300 hover:bg-amber-100"
+                        : isWorking
+                            ? "bg-black text-white hover:bg-gray-100 hover:text-black"
+                            : "bg-black text-white hover:bg-gray-100 hover:text-black shadow-gray-100"
+                    }`}
+            >
+
  <div className="relative">
  {isWorking ? (
  <div className="animate-pulse flex items-center justify-center">

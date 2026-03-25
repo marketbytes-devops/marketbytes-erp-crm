@@ -182,9 +182,10 @@ const ContractsList = () => {
  transition={{ delay: idx * 0.1 }}
  className="bg-white p-6 rounded-3xl shadow-xs border border-gray-100 transition-all hover:shadow-xl hover:shadow-gray-200/40 flex items-center gap-5 group"
  >
- <div className={`p-4 rounded-xl ${card.color} transition-transform group-hover:scale-110`}>
- {React.cloneElement(card.icon, { size: 28 })}
- </div>
+   <div className={`p-4 rounded-xl ${card.dot} text-white`}>
+  {React.cloneElement(card.icon, { size: 28, className: "text-white" })}
+  </div>
+
  <div className="flex-1">
  <p className="text-gray-500 text-sm font-medium font-syne uppercase tracking-wider">{card.label}</p>
  <p className="text-3xl font-bold text-black mt-1">{card.value}</p>
@@ -207,33 +208,36 @@ const ContractsList = () => {
  />
  <MdSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={22} />
  </div>
- <button
- onClick={() => fetchContracts()}
- className="p-4 bg-black text-white rounded-xl hover:bg-gray-900 transition-all shadow-lg shadow-black/10 active:scale-95"
- >
- <MdSearch size={24} />
- </button>
+   <button
+  onClick={() => fetchContracts()}
+  className="p-4 bg-black text-white rounded-xl hover:bg-gray-100 hover:text-black transition-all shadow-lg shadow-black/10"
+  >
+  <MdSearch size={24} />
+  </button>
+
  </div>
 
  <div className="flex items-center gap-3">
  {hasPermission("contracts", "add") && (
- <button
- onClick={() => navigate('/operations/contracts/create')}
- className="flex items-center gap-2 px-5 py-2.5 text-sm bg-black text-white rounded-xl hover:bg-gray-900 transition-all font-medium shadow-lg shadow-black/10 active:scale-95"
- >
- <MdAdd size={22} />
- <span className="hidden md:inline">Create Contract</span>
- </button>
+   <button
+  onClick={() => navigate('/operations/contracts/create')}
+  className="flex items-center gap-2 px-4 py-3 text-sm bg-black text-white rounded-xl hover:bg-gray-100 hover:text-black transition-all font-medium shadow-lg shadow-black/10"
+  >
+  <MdAdd size={22} />
+  <span className="hidden md:inline">Create Contract</span>
+  </button>
+
  )}
  <div className="relative">
- <button
- onClick={() => setIsExportOpen(!isExportOpen)}
- className="flex items-center gap-2 px-5 py-2.5 text-sm bg-white border border-gray-100 text-black rounded-xl hover:bg-gray-50 transition-all font-medium shadow-xs active:scale-95"
- >
- <MdFileDownload size={22} />
- <span className="hidden md:inline">Export</span>
- <MdKeyboardArrowDown className={`transition-transform duration-300 ${isExportOpen ? 'rotate-180' : ''}`} size={20} />
- </button>
+   <button
+  onClick={() => setIsExportOpen(!isExportOpen)}
+  className="flex items-center gap-2 px-4 py-3 text-sm bg-white border border-gray-100 text-black rounded-xl hover:bg-gray-100 transition-all font-medium shadow-xs"
+  >
+  <MdFileDownload size={22} />
+  <span className="hidden md:inline">Export</span>
+  <MdKeyboardArrowDown className={`transition-transform duration-300 ${isExportOpen ? 'rotate-180' : ''}`} size={20} />
+  </button>
+
 
  <AnimatePresence>
  {isExportOpen && (
@@ -316,12 +320,13 @@ const ContractsList = () => {
  >
  Apply
  </button>
- <button
- onClick={resetFilters}
- className="flex-1 bg-gray-50 text-black py-4 rounded-xl font-bold text-sm hover:bg-gray-100 transition-all"
- >
- Reset
- </button>
+   <button
+  onClick={resetFilters}
+  className="flex-1 bg-gray-100 text-black py-4 rounded-xl font-bold text-sm hover:bg-gray-200 transition-all"
+  >
+  Reset
+  </button>
+
  </div>
  </div>
  </div>
@@ -332,12 +337,13 @@ const ContractsList = () => {
  <table className="w-full text-left">
  <thead>
  <tr className="bg-gray-50/50 text-gray-400 text-[11px] font-bold uppercase tracking-widest border-b border-gray-50">
- <th className="px-8 py-6">#</th>
- <th className="px-8 py-6">Contract Description</th>
- <th className="px-8 py-6">Client</th>
- <th className="px-8 py-6 text-right">Amount</th>
- <th className="px-8 py-6">Timeline</th>
- <th className="px-8 py-6 text-center">Actions</th>
+   <th className="px-8 py-6">#</th>
+  <th className="px-8 py-6">Contract Description</th>
+  <th className="px-8 py-6">Client</th>
+  <th className="px-8 py-6 text-right">Amount</th>
+  <th className="px-8 py-6">Timeline</th>
+  <th className="px-8 py-6 text-center">Actions</th>
+
  </tr>
  </thead>
  <tbody className="divide-y divide-gray-50">
@@ -438,14 +444,16 @@ const ContractsList = () => {
  <div className="flex gap-3">
  <button
  onClick={() => pagination.previous && fetchContracts(pagination.previous)}
- className={`px-5 py-2.5 text-sm border border-gray-100 rounded-xl text-sm font-bold transition-all ${!pagination.previous ? 'text-gray-300 bg-gray-50 cursor-not-allowed' : 'text-black bg-white hover:bg-black hover:text-white hover:shadow-lg hover:shadow-black/5 active:scale-95'}`}
+   className={`px-4 py-3 text-sm border border-gray-100 rounded-xl font-medium transition-all ${!pagination.previous ? 'text-gray-300 bg-gray-50 cursor-not-allowed' : 'text-black bg-white hover:bg-gray-100 hover:shadow-lg hover:shadow-black/5'}`}
+
  disabled={!pagination.previous}
  >
  Previous
  </button>
  <button
  onClick={() => pagination.next && fetchContracts(pagination.next)}
- className={`px-5 py-2.5 text-sm border border-gray-100 rounded-xl text-sm font-bold transition-all ${!pagination.next ? 'text-gray-300 bg-gray-50 cursor-not-allowed' : 'text-black bg-white hover:bg-black hover:text-white hover:shadow-lg hover:shadow-black/5 active:scale-95'}`}
+   className={`px-4 py-3 text-sm border border-gray-100 rounded-xl font-medium transition-all ${!pagination.next ? 'text-gray-300 bg-gray-50 cursor-not-allowed' : 'text-black bg-white hover:bg-gray-100 hover:shadow-lg hover:shadow-black/5'}`}
+
  disabled={!pagination.next}
  >
  Next

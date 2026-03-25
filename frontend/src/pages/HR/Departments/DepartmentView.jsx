@@ -140,13 +140,14 @@ const DepartmentView = () => {
  </div>
  <div className="flex gap-3">
  <div className="relative">
- <button
- onClick={() => setShowExportMenu(!showExportMenu)}
- className="flex items-center gap-2 px-5 py-2.5 text-sm border border-gray-300 rounded-xl hover:bg-gray-50 transition-all"
- >
- <MdDownload />
- <span className="hidden sm:inline">Export</span>
- </button>
+   <button
+  onClick={() => setShowExportMenu(!showExportMenu)}
+  className="flex items-center gap-2 px-4 py-3 text-sm font-medium border border-gray-300 rounded-xl hover:bg-gray-100 transition-all"
+  >
+  <MdDownload />
+  <span className="hidden sm:inline">Export</span>
+  </button>
+
 
  {showExportMenu && (
  <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-xl shadow-lg z-50">
@@ -184,13 +185,14 @@ const DepartmentView = () => {
  </div>
 
  {hasPermission("departments", "add") && (
- <Link
- to="/hr/departments/create"
- className="flex items-center gap-3 px-5 py-2.5 text-sm bg-black text-white rounded-xl hover:bg-gray-800 transition-all shadow-md"
- >
- <MdAdd className="w-5 h-5" />
- Add Department
- </Link>
+   <Link
+  to="/hr/departments/create"
+  className="flex items-center gap-3 px-4 py-3 text-sm font-medium bg-black text-white rounded-xl hover:bg-gray-100 hover:text-black transition-all shadow-md"
+  >
+  <MdAdd className="w-5 h-5" />
+  Add Department
+  </Link>
+
  )}
  </div>
  </div>
@@ -200,11 +202,12 @@ const DepartmentView = () => {
  <table className="w-full min-w-[800px]">
  <thead className="bg-gray-50 border-b border-gray-200">
  <tr>
- <th className="px-5 py-2.5 text-sm text-left text-xs font-medium text-gray-600 uppercase tracking-wider">SL No</th>
- <th className="px-5 py-2.5 text-sm text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Department</th>
- <th className="px-5 py-2.5 text-sm text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Worksheet URL</th>
- <th className="px-5 py-2.5 text-sm text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Services</th>
- <th className="px-5 py-2.5 text-sm text-center text-xs font-medium text-gray-600 uppercase tracking-wider">Actions</th>
+   <th className="px-5 py-2.5 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">SL No</th>
+  <th className="px-5 py-2.5 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Department</th>
+  <th className="px-5 py-2.5 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Worksheet URL</th>
+  <th className="px-5 py-2.5 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Services</th>
+  <th className="px-5 py-2.5 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">Actions</th>
+
  </tr>
  </thead>
  <tbody className="divide-y divide-gray-200">
@@ -227,7 +230,8 @@ const DepartmentView = () => {
  transition={{ delay: i * 0.05 }}
  className="hover:bg-gray-50 transition-colors"
  >
- <td className="px-5 py-2.5 text-sm text-sm font-medium text-gray-900">{i + 1}</td>
+   <td className="px-5 py-2.5 text-sm font-medium text-gray-900">{i + 1}</td>
+
  <td className="px-5 py-2.5 text-sm font-medium text-gray-900">{dept.name}</td>
  <td className="px-5 py-2.5 text-sm">
  {dept.worksheet_url ? (
@@ -317,12 +321,13 @@ const DepartmentView = () => {
  {selectedDept.services ? (
  <div className="flex flex-wrap gap-2 mt-2">
  {selectedDept.services.split(",").map((s, i) => (
- <span
- key={i}
- className="px-4 py-2 bg-black text-white text-sm rounded-full font-medium"
- >
- {s.trim()}
- </span>
+   <span
+  key={i}
+  className="px-4 py-3 bg-black text-white text-sm rounded-full font-medium hover:bg-gray-100 hover:text-black transition-all"
+  >
+  {s.trim()}
+  </span>
+
  ))}
  </div>
  ) : (
@@ -344,18 +349,19 @@ const DepartmentView = () => {
  Are you sure you want to delete this department? This action cannot be undone.
  </p>
  <div className="flex justify-end gap-4">
- <button
- onClick={() => setShowDeleteConfirm(null)}
- className="px-5 py-2.5 text-sm border border-gray-300 rounded-xl hover:bg-gray-50 transition-all"
- >
- Cancel
- </button>
- <button
- onClick={() => handleDelete(showDeleteConfirm)}
- className="px-5 py-2.5 text-sm bg-red-600 text-white rounded-xl hover:bg-red-700 transition-all"
- >
- Delete
- </button>
+   <button
+  onClick={() => setShowDeleteConfirm(null)}
+  className="px-4 py-3 text-sm font-medium border border-gray-300 rounded-xl hover:bg-gray-100 transition-all"
+  >
+  Cancel
+  </button>
+  <button
+  onClick={() => handleDelete(showDeleteConfirm)}
+  className="px-4 py-3 text-sm font-medium bg-red-600 text-white rounded-xl hover:bg-red-700 transition-all"
+  >
+  Delete
+  </button>
+
  </div>
  </div>
  }

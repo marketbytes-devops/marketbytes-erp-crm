@@ -160,17 +160,19 @@ const Profile = () => {
  <div className="relative inline-block mb-6">
  <div className="w-40 h-40 rounded-full overflow-hidden border-4 border-white shadow-2xl mx-auto bg-gray-50 ring-1 ring-gray-100 ring-offset-4">
  {imagePreview ? (
- <img src={imagePreview} alt="Profile" className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
+   <img src={imagePreview} alt="Profile" className="w-full h-full object-cover transition-transform duration-500" />
+
  ) : (
  <div className="w-full h-full flex items-center justify-center">
  <User className="w-16 h-16 text-gray-300" />
  </div>
  )}
  </div>
- <label className="absolute bottom-2 right-2 p-2.5 bg-black text-white rounded-xl shadow-xl cursor-pointer hover:scale-110 transition-transform ring-4 ring-white">
- <Camera className="w-5 h-5" />
- <input type="file" accept="image/*" onChange={handleImageChange} className="hidden" />
- </label>
+   <label className="absolute bottom-2 right-2 p-2.5 bg-black text-white rounded-xl shadow-xl cursor-pointer transition-transform ring-4 ring-white">
+  <Camera className="w-5 h-5" />
+  <input type="file" accept="image/*" onChange={handleImageChange} className="hidden" />
+  </label>
+
  </div>
 
  <h1 className="text-2xl font-black text-black tracking-tight mb-1">{profile.name || 'Account Owner'}</h1>
@@ -264,15 +266,14 @@ const Profile = () => {
  />
 
  <div className="md:col-span-2">
- <motion.button
- whileHover={{ scale: 1.01 }}
- whileTap={{ scale: 0.98 }}
- type="submit"
- disabled={isUpdatingProfile}
- className="px-5 py-2.5 text-sm bg-black text-white rounded-xl font-medium text-sm shadow-xl shadow-black/10 hover:shadow-black/20 flex items-center justify-center gap-3 transition-all disabled:opacity-50"
- >
- {isUpdatingProfile ? 'Processing...' : 'Apply Modifications'}
- </motion.button>
+   <button
+  type="submit"
+  disabled={isUpdatingProfile}
+  className="px-4 py-3 text-sm bg-black text-white rounded-xl font-medium shadow-xl shadow-black/10 hover:bg-gray-100 hover:text-black flex items-center justify-center gap-3 transition-all disabled:opacity-50"
+  >
+  {isUpdatingProfile ? 'Processing...' : 'Apply Modifications'}
+  </button>
+
  </div>
  </form>
  </div>
@@ -314,15 +315,14 @@ const Profile = () => {
  </div>
 
  <div className="pt-2">
- <motion.button
- whileHover={{ scale: 1.01 }}
- whileTap={{ scale: 0.98 }}
- type="submit"
- disabled={isChangingPassword}
- className="px-5 py-2.5 text-sm bg-white text-black border-2 border-black rounded-xl font-medium text-sm hover:bg-black hover:text-white transition-all disabled:opacity-50"
- >
- {isChangingPassword ? 'Securing...' : 'Renew Password'}
- </motion.button>
+   <button
+  type="submit"
+  disabled={isChangingPassword}
+  className="px-4 py-3 text-sm bg-white text-black border-2 border-black rounded-xl font-medium hover:bg-black hover:text-white transition-all disabled:opacity-50"
+  >
+  {isChangingPassword ? 'Securing...' : 'Renew Password'}
+  </button>
+
  </div>
  </form>
  </div>

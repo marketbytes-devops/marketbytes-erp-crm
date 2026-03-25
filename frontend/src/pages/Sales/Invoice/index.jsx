@@ -79,9 +79,10 @@ const Invoices = () => {
  className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm hover:shadow-md transition-all group"
  >
  <div className="flex items-center gap-4">
- <div className={`p-4 rounded-xl ${stat.bg} ${stat.color} transition-transform group-hover:scale-110`}>
- <stat.icon className="w-6 h-6" />
- </div>
+   <div className={`p-4 rounded-xl ${stat.bg} ${stat.color}`}>
+  <stat.icon className="w-6 h-6" />
+  </div>
+
  <div>
  <p className="text-xs font-medium text-gray-400 uppercase tracking-widest">{stat.label}</p>
  <p className="text-2xl font-medium text-gray-900">{stat.value}</p>
@@ -95,16 +96,17 @@ const Invoices = () => {
  <div className="bg-white rounded-4xl border border-gray-100 p-4 mb-8 flex flex-col md:flex-row gap-4 justify-between items-center shadow-sm">
  <div className="flex gap-2 p-1 bg-gray-50 rounded-xl border border-gray-100 w-full md:w-auto overflow-x-auto">
  {["all", "paid", "sent", "overdue", "draft"].map((status) => (
- <button
- key={status}
- onClick={() => setFilterStatus(status)}
- className={`px-5 py-2.5 rounded-xl text-sm font-medium capitalize transition-all whitespace-nowrap ${filterStatus === status
- ? "bg-white text-black shadow-sm"
- : "text-gray-500 hover:text-black"
- }`}
- >
- {status}
- </button>
+   <button
+  key={status}
+  onClick={() => setFilterStatus(status)}
+  className={`px-4 py-3 rounded-xl text-sm font-medium capitalize transition-all whitespace-nowrap ${filterStatus === status
+  ? "bg-white text-black shadow-sm"
+  : "text-gray-500 hover:text-black"
+  }`}
+  >
+  {status}
+  </button>
+
  ))}
  </div>
 
@@ -119,12 +121,13 @@ const Invoices = () => {
  className="w-full pl-12 pr-4 py-3.5 bg-gray-50 border-none rounded-xl focus:ring-2 focus:ring-black transition-all outline-none font-medium placeholder:text-gray-400"
  />
  </div>
- <button
- onClick={() => setShowInvoiceModal(true)}
- className="flex items-center gap-2 px-5 py-2.5 text-sm.5 bg-black text-white rounded-xl hover:bg-gray-900 transition-all font-medium shadow-lg shadow-black/10 active:scale-95 whitespace-nowrap"
- >
- <MdAdd className="w-5 h-5" /> Create New
- </button>
+   <button
+  onClick={() => setShowInvoiceModal(true)}
+  className="flex items-center gap-2 px-4 py-3 text-sm bg-black text-white rounded-xl hover:bg-gray-100 hover:text-black transition-all font-medium shadow-lg shadow-black/10 whitespace-nowrap"
+  >
+  <MdAdd className="w-5 h-5" /> Create New
+  </button>
+
  </div>
  </div>
 
@@ -134,12 +137,13 @@ const Invoices = () => {
  <table className="w-full">
  <thead className="bg-gray-50/50 border-b border-gray-50">
  <tr>
- <th className="px-5 py-2.5 text-sm text-left text-[11px] font-medium text-gray-400 uppercase tracking-widest">Invoice Details</th>
- <th className="px-5 py-2.5 text-sm text-left text-[11px] font-medium text-gray-400 uppercase tracking-widest">Client & Company</th>
- <th className="px-5 py-2.5 text-sm text-left text-[11px] font-medium text-gray-400 uppercase tracking-widest">Due Date</th>
- <th className="px-5 py-2.5 text-sm text-left text-[11px] font-medium text-gray-400 uppercase tracking-widest">Status</th>
- <th className="px-5 py-2.5 text-sm text-right text-[11px] font-medium text-gray-400 uppercase tracking-widest">Amount</th>
- <th className="px-5 py-2.5 text-sm text-right text-[11px] font-medium text-gray-400 uppercase tracking-widest">Actions</th>
+   <th className="px-5 py-2.5 text-left text-xs font-semibold text-gray-400 uppercase tracking-widest">Invoice Details</th>
+  <th className="px-5 py-2.5 text-left text-xs font-semibold text-gray-400 uppercase tracking-widest">Client & Company</th>
+  <th className="px-5 py-2.5 text-left text-xs font-semibold text-gray-400 uppercase tracking-widest">Due Date</th>
+  <th className="px-5 py-2.5 text-left text-xs font-semibold text-gray-400 uppercase tracking-widest">Status</th>
+  <th className="px-5 py-2.5 text-right text-xs font-semibold text-gray-400 uppercase tracking-widest">Amount</th>
+  <th className="px-5 py-2.5 text-right text-xs font-semibold text-gray-400 uppercase tracking-widest">Actions</th>
+
  </tr>
  </thead>
  <tbody className="divide-y divide-gray-50">
@@ -262,8 +266,9 @@ const Invoices = () => {
  </div>
 
  <div className="flex justify-end gap-4 pt-6">
- <button onClick={() => setShowInvoiceModal(false)} className="px-5 py-2.5 text-sm text-sm font-medium text-gray-600 hover:text-black transition">Discard</button>
- <button className="px-5 py-2.5 text-sm bg-black text-white rounded-xl font-medium shadow-xl shadow-black/10 hover:translate-y-[-2px] transition-all">Generate & Send</button>
+   <button onClick={() => setShowInvoiceModal(false)} className="px-4 py-3 text-sm font-medium text-gray-600 hover:text-black transition">Discard</button>
+  <button className="px-4 py-3 text-sm bg-black text-white rounded-xl font-medium shadow-xl shadow-black/10 hover:bg-gray-100 hover:text-black transition-all">Generate & Send</button>
+
  </div>
  </div>
  }

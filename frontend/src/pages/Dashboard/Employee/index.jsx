@@ -24,11 +24,12 @@ const StatCard = ({ title, value, subValue, icon, colorClass, bgClass, onClick }
  <div className={`p-3 rounded-xl ${bgClass} ${colorClass}`}>
  {React.cloneElement(icon, { className: "w-6 h-6" })}
  </div>
- {subValue && (
- <span className="text-xs font-medium text-gray-500 bg-gray-50 px-2 py-1 rounded-md">
- {subValue}
- </span>
- )}
+   {subValue && (
+  <span className="text-[10px] font-medium bg-black text-white px-3 py-1.5 rounded-full transition-all hover:bg-gray-100 hover:text-black cursor-pointer shadow-sm">
+  {subValue}
+  </span>
+  )}
+
  </div>
  <div>
  <h3 className="text-3xl font-bold text-gray-800 mb-1">{value}</h3>
@@ -177,30 +178,35 @@ const EmployeeDashboard = () => {
 
  {/* Recent Task Table */}
  <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
- <div className="px-5 py-2.5 text-sm border-b border-gray-100">
- <h2 className=" font-bold text-gray-800">My Recent Tasks</h2>
- </div>
+         <div className="px-5 py-2.5 text-sm border-b border-gray-100 flex items-center justify-between">
+            <h2 className=" font-bold text-gray-800">My Recent Tasks</h2>
+            <button onClick={() => navigate('/employee/tasks')} className="px-4 py-2 text-sm bg-black text-white hover:bg-gray-100 hover:text-black transition-all rounded-lg font-medium">View All</button>
+        </div>
+
  <div className="overflow-x-auto">
  <table className="w-full text-left">
  <thead className="bg-gray-50">
  <tr>
- <th className="px-5 py-2.5 text-sm text-xs font-semibold text-gray-500 uppercase">S.No</th>
- <th className="px-5 py-2.5 text-sm text-xs font-semibold text-gray-500 uppercase">Task Details</th>
- <th className="px-5 py-2.5 text-sm text-xs font-semibold text-gray-500 uppercase">Due Date</th>
- <th className="px-5 py-2.5 text-sm text-xs font-semibold text-gray-500 uppercase text-right">Status</th>
+   <th className="px-5 py-2.5 text-xs font-semibold text-gray-500 uppercase">S.No</th>
+  <th className="px-5 py-2.5 text-xs font-semibold text-gray-500 uppercase">Task Details</th>
+  <th className="px-5 py-2.5 text-xs font-semibold text-gray-500 uppercase">Due Date</th>
+  <th className="px-5 py-2.5 text-xs font-semibold text-gray-500 uppercase text-right">Status</th>
+
  </tr>
  </thead>
  <tbody className="divide-y divide-gray-100">
  {recentTasks.map((task, i) => (
  <tr key={task.id} className="hover:bg-gray-50">
- <td className="px-5 py-2.5 text-sm text-sm text-gray-600">{i + 1}</td>
+   <td className="px-5 py-2.5 text-sm text-gray-600">{i + 1}</td>
+
  <td className="px-5 py-2.5 text-sm">
  <div className="flex flex-col">
  <span className="font-medium text-gray-800 text-sm">{task.title}</span>
  <span className="text-xs text-gray-500">{task.project_name}</span>
  </div>
  </td>
- <td className="px-5 py-2.5 text-sm text-sm text-gray-600">{task.due_date ? new Date(task.due_date).toLocaleDateString() : 'N/A'}</td>
+   <td className="px-5 py-2.5 text-sm text-gray-600">{task.due_date ? new Date(task.due_date).toLocaleDateString() : 'N/A'}</td>
+
  <td className="px-5 py-2.5 text-sm text-right">
  <span className="px-2 py-1 rounded-full text-[10px] font-bold uppercase bg-blue-50 text-blue-600">{task.status}</span>
  </td>
@@ -220,17 +226,18 @@ const EmployeeDashboard = () => {
  <table className="w-full text-left">
  <thead className="bg-gray-50">
  <tr>
- <th className="px-5 py-2.5 text-sm text-xs font-semibold text-gray-500 uppercase">Title</th>
- <th className="px-5 py-2.5 text-sm text-xs font-semibold text-gray-500 uppercase">Total Time</th>
- <th className="px-5 py-2.5 text-sm text-xs font-semibold text-gray-500 uppercase text-right">Due Date</th>
+   <th className="px-5 py-2.5 text-xs font-semibold text-gray-500 uppercase">Title</th>
+  <th className="px-5 py-2.5 text-xs font-semibold text-gray-500 uppercase">Total Time</th>
+  <th className="px-5 py-2.5 text-xs font-semibold text-gray-500 uppercase text-right">Due Date</th>
+
  </tr>
  </thead>
  <tbody className="divide-y divide-gray-100">
  {overdueTasks.map((task) => (
  <tr key={task.id} className="hover:bg-gray-50">
- <td className="px-5 py-2.5 text-sm text-sm font-medium text-red-600">{task.title}</td>
- <td className="px-5 py-2.5 text-sm text-sm text-gray-600">{task.total_hours || '0h'}</td>
- <td className="px-5 py-2.5 text-sm text-sm text-gray-600 text-right">{new Date(task.due_date).toLocaleDateString()}</td>
+ <td className="px-5 py-2.5 font-medium text-red-600">{task.title}</td>
+ <td className="px-5 py-2.5 text-gray-600">{task.total_hours || '0h'}</td>
+ <td className="px-5 py-2.5 text-gray-600 text-right">{new Date(task.due_date).toLocaleDateString()}</td>
  </tr>
  ))}
  {overdueTasks.length === 0 && (
@@ -260,13 +267,13 @@ const EmployeeDashboard = () => {
                                 <button
                                     key={idx}
                                     onClick={() => navigate(link.path)}
-                                    className="flex items-center justify-between p-4 rounded-xl hover:bg-emerald-50/30 border border-transparent hover:border-emerald-100 transition-all group"
+                                    className="flex items-center justify-between px-4 py-3 rounded-xl bg-black text-white hover:bg-gray-100 hover:text-black transition-all group font-medium"
                                 >
                                     <div className="flex items-center gap-3">
-                                        <span className="text-emerald-600 text-xl group-hover:scale-110 transition-transform">{link.icon}</span>
-                                        <span className="text-sm font-medium text-gray-700">{link.label}</span>
+                                        <span className="text-xl transition-transform">{link.icon}</span>
+                                        <span className="text-sm">{link.label}</span>
                                     </div>
-                                    <MdArrowForward className="text-gray-300 group-hover:text-emerald-600 group-hover:translate-x-1 transition-all" />
+                                    <MdArrowForward className="text-gray-400 group-hover:text-black group-hover:translate-x-1 transition-all" />
                                 </button>
                             ))}
                         </div>

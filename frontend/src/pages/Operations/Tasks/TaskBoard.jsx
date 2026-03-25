@@ -204,12 +204,13 @@ const TaskBoardPage = () => {
  </div>
 
  {hasPermission("task_board", "add") && (
- <Link
- to="/operations/tasks/new-task"
- className="flex items-center gap-3 px-5 py-2.5 text-sm bg-black text-white rounded-xl hover:bg-gray-900 transition text-sm font-medium"
- >
- <MdAdd className="w-5 h-5" /> New Task
- </Link>
+   <Link
+  to="/operations/tasks/new-task"
+  className="flex items-center gap-3 px-4 py-3 text-sm bg-black text-white rounded-xl hover:bg-gray-100 hover:text-black transition font-medium"
+  >
+  <MdAdd className="w-5 h-5" /> New Task
+  </Link>
+
  )}
  </div>
  </div>
@@ -229,21 +230,22 @@ const TaskBoardPage = () => {
  />
  </div>
 
- <button
- onClick={() => setFiltersOpen(!filtersOpen)}
- className="flex items-center gap-3 px-5 py-4 border border-gray-300 rounded-xl hover:bg-gray-50 transition text-sm font-medium whitespace-nowrap"
- >
- <MdFilterList className="w-5 h-5" />
- Filters
- {activeFilterCount > 0 && (
- <span className="ml-2 bg-black text-white text-xs font-medium rounded-full w-6 h-6 flex items-center justify-center">
- {activeFilterCount}
- </span>
- )}
- <MdKeyboardArrowDown
- className={`w-5 h-5 transition-transform ${filtersOpen ? "rotate-180" : ""}`}
- />
- </button>
+   <button
+  onClick={() => setFiltersOpen(!filtersOpen)}
+  className="flex items-center gap-3 px-4 py-3 border border-gray-300 rounded-xl hover:bg-gray-100 transition text-sm font-medium whitespace-nowrap"
+  >
+  <MdFilterList className="w-5 h-5" />
+  Filters
+  {activeFilterCount > 0 && (
+  <span className="ml-2 bg-black text-white text-xs font-medium rounded-full w-6 h-6 flex items-center justify-center">
+  {activeFilterCount}
+  </span>
+  )}
+  <MdKeyboardArrowDown
+  className={`w-5 h-5 transition-transform ${filtersOpen ? "rotate-180" : ""}`}
+  />
+  </button>
+
  </div>
  </div>
  </div>
@@ -298,14 +300,15 @@ const TaskBoardPage = () => {
  />
  </div>
 
- <div className="flex flex-col sm:flex-row gap-4 mt-8 pt-6 border-t border-gray-200">
- <button
- onClick={resetFilters}
- className="px-5 py-2.5 text-sm.5 border-2 border-gray-300 text-gray-700 font-medium rounded-xl hover:bg-gray-50 transition"
- >
- Reset All Filters
- </button>
- </div>
+   <div className="flex flex-col sm:flex-row gap-4 mt-8 pt-6 border-t border-gray-200">
+  <button
+  onClick={resetFilters}
+  className="px-4 py-3 text-sm border-2 border-gray-300 text-gray-700 font-medium rounded-xl hover:bg-gray-100 transition"
+  >
+  Reset All Filters
+  </button>
+  </div>
+
  </div>
  </motion.div>
  )}

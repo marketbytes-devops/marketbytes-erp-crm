@@ -362,21 +362,23 @@ const Users = () => {
  </div>
  <div className="flex gap-2">
  {isAllSelected(createDirectPerms) ? (
- <button
- type="button"
- onClick={() => handleBulkAction('create', 'deselectAll')}
- className="px-5 py-2.5 text-sm rounded-xl text-sm font-medium text-gray-700 bg-white border border-gray-200 hover:bg-gray-50 transition-colors shadow-sm w-40"
- >
- Deselect All
- </button>
+   <button
+  type="button"
+  onClick={() => handleBulkAction('create', 'deselectAll')}
+  className="px-4 py-3 text-sm rounded-xl font-medium text-gray-700 bg-white border border-gray-200 hover:bg-gray-100 transition-colors shadow-sm w-40"
+  >
+  Deselect All
+  </button>
+
  ) : (
- <button
- type="button"
- onClick={() => handleBulkAction('create', 'selectAll')}
- className="px-5 py-2.5 text-sm rounded-xl text-sm font-medium bg-[#50728c] text-white transition-opacity hover:opacity-90 shadow-sm w-40"
- >
- Select All
- </button>
+   <button
+  type="button"
+  onClick={() => handleBulkAction('create', 'selectAll')}
+  className="px-4 py-3 text-sm rounded-xl font-medium bg-[#50728c] text-white transition-opacity hover:opacity-90 shadow-sm w-40"
+  >
+  Select All
+  </button>
+
  )}
  </div>
  </div>
@@ -394,14 +396,15 @@ const Users = () => {
  </div>
 
  <div className="flex justify-start pt-4">
- <button
- type="submit"
- disabled={isCreating}
- className="inline-flex items-center gap-4 px-5 py-2.5 text-sm bg-black text-sm text-white rounded-xl font-medium shadow-2xl hover:bg-gray-800 transition-all disabled:opacity-70"
- >
- {isCreating && <Loader2 className="w-5 h-5 animate-spin" />}
- {isCreating ? "Creating..." : "Create User"}
- </button>
+   <button
+  type="submit"
+  disabled={isCreating}
+  className="inline-flex items-center gap-4 px-4 py-3 text-sm bg-black text-white rounded-xl font-medium shadow-2xl hover:bg-gray-100 hover:text-black transition-all disabled:opacity-70"
+  >
+  {isCreating && <Loader2 className="w-5 h-5 animate-spin" />}
+  {isCreating ? "Creating..." : "Create User"}
+  </button>
+
  </div>
  </form>
  </div>
@@ -435,9 +438,10 @@ const Users = () => {
  <table className="w-full">
  <thead className="bg-gray-50">
  <tr>
- <th className="px-5 py-2.5 text-sm text-left text-sm font-medium text-gray-700">User / Identity</th>
- <th className="px-5 py-2.5 text-sm text-left text-sm font-medium text-gray-700">Assigned Role</th>
- <th className="px-5 py-2.5 text-sm text-right text-sm font-medium text-gray-700">Actions</th>
+   <th className="px-5 py-2.5 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">User / Identity</th>
+  <th className="px-5 py-2.5 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Assigned Role</th>
+  <th className="px-5 py-2.5 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">Actions</th>
+
  </tr>
  </thead>
  <tbody className="divide-y divide-gray-100">
@@ -565,21 +569,23 @@ const Users = () => {
  </div>
  <div className="flex gap-2">
  {isAllSelected(editDirectPerms) ? (
- <button
- type="button"
- onClick={() => handleBulkAction('edit', 'deselectAll')}
- className="px-5 py-2.5 text-sm rounded-xl text-sm font-medium text-gray-700 bg-white border border-gray-200 hover:bg-gray-50 transition-colors shadow-sm w-40"
- >
- Deselect All
- </button>
+   <button
+  type="button"
+  onClick={() => handleBulkAction('edit', 'deselectAll')}
+  className="px-4 py-3 text-sm rounded-xl font-medium text-gray-700 bg-white border border-gray-200 hover:bg-gray-100 transition-colors shadow-sm w-40"
+  >
+  Deselect All
+  </button>
+
  ) : (
- <button
- type="button"
- onClick={() => handleBulkAction('edit', 'selectAll')}
- className="px-5 py-2.5 text-sm rounded-xl text-sm font-medium bg-[#50728c] text-white transition-opacity hover:opacity-90 shadow-sm w-40"
- >
- Select All
- </button>
+   <button
+  type="button"
+  onClick={() => handleBulkAction('edit', 'selectAll')}
+  className="px-4 py-3 text-sm rounded-xl font-medium bg-[#50728c] text-white transition-opacity hover:opacity-90 shadow-sm w-40"
+  >
+  Select All
+  </button>
+
  )}
  </div>
  </div>
@@ -626,21 +632,23 @@ const Users = () => {
  )}
 
  <div className="flex justify-end gap-4 pt-6 sticky bottom-0 bg-white/80 backdrop-blur-sm p-4 -m-4">
- <button
- type="button"
- onClick={() => setEditUser(null)}
- className="px-5 py-2.5 text-sm bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 font-medium transition-colors"
- >
- Cancel
- </button>
- <button
- type="submit"
- disabled={isEditing}
- className="px-5 py-2.5 text-sm bg-black text-white rounded-xl font-medium shadow-xl hover:bg-gray-800 transition-all disabled:opacity-70 flex items-center gap-3"
- >
- {isEditing && <Loader2 className="w-5 h-5 animate-spin" />}
- {isEditing ? "Saving Changes..." : "Apply Permissions"}
- </button>
+   <button
+  type="button"
+  onClick={() => setEditUser(null)}
+  className="px-4 py-3 text-sm bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 font-medium transition-colors"
+  >
+  Cancel
+  </button>
+
+   <button
+  type="submit"
+  disabled={isEditing}
+  className="px-4 py-3 text-sm bg-black text-white rounded-xl font-medium shadow-xl hover:bg-gray-100 hover:text-black transition-all disabled:opacity-70 flex items-center gap-3"
+  >
+  {isEditing && <Loader2 className="w-5 h-5 animate-spin" />}
+  {isEditing ? "Saving Changes..." : "Apply Permissions"}
+  </button>
+
  </div>
  </form>
  </motion.div>
