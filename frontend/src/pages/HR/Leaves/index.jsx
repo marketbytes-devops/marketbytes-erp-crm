@@ -5,13 +5,13 @@ import LayoutComponents from "../../../components/LayoutComponents";
 import apiClient from "../../../helpers/apiClient";
 import Input from "../../../components/Input";
 import {
-  MdAdd,
-  MdDownload,
-  MdCheckCircle,
-  MdPending,
-  MdCancel,
-  MdKeyboardArrowDown,
-  MdKeyboardArrowUp,
+ MdAdd,
+ MdDownload,
+ MdCheckCircle,
+ MdPending,
+ MdCancel,
+ MdKeyboardArrowDown,
+ MdKeyboardArrowUp,
 } from "react-icons/md";
 import { format } from "date-fns";
 import { usePermission } from "../../../context/PermissionContext";
@@ -19,504 +19,504 @@ import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 
 const Leaves = ({ leadScope, employeeScope }) => {
-  const { hasPermission } = usePermission();
-  const permissionPage = employeeScope ? "employee_leaves" : (leadScope ? "lead_leaves" : "leaves");
-  const [leaves, setLeaves] = useState([]);
-  const [filter, setFilter] = useState("all");
-  const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [dateFrom, setDateFrom] = useState("");
-  const [dateTo, setDateTo] = useState("");
-  const [expandedId, setExpandedId] = useState(null);
-  const [showExportMenu, setShowExportMenu] = useState(false);
+ const { hasPermission } = usePermission();
+ const permissionPage = employeeScope ? "employee_leaves" : (leadScope ? "lead_leaves" : "leaves");
+ const [leaves, setLeaves] = useState([]);
+ const [filter, setFilter] = useState("all");
+ const [loading, setLoading] = useState(true);
+ const [searchTerm, setSearchTerm] = useState("");
+ const [dateFrom, setDateFrom] = useState("");
+ const [dateTo, setDateTo] = useState("");
+ const [expandedId, setExpandedId] = useState(null);
+ const [showExportMenu, setShowExportMenu] = useState(false);
 
-  const navigate = useNavigate();
+ const navigate = useNavigate();
 
-  useEffect(() => {
-    fetchLeaves();
-  }, []);
+ useEffect(() => {
+ fetchLeaves();
+ }, []);
 
-  const fetchLeaves = async () => {
-    setLoading(true);
-    try {
-      let url = "/hr/leaves/";
-      if (employeeScope) {
-        url += "?employee_scope=true";
-      } else if (leadScope) {
-        url += "?lead_scope=true";
-      }
-      const res = await apiClient.get(url);
-      let data = res.data.results || res.data || [];
-      setLeaves(Array.isArray(data) ? data : []);
-    } catch (err) {
-      console.error("Failed to load leaves:", err);
-      setLeaves([]);
-    } finally {
-      setLoading(false);
-    }
-  };
+ const fetchLeaves = async () => {
+ setLoading(true);
+ try {
+ let url = "/hr/leaves/";
+ if (employeeScope) {
+ url += "?employee_scope=true";
+ } else if (leadScope) {
+ url += "?lead_scope=true";
+ }
+ const res = await apiClient.get(url);
+ let data = res.data.results || res.data || [];
+ setLeaves(Array.isArray(data) ? data : []);
+ } catch (err) {
+ console.error("Failed to load leaves:", err);
+ setLeaves([]);
+ } finally {
+ setLoading(false);
+ }
+ };
 
-  const filteredLeaves = leaves.filter((leave) => {
-    if (filter !== "all" && leave.status !== filter) return false;
+ const filteredLeaves = leaves.filter((leave) => {
+ if (filter !== "all" && leave.status !== filter) return false;
 
-    if (searchTerm) {
-      const name = (leave.employee?.name || "").toLowerCase();
-      if (!name.includes(searchTerm.toLowerCase())) return false;
-    }
+ if (searchTerm) {
+ const name = (leave.employee?.name || "").toLowerCase();
+ if (!name.includes(searchTerm.toLowerCase())) return false;
+ }
 
-    if (dateFrom && leave.start_date && new Date(leave.start_date) < new Date(dateFrom))
-      return false;
-    if (dateTo && leave.end_date && new Date(leave.end_date) > new Date(dateTo))
-      return false;
+ if (dateFrom && leave.start_date && new Date(leave.start_date) < new Date(dateFrom))
+ return false;
+ if (dateTo && leave.end_date && new Date(leave.end_date) > new Date(dateTo))
+ return false;
 
-    return true;
-  });
+ return true;
+ });
 
-  const statusConfig = {
-    pending: { color: "bg-yellow-100 text-yellow-800", icon: MdPending, label: "Pending" },
-    approved: { color: "bg-green-100 text-green-800", icon: MdCheckCircle, label: "Approved" },
-    rejected: { color: "bg-red-100 text-red-800", icon: MdCancel, label: "Rejected" },
-  };
+ const statusConfig = {
+ pending: { color: "bg-yellow-100 text-yellow-800", icon: MdPending, label: "Pending" },
+ approved: { color: "bg-green-100 text-green-800", icon: MdCheckCircle, label: "Approved" },
+ rejected: { color: "bg-red-100 text-red-800", icon: MdCancel, label: "Rejected" },
+ };
 
-  const leadStatusConfig = {
-    pending: { color: "bg-gray-100 text-gray-600", label: "Awaiting Lead" },
-    confirmed: { color: "bg-indigo-100 text-indigo-700", label: "Lead Confirmed" },
-    declined: { color: "bg-orange-100 text-orange-700", label: "Lead Declined" },
-  };
+ const leadStatusConfig = {
+ pending: { color: "bg-gray-100 text-gray-600", label: "Awaiting Lead" },
+ confirmed: { color: "bg-indigo-100 text-indigo-700", label: "Lead Confirmed" },
+ declined: { color: "bg-orange-100 text-orange-700", label: "Lead Declined" },
+ };
 
-  const handleStatusUpdate = async (leaveId, newStatus) => {
-    if (!window.confirm(`Are you sure you want to ${newStatus === "approved" ? "approve" : "reject"} this leave?`))
-      return;
+ const handleStatusUpdate = async (leaveId, newStatus) => {
+ if (!window.confirm(`Are you sure you want to ${newStatus === "approved" ? "approve" : "reject"} this leave?`))
+ return;
 
-    try {
-      await apiClient.patch(`/hr/leaves/${leaveId}/`, { status: newStatus });
-      setLeaves(prev =>
-        prev.map(leave => (leave.id === leaveId ? { ...leave, status: newStatus } : leave))
-      );
-    } catch (err) {
-      alert("Failed to update status");
-      console.error(err);
-    }
-  };
+ try {
+ await apiClient.patch(`/hr/leaves/${leaveId}/`, { status: newStatus });
+ setLeaves(prev =>
+ prev.map(leave => (leave.id === leaveId ? { ...leave, status: newStatus } : leave))
+ );
+ } catch (err) {
+ alert("Failed to update status");
+ console.error(err);
+ }
+ };
 
-  const handleLeadAction = async (leaveId, action) => {
-    const verb = action === "confirm" ? "confirm" : "decline";
-    if (!window.confirm(`Are you sure you want to ${verb} this leave request?`)) return;
+ const handleLeadAction = async (leaveId, action) => {
+ const verb = action === "confirm" ? "confirm" : "decline";
+ if (!window.confirm(`Are you sure you want to ${verb} this leave request?`)) return;
 
-    try {
-      let url = `/hr/leaves/${leaveId}/lead_${action}/`;
-      if (leadScope) {
-        url += "?lead_scope=true";
-      }
-      const res = await apiClient.post(url);
-      setLeaves(prev =>
-        prev.map(leave => {
-          if (leave.id === leaveId) {
-            return {
-              ...leave,
-              lead_status: action === "confirm" ? "confirmed" : "declined",
-              status: action === "decline" ? "rejected" : leave.status
-            };
-          }
-          return leave;
-        })
-      );
-    } catch (err) {
-      alert(`Failed to ${verb} leave`);
-    }
-  };
+ try {
+ let url = `/hr/leaves/${leaveId}/lead_${action}/`;
+ if (leadScope) {
+ url += "?lead_scope=true";
+ }
+ const res = await apiClient.post(url);
+ setLeaves(prev =>
+ prev.map(leave => {
+ if (leave.id === leaveId) {
+ return {
+ ...leave,
+ lead_status: action === "confirm" ? "confirmed" : "declined",
+ status: action === "decline" ? "rejected" : leave.status
+ };
+ }
+ return leave;
+ })
+ );
+ } catch (err) {
+ alert(`Failed to ${verb} leave`);
+ }
+ };
 
-  const handleExportCSV = () => {
-    if (filteredLeaves.length === 0) {
-      alert("No leave records to export.");
-      return;
-    }
+ const handleExportCSV = () => {
+ if (filteredLeaves.length === 0) {
+ alert("No leave records to export.");
+ return;
+ }
 
-    const headers = "Employee,Leave Type,From,To,Duration,Status,Applied On,Reason\n";
-    const rows = filteredLeaves
-      .map((leave) => {
-        const employee = (leave.employee?.name || "Unknown").replace(/"/g, '""');
-        const leaveType = (leave.leave_type_name || leave.leave_type?.name || "N/A").replace(/"/g, '""');
-        const from = leave.start_date ? format(new Date(leave.start_date), "dd/MM/yyyy") : "-";
-        const to = leave.end_date ? format(new Date(leave.end_date), "dd/MM/yyyy") : "-";
-        const duration =
-          leave.duration === "half_day"
-            ? "Half Day"
-            : leave.total_days
-              ? `${leave.total_days} Day${leave.total_days > 1 ? "s" : ""}`
-              : "Full Day";
-        const status = (leave.status || "pending").toUpperCase();
-        const appliedOn = leave.created_at ? format(new Date(leave.created_at), "dd/MM/yyyy") : "-";
-        const reason = (leave.reason || "").replace(/"/g, '""');
+ const headers = "Employee,Leave Type,From,To,Duration,Status,Applied On,Reason\n";
+ const rows = filteredLeaves
+ .map((leave) => {
+ const employee = (leave.employee?.name || "Unknown").replace(/"/g, '""');
+ const leaveType = (leave.leave_type_name || leave.leave_type?.name || "N/A").replace(/"/g, '""');
+ const from = leave.start_date ? format(new Date(leave.start_date), "dd/MM/yyyy") : "-";
+ const to = leave.end_date ? format(new Date(leave.end_date), "dd/MM/yyyy") : "-";
+ const duration =
+ leave.duration === "half_day"
+ ? "Half Day"
+ : leave.total_days
+ ? `${leave.total_days} Day${leave.total_days > 1 ? "s" : ""}`
+ : "Full Day";
+ const status = (leave.status || "pending").toUpperCase();
+ const appliedOn = leave.created_at ? format(new Date(leave.created_at), "dd/MM/yyyy") : "-";
+ const reason = (leave.reason || "").replace(/"/g, '""');
 
-        return `"${employee}","${leaveType}","${from}","${to}","${duration}","${status}","${appliedOn}","${reason}"`;
-      })
-      .join("\n");
+ return `"${employee}","${leaveType}","${from}","${to}","${duration}","${status}","${appliedOn}","${reason}"`;
+ })
+ .join("\n");
 
-    const csvContent = "data:text/csv;charset=utf-8," + encodeURIComponent(headers + rows);
-    const link = document.createElement("a");
-    link.setAttribute("href", csvContent);
-    link.setAttribute("download", `Leaves_${format(new Date(), "yyyy-MM-dd")}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    setShowExportMenu(false);
-  };
+ const csvContent = "data:text/csv;charset=utf-8," + encodeURIComponent(headers + rows);
+ const link = document.createElement("a");
+ link.setAttribute("href", csvContent);
+ link.setAttribute("download", `Leaves_${format(new Date(), "yyyy-MM-dd")}.csv`);
+ document.body.appendChild(link);
+ link.click();
+ document.body.removeChild(link);
+ setShowExportMenu(false);
+ };
 
-  const handleExportPDF = () => {
-    if (filteredLeaves.length === 0) {
-      alert("No leave records to export.");
-      return;
-    }
+ const handleExportPDF = () => {
+ if (filteredLeaves.length === 0) {
+ alert("No leave records to export.");
+ return;
+ }
 
-    const doc = new jsPDF();
+ const doc = new jsPDF();
 
-    // Optional: Add title
-    doc.setFontSize(18);
-    doc.text("Leave Requests Report", 14, 22);
-    doc.setFontSize(11);
-    doc.text(`Generated on: ${format(new Date(), "dd MMM yyyy")}`, 14, 30);
-    doc.text(`Total records: ${filteredLeaves.length}`, 14, 36);
+ // Optional: Add title
+ doc.setFontSize(18);
+ doc.text("Leave Requests Report", 14, 22);
+ doc.setFontSize(11);
+ doc.text(`Generated on: ${format(new Date(), "dd MMM yyyy")}`, 14, 30);
+ doc.text(`Total records: ${filteredLeaves.length}`, 14, 36);
 
-    // Table headers
-    const head = [
-      ["Employee", "Leave Type", "From", "To", "Duration", "Status", "Applied On", "Reason"]
-    ];
+ // Table headers
+ const head = [
+ ["Employee", "Leave Type", "From", "To", "Duration", "Status", "Applied On", "Reason"]
+ ];
 
-    // Table body
-    const body = filteredLeaves.map((leave) => {
-      const employee = leave.employee?.name || "Unknown";
-      const leaveType = leave.leave_type_name || leave.leave_type?.name || "N/A";
-      const from = leave.start_date ? format(new Date(leave.start_date), "dd/MM/yyyy") : "-";
-      const to = leave.end_date ? format(new Date(leave.end_date), "dd/MM/yyyy") : "-";
-      const duration =
-        leave.duration === "half_day"
-          ? "Half Day"
-          : leave.total_days
-            ? `${leave.total_days} Day${leave.total_days > 1 ? "s" : ""}`
-            : "Full Day";
-      const status = leave.status ? leave.status.charAt(0).toUpperCase() + leave.status.slice(1) : "Pending";
-      const appliedOn = leave.created_at ? format(new Date(leave.created_at), "dd/MM/yyyy") : "-";
-      const reason = leave.reason || "-";
+ // Table body
+ const body = filteredLeaves.map((leave) => {
+ const employee = leave.employee?.name || "Unknown";
+ const leaveType = leave.leave_type_name || leave.leave_type?.name || "N/A";
+ const from = leave.start_date ? format(new Date(leave.start_date), "dd/MM/yyyy") : "-";
+ const to = leave.end_date ? format(new Date(leave.end_date), "dd/MM/yyyy") : "-";
+ const duration =
+ leave.duration === "half_day"
+ ? "Half Day"
+ : leave.total_days
+ ? `${leave.total_days} Day${leave.total_days > 1 ? "s" : ""}`
+ : "Full Day";
+ const status = leave.status ? leave.status.charAt(0).toUpperCase() + leave.status.slice(1) : "Pending";
+ const appliedOn = leave.created_at ? format(new Date(leave.created_at), "dd/MM/yyyy") : "-";
+ const reason = leave.reason || "-";
 
-      return [employee, leaveType, from, to, duration, status, appliedOn, reason];
-    });
+ return [employee, leaveType, from, to, duration, status, appliedOn, reason];
+ });
 
-    autoTable(doc, {
-      head: head,
-      body: body,
-      startY: 45,
-      styles: { fontSize: 9, cellPadding: 3, overflow: "linebreak" },
-      headStyles: {
-        fillColor: [0, 0, 0],
-        textColor: [255, 255, 255],
-        fontStyle: "bold",
-      },
-      alternateRowStyles: { fillColor: [240, 240, 240] },
-      columnStyles: {
-        0: { cellWidth: 35 },   // Employee
-        1: { cellWidth: 30 },   // Leave Type
-        2: { cellWidth: 25 },   // From
-        3: { cellWidth: 25 },   // To
-        4: { cellWidth: 25 },   // Duration
-        5: { cellWidth: 20 },   // Status
-        6: { cellWidth: 25 },   // Applied On
-        7: { cellWidth: "auto" } // Reason (remaining space)
-      },
-      margin: { top: 45, left: 14, right: 14 },
-    });
+ autoTable(doc, {
+ head: head,
+ body: body,
+ startY: 45,
+ styles: { fontSize: 9, cellPadding: 3, overflow: "linebreak" },
+ headStyles: {
+ fillColor: [0, 0, 0],
+ textColor: [255, 255, 255],
+ fontStyle: "bold",
+ },
+ alternateRowStyles: { fillColor: [240, 240, 240] },
+ columnStyles: {
+ 0: { cellWidth: 35 }, // Employee
+ 1: { cellWidth: 30 }, // Leave Type
+ 2: { cellWidth: 25 }, // From
+ 3: { cellWidth: 25 }, // To
+ 4: { cellWidth: 25 }, // Duration
+ 5: { cellWidth: 20 }, // Status
+ 6: { cellWidth: 25 }, // Applied On
+ 7: { cellWidth: "auto" } // Reason (remaining space)
+ },
+ margin: { top: 45, left: 14, right: 14 },
+ });
 
-    doc.save(`Leave_Requests_${format(new Date(), "yyyy-MM-dd")}.pdf`);
-    setShowExportMenu(false);
-  };
+ doc.save(`Leave_Requests_${format(new Date(), "yyyy-MM-dd")}.pdf`);
+ setShowExportMenu(false);
+ };
 
-  const handleExportExcel = () => {
-    alert("Excel export not implemented yet");
-    setShowExportMenu(false);
-  };
+ const handleExportExcel = () => {
+ alert("Excel export not implemented yet");
+ setShowExportMenu(false);
+ };
 
-  const toggleExpand = (id) => {
-    setExpandedId(expandedId === id ? null : id);
-  };
+ const toggleExpand = (id) => {
+ setExpandedId(expandedId === id ? null : id);
+ };
 
-  return (
-    <div className="p-6">
-      <LayoutComponents title="Leaves" subtitle="Manage employee leave requests" variant="table">
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 mb-6">
-          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 mb-6">
-            <div className="flex flex-wrap gap-3">
-              {["all", "pending", "approved", "rejected"].map((status) => (
-                <button
-                  key={status}
-                  onClick={() => setFilter(status)}
-                  className={`px-6 py-3 rounded-xl font-medium transition ${filter === status
-                    ? status === "all"
-                      ? "bg-black text-white"
-                      : status === "pending"
-                        ? "bg-yellow-500 text-white"
-                        : status === "approved"
-                          ? "bg-green-600 text-white"
-                          : "bg-red-600 text-white"
-                    : "bg-gray-100 hover:bg-gray-200 text-gray-700"
-                    }`}
-                >
-                  {status.charAt(0).toUpperCase() + status.slice(1)}
-                </button>
-              ))}
-            </div>
-            <div className="flex gap-3 relative">
-              <button
-                onClick={() => setShowExportMenu(!showExportMenu)}
-                className="flex items-center gap-2 px-5 py-4 border border-gray-300 rounded-xl hover:bg-gray-50 transition font-medium"
-              >
-                <MdDownload className="w-5 h-5" />
-                Export
-              </button>
-              {hasPermission(permissionPage, "add") && (
-                <Link
-                  to={leadScope ? "/lead/leaves/assign" : employeeScope ? "/employee/leaves/assign" : "/hr/leaves/assign"}
-                  className="flex items-center gap-3 px-6 py-3 bg-black text-white rounded-xl hover:bg-gray-900 transition font-medium"
-                >
-                  <MdAdd className="w-5 h-5" />
-                  {employeeScope ? "Apply Leave" : "Assign Leave"}
-                </Link>
-              )}
+ return (
+ <div className="p-6">
+ <LayoutComponents title="Leaves" subtitle="Manage employee leave requests" variant="table">
+ <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
+ <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 mb-6">
+ <div className="flex flex-wrap gap-3">
+ {["all", "pending", "approved", "rejected"].map((status) => (
+ <button
+ key={status}
+ onClick={() => setFilter(status)}
+ className={`px-5 py-2.5 text-sm rounded-xl font-medium transition ${filter === status
+ ? status === "all"
+ ? "bg-black text-white"
+ : status === "pending"
+ ? "bg-yellow-500 text-white"
+ : status === "approved"
+ ? "bg-green-600 text-white"
+ : "bg-red-600 text-white"
+ : "bg-gray-100 hover:bg-gray-200 text-gray-700"
+ }`}
+ >
+ {status.charAt(0).toUpperCase() + status.slice(1)}
+ </button>
+ ))}
+ </div>
+ <div className="flex gap-3 relative">
+ <button
+ onClick={() => setShowExportMenu(!showExportMenu)}
+ className="flex items-center gap-2 px-5 py-4 border border-gray-300 rounded-xl hover:bg-gray-50 transition font-medium"
+ >
+ <MdDownload className="w-5 h-5" />
+ Export
+ </button>
+ {hasPermission(permissionPage, "add") && (
+ <Link
+ to={leadScope ? "/lead/leaves/assign" : employeeScope ? "/employee/leaves/assign" : "/hr/leaves/assign"}
+ className="flex items-center gap-3 px-5 py-2.5 text-sm bg-black text-white rounded-xl hover:bg-gray-900 transition font-medium"
+ >
+ <MdAdd className="w-5 h-5" />
+ {employeeScope ? "Apply Leave" : "Assign Leave"}
+ </Link>
+ )}
 
-              <AnimatePresence>
-                {showExportMenu && (
-                  <motion.div
-                    initial={{ opacity: 0, scale: 0.95, y: -8 }}
-                    animate={{ opacity: 1, scale: 1, y: 0 }}
-                    exit={{ opacity: 0, scale: 0.95, y: -8 }}
-                    transition={{ duration: 0.15 }}
-                    className="absolute right-0 top-full mt-2 w-48 bg-white rounded-xl shadow-xl border border-gray-200 overflow-hidden z-50"
-                  >
-                    <div className="py-1">
-                      <button
-                        onClick={handleExportCSV}
-                        className="w-full text-left px-5 py-3 hover:bg-gray-50 transition flex items-center gap-3 text-sm"
-                      >
-                        Export as CSV
-                      </button>
-                      <button
-                        onClick={handleExportExcel}
-                        className="w-full text-left px-5 py-3 hover:bg-gray-50 transition flex items-center gap-3 text-sm"
-                      >
-                        Export as Excel
-                      </button>
-                      <button
-                        onClick={handleExportPDF}
-                        className="w-full text-left px-5 py-3 hover:bg-gray-50 transition flex items-center gap-3 text-sm"
-                      >
-                        Export as PDF
-                      </button>
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
+ <AnimatePresence>
+ {showExportMenu && (
+ <motion.div
+ initial={{ opacity: 0, scale: 0.95, y: -8 }}
+ animate={{ opacity: 1, scale: 1, y: 0 }}
+ exit={{ opacity: 0, scale: 0.95, y: -8 }}
+ transition={{ duration: 0.15 }}
+ className="absolute right-0 top-full mt-2 w-48 bg-white rounded-xl shadow-xl border border-gray-200 overflow-hidden z-50"
+ >
+ <div className="py-1">
+ <button
+ onClick={handleExportCSV}
+ className="w-full text-left px-5 py-3 hover:bg-gray-50 transition flex items-center gap-3 text-sm"
+ >
+ Export as CSV
+ </button>
+ <button
+ onClick={handleExportExcel}
+ className="w-full text-left px-5 py-3 hover:bg-gray-50 transition flex items-center gap-3 text-sm"
+ >
+ Export as Excel
+ </button>
+ <button
+ onClick={handleExportPDF}
+ className="w-full text-left px-5 py-3 hover:bg-gray-50 transition flex items-center gap-3 text-sm"
+ >
+ Export as PDF
+ </button>
+ </div>
+ </motion.div>
+ )}
+ </AnimatePresence>
 
 
-            </div>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="relative top-7">
-              <Input
-                type="text"
-                placeholder="Search by employee name..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
-            </div>
-            <Input
-              type="date"
-              label="From Date"
-              value={dateFrom}
-              onChange={(e) => setDateFrom(e.target.value)}
-            />
+ </div>
+ </div>
+ <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+ <div className="relative top-7">
+ <Input
+ type="text"
+ placeholder="Search by employee name..."
+ value={searchTerm}
+ onChange={(e) => setSearchTerm(e.target.value)}
+ />
+ </div>
+ <Input
+ type="date"
+ label="From Date"
+ value={dateFrom}
+ onChange={(e) => setDateFrom(e.target.value)}
+ />
 
-            <Input
-              type="date"
-              label="To Date"
-              value={dateTo}
-              onChange={(e) => setDateTo(e.target.value)}
-            />
-          </div>
+ <Input
+ type="date"
+ label="To Date"
+ value={dateTo}
+ onChange={(e) => setDateTo(e.target.value)}
+ />
+ </div>
 
-          {(searchTerm || dateFrom || dateTo) && (
-            <div className="mt-4 text-right">
-              <button
-                onClick={() => {
-                  setSearchTerm("");
-                  setDateFrom("");
-                  setDateTo("");
-                }}
-                className="text-sm font-medium text-gray-600 hover:text-black underline"
-              >
-                Clear filters
-              </button>
-            </div>
-          )}
-        </div>
-        {loading ? (
-          <div className="flex items-center justify-center py-20">
-            <div className="animate-spin rounded-full h-12 w-12 border-4 border-black border-t-transparent"></div>
-          </div>
-        ) : filteredLeaves.length === 0 ? (
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-16 text-center">
-            <MdPending className="w-16 h-16 mx-auto mb-4 text-gray-300" />
-            <p className="text-xl font-medium text-gray-700">
-              {filter === "all" ? "No leave requests found" : `No ${filter} leaves`}
-            </p>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredLeaves.map((leave) => {
-              const config = statusConfig[leave.status] || statusConfig.pending;
-              const StatusIcon = config.icon;
-              const isExpanded = expandedId === leave.id;
+ {(searchTerm || dateFrom || dateTo) && (
+ <div className="mt-4 text-right">
+ <button
+ onClick={() => {
+ setSearchTerm("");
+ setDateFrom("");
+ setDateTo("");
+ }}
+ className="text-sm font-medium text-gray-600 hover:text-black underline"
+ >
+ Clear filters
+ </button>
+ </div>
+ )}
+ </div>
+ {loading ? (
+ <div className="flex items-center justify-center py-20">
+ <div className="animate-spin rounded-full h-12 w-12 border-4 border-black border-t-transparent"></div>
+ </div>
+ ) : filteredLeaves.length === 0 ? (
+ <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-16 text-center">
+ <MdPending className="w-16 h-16 mx-auto mb-4 text-gray-300" />
+ <p className="text-xl font-medium text-gray-700">
+ {filter === "all" ? "No leave requests found" : `No ${filter} leaves`}
+ </p>
+ </div>
+ ) : (
+ <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+ {filteredLeaves.map((leave) => {
+ const config = statusConfig[leave.status] || statusConfig.pending;
+ const StatusIcon = config.icon;
+ const isExpanded = expandedId === leave.id;
 
-              return (
-                <motion.div
-                  key={leave.id}
-                  layout
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden"
-                >
-                  <div className="p-6">
-                    <div className="flex items-start justify-between mb-4">
-                      <div>
-                        <h4 className="text-lg font-medium text-gray-900">
-                          {leave.employee?.name || "Unknown Employee"}
-                        </h4>
-                        <p className="text-sm text-gray-600 mt-1">
-                          {leave.leave_type_name || leave.leave_type?.name || "N/A"}
-                        </p>
-                      </div>
-                      <div className={`px-4 py-2 rounded-full ${config.color} flex items-center gap-2`}>
-                        <StatusIcon className="w-5 h-5" />
-                        <span className="font-medium">{config.label}</span>
-                      </div>
-                    </div>
-                    {/* Display Lead Status Badge */}
-                    <div className="mb-4">
-                      <span className={`px-3 py-1 rounded-lg text-xs font-semibold ${leadStatusConfig[leave.lead_status || 'pending'].color}`}>
-                        {leadStatusConfig[leave.lead_status || 'pending'].label}
-                      </span>
-                    </div>
-                    <div className="space-y-3 text-sm">
-                      <div className="flex justify-between">
-                        <span className="text-gray-500">From</span>
-                        <span className="font-medium">
-                          {leave.start_date ? format(new Date(leave.start_date), "dd MMM yyyy") : "—"}
-                        </span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-gray-500">To</span>
-                        <span className="font-medium">
-                          {leave.end_date ? format(new Date(leave.end_date), "dd MMM yyyy") : "—"}
-                        </span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-gray-500">Duration</span>
-                        <span className="font-medium">
-                          {leave.duration === "half_day"
-                            ? "Half Day"
-                            : leave.total_days
-                              ? `${leave.total_days} Day${leave.total_days > 1 ? "s" : ""}`
-                              : "Full Day"}
-                        </span>
-                      </div>
-                    </div>
+ return (
+ <motion.div
+ key={leave.id}
+ layout
+ initial={{ opacity: 0, y: 20 }}
+ animate={{ opacity: 1, y: 0 }}
+ className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden"
+ >
+ <div className="p-6">
+ <div className="flex items-start justify-between mb-4">
+ <div>
+ <h4 className=" font-medium text-gray-900">
+ {leave.employee?.name || "Unknown Employee"}
+ </h4>
+ <p className="text-sm text-gray-600 mt-1">
+ {leave.leave_type_name || leave.leave_type?.name || "N/A"}
+ </p>
+ </div>
+ <div className={`px-4 py-2 rounded-full ${config.color} flex items-center gap-2`}>
+ <StatusIcon className="w-5 h-5" />
+ <span className="font-medium">{config.label}</span>
+ </div>
+ </div>
+ {/* Display Lead Status Badge */}
+ <div className="mb-4">
+ <span className={`px-3 py-1 rounded-lg text-xs font-semibold ${leadStatusConfig[leave.lead_status || 'pending'].color}`}>
+ {leadStatusConfig[leave.lead_status || 'pending'].label}
+ </span>
+ </div>
+ <div className="space-y-3 text-sm">
+ <div className="flex justify-between">
+ <span className="text-gray-500">From</span>
+ <span className="font-medium">
+ {leave.start_date ? format(new Date(leave.start_date), "dd MMM yyyy") : "—"}
+ </span>
+ </div>
+ <div className="flex justify-between">
+ <span className="text-gray-500">To</span>
+ <span className="font-medium">
+ {leave.end_date ? format(new Date(leave.end_date), "dd MMM yyyy") : "—"}
+ </span>
+ </div>
+ <div className="flex justify-between">
+ <span className="text-gray-500">Duration</span>
+ <span className="font-medium">
+ {leave.duration === "half_day"
+ ? "Half Day"
+ : leave.total_days
+ ? `${leave.total_days} Day${leave.total_days > 1 ? "s" : ""}`
+ : "Full Day"}
+ </span>
+ </div>
+ </div>
 
-                    {leave.reason && (
-                      <div className="mt-4 pt-4 border-t border-gray-200">
-                        <p className="text-sm text-gray-700 line-clamp-3">{leave.reason}</p>
-                      </div>
-                    )}
+ {leave.reason && (
+ <div className="mt-4 pt-4 border-t border-gray-200">
+ <p className="text-sm text-gray-700 line-clamp-3">{leave.reason}</p>
+ </div>
+ )}
 
-                    <div className="mt-4 text-xs text-gray-500 flex justify-between">
-                      <span>
-                        Applied: {leave.created_at ? format(new Date(leave.created_at), "dd MMM yyyy") : "—"}
-                      </span>
-                      {leave.approved_by && <span>by {leave.approved_by.name}</span>}
-                    </div>
-                    {leave.status === "pending" && (
-                      <div className="mt-6">
-                        <button
-                          onClick={() => toggleExpand(leave.id)}
-                          className="w-full flex items-center justify-center gap-2 py-3 text-sm font-medium text-gray-700 hover:text-black transition"
-                        >
-                          {isExpanded ? "Hide Actions" : "Show Actions"}
-                          {isExpanded ? (
-                            <MdKeyboardArrowUp className="w-5 h-5" />
-                          ) : (
-                            <MdKeyboardArrowDown className="w-5 h-5" />
-                          )}
-                        </button>
+ <div className="mt-4 text-xs text-gray-500 flex justify-between">
+ <span>
+ Applied: {leave.created_at ? format(new Date(leave.created_at), "dd MMM yyyy") : "—"}
+ </span>
+ {leave.approved_by && <span>by {leave.approved_by.name}</span>}
+ </div>
+ {leave.status === "pending" && (
+ <div className="mt-6">
+ <button
+ onClick={() => toggleExpand(leave.id)}
+ className="w-full flex items-center justify-center gap-2 py-3 text-sm font-medium text-gray-700 hover:text-black transition"
+ >
+ {isExpanded ? "Hide Actions" : "Show Actions"}
+ {isExpanded ? (
+ <MdKeyboardArrowUp className="w-5 h-5" />
+ ) : (
+ <MdKeyboardArrowDown className="w-5 h-5" />
+ )}
+ </button>
 
-                        <AnimatePresence>
-                          {isExpanded && (
-                            <motion.div
-                              initial={{ height: 0, opacity: 0 }}
-                              animate={{ height: "auto", opacity: 1 }}
-                              exit={{ height: 0, opacity: 0 }}
-                              transition={{ duration: 0.3 }}
-                              className="overflow-hidden"
-                            >
-                              <div className="mt-4 flex gap-3">
-                                {leadScope && leave.lead_status === "pending" && (
-                                  <>
-                                    <button
-                                      onClick={() => handleLeadAction(leave.id, "confirm")}
-                                      className="flex-1 bg-indigo-600 text-white py-3 rounded-xl font-medium hover:bg-indigo-700 transition"
-                                    >
-                                      Confirm
-                                    </button>
-                                    <button
-                                      onClick={() => handleLeadAction(leave.id, "decline")}
-                                      className="flex-1 bg-orange-600 text-white py-3 rounded-xl font-medium hover:bg-orange-700 transition"
-                                    >
-                                      Decline
-                                    </button>
-                                  </>
-                                )}
-                                {!leadScope && hasPermission(permissionPage, "edit") && (
-                                  <>
-                                    <button
-                                      onClick={() => handleStatusUpdate(leave.id, "approved")}
-                                      className="flex-1 bg-green-600 text-white py-3 rounded-xl font-medium hover:bg-green-700 transition"
-                                    >
-                                      Approve
-                                    </button>
-                                    <button
-                                      onClick={() => handleStatusUpdate(leave.id, "rejected")}
-                                      className="flex-1 bg-red-600 text-white py-3 rounded-xl font-medium hover:bg-red-700 transition"
-                                    >
-                                      Reject
-                                    </button>
-                                  </>
-                                )}
-                              </div>
-                            </motion.div>
-                          )}
-                        </AnimatePresence>
-                      </div>
-                    )}
-                    {leave.status !== "pending" && (
-                      <div className={`mt-6 py-4 text-center font-medium text-lg rounded-xl ${config.color}`}>
-                        {config.label.toUpperCase()}
-                      </div>
-                    )}
-                  </div>
-                </motion.div>
-              );
-            })}
-          </div>
-        )}
-      </LayoutComponents>
-    </div>
-  );
+ <AnimatePresence>
+ {isExpanded && (
+ <motion.div
+ initial={{ height: 0, opacity: 0 }}
+ animate={{ height: "auto", opacity: 1 }}
+ exit={{ height: 0, opacity: 0 }}
+ transition={{ duration: 0.3 }}
+ className="overflow-hidden"
+ >
+ <div className="mt-4 flex gap-3">
+ {leadScope && leave.lead_status === "pending" && (
+ <>
+ <button
+ onClick={() => handleLeadAction(leave.id, "confirm")}
+ className="flex-1 bg-indigo-600 text-white py-3 rounded-xl font-medium hover:bg-indigo-700 transition"
+ >
+ Confirm
+ </button>
+ <button
+ onClick={() => handleLeadAction(leave.id, "decline")}
+ className="flex-1 bg-orange-600 text-white py-3 rounded-xl font-medium hover:bg-orange-700 transition"
+ >
+ Decline
+ </button>
+ </>
+ )}
+ {!leadScope && hasPermission(permissionPage, "edit") && (
+ <>
+ <button
+ onClick={() => handleStatusUpdate(leave.id, "approved")}
+ className="flex-1 bg-green-600 text-white py-3 rounded-xl font-medium hover:bg-green-700 transition"
+ >
+ Approve
+ </button>
+ <button
+ onClick={() => handleStatusUpdate(leave.id, "rejected")}
+ className="flex-1 bg-red-600 text-white py-3 rounded-xl font-medium hover:bg-red-700 transition"
+ >
+ Reject
+ </button>
+ </>
+ )}
+ </div>
+ </motion.div>
+ )}
+ </AnimatePresence>
+ </div>
+ )}
+ {leave.status !== "pending" && (
+ <div className={`mt-6 py-4 text-center font-medium rounded-xl ${config.color}`}>
+ {config.label.toUpperCase()}
+ </div>
+ )}
+ </div>
+ </motion.div>
+ );
+ })}
+ </div>
+ )}
+ </LayoutComponents>
+ </div>
+ );
 };
 
 export default Leaves;
