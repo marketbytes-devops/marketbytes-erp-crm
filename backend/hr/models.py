@@ -105,6 +105,8 @@ class Leave(models.Model):
     def total_days(self):
         if self.duration == 'half_day':
             return 0.5
+        if not self.start_date or not self.end_date:
+            return 0
         return (self.end_date - self.start_date).days + 1
 
 class Overtime(models.Model):

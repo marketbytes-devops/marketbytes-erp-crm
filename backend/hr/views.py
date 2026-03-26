@@ -592,7 +592,7 @@ class LeaveTypeViewSet(viewsets.ModelViewSet):
     queryset = LeaveType.objects.all()
     serializer_class = LeaveTypeSerializer
     permission_classes = [HasPermission]
-    page_name = 'leaves'
+    page_names = ['leaves', 'employee_leaves', 'lead_leaves']
 
 class LeaveViewSet(viewsets.ModelViewSet):
     queryset = Leave.objects.all().select_related('employee', 'leave_type', 'approved_by')
@@ -613,8 +613,12 @@ class LeaveViewSet(viewsets.ModelViewSet):
 
         if is_privileged:
             # HR/Superadmin should only see leaves after Lead confirmation, 
-            # OR if the employee doesn't report to anyone.
-            return queryset.filter(Q(employee__reports_to__isnull=True) | Q(lead_status='confirmed'))
+            # OR if the employee doesn't report to anyone, OR is a team lead.
+            return queryset.filter(
+                Q(employee__reports_to__isnull=True) | 
+                Q(lead_status='confirmed') | 
+                Q(employee__subordinates__isnull=False)
+            ).distinct()
             
         if 'lead_scope' in self.request.query_params:
             # Lead sees ONLY direct reports (pending and processed)

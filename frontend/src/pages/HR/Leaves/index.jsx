@@ -491,7 +491,7 @@ const Leaves = ({ leadScope, employeeScope }) => {
                               className="overflow-hidden"
                             >
                               <div className="mt-4 flex gap-3">
-                                {leadScope && leave.lead_status === "pending" && (
+                                {(!employeeScope && leadScope) && leave.lead_status === "pending" && (
                                   <>
                                     <button
                                       onClick={() => handleLeadAction(leave.id, "confirm")}
@@ -507,7 +507,7 @@ const Leaves = ({ leadScope, employeeScope }) => {
                                     </button>
                                   </>
                                 )}
-                                {!leadScope && hasPermission(permissionPage, "edit") && (
+                                {(!employeeScope && !leadScope) && hasPermission(permissionPage, "edit") && (
                                   <>
                                     <button
                                       onClick={() => handleStatusUpdate(leave.id, "approved")}
