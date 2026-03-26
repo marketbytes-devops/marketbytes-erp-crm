@@ -132,7 +132,7 @@ const EditTaskPage = () => {
  <div className="mb-8">
  <Link
  to="/operations/tasks"
- className="inline-flex items-center gap-2 px-5 py-3 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 transition"
+ className="inline-flex items-center gap-2 border border-gray-300 text-gray-700 hover:bg-gray-50 transition px-4 py-3 text-sm rounded-xl font-medium"
  >
  <MdArrowBack className="w-5 h-5" />
  Back to Tasks
@@ -254,14 +254,14 @@ const EditTaskPage = () => {
  <div className="flex justify-end gap-4">
  <Link
  to="/operations/tasks"
- className="px-5 py-2.5 text-sm border border-gray-300 text-gray-700 font-medium rounded-xl hover:bg-gray-50 transition"
+ className="border border-gray-300 text-gray-700 hover:bg-gray-50 transition px-4 py-3 text-sm rounded-xl font-medium"
  >
  Cancel
  </Link>
  <button
  type="submit"
  disabled={loading}
- className="px-5 py-2.5 text-sm bg-black text-white rounded-xl hover:bg-gray-900 transition font-medium"
+ className="bg-black text-white hover:bg-gray-900 transition px-4 py-3 text-sm rounded-xl font-medium"
  >
  {loading ? "Updating Task..." : "Update Task"}
  </button>

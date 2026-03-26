@@ -154,7 +154,7 @@ const Overtime = ({ leadScope, employeeScope }) => {
  <Clock size={80} />
  </div>
  <p className="text-gray-600 text-[10px] font-medium uppercase tracking-widest mb-1">Total Hours</p>
- <p className="text-3xl font-medium text-black font-syne group-hover:scale-110 transition-transform origin-left">{totalOvertimeHours.toFixed(2)}h</p>
+ <p className="text-3xl font-medium text-black font-syne transition-transform origin-left">{totalOvertimeHours.toFixed(2)}h</p>
  <div className="mt-4 flex items-center gap-2 text-emerald-600">
  <MdTrendingUp className="" />
  <span className="text-[10px] font-medium uppercase">Efficiency Bonus</span>
@@ -209,7 +209,7 @@ const Overtime = ({ leadScope, employeeScope }) => {
  </div>
  <button
  onClick={fetchOvertime}
- className="p-3.5 bg-gray-50 text-gray-600 hover:text-black border border-gray-200 rounded-xl transition hover:bg-gray-100 shadow-xs"
+ className="p-1.5 rounded-md text-sm bg-gray-50 text-gray-600 hover:text-black border border-gray-200 transition hover:bg-gray-100 shadow-xs"
  title="Refresh Records"
  >
  <MdRefresh className="w-6 h-6" />
@@ -231,7 +231,7 @@ const Overtime = ({ leadScope, employeeScope }) => {
  <button
  onClick={calculateOvertime}
  disabled={calculating}
- className="flex items-center gap-3 px-5 py-2.5 text-sm.5 bg-black text-white rounded-xl hover:bg-gray-800 transition shadow-xl shadow-black/10 active:scale-95 disabled:opacity-50"
+ className="flex items-center gap-3 .5 bg-black text-white hover:bg-gray-800 transition shadow-xl shadow-black/10 disabled:opacity-50 px-4 py-3 text-sm rounded-xl font-medium"
  >
  {calculating ? (
  <div className="animate-spin rounded-full h-5 w-5 border-2 border-white/20 border-t-white"></div>
@@ -289,7 +289,7 @@ const Overtime = ({ leadScope, employeeScope }) => {
  </td>
  <td className="px-10 py-8">
  <div className="flex items-center gap-4">
- <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center text-gray-400 group-hover:bg-black group-hover:text-white transition-all duration-500 overflow-hidden">
+ <div className="w-12 h-12 bg-gray-100 flex items-center justify-center text-gray-400 group-hover:bg-black group-hover:text-white transition-all duration-500 overflow-hidden px-4 py-3 text-sm rounded-xl font-medium">
  {ot.employee?.image ? (
  <img src={ot.employee.image} alt="" className="w-full h-full object-cover" />
  ) : (
@@ -326,7 +326,7 @@ const Overtime = ({ leadScope, employeeScope }) => {
  </td>
  <td className="px-10 py-8 text-right">
  <div className="flex flex-col items-end gap-1">
- <span className="inline-flex px-5 py-2.5 bg-black text-white rounded-full text-[13px] font-medium tracking-tighter shadow-lg shadow-black/10 group-hover:scale-110 transition-transform">
+ <span className="inline-flex bg-black text-white text-[13px] tracking-tighter shadow-lg shadow-black/10 transition-transform px-4 py-3 text-sm rounded-xl font-medium">
  +{parseFloat(ot.hours || 0).toFixed(2)}h
  </span>
  </div>
@@ -359,11 +359,11 @@ const Overtime = ({ leadScope, employeeScope }) => {
           <div className="flex gap-4 relative z-10">
             <button
               onClick={handleExportLedger}
-              className="flex items-center gap-3 px-6 py-3 bg-white border border-gray-200 text-black text-[10px] font-medium uppercase tracking-widest rounded-2xl hover:bg-gray-100 transition shadow-xs active:scale-95"
+              className="flex items-center gap-3 bg-white border border-gray-200 text-black text-[10px] uppercase tracking-widest hover:bg-gray-100 transition shadow-xs px-4 py-3 text-sm rounded-xl font-medium"
             >
               <MdDownload /> Export Ledger
             </button>
-            <button className="flex items-center gap-3 px-6 py-3 bg-black text-white text-[10px] font-medium uppercase tracking-widest rounded-2xl hover:bg-gray-800 transition shadow-xl shadow-black/10 active:scale-95">
+            <button className="flex items-center gap-3 bg-black text-white text-[10px] uppercase tracking-widest hover:bg-gray-800 transition shadow-xl shadow-black/10 px-4 py-3 text-sm rounded-xl font-medium">
               <ChevronRight size={14} /> Audit History
             </button>
           </div>

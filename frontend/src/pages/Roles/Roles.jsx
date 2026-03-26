@@ -173,7 +173,7 @@ const Roles = () => {
    <button
   type="submit"
   disabled={isCreating}
-  className="inline-flex items-center gap-4 px-4 py-3 text-sm rounded-xl font-medium bg-black text-white hover:bg-gray-100 hover:text-black border border-black transition-all duration-300 shadow-lg disabled:opacity-70"
+  className="inline-flex items-center gap-4 bg-black text-white hover:bg-gray-100 hover:text-black border border-black transition-all duration-300 shadow-lg disabled:opacity-70 px-4 py-3 text-sm rounded-xl font-medium"
   >
   {isCreating && <Loader2 className="w-6 h-6 animate-spin" />}
   {isCreating ? "Creating..." : "Create Role"}
@@ -221,7 +221,7 @@ const Roles = () => {
  <tbody className="divide-y divide-gray-100">
  {filteredRoles.length === 0 ? (
  <tr>
- <td colSpan="3" className="px-6 py-16 text-center text-gray-500 ">
+ <td colSpan="3" className="px-6 py-16 text-center text-gray-500">
  No roles found
  </td>
  </tr>
@@ -234,7 +234,7 @@ const Roles = () => {
 
  <td className="px-6 py-6">
  <div className="flex items-center gap-4">
- <span className=" font-medium text-black">{role.name}</span>
+ <span className="font-medium text-black">{role.name}</span>
  </div>
  </td>
  <td className="px-6 py-6 text-gray-700">{role.description || "—"}</td>
@@ -243,7 +243,7 @@ const Roles = () => {
  {hasPermission("roles", "edit") && role.name !== "Superadmin" && (
    <button
   onClick={() => openEditModal(role)}
-  className="inline-flex items-center gap-3 px-4 py-3 text-sm rounded-xl font-medium transition-all duration-300 shadow-lg bg-black text-white hover:bg-gray-100 hover:text-black border border-black"
+  className="inline-flex items-center gap-3 transition-all duration-300 shadow-lg bg-black text-white hover:bg-gray-100 hover:text-black border border-black px-4 py-3 text-sm rounded-xl font-medium"
   >
   <Edit className="w-5 h-5" />
   Edit
@@ -254,7 +254,7 @@ const Roles = () => {
  {hasPermission("roles", "delete") && role.name !== "Superadmin" && (
    <button
   onClick={() => handleDeleteRole(role.id)}
-  className="inline-flex items-center gap-3 px-4 py-3 text-sm rounded-xl font-medium transition-all duration-300 shadow-lg bg-red-600 text-white hover:bg-red-700"
+  className="inline-flex items-center gap-3 transition-all duration-300 shadow-lg bg-red-600 text-white hover:bg-red-700 px-4 py-3 text-sm rounded-xl font-medium"
   >
   <Trash2 className="w-5 h-5" />
   Delete
@@ -287,7 +287,7 @@ const Roles = () => {
  exit={{ scale: 0.9, y: 100 }}
  onClick={(e) => e.stopPropagation()}
  >
- <div className="bg-black text-white px-10 py-8 text-center">
+ <div className="bg-black text-white text-center px-4 py-3 text-sm rounded-xl font-medium">
  <h2 className="text-3xl font-medium">
  Edit Role: <span className="text-gray-300">{editRole.name}</span>
  </h2>
@@ -322,7 +322,7 @@ const Roles = () => {
    <button
   type="button"
   onClick={() => setEditRole(null)}
-  className="px-4 py-3 text-sm bg-gray-200 text-black font-medium rounded-xl hover:bg-gray-300 transition"
+  className="bg-gray-200 text-black hover:bg-gray-300 transition px-4 py-3 text-sm rounded-xl font-medium"
   >
   Cancel
   </button>
@@ -330,7 +330,7 @@ const Roles = () => {
    <button
   type="submit"
   disabled={isEditing}
-  className="px-4 py-3 text-sm bg-black text-white font-medium rounded-xl hover:bg-gray-100 hover:text-black border border-black transition shadow-xl disabled:opacity-70"
+  className="bg-black text-white hover:bg-gray-100 hover:text-black border border-black transition shadow-xl disabled:opacity-70 px-4 py-3 text-sm rounded-xl font-medium"
   >
   {isEditing ? "Saving..." : "Save Changes"}
   </button>

@@ -409,7 +409,7 @@ const CreateProjectPage = () => {
  <div className="mb-8">
  <button
  onClick={() => window.history.back()}
- className="inline-flex items-center gap-2 px-5 py-3 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 transition"
+ className="inline-flex items-center gap-2 border border-gray-300 text-gray-700 hover:bg-gray-50 transition px-4 py-3 text-sm rounded-xl font-medium"
  >
  <MdArrowBack className="w-5 h-5" />
  Back
@@ -418,7 +418,7 @@ const CreateProjectPage = () => {
 
  <form onSubmit={handleSubmit} className="space-y-8">
  <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
- <h3 className=" font-medium text-gray-900 mb-6">Project Information</h3>
+ <h3 className="font-medium text-gray-900 mb-6">Project Information</h3>
  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
  <Input
  label="Project Name"
@@ -473,7 +473,7 @@ const CreateProjectPage = () => {
  <Input label="Start Date" required type="date" value={formData.startDate} onChange={e => setFormData(prev => ({ ...prev, startDate: e.target.value }))} />
  <div>
  <label className="text-sm font-medium text-black mb-2 block">Deadline <span className="text-red-500">*</span></label>
- <div className=" items-center gap-4">
+ <div className="items-center gap-4">
  <input
  type="date"
  disabled={formData.noDeadline}
@@ -549,7 +549,7 @@ const CreateProjectPage = () => {
  </div>
 
  <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
- <h3 className=" font-medium text-gray-900 mb-6">Client Information</h3>
+ <h3 className="font-medium text-gray-900 mb-6">Client Information</h3>
  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
  <div>
  <div className="flex items-center gap-2 mb-2">
@@ -585,7 +585,7 @@ const CreateProjectPage = () => {
  </div>
 
  <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
- <h3 className=" font-medium text-gray-900 mb-6">Budget & Status</h3>
+ <h3 className="font-medium text-gray-900 mb-6">Budget & Status</h3>
  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
  <Input label="Budget" type="number" placeholder="0.00" value={formData.budget} onChange={e => setFormData(prev => ({ ...prev, budget: e.target.value }))} />
  <div className="relative top-0 sm:-top-1.5">
@@ -638,7 +638,7 @@ const CreateProjectPage = () => {
  </div>
 
  <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
- <h3 className=" font-medium text-gray-900 mb-6">Attachments</h3>
+ <h3 className="font-medium text-gray-900 mb-6">Attachments</h3>
  <div className="border-2 border-dashed border-gray-300 rounded-xl p-12 text-center">
  <input
  type="file"
@@ -648,7 +648,7 @@ const CreateProjectPage = () => {
  onChange={(e) => setFiles(Array.from(e.target.files || []))}
  />
  <label htmlFor="files" className="cursor-pointer">
- <p className=" text-gray-600">Drop files here or click to upload</p>
+ <p className="text-gray-600">Drop files here or click to upload</p>
  <p className="text-sm text-gray-500 mt-2">Any file type supported</p>
  </label>
  {files.length > 0 && (
@@ -664,7 +664,7 @@ const CreateProjectPage = () => {
  </div>
 
  <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
- <h3 className=" font-medium text-gray-900 mb-6">Project Summary</h3>
+ <h3 className="font-medium text-gray-900 mb-6">Project Summary</h3>
  <textarea
  rows={6}
  placeholder="Enter project summary..."
@@ -675,7 +675,7 @@ const CreateProjectPage = () => {
  </div>
 
  <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
- <h3 className=" font-medium text-gray-900 mb-6">Internal Note</h3>
+ <h3 className="font-medium text-gray-900 mb-6">Internal Note</h3>
  <textarea
  rows={5}
  placeholder="Add internal notes..."
@@ -689,13 +689,13 @@ const CreateProjectPage = () => {
  <button
  type="button"
  onClick={handleReset}
- className="px-5 py-2.5 text-sm border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition font-medium"
+ className="border border-gray-300 text-gray-700 hover:bg-gray-50 transition px-4 py-3 text-sm rounded-xl font-medium"
  >
  Reset
  </button>
  <button
  type="submit"
- className="px-5 py-2.5 text-sm bg-black text-white rounded-xl hover:bg-gray-900 transition font-medium"
+ className="bg-black text-white hover:bg-gray-900 transition px-4 py-3 text-sm rounded-xl font-medium"
  >
  Create Project
  </button>
@@ -728,7 +728,7 @@ const CreateProjectPage = () => {
  onKeyDown={e => e.key === "Enter" && handleAddCategory()}
  className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black outline-none"
  />
- <button onClick={handleAddCategory} className="px-5 py-2.5 text-sm bg-black text-white rounded-lg hover:bg-gray-900">
+ <button onClick={handleAddCategory} className="transition-colors bg-black text-white hover:bg-gray-900 px-4 py-3 text-sm rounded-xl font-medium">
  Add
  </button>
  </div>
@@ -762,7 +762,7 @@ const CreateProjectPage = () => {
  onKeyDown={e => e.key === "Enter" && handleAddDepartment()}
  className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black outline-none"
  />
- <button onClick={handleAddDepartment} className="px-5 py-2.5 text-sm bg-black text-white rounded-lg hover:bg-gray-900">
+ <button onClick={handleAddDepartment} className="transition-colors bg-black text-white hover:bg-gray-900 px-4 py-3 text-sm rounded-xl font-medium">
  Add
  </button>
  </div>
@@ -814,7 +814,7 @@ const CreateProjectPage = () => {
  </button>
  </div>
  </div>
- <button onClick={handleAddClient} className="w-full py-3 bg-black text-white rounded-lg hover:bg-gray-900 font-medium">
+ <button onClick={handleAddClient} className="transition-colors w-full bg-black text-white hover:bg-gray-900 px-4 py-3 text-sm rounded-xl font-medium">
  Add Client
  </button>
  </div>
@@ -840,7 +840,7 @@ const CreateProjectPage = () => {
  onChange={e => setNewStatusName(e.target.value)}
  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black outline-none"
  />
- <button onClick={handleAddStatus} className="w-full py-3 bg-black text-white rounded-lg hover:bg-gray-900 font-medium">
+ <button onClick={handleAddStatus} className="transition-colors w-full bg-black text-white hover:bg-gray-900 px-4 py-3 text-sm rounded-xl font-medium">
  Save Status
  </button>
  </div>
@@ -865,7 +865,7 @@ const CreateProjectPage = () => {
  onChange={e => setNewStageName(e.target.value)}
  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black outline-none"
  />
- <button onClick={handleAddStage} className="w-full py-3 bg-black text-white rounded-lg hover:bg-gray-900 font-medium">
+ <button onClick={handleAddStage} className="transition-colors w-full bg-black text-white hover:bg-gray-900 px-4 py-3 text-sm rounded-xl font-medium">
  Save Stage
  </button>
  </div>
@@ -919,7 +919,7 @@ const CreateProjectPage = () => {
  />
  <button
  onClick={handleAddCurrency}
- className="w-full py-3 bg-black text-white rounded-lg hover:bg-gray-900 font-medium"
+ className="transition-colors w-full bg-black text-white hover:bg-gray-900 px-4 py-3 text-sm rounded-xl font-medium"
  >
  Add Currency
  </button>

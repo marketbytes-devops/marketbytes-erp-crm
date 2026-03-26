@@ -220,7 +220,7 @@ const Reports = () => {
             <div className="relative">
               <button
                 onClick={() => setIsExportOpen(!isExportOpen)}
-                className="flex items-center gap-2 px-6 py-2.5 bg-white border border-gray-100 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-50 transition-all active:scale-95 shadow-sm"
+                className="flex items-center gap-2 bg-white border border-gray-100 text-gray-700 hover:bg-gray-50 transition-all shadow-sm px-4 py-3 text-sm rounded-xl font-medium"
               >
                 <MdFileDownload className="w-5 h-5" /> Export
                 <MdKeyboardArrowDown className={`w-4 h-4 transition-transform ${isExportOpen ? "rotate-180" : ""}`} />
@@ -242,7 +242,7 @@ const Reports = () => {
                       <button
                         key={item.id}
                         onClick={item.action}
-                        className="w-full text-left px-4 py-3 text-sm font-medium text-gray-700 hover:bg-gray-50 rounded-xl transition-all flex items-center gap-3"
+                        className="transition-colors w-full text-left text-gray-700 hover:bg-gray-50 flex items-center gap-3 px-4 py-3 text-sm rounded-xl font-medium"
                       >
                         <div className={`w-2 h-2 rounded-full ${item.color}`}></div>
                         {item.label}
@@ -273,7 +273,7 @@ const Reports = () => {
  className="bg-white p-6 rounded-4xl border border-gray-100 shadow-sm hover:shadow-xl transition-all group"
  >
  <div className="flex justify-between items-start mb-4">
- <div className={`p-3 rounded-xl ${stat.bg} ${stat.color} transition-transform group-hover:scale-110`}>
+ <div className={`p-3 rounded-xl ${stat.bg} ${stat.color} transition-transform`}>
  <stat.icon className="w-6 h-6" />
  </div>
  <span className={`text-[10px] font-medium px-2 py-1 rounded-lg ${stat.growth.startsWith('+') ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600'}`}>
@@ -464,7 +464,7 @@ const Reports = () => {
  <h4 className="text-2xl font-medium text-gray-900">Consultant Efficiency</h4>
  <p className="text-sm text-gray-400 font-medium">Individual performance analysis</p>
  </div>
- <button className="flex items-center gap-2 text-xs font-medium text-blue-600 bg-blue-50 px-4 py-2 rounded-xl">
+ <button className="transition-colors flex items-center gap-2 text-blue-600 bg-blue-50 px-4 py-3 text-sm rounded-xl font-medium">
  <FiUsers /> Compare Teams
  </button>
  </div>
@@ -519,7 +519,7 @@ const Reports = () => {
  </AnimatePresence>
 
  {/* Notification/Optimization Banner */}
- <div className="bg-black rounded-[2.5rem] p-10 text-white relative overflow-hidden flex flex-col md:flex-row items-center justify-between gap-8">
+ <div className="bg-black p-10 text-white relative overflow-hidden flex flex-col md:flex-row items-center justify-between gap-8 px-4 py-3 text-sm rounded-xl font-medium">
  <div className="absolute top-0 left-0 w-96 h-96 bg-white/10 rounded-full blur-[100px] -ml-48 -mt-48"></div>
  <div className="relative z-10 flex items-center gap-8">
  <div className="w-20 h-20 bg-white/10 backdrop-blur-md rounded-4xl flex items-center justify-center ring-1 ring-white/20">
@@ -530,7 +530,7 @@ const Reports = () => {
  <p className="text-indigo-100 text-sm max-w-md">Your team's conversion rate is up 12% this month. We recommend focusing on "Social Media" leads for maximum ROI.</p>
  </div>
  </div>
- <button className="relative z-10 px-5 py-2.5 text-sm bg-white text-black rounded-xl font-medium shadow-2xl shadow-black/20 hover:scale-[1.05] transition-transform active:scale-95 whitespace-nowrap">
+ <button className="transition-colors relative z-10 bg-white text-black shadow-2xl shadow-black/20 ] transition- whitespace-nowrap px-4 py-3 text-sm rounded-xl font-medium">
  View Recommendations
  </button>
  </div>

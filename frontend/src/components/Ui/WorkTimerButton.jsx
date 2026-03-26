@@ -18,7 +18,7 @@ const WorkTimerButton = ({ onCheckIn, onCheckOut, onStartStop, status, timerSeco
  return (
                  <button
                     onClick={onCheckIn}
-                    className="flex items-center gap-2 px-4 py-3 bg-black text-white rounded-xl text-sm font-medium hover:bg-gray-100 hover:text-black transition-all shadow-md"
+                    className="px-4 py-3 text-sm rounded-xl transition-colors flex items-center gap-2 bg-black text-white font-medium hover:bg-gray-100 hover:text-black shadow-md"
                 >
                     <MdLogin className="w-5 h-5" />
                     Check In

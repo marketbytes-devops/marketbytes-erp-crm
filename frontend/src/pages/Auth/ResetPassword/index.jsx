@@ -79,7 +79,7 @@ const ResetPassword = () => {
  <button
  type="submit"
  disabled={emailForm.formState.isSubmitting}
- className="w-full bg-black text-white font-medium py-3 rounded-lg hover:bg-gray-100 hover:text-black border transition duration-300 disabled:opacity-70 shadow-md"
+ className="w-full bg-black text-white hover:bg-gray-100 hover:text-black border transition disabled:opacity-70 shadow-md px-4 py-3 text-sm rounded-xl font-medium"
  >
  {emailForm.formState.isSubmitting ? 'Sending OTP...' : 'Send OTP'}
  </button>
@@ -110,7 +110,7 @@ const ResetPassword = () => {
  <button
  type="submit"
  disabled={resetForm.formState.isSubmitting}
- className="w-full bg-black text-white font-medium py-3 rounded-lg hover:bg-gray-100 hover:text-black border transition duration-300 disabled:opacity-70 shadow-md"
+ className="w-full bg-black text-white hover:bg-gray-100 hover:text-black border transition disabled:opacity-70 shadow-md px-4 py-3 text-sm rounded-xl font-medium"
  >
  {resetForm.formState.isSubmitting ? 'Resetting...' : 'Reset Password'}
  </button>

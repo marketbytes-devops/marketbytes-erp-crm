@@ -86,7 +86,7 @@ const NotificationPreferences = () => {
  <button
  onClick={handleSave}
  disabled={saving}
- className="group flex items-center gap-3 px-5 py-2.5 text-sm bg-black text-white rounded-[24px] hover:bg-gray-800 transition-all shadow-xl shadow-gray-200 active:scale-95"
+ className="px-3 py-1.5 text-sm rounded-md transition-colors group flex items-center gap-3 bg-black text-white -[24px] hover:bg-gray-800 shadow-xl shadow-gray-200"
  >
  <MdSave className="w-5 h-5" />
  <span className="font-bold">{saving ? "Saving Changes..." : "Save Settings"}</span>

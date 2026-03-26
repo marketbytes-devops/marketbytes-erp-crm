@@ -331,7 +331,7 @@ const EmployeeCreate = () => {
  <div className="bg-white rounded-xl shadow-2xl w-full max-w-md overflow-hidden">
  <div className="flex items-center justify-between p-6 border-b border-gray-100">
  <h3 className="text-xl font-semibold text-gray-900">{title}</h3>
- <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-full transition">
+ <button onClick={onClose} className="p-1.5 rounded-md text-sm hover:bg-gray-100 transition">
  <MdClose className="w-6 h-6 text-gray-500" />
  </button>
  </div>
@@ -348,14 +348,14 @@ const EmployeeCreate = () => {
    <button
   type="button"
   onClick={onClose}
-  className="flex-1 px-4 py-3 text-sm border border-gray-300 text-gray-700 font-medium rounded-xl hover:bg-gray-100 transition"
+  className="flex-1 border border-gray-300 text-gray-700 hover:bg-gray-100 transition px-4 py-3 text-sm rounded-xl font-medium"
   disabled={loading}
   >
   Cancel
   </button>
   <button
   type="submit"
-  className="flex-1 px-4 py-3 text-sm bg-black text-white font-medium rounded-xl hover:bg-gray-100 hover:text-black transition disabled:opacity-50"
+  className="flex-1 bg-black text-white hover:bg-gray-100 hover:text-black transition disabled:opacity-50 px-4 py-3 text-sm rounded-xl font-medium"
   disabled={loading || !value.trim()}
   >
   {loading ? "Saving..." : "Save"}
@@ -405,7 +405,7 @@ const EmployeeCreate = () => {
  <div className="mb-8">
    <Link
   to="/hr/employees"
-  className="inline-flex items-center gap-2 px-4 py-3 rounded-lg border border-gray-300 text-gray-700 font-medium hover:bg-gray-100 transition"
+  className="inline-flex items-center gap-2 border border-gray-300 text-gray-700 hover:bg-gray-100 transition px-4 py-3 text-sm rounded-xl font-medium"
   >
   <MdArrowBack className="w-5 h-5" />
   Back to Employees
@@ -415,7 +415,7 @@ const EmployeeCreate = () => {
 
  <form onSubmit={handleSubmit} className="space-y-8">
  <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
- <h3 className=" font-medium text-gray-900 mb-6">Personal Information</h3>
+ <h3 className="font-medium text-gray-900 mb-6">Personal Information</h3>
  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
  <div>
  <label className="block text-sm font-medium text-black mb-2">
@@ -459,7 +459,7 @@ const EmployeeCreate = () => {
  </div>
  </div>
  <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
- <h3 className=" font-medium text-gray-900 mb-6">Job Information</h3>
+ <h3 className="font-medium text-gray-900 mb-6">Job Information</h3>
  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
  <div>
  <div className="flex items-center justify-between mb-2">
@@ -547,7 +547,7 @@ const EmployeeCreate = () => {
  </div>
 
  <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
- <h3 className=" font-medium text-gray-900 mb-6">Account Settings</h3>
+ <h3 className="font-medium text-gray-900 mb-6">Account Settings</h3>
  <div className="space-y-6">
  <div className="flex flex-wrap items-center gap-8">
  <label className="flex items-center gap-3 cursor-pointer">
@@ -607,7 +607,7 @@ const EmployeeCreate = () => {
    <button
   type="button"
   onClick={handleGeneratePassword}
-  className="px-4 py-3 text-sm bg-black text-white rounded-xl hover:bg-gray-100 hover:text-black transition font-medium flex items-center gap-2"
+  className="bg-black text-white hover:bg-gray-100 hover:text-black transition flex items-center gap-2 px-4 py-3 text-sm rounded-xl font-medium"
   >
   <MdAutoAwesome className="w-5 h-5" />
   Generate
@@ -624,14 +624,14 @@ const EmployeeCreate = () => {
  <div className="flex justify-end gap-4">
    <Link
   to="/hr/employees"
-  className="px-4 py-3 text-sm border border-gray-300 text-gray-700 font-medium rounded-xl hover:bg-gray-100 transition"
+  className="border border-gray-300 text-gray-700 hover:bg-gray-100 transition px-4 py-3 text-sm rounded-xl font-medium"
   >
   Cancel
   </Link>
   <button
   type="submit"
   disabled={loading || (!generatePassword && !customPassword.trim())}
-  className="flex items-center gap-3 px-4 py-3 text-sm bg-black text-white rounded-xl hover:bg-gray-100 hover:text-black transition font-medium disabled:opacity-50"
+  className="flex items-center gap-3 bg-black text-white hover:bg-gray-100 hover:text-black transition disabled:opacity-50 px-4 py-3 text-sm rounded-xl font-medium"
   >
   {loading ? "Creating Employee..." : "Create Employee"}
   </button>

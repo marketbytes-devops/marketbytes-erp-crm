@@ -67,7 +67,7 @@ const ProjectDetails = () => {
  <p className="text-gray-600 mb-6">The project you're looking for doesn't exist or you don't have permission to view it.</p>
  <button
  onClick={() => navigate("/operations/projects")}
- className="px-5 py-2.5 text-sm bg-black text-white rounded-xl hover:bg-gray-900 transition font-medium"
+ className="bg-black text-white hover:bg-gray-900 transition px-4 py-3 text-sm rounded-xl font-medium"
  >
  Back to Projects
  </button>
@@ -92,7 +92,7 @@ const ProjectDetails = () => {
  <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
  <button
  onClick={() => navigate("/operations/projects")}
- className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl border border-gray-300 text-gray-700 hover:bg-gray-50 transition font-medium"
+ className="inline-flex items-center gap-2 border border-gray-300 text-gray-700 hover:bg-gray-50 transition px-4 py-3 text-sm rounded-xl font-medium"
  >
  <MdArrowBack className="w-5 h-5" />
  Back to Projects
@@ -100,7 +100,7 @@ const ProjectDetails = () => {
  <div className="flex gap-3 w-full sm:w-auto">
  <Link
  to={`/operations/projects/edit/${id}`}
- className="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 px-5 py-2.5 text-sm.5 bg-black text-white rounded-xl hover:bg-gray-900 transition font-medium shadow-sm"
+ className="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 .5 bg-black text-white hover:bg-gray-900 transition shadow-sm px-4 py-3 text-sm rounded-xl font-medium"
  >
  <MdEdit className="w-5 h-5" />
  Edit Project
@@ -211,7 +211,7 @@ const ProjectDetails = () => {
  <Link
  to="/operations/tasks/new-task"
  state={{ projectId: id }}
- className="px-4 py-2 bg-blue-50 text-blue-700 rounded-xl hover:bg-blue-100 transition text-sm font-medium flex items-center gap-1"
+ className="bg-blue-50 text-blue-700 hover:bg-blue-100 transition flex items-center gap-1 px-4 py-3 text-sm rounded-xl font-medium"
  >
  <MdAdd className="w-4 h-4" /> Add Task
  </Link>
@@ -255,7 +255,7 @@ const ProjectDetails = () => {
  )}
  </div>
  </td>
- <td className="px-5 py-2.5 text-sm text-sm text-gray-600">
+ <td className="px-5 py-2.5 text-sm text-gray-600">
  {task.due_date ? new Date(task.due_date).toLocaleDateString("en-GB") : "—"}
  </td>
  <td className="px-5 py-2.5 text-sm">
@@ -328,7 +328,7 @@ const ProjectDetails = () => {
  {project.members?.length > 0 ? (
  project.members.map((member) => (
  <div key={member.id} className="flex items-center gap-3 p-2 hover:bg-gray-50 rounded-xl transition group">
- <div className="w-10 h-10 rounded-xl bg-linear-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-medium text-sm shadow-md transition group-hover:scale-110">
+ <div className="w-10 h-10 rounded-xl bg-linear-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-medium text-sm shadow-md transition">
  {(member.name || member.email)[0].toUpperCase()}
  </div>
  <div className="overflow-hidden">

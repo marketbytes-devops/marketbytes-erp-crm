@@ -281,7 +281,7 @@ const Customers = () => {
  {hasPermission("customer", "add") && (
    <button
   onClick={() => activeTab === "companies" ? openCompanyModal() : openClientModal()}
-  className="flex items-center justify-center gap-2 px-4 py-3 text-sm bg-black text-white rounded-xl hover:bg-gray-100 hover:text-black transition-all font-medium shadow-black/10 whitespace-nowrap"
+  className="flex items-center justify-center gap-2 bg-black text-white hover:bg-gray-100 hover:text-black transition-all shadow-black/10 whitespace-nowrap px-4 py-3 text-sm rounded-xl font-medium"
   >
   <MdAdd className="w-5 h-5" /> New {activeTab === "companies" ? "Company" : "Client"}
   </button>
@@ -469,8 +469,8 @@ const Customers = () => {
  </div>
 
  <div className="flex justify-end gap-4 pt-6">
-   <button onClick={() => setShowCompanyModal(false)} className="px-4 py-3 text-sm font-medium text-gray-600 hover:text-black transition">Discard Changes</button>
-  <button onClick={handleSaveCompany} className="px-4 py-3 text-sm bg-black text-white rounded-xl font-medium shadow-xl shadow-black/10 hover:bg-gray-100 hover:text-black transition-all">
+   <button onClick={() => setShowCompanyModal(false)} className="text-gray-600 hover:text-black transition px-4 py-3 text-sm rounded-xl font-medium">Discard Changes</button>
+  <button onClick={handleSaveCompany} className="transition-colors bg-black text-white shadow-xl shadow-black/10 hover:bg-gray-100 hover:text-black px-4 py-3 text-sm rounded-xl font-medium">
   Commit Record
   </button>
 
@@ -513,8 +513,8 @@ const Customers = () => {
  </div>
 
  <div className="flex justify-end gap-4 pt-8">
-   <button onClick={() => setShowClientModal(false)} className="px-4 py-3 text-sm font-medium text-gray-600 hover:text-black transition">Cancel Outreach</button>
-  <button onClick={handleSaveClient} className="px-4 py-3 text-sm bg-black text-white rounded-xl font-medium shadow-xl shadow-black/10 hover:bg-gray-100 hover:text-black transition-all">
+   <button onClick={() => setShowClientModal(false)} className="text-gray-600 hover:text-black transition px-4 py-3 text-sm rounded-xl font-medium">Cancel Outreach</button>
+  <button onClick={handleSaveClient} className="transition-colors bg-black text-white shadow-xl shadow-black/10 hover:bg-gray-100 hover:text-black px-4 py-3 text-sm rounded-xl font-medium">
   {editingClient ? "Update Persona" : "Record Stakeholder"}
   </button>
 

@@ -4,6 +4,7 @@ import { toast } from "react-hot-toast";
 import { Search, Loader2, X, Shield, Lock, ChevronRight, AlertCircle } from "lucide-react";
 import apiClient from "../../helpers/apiClient";
 import { usePermission } from "../../context/PermissionContext";
+import PermissionMatrix from "../../components/PermissionMatrix";
 
 const pageNameMap = {
   // Common / Home
@@ -271,7 +272,7 @@ const Permissions = () => {
  {user.name?.charAt(0) || "U"}
  </div>
  <div className="flex-1 min-w-0">
- <h3 className=" font-medium text-gray-900 truncate pr-20">{user.name}</h3>
+ <h3 className="font-medium text-gray-900 truncate pr-20">{user.name}</h3>
  <p className="text-sm text-gray-500 truncate">{user.email}</p>
  </div>
  </div>
@@ -336,21 +337,21 @@ const Permissions = () => {
  <div className="bg-gray-50/80 rounded-3xl p-6 border border-gray-100 shadow-inner">
  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
  <div>
- <h4 className="font-medium text-gray-900 uppercase tracking-tighter ">Select All Permissions</h4>
+ <h4 className="font-medium text-gray-900 uppercase tracking-tighter">Select All Permissions</h4>
  <p className="text-xs text-gray-500">Quickly enable or disable all access rights across all modules</p>
  </div>
  <div className="flex gap-2 bg-white p-1.5 rounded-xl shadow-sm border border-gray-100 min-w-[200px] justify-center">
  {isAllSelected(userPermissions) ? (
  <button
  onClick={() => handleBulkAction('deselectAll')}
- className="px-8 py-2 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors whitespace-nowrap w-full"
+ className="text-gray-700 hover:bg-gray-50 transition-colors whitespace-nowrap w-full px-4 py-3 text-sm rounded-xl font-medium"
  >
  Deselect All
  </button>
  ) : (
  <button
  onClick={() => handleBulkAction('selectAll')}
- className="px-8 py-2 rounded-xl text-sm font-medium bg-[#50728c] text-white transition-opacity hover:opacity-90 whitespace-nowrap w-full"
+ className="bg-[#50728c] text-white transition-opacity hover:opacity-90 whitespace-nowrap w-full px-4 py-3 text-sm rounded-xl font-medium"
  >
  Select All
  </button>
@@ -371,14 +372,14 @@ const Permissions = () => {
  <div className="p-8 bg-gray-50 border-t border-gray-100 flex justify-end gap-3 rounded-b-[2.5rem]">
  <button
  onClick={() => setSelectedUser(null)}
- className="px-5 py-2.5 text-sm.5 rounded-xl font-medium bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 transition-colors shadow-sm"
+ className=".5 bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 transition-colors shadow-sm px-4 py-3 text-sm rounded-xl font-medium"
  >
  Cancel
  </button>
  <button
  onClick={handleSavePermissions}
  disabled={isSaving}
- className="px-5 py-2.5 text-sm.5 rounded-xl font-medium bg-[#50728c] text-white shadow-xl shadow-blue-900/10 hover:opacity-90 transition-all active:scale-95 flex items-center gap-3"
+ className=".5 bg-[#50728c] text-white shadow-xl shadow-blue-900/10 hover:opacity-90 transition-all flex items-center gap-3 px-4 py-3 text-sm rounded-xl font-medium"
  >
  {isSaving ? <Loader2 className="w-5 h-5 animate-spin" /> : "Save Changes"}
  </button>

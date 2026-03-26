@@ -61,7 +61,7 @@ const AttendanceModal = ({ record, date, onClose }) => {
  <h3 className="text-2xl font-medium">Attendance Details</h3>
  <button
  onClick={onClose}
- className="p-3 hover:bg-gray-100 rounded-xl transition"
+ className="p-1.5 rounded-md text-sm hover:bg-gray-100 transition"
  >
  <MdClose className="w-6 h-6 text-gray-600" />
  </button>
@@ -125,7 +125,7 @@ const AttendanceModal = ({ record, date, onClose }) => {
 
  {hasHistory && (
  <div className="mt-8">
- <h4 className=" font-medium mb-4 flex items-center justify-center gap-2">
+ <h4 className="font-medium mb-4 flex items-center justify-center gap-2">
  <MdAccessTime className="w-5 h-5" />
  Check-In & Check-Out History
  </h4>
@@ -521,13 +521,13 @@ const Attendance = ({ leadScope, employeeScope }) => {
             <div className="flex gap-3">
               <button
                 onClick={() => setShowFilters(!showFilters)}
-                className="flex items-center gap-2 px-5 py-3 border border-gray-400 rounded-xl hover:bg-gray-50 transition font-medium"
+                className="flex items-center gap-2 border border-gray-400 hover:bg-gray-50 transition px-4 py-3 text-sm rounded-xl font-medium"
               >
                 <span>Filters {showFilters ? "▲" : "▼"}</span>
               </button>
               <button
                 onClick={fetchAttendance}
-                className="flex items-center gap-3 px-6 py-3.5 bg-black text-white rounded-xl hover:bg-black transition font-medium"
+                className="flex items-center gap-3 bg-black text-white hover:bg-black transition px-4 py-3 text-sm rounded-xl font-medium"
               >
                 <MdRefresh className="w-5 h-5" />
                 Refresh
@@ -535,7 +535,7 @@ const Attendance = ({ leadScope, employeeScope }) => {
               {hasPermission(permissionPage, "view") && (
                 <Dropdown
                   trigger={
-                    <button className="flex items-center gap-3 px-6 py-3.5 border border-gray-400 rounded-xl hover:bg-gray-50 transition font-medium">
+                    <button className="flex items-center gap-3 border border-gray-400 hover:bg-gray-50 transition px-4 py-3 text-sm rounded-xl font-medium">
                       <MdDownload className="w-5 h-5" /> Export
                     </button>
                   }
@@ -616,13 +616,13 @@ const Attendance = ({ leadScope, employeeScope }) => {
             <div className="mt-8 flex justify-end gap-3 pt-6 border-t border-gray-100">
               <button
                 onClick={resetFilters}
-                className="px-6 py-3 border border-gray-300 text-gray-700 font-medium rounded-xl hover:bg-gray-50 transition"
+                className="border border-gray-300 text-gray-700 hover:bg-gray-50 transition px-4 py-3 text-sm rounded-xl font-medium"
               >
                 Reset All Filters
               </button>
               <button
                 onClick={() => setShowFilters(false)}
-                className="px-8 py-3 bg-black text-white font-medium rounded-xl hover:bg-gray-900 transition shadow-lg shadow-black/10"
+                className="bg-black text-white hover:bg-gray-900 transition shadow-lg shadow-black/10 px-4 py-3 text-sm rounded-xl font-medium"
               >
                 Close Filters
               </button>

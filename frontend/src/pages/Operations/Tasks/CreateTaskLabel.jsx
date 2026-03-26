@@ -92,10 +92,10 @@ const AddTaskLabelPage = () => {
 
  {/* Save / Reset Buttons */}
  <div className="flex justify-start gap-4 pt-6">
- <button className="bg-black hover:bg-gray-700 text-white px-5 py-2.5 text-sm rounded-lg font-medium">
+ <button className="transition-colors bg-black hover:bg-gray-700 text-white px-4 py-3 text-sm rounded-xl font-medium">
  Save
  </button>
- <button className="bg-black hover:bg-gray-700 text-white px-5 py-2.5 text-sm rounded-lg font-medium">
+ <button className="transition-colors bg-black hover:bg-gray-700 text-white px-4 py-3 text-sm rounded-xl font-medium">
  Reset
  </button>
  </div>

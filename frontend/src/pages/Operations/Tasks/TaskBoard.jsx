@@ -206,7 +206,7 @@ const TaskBoardPage = () => {
  {hasPermission("task_board", "add") && (
    <Link
   to="/operations/tasks/new-task"
-  className="flex items-center gap-3 px-4 py-3 text-sm bg-black text-white rounded-xl hover:bg-gray-100 hover:text-black transition font-medium"
+  className="flex items-center gap-3 bg-black text-white hover:bg-gray-100 hover:text-black transition px-4 py-3 text-sm rounded-xl font-medium"
   >
   <MdAdd className="w-5 h-5" /> New Task
   </Link>
@@ -232,7 +232,7 @@ const TaskBoardPage = () => {
 
    <button
   onClick={() => setFiltersOpen(!filtersOpen)}
-  className="flex items-center gap-3 px-4 py-3 border border-gray-300 rounded-xl hover:bg-gray-100 transition text-sm font-medium whitespace-nowrap"
+  className="flex items-center gap-3 border border-gray-300 hover:bg-gray-100 transition whitespace-nowrap px-4 py-3 text-sm rounded-xl font-medium"
   >
   <MdFilterList className="w-5 h-5" />
   Filters
@@ -303,7 +303,7 @@ const TaskBoardPage = () => {
    <div className="flex flex-col sm:flex-row gap-4 mt-8 pt-6 border-t border-gray-200">
   <button
   onClick={resetFilters}
-  className="px-4 py-3 text-sm border-2 border-gray-300 text-gray-700 font-medium rounded-xl hover:bg-gray-100 transition"
+  className="border-2 border-gray-300 text-gray-700 hover:bg-gray-100 transition px-4 py-3 text-sm rounded-xl font-medium"
   >
   Reset All Filters
   </button>

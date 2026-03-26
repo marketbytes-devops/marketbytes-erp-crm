@@ -203,20 +203,20 @@ const EmployeeProfile = () => {
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
           <Link
             to="/hr/employees"
-            className="inline-flex items-center gap-3 px-4 py-2.5 rounded-xl border border-gray-300 text-gray-700 hover:bg-gray-50 transition-all group"
+            className="inline-flex items-center gap-3 border border-gray-300 text-gray-700 hover:bg-gray-50 transition-all group px-4 py-3 text-sm rounded-xl font-medium"
           >
             <MdArrowBack className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
             <span className="font-medium">Back to Employees</span>
           </Link>
 
           <div className="flex flex-wrap gap-3">
-            <button className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border border-gray-300 text-gray-700 hover:bg-gray-50 transition-all">
+            <button className="transition-colors inline-flex items-center gap-2 border border-gray-300 text-gray-700 hover:bg-gray-50 px-4 py-3 text-sm rounded-xl font-medium">
               <MdPrint className="w-5 h-5" />
               <span className="hidden sm:inline">Print</span>
             </button>
             <button
               onClick={handleExportProfile}
-              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border border-gray-300 text-gray-700 hover:bg-gray-50 transition-all"
+              className="transition-colors inline-flex items-center gap-2 border border-gray-300 text-gray-700 hover:bg-gray-50 px-4 py-3 text-sm rounded-xl font-medium"
             >
               <MdDownload className="w-5 h-5" />
               <span className="hidden sm:inline">Export</span>
@@ -224,7 +224,7 @@ const EmployeeProfile = () => {
 
             <Link
               to={`/hr/employees/${id}/edit`}
-              className="inline-flex items-center gap-3 px-6 py-3 bg-linear-to-r from-black to-gray-800 text-white font-medium rounded-xl hover:opacity-90 transition-all shadow-lg hover:shadow-xl"
+              className="inline-flex items-center gap-3 bg-linear-to-r from-black to-gray-800 text-white hover:opacity-90 transition-all shadow-lg hover:shadow-xl px-4 py-3 text-sm rounded-xl font-medium"
             >
               <MdEdit className="w-5 h-5" />
               <span>Edit Profile</span>
@@ -239,7 +239,7 @@ const EmployeeProfile = () => {
             transition={{ duration: 0.3 }}
             className="lg:col-span-1 space-y-6"
           >
-            <div className="bg-black rounded-xl p-6 text-white shadow-2xl">
+            <div className="bg-black p-6 text-white shadow-2xl px-4 py-3 text-sm rounded-xl font-medium">
               <div className="relative">
                 <div className="w-32 h-32 mx-auto rounded-full border-4 border-white/20 p-1 shadow-2xl">
                   <img
@@ -592,7 +592,7 @@ const EmployeeProfile = () => {
                             <div key={r.id || i} className="p-6 rounded-3xl border border-gray-100 bg-gray-50/50 hover:bg-white hover:shadow-xl hover:shadow-gray-200/50 transition-all group">
                               <div className="flex flex-wrap justify-between items-start gap-4">
                                 <div className="flex gap-4">
-                                  <div className={`w-14 h-14 rounded-2xl ${meta.bg} flex items-center justify-center ${meta.text} font-medium text-lg shadow-sm group-hover:scale-110 transition-transform`}>
+                                  <div className={`w-14 h-14 rounded-2xl ${meta.bg} flex items-center justify-center ${meta.text} font-medium text-lg shadow-sm transition-transform`}>
                                     {(parseFloat(r.rating) || 0).toFixed(1)}
                                   </div>
                                   <div>

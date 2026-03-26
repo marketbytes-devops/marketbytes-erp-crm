@@ -157,14 +157,14 @@ const CalendarView = () => {
  <div className="flex items-center bg-gray-100 rounded-xl p-1">
  <button
  onClick={handlePrev}
- className="p-2 text-gray-600 hover:text-black hover:bg-white rounded-lg transition-all shadow-none hover:shadow-sm"
+ className="p-1.5 rounded-md text-sm transition-colors text-gray-600 hover:text-black hover:bg-white shadow-none hover:shadow-sm"
  >
  <MdChevronLeft className="w-6 h-6" />
  </button>
  <div className="h-6 w-px bg-gray-300 mx-1"></div>
  <button
  onClick={handleNext}
- className="p-2 text-gray-600 hover:text-black hover:bg-white rounded-lg transition-all shadow-none hover:shadow-sm"
+ className="p-1.5 rounded-md text-sm transition-colors text-gray-600 hover:text-black hover:bg-white shadow-none hover:shadow-sm"
  >
  <MdChevronRight className="w-6 h-6" />
  </button>
@@ -172,7 +172,7 @@ const CalendarView = () => {
 
    <button
   onClick={handleToday}
-  className="px-4 py-3 bg-gray-100 text-gray-700 font-medium rounded-xl hover:bg-gray-200 transition text-sm flex items-center gap-2"
+  className="bg-gray-100 text-gray-700 hover:bg-gray-200 transition flex items-center gap-2 px-4 py-3 text-sm rounded-xl font-medium"
   >
   <MdToday className="w-4 h-4" /> Today
   </button>
@@ -206,7 +206,7 @@ const CalendarView = () => {
   </div>
 
    <Link to='/operations/time-logs'>
-  <button className="flex items-center gap-2 px-4 py-3 text-sm bg-black text-white rounded-xl hover:bg-gray-100 hover:text-black transition font-medium">
+  <button className="flex items-center gap-2 bg-black text-white hover:bg-gray-100 hover:text-black transition px-4 py-3 text-sm rounded-xl font-medium">
   <MdAdd className="w-5 h-5" /> Log Time
   </button>
   </Link>
@@ -297,7 +297,7 @@ const MonthView = ({ date, productiveHoursData, loading, onDayClick }) => {
  onClick={() => onDayClick(day)}
  className="border-b border-r border-gray-100 min-h-[120px] p-2 hover:bg-gray-50 cursor-pointer transition relative group"
  >
- <span className="flex items-center justify-center w-8 h-8 rounded-full text-sm font-medium text-gray-700 m-1 group-hover:bg-black group-hover:text-white transition-colors">
+ <span className="flex items-center justify-center w-8 h-8 text-gray-700 m-1 group-hover:bg-black group-hover:text-white transition-colors px-4 py-3 text-sm rounded-xl font-medium">
  {day}
  </span>
 
@@ -359,7 +359,7 @@ const WeekView = ({ currentDate, productiveHoursData, loading }) => {
  return (
  <th key={d.dateObj} className="border-b border-r border-gray-200 p-4 text-center bg-gray-50">
  <p className="text-xs font-medium text-gray-500 uppercase">{d.day.split(' ')[0]}</p>
- <p className=" font-medium text-gray-900">{d.day.split(' ')[1]}</p>
+ <p className="font-medium text-gray-900">{d.day.split(' ')[1]}</p>
  {dayData && (
  <p className="text-xs text-green-600 font-medium mt-1">
  {formatHours(dayData.total_productive_hours)}
@@ -383,7 +383,7 @@ const WeekView = ({ currentDate, productiveHoursData, loading }) => {
  <div className="text-center text-gray-400 text-xs mt-4">Loading...</div>
  ) : dayData ? (
  <div className="p-3 bg-green-50 border border-green-100 rounded-lg text-center">
- <p className=" font-bold text-green-700">{formatHours(dayData.total_productive_hours)}</p>
+ <p className="font-bold text-green-700">{formatHours(dayData.total_productive_hours)}</p>
  <p className="text-xs text-gray-600 mt-1">{dayData.employee_count} employee{dayData.employee_count > 1 ? 's' : ''}</p>
  </div>
  ) : (
@@ -442,13 +442,13 @@ const DayView = ({ currentDate, productiveHoursData, loading }) => {
  <div className="text-6xl font-bold text-green-700 mb-2">
  {formatHours(dayData.total_productive_hours)}
  </div>
- <p className="text-gray-600 ">Total Productive Hours</p>
+ <p className="text-gray-600">Total Productive Hours</p>
  <p className="text-gray-500 text-sm mt-2">
  Across {dayData.employee_count} employee{dayData.employee_count > 1 ? 's' : ''}
  </p>
  </div>
  ) : (
- <div className="text-gray-400 ">No time logs for this day</div>
+ <div className="text-gray-400">No time logs for this day</div>
  )}
  </div>
  </div>
@@ -496,7 +496,7 @@ const ListView = ({ currentDate, productiveHoursData, loading }) => {
  <p className="text-sm text-gray-500">{dayData.employee_count} employee{dayData.employee_count > 1 ? 's' : ''} worked</p>
  </div>
  <div className="text-right">
- <p className=" font-medium text-green-600">{formatHours(dayData.total_productive_hours)}</p>
+ <p className="font-medium text-green-600">{formatHours(dayData.total_productive_hours)}</p>
  </div>
  </div>
  ) : (

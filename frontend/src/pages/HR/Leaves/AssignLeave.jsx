@@ -143,7 +143,7 @@ const AssignLeave = ({ leadScope, employeeScope }) => {
  <div className="mb-8">
  <Link
  to={leadScope ? "/lead/leaves" : employeeScope ? "/employee/leaves" : "/hr/leaves"}
- className="inline-flex items-center gap-2 px-5 py-3 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 transition"
+ className="inline-flex items-center gap-2 border border-gray-300 text-gray-700 hover:bg-gray-50 transition px-4 py-3 text-sm rounded-xl font-medium"
  >
  <MdArrowBack className="w-5 h-5" />
  Back to Leaves
@@ -152,7 +152,7 @@ const AssignLeave = ({ leadScope, employeeScope }) => {
 
  <form onSubmit={handleSubmit} className="space-y-8">
  <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 md:p-8">
- <h3 className=" font-medium text-gray-900 mb-6">Leave Details</h3>
+ <h3 className="font-medium text-gray-900 mb-6">Leave Details</h3>
 
  <div className={`grid grid-cols-1 ${employeeScope ? "md:grid-cols-2" : "md:grid-cols-3"} gap-6`}>
  {/* Employee */}
@@ -334,7 +334,7 @@ const AssignLeave = ({ leadScope, employeeScope }) => {
  <button
  type="button"
  onClick={() => window.history.back()}
- className="px-5 py-2.5 text-sm border border-gray-300 text-gray-700 font-medium rounded-xl hover:bg-gray-50 transition"
+ className="border border-gray-300 text-gray-700 hover:bg-gray-50 transition px-4 py-3 text-sm rounded-xl font-medium"
  >
  Cancel
  </button>
@@ -342,7 +342,7 @@ const AssignLeave = ({ leadScope, employeeScope }) => {
  <button
  type="submit"
  disabled={loading}
- className="px-5 py-2.5 text-sm bg-black text-white font-medium rounded-xl hover:bg-gray-900 transition disabled:opacity-50"
+ className="bg-black text-white hover:bg-gray-900 transition disabled:opacity-50 px-4 py-3 text-sm rounded-xl font-medium"
  >
  {loading ? (employeeScope ? "Submitting..." : "Assigning Leave...") : (employeeScope ? "Apply Leave" : "Assign Leave")}
  </button>
@@ -377,13 +377,13 @@ const AssignLeave = ({ leadScope, employeeScope }) => {
  <div className="flex justify-end gap-3 mt-8">
  <button
  onClick={() => setShowAddTypeModal(false)}
- className="px-5 py-2.5 text-sm border border-gray-300 text-gray-700 font-medium rounded-xl hover:bg-gray-50 transition"
+ className="border border-gray-300 text-gray-700 hover:bg-gray-50 transition px-4 py-3 text-sm rounded-xl font-medium"
  >
  Cancel
  </button>
  <button
  onClick={addLeaveType}
- className="px-5 py-2.5 text-sm bg-black text-white font-medium rounded-xl hover:bg-gray-900 transition"
+ className="bg-black text-white hover:bg-gray-900 transition px-4 py-3 text-sm rounded-xl font-medium"
  >
  Add Type
  </button>

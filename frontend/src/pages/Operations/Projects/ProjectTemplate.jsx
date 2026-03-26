@@ -40,7 +40,7 @@ const AddNewTemplatePage = () => {
  <div className="mb-8">
  <Link
  to="/operations/projects"
- className="inline-flex items-center gap-2 px-5 py-3 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 transition"
+ className="inline-flex items-center gap-2 border border-gray-300 text-gray-700 hover:bg-gray-50 transition px-4 py-3 text-sm rounded-xl font-medium"
  >
  <MdArrowBack className="w-5 h-5" />
  Back to Templates
@@ -84,7 +84,7 @@ const AddNewTemplatePage = () => {
  <button
  type="button"
  onClick={handleAddMember}
- className="text-black font-medium hover:underline flex items-center gap-2 text-sm"
+ className="transition-colors text-black hover:underline flex items-center gap-2 px-4 py-3 text-sm rounded-xl font-medium"
  >
  <MdAdd className="w-5 h-5" />
  Add Template Members
@@ -99,7 +99,7 @@ const AddNewTemplatePage = () => {
  <div className="flex items-center gap-4">
  <button
  type="button"
- className="text-2xl font-medium text-black hover:text-gray-800"
+ className="transition-colors text-black hover:text-gray-800 px-4 py-3 text-sm rounded-xl font-medium"
  >
  +
  </button>
@@ -112,13 +112,13 @@ const AddNewTemplatePage = () => {
  <button
  type="button"
  onClick={() => navigate("/operations/projects")}
- className="px-5 py-2.5 text-sm border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition font-medium"
+ className="border border-gray-300 text-gray-700 hover:bg-gray-50 transition px-4 py-3 text-sm rounded-xl font-medium"
  >
  Cancel
  </button>
  <button
  onClick={handleSave}
- className="flex items-center gap-2 px-5 py-2.5 text-sm bg-black text-white rounded-xl hover:bg-gray-900 transition font-medium"
+ className="flex items-center gap-2 bg-black text-white hover:bg-gray-900 transition px-4 py-3 text-sm rounded-xl font-medium"
  >
  <MdAdd className="w-5 h-5" />
  Save Template

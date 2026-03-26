@@ -355,7 +355,7 @@ const Leads = () => {
  <div className="flex gap-3">
  {hasPermission("leads", "view") && (
  <div className="relative group">
-   <button className="flex items-center gap-3 px-4 py-3 text-sm border border-gray-300 rounded-xl hover:bg-gray-50 transition font-medium">
+   <button className="flex items-center gap-3 border border-gray-300 hover:bg-gray-50 transition px-4 py-3 text-sm rounded-xl font-medium">
   <MdDownload className="w-5 h-5" /> Export
   <MdKeyboardArrowDown className="w-5 h-5 transition-transform group-hover:rotate-180" />
   </button>
@@ -363,21 +363,21 @@ const Leads = () => {
  <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg border border-gray-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-10">
  <button
  onClick={exportToCSV}
- className="w-full text-left px-5 py-3 hover:bg-gray-50 transition flex items-center gap-3"
+ className="w-full text-left hover:bg-gray-50 transition flex items-center gap-3 px-4 py-3 text-sm rounded-xl font-medium"
  >
  <span className="text-green-600 font-medium">CSV</span>{" "}
  Download as .csv
  </button>
  <button
  onClick={exportToExcel}
- className="w-full text-left px-5 py-3 hover:bg-gray-50 transition flex items-center gap-3"
+ className="w-full text-left hover:bg-gray-50 transition flex items-center gap-3 px-4 py-3 text-sm rounded-xl font-medium"
  >
  <span className="text-green-700 font-medium">Excel</span>{" "}
  Download as .xlsx
  </button>
  <button
  onClick={exportToPDF}
- className="w-full text-left px-5 py-3 hover:bg-gray-50 transition flex items-center gap-3 border-t"
+ className="w-full text-left hover:bg-gray-50 transition flex items-center gap-3 border-t px-4 py-3 text-sm rounded-xl font-medium"
  >
  <span className="text-red-600 font-medium">PDF</span>{" "}
  Download as .pdf
@@ -389,7 +389,7 @@ const Leads = () => {
  {hasPermission("leads", "add") && (
    <button
   onClick={() => openModal()}
-  className="flex items-center gap-3 px-4 py-3 text-sm bg-black text-white rounded-xl hover:bg-gray-100 hover:text-black transition font-medium"
+  className="flex items-center gap-3 bg-black text-white hover:bg-gray-100 hover:text-black transition px-4 py-3 text-sm rounded-xl font-medium"
   >
   <MdAdd className="w-5 h-5" /> Add Lead
   </button>
@@ -501,7 +501,7 @@ const Leads = () => {
  <form onSubmit={handleSubmit} className="space-y-8">
  {/* Company Selection */}
  <div>
- <h3 className=" font-medium mb-4">Company Details</h3>
+ <h3 className="font-medium mb-4">Company Details</h3>
  <div className="md:col-span-2">
  <label className="block text-sm font-medium text-gray-700 mb-2">
  Company *
@@ -677,7 +677,7 @@ const Leads = () => {
    <button
   type="button"
   onClick={() => setShowModal(false)}
-  className="px-4 py-3 text-sm border border-gray-300 rounded-xl hover:bg-gray-50"
+  className="border border-gray-300 hover:bg-gray-50 px-4 py-3 text-sm rounded-xl font-medium"
   >
   Cancel
   </button>
@@ -685,7 +685,7 @@ const Leads = () => {
    <button
   type="submit"
   disabled={formLoading}
-  className="px-4 py-3 text-sm bg-black text-white rounded-xl hover:bg-gray-100 hover:text-black disabled:opacity-50"
+  className="transition-colors bg-black text-white hover:bg-gray-100 hover:text-black disabled:opacity-50 px-4 py-3 text-sm rounded-xl font-medium"
   >
   {formLoading
   ? "Saving..."

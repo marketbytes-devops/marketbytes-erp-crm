@@ -151,7 +151,7 @@ const TaskArchive = () => {
  <div className="w-8 h-8 rounded-full bg-gray-200 border-2 border-white flex items-center justify-center text-gray-600 text-xs font-medium">
  {initial}
  </div>
- <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10 whitespace-nowrap">
+ <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 bg-gray-800 text-white opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10 whitespace-nowrap px-4 py-3 text-sm rounded-xl font-medium">
  {name}
  </div>
  </div>
@@ -238,13 +238,13 @@ const TaskArchive = () => {
  <div className="flex justify-end gap-3 pt-4 border-t border-gray-100">
  <button
  onClick={() => setIsTaskDetailOpen(false)}
- className="px-5 py-2.5 text-sm.5 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 transition font-medium text-sm"
+ className=".5 bg-gray-100 text-gray-700 hover:bg-gray-200 transition px-4 py-3 text-sm rounded-xl font-medium"
  >
  Close
  </button>
  <button
  onClick={() => handleRestore(selectedTask)}
- className="px-5 py-2.5 text-sm.5 bg-black text-white rounded-xl hover:bg-gray-900 transition font-medium text-sm flex items-center gap-2"
+ className=".5 bg-black text-white hover:bg-gray-900 transition flex items-center gap-2 px-4 py-3 text-sm rounded-xl font-medium"
  >
  <MdRestore className="w-4 h-4" /> Restore Task
  </button>
@@ -265,7 +265,7 @@ const TaskArchive = () => {
  <div className="flex items-center gap-4 flex-1">
  <button
  onClick={() => navigate("/operations/tasks")}
- className="p-3 border border-gray-300 rounded-xl hover:bg-gray-50 transition mr-2"
+ className="p-3 border border-gray-300 hover:bg-gray-50 transition mr-2 px-4 py-3 text-sm rounded-xl font-medium"
  >
  <MdArrowBack className="w-5 h-5 text-gray-600" />
  </button>
@@ -283,7 +283,7 @@ const TaskArchive = () => {
 
  <button
  onClick={() => setFiltersOpen(!filtersOpen)}
- className="flex items-center gap-3 px-5 py-4 border border-gray-300 rounded-xl hover:bg-gray-50 transition text-sm font-medium whitespace-nowrap"
+ className="flex items-center gap-3 border border-gray-300 hover:bg-gray-50 transition whitespace-nowrap px-4 py-3 text-sm rounded-xl font-medium"
  >
  <MdFilterList className="w-5 h-5" />
  Filters
@@ -325,7 +325,7 @@ const TaskArchive = () => {
  <Input label="Priority" type="select" value={filters.priority} onChange={(v) => handleFilterChange("priority", v)} options={[{ label: "All Priorities", value: "" }, ...priorityOptions]} />
  </div>
  <div className="flex flex-col sm:flex-row gap-4 mt-8 pt-6 border-t border-gray-200">
- <button onClick={resetFilters} className="px-5 py-2.5 text-sm.5 border-2 border-gray-300 text-gray-700 font-medium rounded-xl hover:bg-gray-50 transition">
+ <button onClick={resetFilters} className=".5 border-2 border-gray-300 text-gray-700 hover:bg-gray-50 transition px-4 py-3 text-sm rounded-xl font-medium">
  Reset All Filters
  </button>
  </div>
@@ -340,13 +340,13 @@ const TaskArchive = () => {
  <table className="w-full min-w-[1000px]">
  <thead className="bg-gray-50 border-b border-gray-200">
  <tr>
- <th className="px-5 py-2.5 text-sm text-left text-xs font-medium text-gray-700 uppercase tracking-wider whitespace-nowrap">#</th>
- <th className="px-5 py-2.5 text-sm text-left text-xs font-medium text-gray-700 uppercase tracking-wider whitespace-nowrap">Task</th>
- <th className="px-5 py-2.5 text-sm text-left text-xs font-medium text-gray-700 uppercase tracking-wider whitespace-nowrap">Project</th>
- <th className="px-5 py-2.5 text-sm text-left text-xs font-medium text-gray-700 uppercase tracking-wider whitespace-nowrap">Assignees</th>
- <th className="px-5 py-2.5 text-sm text-left text-xs font-medium text-gray-700 uppercase tracking-wider whitespace-nowrap">Due Date</th>
- <th className="px-5 py-2.5 text-sm text-left text-xs font-medium text-gray-700 uppercase tracking-wider whitespace-nowrap">Status</th>
- <th className="px-5 py-2.5 text-sm text-left text-xs font-medium text-gray-700 uppercase tracking-wider whitespace-nowrap">Actions</th>
+ <th className="px-5 py-2.5 text-sm text-left font-medium text-gray-700 uppercase tracking-wider whitespace-nowrap">#</th>
+ <th className="px-5 py-2.5 text-sm text-left font-medium text-gray-700 uppercase tracking-wider whitespace-nowrap">Task</th>
+ <th className="px-5 py-2.5 text-sm text-left font-medium text-gray-700 uppercase tracking-wider whitespace-nowrap">Project</th>
+ <th className="px-5 py-2.5 text-sm text-left font-medium text-gray-700 uppercase tracking-wider whitespace-nowrap">Assignees</th>
+ <th className="px-5 py-2.5 text-sm text-left font-medium text-gray-700 uppercase tracking-wider whitespace-nowrap">Due Date</th>
+ <th className="px-5 py-2.5 text-sm text-left font-medium text-gray-700 uppercase tracking-wider whitespace-nowrap">Status</th>
+ <th className="px-5 py-2.5 text-sm text-left font-medium text-gray-700 uppercase tracking-wider whitespace-nowrap">Actions</th>
  </tr>
  </thead>
  <tbody className="divide-y divide-gray-200">
@@ -371,7 +371,7 @@ const TaskArchive = () => {
  transition={{ delay: i * 0.03 }}
  className="hover:bg-gray-50 transition"
  >
- <td className="px-5 py-2.5 text-sm text-sm font-medium text-gray-500 whitespace-nowrap">{i + 1}</td>
+ <td className="px-5 py-2.5 text-sm font-medium text-gray-500 whitespace-nowrap">{i + 1}</td>
  <td className="px-5 py-2.5 text-sm whitespace-nowrap">
  <div>
  <span className="font-medium text-gray-500">{task.name}</span>
@@ -386,7 +386,7 @@ const TaskArchive = () => {
  </span>
  </td>
  <td className="px-5 py-2.5 text-sm whitespace-nowrap">{renderAvatars(task.assignees)}</td>
- <td className="px-5 py-2.5 text-sm text-sm text-gray-500 whitespace-nowrap">
+ <td className="px-5 py-2.5 text-sm text-gray-500 whitespace-nowrap">
  {task.due_date ? format(new Date(task.due_date), 'dd MMM') : "—"}
  </td>
  <td className="px-5 py-2.5 text-sm whitespace-nowrap">

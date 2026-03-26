@@ -123,7 +123,7 @@ const TimerModal = ({ open, onClose, onStartWork, onStopWork, onBreak, onSupport
  <div className="space-y-3 pt-2">
  <button
  onClick={onStopWork}
- className="w-full bg-black hover:bg-gray-900 text-white font-bold py-4 rounded-xl shadow-xl flex items-center justify-center gap-2 transition-all active:scale-95 text-base"
+ className="px-4 py-3 text-sm rounded-xl transition-colors w-full bg-black hover:bg-gray-900 text-white font-bold shadow-xl flex items-center justify-center gap-2"
  >
  <MdStop className="w-5 h-5" /> Stop Task Timer
  </button>
@@ -294,7 +294,7 @@ const TimerModal = ({ open, onClose, onStartWork, onStopWork, onBreak, onSupport
  <div className="flex gap-4 pt-1">
  <button
  onClick={handleStartWork}
- className="flex-1 bg-black text-white text-sm font-medium py-4 rounded-xl hover:bg-gray-800 transition-all shadow-lg active:scale-95 flex items-center justify-center gap-2"
+ className="px-4 py-3 text-sm rounded-xl transition-colors flex-1 bg-black text-white font-medium hover:bg-gray-800 shadow-lg flex items-center justify-center gap-2"
  >
  <MdPlayArrow className="w-5 h-5" />
  Start Working
@@ -343,7 +343,7 @@ const TimerModal = ({ open, onClose, onStartWork, onStopWork, onBreak, onSupport
  <div className="flex flex-col gap-3 pt-2">
  <button
  onClick={handleCheckoutConfirm}
- className="w-full py-4 bg-black hover:bg-gray-900 text-white font-medium rounded-xl shadow-xl transition-all active:scale-95"
+ className="px-4 py-3 text-sm rounded-xl transition-colors w-full bg-black hover:bg-gray-900 text-white font-medium shadow-xl"
  >
  End Workday &amp; Check Out
  </button>

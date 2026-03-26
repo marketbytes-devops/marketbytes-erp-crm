@@ -25,7 +25,7 @@ const StatCard = ({ title, value, subValue, icon, colorClass, bgClass, onClick }
  {React.cloneElement(icon, { className: "w-6 h-6" })}
  </div>
    {subValue && (
-  <span className="text-[10px] font-medium bg-black text-white px-3 py-1.5 rounded-full transition-all hover:bg-gray-100 hover:text-black cursor-pointer shadow-sm">
+  <span className="text-[10px] bg-black text-white transition-all hover:bg-gray-100 hover:text-black cursor-pointer shadow-sm px-4 py-3 text-sm rounded-xl font-medium">
   {subValue}
   </span>
   )}
@@ -179,8 +179,8 @@ const EmployeeDashboard = () => {
  {/* Recent Task Table */}
  <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
          <div className="px-5 py-2.5 text-sm border-b border-gray-100 flex items-center justify-between">
-            <h2 className=" font-bold text-gray-800">My Recent Tasks</h2>
-            <button onClick={() => navigate('/employee/tasks')} className="px-4 py-2 text-sm bg-black text-white hover:bg-gray-100 hover:text-black transition-all rounded-lg font-medium">View All</button>
+            <h2 className="font-bold text-gray-800">My Recent Tasks</h2>
+            <button onClick={() => navigate('/employee/tasks')} className="bg-black text-white hover:bg-gray-100 hover:text-black transition-all px-4 py-3 text-sm rounded-xl font-medium">View All</button>
         </div>
 
  <div className="overflow-x-auto">
@@ -220,7 +220,7 @@ const EmployeeDashboard = () => {
  {/* Overdue Tasks Table */}
  <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
  <div className="px-5 py-2.5 text-sm border-b border-gray-100">
- <h2 className=" font-bold text-gray-800">Critical Overdue</h2>
+ <h2 className="font-bold text-gray-800">Critical Overdue</h2>
  </div>
  <div className="overflow-x-auto">
  <table className="w-full text-left">
@@ -267,7 +267,7 @@ const EmployeeDashboard = () => {
                                 <button
                                     key={idx}
                                     onClick={() => navigate(link.path)}
-                                    className="flex items-center justify-between px-4 py-3 rounded-xl bg-black text-white hover:bg-gray-100 hover:text-black transition-all group font-medium"
+                                    className="flex items-center justify-between bg-black text-white hover:bg-gray-100 hover:text-black transition-all group px-4 py-3 text-sm rounded-xl font-medium"
                                 >
                                     <div className="flex items-center gap-3">
                                         <span className="text-xl transition-transform">{link.icon}</span>
@@ -281,7 +281,7 @@ const EmployeeDashboard = () => {
 
  {/* Activity Timeline */}
  <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
- <h3 className=" font-bold text-gray-800 mb-6 font-syne">My Activity</h3>
+ <h3 className="font-bold text-gray-800 mb-6 font-syne">My Activity</h3>
  <div className="space-y-6">
  {timeline.map((act, idx) => (
  <div key={idx} className="flex gap-4 relative">
@@ -302,9 +302,9 @@ const EmployeeDashboard = () => {
 
  {/* Events & Notice */}
  <div className="bg-emerald-600 rounded-xl shadow-md p-6 text-white group overflow-hidden relative">
- <div className="absolute -right-8 -top-8 w-24 h-24 bg-white/10 rounded-full blur-2xl group-hover:scale-150 transition-transform" />
+ <div className="absolute -right-8 -top-8 w-24 h-24 bg-white/10 rounded-full blur-2xl transition-transform" />
  <div className="relative z-10">
- <h3 className=" font-bold mb-4">Upcoming Events</h3>
+ <h3 className="font-bold mb-4">Upcoming Events</h3>
  <div className="space-y-4">
  <div className="bg-white/10 p-3 rounded-lg">
  <p className="text-xs font-bold text-emerald-200 uppercase">March 15</p>

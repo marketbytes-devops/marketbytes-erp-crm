@@ -248,7 +248,7 @@ const EmployeeView = ({ leadScope, employeeScope }) => {
 
    <button
   onClick={() => setFiltersOpen(!filtersOpen)}
-  className="flex items-center gap-3 px-4 py-3 border border-gray-300 rounded-xl hover:bg-gray-100 transition text-sm font-medium whitespace-nowrap"
+  className="flex items-center gap-3 border border-gray-300 hover:bg-gray-100 transition whitespace-nowrap px-4 py-3 text-sm rounded-xl font-medium"
   >
   <MdFilterList className="w-5 h-5" />
   Filters
@@ -270,7 +270,7 @@ const EmployeeView = ({ leadScope, employeeScope }) => {
  <div className="relative">
    <button
   onClick={() => setShowExport(prev => !prev)}
-  className="flex items-center gap-2 px-4 py-3 border border-gray-300 rounded-xl hover:bg-gray-100 transition text-sm font-medium"
+  className="flex items-center gap-2 border border-gray-300 hover:bg-gray-100 transition px-4 py-3 text-sm rounded-xl font-medium"
   >
   <MdDownload className="w-5 h-5" />
   Export
@@ -288,21 +288,21 @@ const EmployeeView = ({ leadScope, employeeScope }) => {
  >
  <button
  onClick={exportCSV}
- className="w-full text-left px-4 py-3 hover:bg-gray-50 text-sm"
+ className="transition-colors w-full text-left hover:bg-gray-50 px-4 py-3 text-sm rounded-xl font-medium"
  >
  Export CSV
  </button>
 
  <button
  onClick={exportCSV}
- className="w-full text-left px-4 py-3 hover:bg-gray-50 text-sm"
+ className="transition-colors w-full text-left hover:bg-gray-50 px-4 py-3 text-sm rounded-xl font-medium"
  >
  Export Excel
  </button>
 
  <button
  onClick={exportPDF}
- className="w-full text-left px-4 py-3 hover:bg-gray-50 text-sm"
+ className="transition-colors w-full text-left hover:bg-gray-50 px-4 py-3 text-sm rounded-xl font-medium"
  >
  Export PDF
  </button>
@@ -315,7 +315,7 @@ const EmployeeView = ({ leadScope, employeeScope }) => {
  {hasPermission("employees", "add") && !leadScope && (
    <Link
   to="/hr/employees/create"
-  className="flex items-center gap-3 px-4 py-3 text-sm bg-black text-white rounded-xl hover:bg-gray-100 hover:text-black transition font-medium"
+  className="flex items-center gap-3 bg-black text-white hover:bg-gray-100 hover:text-black transition px-4 py-3 text-sm rounded-xl font-medium"
   >
   <MdAdd className="w-5 h-5" /> Add Employee
   </Link>
@@ -421,10 +421,10 @@ const EmployeeView = ({ leadScope, employeeScope }) => {
  </div>
 
    <div className="flex flex-col sm:flex-row gap-4 mt-8 pt-6 border-t border-gray-200">
-  <button className="flex items-center justify-center gap-2 px-4 py-3 text-sm bg-black text-white font-medium rounded-xl hover:bg-gray-100 hover:text-black transition">
+  <button className="flex items-center justify-center gap-2 bg-black text-white hover:bg-gray-100 hover:text-black transition px-4 py-3 text-sm rounded-xl font-medium">
   <FiCheck className="w-5 h-5" /> Apply Filters
   </button>
-  <button onClick={resetFilters} className="px-4 py-3 text-sm border-2 border-gray-300 text-gray-700 font-medium rounded-xl hover:bg-gray-100 transition">
+  <button onClick={resetFilters} className="border-2 border-gray-300 text-gray-700 hover:bg-gray-100 transition px-4 py-3 text-sm rounded-xl font-medium">
   Reset All Filters
   </button>
   </div>
@@ -482,7 +482,7 @@ const EmployeeView = ({ leadScope, employeeScope }) => {
  <p className="text-xl font-medium text-gray-700">No employees found</p>
  <p className="text-gray-500 mt-2">Try adjusting your your search or filters</p>
  {(search || activeCount > 0) && (
-   <button onClick={resetFilters} className="mt-5 px-4 py-3 text-sm bg-black text-white rounded-xl hover:bg-gray-100 hover:text-black transition font-medium">
+   <button onClick={resetFilters} className="mt-5 bg-black text-white hover:bg-gray-100 hover:text-black transition px-4 py-3 text-sm rounded-xl font-medium">
   Clear all filters
   </button>
 
@@ -569,7 +569,7 @@ const EmployeeView = ({ leadScope, employeeScope }) => {
 
  <span>Showing {filtered.length} of {employees.length} employees</span>
  {activeCount > 0 && (
- <button onClick={resetFilters} className="text-blue-600 hover:text-blue-800 font-medium">
+ <button onClick={resetFilters} className="transition-colors text-blue-600 hover:text-blue-800 px-4 py-3 text-sm rounded-xl font-medium">
  Clear all filters
  </button>
  )}

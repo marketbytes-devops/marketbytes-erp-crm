@@ -554,7 +554,7 @@ const TimeLogs = ({ employeeScope = false, leadScope = false }) => {
  <div className="flex flex-col sm:flex-row gap-3">
  {!employeeScope && (hasPermission('timelogs', 'view') || (leadScope && hasPermission('lead_timelogs', 'view'))) && (
    <Link to="/operations/time-logs/active-timers">
-  <button className="flex items-center justify-center gap-2 px-4 py-3 text-sm border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-100 transition font-medium whitespace-nowrap">
+  <button className="flex items-center justify-center gap-2 border border-gray-300 text-gray-700 hover:bg-gray-100 transition whitespace-nowrap px-4 py-3 text-sm rounded-xl font-medium">
   <MdTimer className="w-5 h-5" /> Active Timers
   </button>
   </Link>
@@ -607,13 +607,13 @@ const TimeLogs = ({ employeeScope = false, leadScope = false }) => {
  <>
    <Link
   to="/operations/time-logs/calendar-view"
-  className="flex items-center gap-2 px-4 py-3 bg-white border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-100 transition text-sm font-medium"
+  className="flex items-center gap-2 bg-white border border-gray-300 text-gray-700 hover:bg-gray-100 transition px-4 py-3 text-sm rounded-xl font-medium"
   >
   <MdCalendarToday className="w-4 h-4" /> Calendar
   </Link>
   <Link
   to="/operations/time-logs/emplyees-time"
-  className="flex items-center gap-2 px-4 py-3 bg-white border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-100 transition text-sm font-medium"
+  className="flex items-center gap-2 bg-white border border-gray-300 text-gray-700 hover:bg-gray-100 transition px-4 py-3 text-sm rounded-xl font-medium"
   >
   <MdPerson className="w-4 h-4" /> Employee View
   </Link>
@@ -644,7 +644,7 @@ const TimeLogs = ({ employeeScope = false, leadScope = false }) => {
 
    <button
   onClick={() => setFiltersOpen(!filtersOpen)}
-  className="flex items-center gap-3 px-4 py-3 border border-gray-300 rounded-xl hover:bg-gray-100 transition text-sm font-medium whitespace-nowrap"
+  className="flex items-center gap-3 border border-gray-300 hover:bg-gray-100 transition whitespace-nowrap px-4 py-3 text-sm rounded-xl font-medium"
   >
   <MdFilterList className="w-5 h-5" />
   Filters
@@ -668,7 +668,7 @@ const TimeLogs = ({ employeeScope = false, leadScope = false }) => {
  <div className="relative" ref={exportDropdownRef}>
    <button
   onClick={() => setExportDropdownOpen(!exportDropdownOpen)}
-  className="flex items-center gap-2 px-4 py-3 border border-gray-300 rounded-xl hover:bg-gray-100 transition text-sm font-medium"
+  className="flex items-center gap-2 border border-gray-300 hover:bg-gray-100 transition px-4 py-3 text-sm rounded-xl font-medium"
   >
   <MdDownload className="w-5 h-5" /> Export
   <MdKeyboardArrowDown
@@ -680,21 +680,21 @@ const TimeLogs = ({ employeeScope = false, leadScope = false }) => {
  <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg border border-gray-200 py-2 z-50">
  <button
  onClick={handleExportPDF}
- className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 transition flex items-center gap-2"
+ className="w-full text-left text-gray-700 hover:bg-gray-50 transition flex items-center gap-2 px-4 py-3 text-sm rounded-xl font-medium"
  >
  <MdDownload className="w-4 h-4" />
  Export as PDF
  </button>
  <button
  onClick={handleExportExcel}
- className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 transition flex items-center gap-2"
+ className="w-full text-left text-gray-700 hover:bg-gray-50 transition flex items-center gap-2 px-4 py-3 text-sm rounded-xl font-medium"
  >
  <MdDownload className="w-4 h-4" />
  Export as Excel
  </button>
  <button
  onClick={handleExportCSV}
- className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 transition flex items-center gap-2"
+ className="w-full text-left text-gray-700 hover:bg-gray-50 transition flex items-center gap-2 px-4 py-3 text-sm rounded-xl font-medium"
  >
  <MdDownload className="w-4 h-4" />
  Export as CSV
@@ -761,7 +761,7 @@ const TimeLogs = ({ employeeScope = false, leadScope = false }) => {
  type="date"
  value={filters.date}
  onChange={(e) => handleFilterChange("date", e.target.value)}
- className="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-black outline-none text-sm bg-white transition"
+ className="w-full border border-gray-300 focus:ring-2 focus:ring-black outline-none bg-white transition px-4 py-3 text-sm rounded-xl font-medium"
  />
  </div>
  </div>
@@ -769,7 +769,7 @@ const TimeLogs = ({ employeeScope = false, leadScope = false }) => {
    <div className="flex flex-col sm:flex-row gap-4 mt-8 pt-6 border-t border-gray-200">
   <button
   onClick={resetFilters}
-  className="px-4 py-3 text-sm border-2 border-gray-300 text-gray-700 font-medium rounded-xl hover:bg-gray-100 transition"
+  className="border-2 border-gray-300 text-gray-700 hover:bg-gray-100 transition px-4 py-3 text-sm rounded-xl font-medium"
   >
   Reset All Filters
   </button>
@@ -823,7 +823,7 @@ const TimeLogs = ({ employeeScope = false, leadScope = false }) => {
  {(search || activeFilterCount > 0) && (
    <button
   onClick={resetFilters}
-  className="mt-5 px-4 py-3 text-sm bg-black text-white rounded-xl hover:bg-gray-100 hover:text-black transition font-medium"
+  className="mt-5 bg-black text-white hover:bg-gray-100 hover:text-black transition px-4 py-3 text-sm rounded-xl font-medium"
   >
   Clear all filters
   </button>
@@ -979,7 +979,7 @@ const TimeLogs = ({ employeeScope = false, leadScope = false }) => {
   {activeFilterCount > 0 && (
   <button
   onClick={resetFilters}
-  className="text-blue-600 hover:text-blue-800 font-medium"
+  className="transition-colors text-blue-600 hover:text-blue-800 px-4 py-3 text-sm rounded-xl font-medium"
   >
   Clear all filters
   </button>
@@ -1107,7 +1107,7 @@ const TimeLogs = ({ employeeScope = false, leadScope = false }) => {
  <div className="p-6 border-t border-gray-200 bg-gray-50 rounded-b-2xl flex justify-end">
    <button
   onClick={() => setIsViewModalOpen(false)}
-  className="px-4 py-3 text-sm bg-white border border-gray-300 text-gray-700 font-medium rounded-xl hover:bg-gray-100 transition shadow-sm"
+  className="bg-white border border-gray-300 text-gray-700 hover:bg-gray-100 transition shadow-sm px-4 py-3 text-sm rounded-xl font-medium"
   >
   Close
   </button>

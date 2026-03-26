@@ -154,7 +154,7 @@ const Performance = () => {
  <Award size={80} />
  </div>
  <p className="text-gray-600 text-[10px] font-medium uppercase tracking-widest mb-1">Portfolio Rating</p>
- <p className="text-3xl font-medium text-black font-syne group-hover:scale-110 transition-transform origin-left">{avgRating}/5.0</p>
+ <p className="text-3xl font-medium text-black font-syne transition-transform origin-left">{avgRating}/5.0</p>
  <div className="mt-4 flex items-center gap-2 text-indigo-600">
  <MdTrendingUp className="" />
  <span className="text-[10px] font-medium uppercase text-indigo-600">Median Output: {medianRating}</span>
@@ -179,7 +179,7 @@ const Performance = () => {
  <p className="text-[10px] text-emerald-100/80 mt-4 font-medium uppercase tracking-tight">Rating {">"} 4.5</p>
  </div>
 
- <div className="bg-black rounded-3xl p-6 shadow-2xl shadow-black/20 group overflow-hidden relative text-white">
+ <div className="bg-black p-6 shadow-2xl shadow-black/20 group overflow-hidden relative text-white px-4 py-3 text-sm rounded-xl font-medium">
  <div className="absolute -right-2 -top-2 text-white/10 group-hover:text-white/20 transition-colors">
  <BarChart3 size={80} />
  </div>
@@ -210,7 +210,7 @@ const Performance = () => {
  chartData.map((data, idx) => (
  <div
  key={data.name}
- className="group cursor-pointer hover:bg-gray-50/50 p-3 rounded-xl transition-all active:scale-[0.98]"
+ className="group cursor-pointer hover:bg-gray-50/50 p-3 rounded-xl transition-all ]"
  onClick={() => setSelectedDept(data.name)}
  >
  <div className="flex justify-between items-center mb-2">
@@ -240,7 +240,7 @@ const Performance = () => {
  </div>
 
  {/* Sales Pipeline Insight (Dynamic) */}
- <div className="bg-black rounded-[2.5rem] p-10 shadow-2xl shadow-black/20 text-white relative overflow-hidden group">
+ <div className="bg-black p-10 shadow-2xl shadow-black/20 text-white relative overflow-hidden group px-4 py-3 text-sm rounded-xl font-medium">
  <div className="absolute right-0 top-0 opacity-10 group-hover:opacity-20 transition-opacity">
  <MdTrendingUp size={200} />
  </div>
@@ -282,7 +282,7 @@ const Performance = () => {
  <div className="space-y-4 max-w-xl relative z-10">
  <div className="flex items-center gap-3 text-black">
  <MdInfoOutline className="text-2xl" />
- <h4 className=" font-medium font-syne uppercase tracking-tighter leading-none">Evaluation Protocol v2.5</h4>
+ <h4 className="font-medium font-syne uppercase tracking-tighter leading-none">Evaluation Protocol v2.5</h4>
  </div>
  <p className="text-xs text-gray-600 font-medium leading-relaxed">
  All performance audits are conducted by authorized lead auditors. Metrics represent a weighted average across technical proficiency, mission impact, and collaborative synchronization.
@@ -293,12 +293,12 @@ const Performance = () => {
  {hasPermission("performance", "edit") && (
  <button
  onClick={fetchReviews}
- className="flex items-center gap-3 px-5 py-2.5 text-sm bg-white border border-gray-200 text-black text-[10px] font-medium uppercase tracking-widest rounded-xl hover:bg-gray-100 transition shadow-xs active:scale-95"
+ className="flex items-center gap-3 bg-white border border-gray-200 text-black text-[10px] uppercase tracking-widest hover:bg-gray-100 transition shadow-xs px-4 py-3 text-sm rounded-xl font-medium"
  >
  <MdRefresh /> Resync Cycle
  </button>
  )}
- <button className="flex items-center gap-3 px-5 py-2.5 text-sm bg-black text-white text-[10px] font-medium uppercase tracking-widest rounded-xl hover:bg-gray-800 transition shadow-xl shadow-black/10 active:scale-95">
+ <button className="flex items-center gap-3 bg-black text-white text-[10px] uppercase tracking-widest hover:bg-gray-800 transition shadow-xl shadow-black/10 px-4 py-3 text-sm rounded-xl font-medium">
  <ChevronRight size={14} /> Audit History
  </button>
  </div>
@@ -323,14 +323,14 @@ const Performance = () => {
  >
  <div className="p-8 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
  <div>
- <div className="inline-flex px-3 py-1 rounded-full bg-black text-[9px] font-medium uppercase tracking-widest text-white mb-2">
+ <div className="inline-flex bg-black text-[9px] uppercase tracking-widest text-white mb-2 px-4 py-3 text-sm rounded-xl font-medium">
  Department Analysis
  </div>
  <h3 className="text-3xl font-medium font-syne text-black uppercase">{selectedDept}</h3>
  </div>
  <button
  onClick={() => setSelectedDept(null)}
- className="p-3 bg-white hover:bg-gray-100 rounded-xl transition-all shadow-sm active:scale-90"
+ className="p-3 bg-white hover:bg-gray-100 rounded-xl transition-all shadow-sm"
  >
  <X size={24} />
  </button>
@@ -368,7 +368,7 @@ const Performance = () => {
  <div key={project.id} className="bg-white border border-gray-100 rounded-3xl p-6 hover:shadow-xl transition-all group">
  <div className="flex flex-col lg:flex-row justify-between lg:items-center gap-6">
  <div className="flex-1">
- <h5 className=" font-medium text-black mb-1">{project.name}</h5>
+ <h5 className="font-medium text-black mb-1">{project.name}</h5>
  <div className="flex items-center gap-4 text-[10px] font-bold uppercase tracking-tight text-gray-400">
  <span className="flex items-center gap-1"><Briefcase size={12} /> {project.stage_name || 'Operating'}</span>
  <span className="flex items-center gap-1"><Clock size={12} /> {project.total_hours_spent || 0}h Recorded</span>

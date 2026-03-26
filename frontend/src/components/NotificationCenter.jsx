@@ -142,7 +142,7 @@ const NotificationCenter = () => {
  {/* Trigger Bell */}
  <button
  onClick={() => setIsOpen(!isOpen)}
- className={`relative p-3 rounded-full transition-all duration-300 group ${isOpen ? "bg-black text-white" : "hover:bg-gray-100 text-gray-600"
+ className={`relative p-3 rounded-xl transition-all duration-300 group ${isOpen ? "bg-black text-white" : "hover:bg-gray-100 text-gray-600"
  }`}
  >
  <MdNotifications className={`w-6 h-6 transition-transform duration-300 ${isOpen ? "scale-110" : unreadCount > 0 ? "bell-shake" : "group-hover:rotate-12"}`} />
@@ -182,14 +182,14 @@ const NotificationCenter = () => {
  <div className="flex gap-2">
  <button
  onClick={markAllAsRead}
- className="p-2.5 bg-gray-50 text-gray-600 hover:bg-black hover:text-white rounded-xl transition-all shadow-sm"
+ className="p-3 rounded-xl text-sm transition-colors bg-gray-50 text-gray-600 hover:bg-black hover:text-white shadow-sm"
  title="Mark all as read"
  >
  <MdDoneAll size={18} />
  </button>
  <button
  onClick={() => setIsOpen(false)}
- className="p-2.5 bg-gray-50 text-gray-600 hover:bg-red-50 hover:text-red-500 rounded-xl transition-all shadow-sm"
+ className="p-3 bg-gray-50 text-gray-600 hover:bg-red-50 hover:text-red-500 rounded-xl transition-all shadow-sm"
  >
  <MdClose size={18} />
  </button>
@@ -293,7 +293,7 @@ const NotificationCenter = () => {
  <div className="p-4 bg-gray-50/50 border-t border-gray-50 flex items-center justify-between">
  <button
  onClick={clearAll}
- className="flex items-center gap-2 px-4 py-2 text-xs font-bold text-red-500 hover:bg-red-50 rounded-xl transition-all"
+ className="px-4 py-3 text-sm rounded-xl transition-colors flex items-center gap-2 font-bold text-red-500 hover:bg-red-50"
  >
  <MdDelete size={14} />
  Clear read items

@@ -210,7 +210,7 @@ const ContractsList = () => {
  </div>
    <button
   onClick={() => fetchContracts()}
-  className="p-4 bg-black text-white rounded-xl hover:bg-gray-100 hover:text-black transition-all shadow-lg shadow-black/10"
+  className="p-4 bg-black text-white hover:bg-gray-100 hover:text-black transition-all shadow-lg shadow-black/10 px-4 py-3 text-sm rounded-xl font-medium"
   >
   <MdSearch size={24} />
   </button>
@@ -221,7 +221,7 @@ const ContractsList = () => {
  {hasPermission("contracts", "add") && (
    <button
   onClick={() => navigate('/operations/contracts/create')}
-  className="flex items-center gap-2 px-4 py-3 text-sm bg-black text-white rounded-xl hover:bg-gray-100 hover:text-black transition-all font-medium shadow-lg shadow-black/10"
+  className="flex items-center gap-2 bg-black text-white hover:bg-gray-100 hover:text-black transition-all shadow-lg shadow-black/10 px-4 py-3 text-sm rounded-xl font-medium"
   >
   <MdAdd size={22} />
   <span className="hidden md:inline">Create Contract</span>
@@ -231,7 +231,7 @@ const ContractsList = () => {
  <div className="relative">
    <button
   onClick={() => setIsExportOpen(!isExportOpen)}
-  className="flex items-center gap-2 px-4 py-3 text-sm bg-white border border-gray-100 text-black rounded-xl hover:bg-gray-100 transition-all font-medium shadow-xs"
+  className="flex items-center gap-2 bg-white border border-gray-100 text-black hover:bg-gray-100 transition-all shadow-xs px-4 py-3 text-sm rounded-xl font-medium"
   >
   <MdFileDownload size={22} />
   <span className="hidden md:inline">Export</span>
@@ -255,7 +255,7 @@ const ContractsList = () => {
  <button
  key={item.id}
  onClick={() => handleExport(item.id)}
- className="w-full text-left px-4 py-3 text-sm font-medium text-gray-700 hover:bg-gray-50 rounded-xl transition-all flex items-center gap-3"
+ className="w-full text-left text-gray-700 hover:bg-gray-50 transition-all flex items-center gap-3 px-4 py-3 text-sm rounded-xl font-medium"
  >
  <div className={`w-2 h-2 rounded-full ${item.color}`}></div>
  {item.label}
@@ -316,13 +316,13 @@ const ContractsList = () => {
  <div className="flex gap-3 pt-4 border-t border-gray-50">
  <button
  onClick={() => fetchContracts()}
- className="flex-1 bg-black text-white py-4 rounded-xl font-bold text-sm hover:bg-gray-900 transition-all shadow-lg shadow-black/5"
+ className="flex-1 bg-black text-white hover:bg-gray-900 transition-all shadow-lg shadow-black/5 px-4 py-3 text-sm rounded-xl font-medium"
  >
  Apply
  </button>
    <button
   onClick={resetFilters}
-  className="flex-1 bg-gray-100 text-black py-4 rounded-xl font-bold text-sm hover:bg-gray-200 transition-all"
+  className="transition-colors flex-1 bg-gray-100 text-black hover:bg-gray-200 px-4 py-3 text-sm rounded-xl font-medium"
   >
   Reset
   </button>
@@ -367,7 +367,7 @@ const ContractsList = () => {
  <p className="text-gray-500 text-sm">We couldn't find any contracts matching your current filters or search query.</p>
  <button
  onClick={resetFilters}
- className="mt-6 font-bold text-black underline underline-offset-4 hover:text-gray-600 transition-colors"
+ className="transition-colors mt-6 text-black underline underline-offset-4 hover:text-gray-600 px-4 py-3 text-sm rounded-xl font-medium"
  >
  Clear all filters
  </button>
@@ -395,7 +395,7 @@ const ContractsList = () => {
  </div>
  </td>
  <td className="px-8 py-6 text-right">
- <span className="font-bold text-black ">
+ <span className="font-bold text-black">
  {contract.no_value ? 'TBD' : contract.amount}
  </span>
  </td>
@@ -412,7 +412,7 @@ const ContractsList = () => {
  {hasPermission("contracts", "edit") && (
  <button
  onClick={() => navigate(`/operations/contracts/edit/${contract.id}`)}
- className="p-3 hover:bg-black hover:text-white rounded-xl transition-all duration-300 text-gray-400"
+ className="p-3 hover:bg-black hover:text-white transition-all duration-300 text-gray-400 px-4 py-3 text-sm rounded-xl font-medium"
  title="Edit"
  >
  <MdEdit size={22} />

@@ -15,17 +15,17 @@ const AddProjectFromTemplatePage = () => {
  <table className="w-full">
  <thead className="bg-gray-50 border-b border-gray-200">
  <tr>
- <th className="px-5 py-2.5 text-sm text-left text-xs font-medium text-gray-700 uppercase tracking-wider">#</th>
- <th className="px-5 py-2.5 text-sm text-left text-xs font-medium text-gray-700 uppercase tracking-wider">Category Name</th>
- <th className="px-5 py-2.5 text-sm text-left text-xs font-medium text-gray-700 uppercase tracking-wider">Action</th>
+ <th className="px-5 py-2.5 text-sm text-left font-medium text-gray-700 uppercase tracking-wider">#</th>
+ <th className="px-5 py-2.5 text-sm text-left font-medium text-gray-700 uppercase tracking-wider">Category Name</th>
+ <th className="px-5 py-2.5 text-sm text-left font-medium text-gray-700 uppercase tracking-wider">Action</th>
  </tr>
  </thead>
  <tbody className="divide-y divide-gray-200">
  <tr>
- <td className="px-5 py-2.5 text-sm text-sm">1</td>
- <td className="px-5 py-2.5 text-sm text-sm font-medium">Graphic Designing</td>
+ <td className="px-5 py-2.5 text-sm">1</td>
+ <td className="px-5 py-2.5 text-sm font-medium">Graphic Designing</td>
  <td className="px-5 py-2.5 text-sm">
- <button className="px-4 py-2 border border-orange-500 text-orange-600 rounded-lg hover:bg-orange-50 transition text-sm font-medium">
+ <button className="border border-orange-500 text-orange-600 hover:bg-orange-50 transition px-4 py-3 text-sm rounded-xl font-medium">
  Remove
  </button>
  </td>
@@ -42,7 +42,7 @@ const AddProjectFromTemplatePage = () => {
  </div>
 
  <div className="flex justify-end">
- <button className="px-5 py-2.5 text-sm bg-black text-white rounded-xl hover:bg-gray-900 transition font-medium">
+ <button className="bg-black text-white hover:bg-gray-900 transition px-4 py-3 text-sm rounded-xl font-medium">
  Save
  </button>
  </div>
@@ -59,7 +59,7 @@ const AddProjectFromTemplatePage = () => {
  <div className="mb-8">
  <Link
  to="/operations/projects"
- className="inline-flex items-center gap-2 px-5 py-3 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 transition"
+ className="inline-flex items-center gap-2 border border-gray-300 text-gray-700 hover:bg-gray-50 transition px-4 py-3 text-sm rounded-xl font-medium"
  >
  <MdArrowBack className="w-5 h-5" />
  Back to Projects
@@ -68,7 +68,7 @@ const AddProjectFromTemplatePage = () => {
 
  <form className="space-y-8">
  <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
- <h3 className=" font-medium text-gray-900 mb-6">Project Details</h3>
+ <h3 className="font-medium text-gray-900 mb-6">Project Details</h3>
 
  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
  <Input
@@ -85,7 +85,7 @@ const AddProjectFromTemplatePage = () => {
  <button
  type="button"
  onClick={() => setIsCategoryModalOpen(true)}
- className="inline-flex items-center gap-2 px-4 py-3 bg-black text-white rounded-xl hover:bg-gray-900 transition font-medium text-sm"
+ className="inline-flex items-center gap-2 bg-black text-white hover:bg-gray-900 transition px-4 py-3 text-sm rounded-xl font-medium"
  >
  <MdAdd className="w-5 h-5" />
  Add Category
@@ -127,13 +127,13 @@ const AddProjectFromTemplatePage = () => {
  </div>
 
  <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
- <h3 className=" font-medium text-gray-900 mb-6">Project Summary</h3>
+ <h3 className="font-medium text-gray-900 mb-6">Project Summary</h3>
  <div className="border border-gray-300 rounded-xl overflow-hidden">
  <div className="bg-gray-50 p-3 flex flex-wrap gap-2">
- <button type="button" onClick={() => document.execCommand("bold", false)} className="px-3 py-1.5 hover:bg-gray-200 rounded font-medium text-sm">B</button>
- <button type="button" onClick={() => document.execCommand("italic", false)} className="px-3 py-1.5 hover:bg-gray-200 rounded italic text-sm">I</button>
- <button type="button" onClick={() => document.execCommand("underline", false)} className="px-3 py-1.5 hover:bg-gray-200 rounded underline text-sm">U</button>
- <button type="button" onClick={() => document.execCommand("strikeThrough", false)} className="px-3 py-1.5 hover:bg-gray-200 rounded line-through text-sm">S</button>
+ <button type="button" onClick={() => document.execCommand("bold", false)} className="hover:bg-gray-200 px-4 py-3 text-sm rounded-xl font-medium">B</button>
+ <button type="button" onClick={() => document.execCommand("italic", false)} className="hover:bg-gray-200 italic px-4 py-3 text-sm rounded-xl font-medium">I</button>
+ <button type="button" onClick={() => document.execCommand("underline", false)} className="hover:bg-gray-200 underline px-4 py-3 text-sm rounded-xl font-medium">U</button>
+ <button type="button" onClick={() => document.execCommand("strikeThrough", false)} className="hover:bg-gray-200 line-through px-4 py-3 text-sm rounded-xl font-medium">S</button>
  <select
  onChange={(e) => {
  if (e.target.value) {
@@ -162,7 +162,7 @@ const AddProjectFromTemplatePage = () => {
  </div>
 
  <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
- <h3 className=" font-medium text-gray-900 mb-6">Internal Note</h3>
+ <h3 className="font-medium text-gray-900 mb-6">Internal Note</h3>
  <textarea
  rows={6}
  placeholder="Add any internal notes..."
@@ -173,13 +173,13 @@ const AddProjectFromTemplatePage = () => {
  <div className="flex justify-end gap-4">
  <button
  type="button"
- className="px-5 py-2.5 text-sm border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition font-medium"
+ className="border border-gray-300 text-gray-700 hover:bg-gray-50 transition px-4 py-3 text-sm rounded-xl font-medium"
  >
  Reset
  </button>
  <button
  type="submit"
- className="px-5 py-2.5 text-sm bg-black text-white rounded-xl hover:bg-gray-900 transition font-medium"
+ className="bg-black text-white hover:bg-gray-900 transition px-4 py-3 text-sm rounded-xl font-medium"
  >
  Create Project
  </button>

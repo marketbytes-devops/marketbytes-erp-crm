@@ -317,7 +317,7 @@ const ContractEdit = () => {
  <div className="flex items-center gap-6">
  <div className="w-40 h-40 rounded-3xl border-2 border-dashed border-gray-100 bg-gray-50/50 flex items-center justify-center overflow-hidden relative group transition-all hover:bg-gray-100/50 hover:border-black/10">
  {logoPreview ? (
- <img src={logoPreview} alt="Preview" className="w-full h-full object-contain p-4 transition-transform duration-500 group-hover:scale-110" />
+ <img src={logoPreview} alt="Preview" className="w-full h-full object-contain p-4 transition-transform duration-500" />
  ) : (
  <MdImage size={48} className="text-gray-200" />
  )}
@@ -379,7 +379,7 @@ const ContractEdit = () => {
  value={formData.notes}
  onChange={handleChange}
  rows="5"
-   className="w-full px-5 py-3 text-sm bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-black/5 focus:border-black outline-none transition-all resize-none"
+   className="w-full bg-white border border-gray-200 focus:ring-2 focus:ring-black/5 focus:border-black outline-none transition-all resize-none px-4 py-3 text-sm rounded-xl font-medium"
 
  placeholder="Specify specific terms, SLAs, or unique conditions..."
  />
@@ -393,7 +393,7 @@ const ContractEdit = () => {
   <button
   type="submit"
   disabled={loading}
-  className="flex-1 md:flex-none flex items-center justify-center gap-3 bg-black text-white px-4 py-3 text-sm rounded-xl font-bold hover:bg-gray-100 hover:text-black transition-all shadow-xl shadow-black/10 disabled:opacity-50"
+  className="transition-colors flex-1 md:flex-none flex items-center justify-center gap-3 bg-black text-white hover:bg-gray-100 hover:text-black shadow-xl shadow-black/10 disabled:opacity-50 px-4 py-3 text-sm rounded-xl font-medium"
   >
   {loading ? <MdRefresh size={24} className="animate-spin" /> : <MdSave size={24} />}
   {loading ? 'Processing...' : 'Save Contract Changes'}
@@ -401,7 +401,7 @@ const ContractEdit = () => {
   <button
   type="button"
   onClick={() => navigate('/operations/contracts')}
-  className="flex-1 md:flex-none flex items-center justify-center gap-3 bg-white border border-gray-200 text-black px-4 py-3 text-sm rounded-xl font-bold hover:bg-gray-100 transition-all"
+  className="flex-1 md:flex-none flex items-center justify-center gap-3 bg-white border border-gray-200 text-black hover:bg-gray-100 transition-all px-4 py-3 text-sm rounded-xl font-medium"
   >
   Cancel
   </button>
@@ -445,7 +445,7 @@ const ContractEdit = () => {
  <button
  onClick={handleSaveType}
  disabled={isSavingType || !newTypeName.trim()}
- className="w-full bg-black text-white py-4 rounded-xl font-bold hover:bg-gray-900 transition-all shadow-lg flex items-center justify-center gap-2 disabled:opacity-50"
+ className="transition-colors w-full bg-black text-white hover:bg-gray-900 shadow-lg flex items-center justify-center gap-2 disabled:opacity-50 px-4 py-3 text-sm rounded-xl font-medium"
  >
  <MdAdd size={20} /> {isSavingType ? 'Saving...' : 'Add Type Category'}
  </button>

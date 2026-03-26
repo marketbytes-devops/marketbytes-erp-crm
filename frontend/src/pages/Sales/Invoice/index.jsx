@@ -123,7 +123,7 @@ const Invoices = () => {
  </div>
    <button
   onClick={() => setShowInvoiceModal(true)}
-  className="flex items-center gap-2 px-4 py-3 text-sm bg-black text-white rounded-xl hover:bg-gray-100 hover:text-black transition-all font-medium shadow-lg shadow-black/10 whitespace-nowrap"
+  className="flex items-center gap-2 bg-black text-white hover:bg-gray-100 hover:text-black transition-all shadow-lg shadow-black/10 whitespace-nowrap px-4 py-3 text-sm rounded-xl font-medium"
   >
   <MdAdd className="w-5 h-5" /> Create New
   </button>
@@ -196,15 +196,15 @@ const Invoices = () => {
  </span>
  </td>
  <td className="px-8 py-6 text-right">
- <div className=" font-medium text-gray-900 tracking-tight">₹{inv.amount.toLocaleString()}</div>
+ <div className="font-medium text-gray-900 tracking-tight">₹{inv.amount.toLocaleString()}</div>
  <div className="text-[10px] text-emerald-500 font-medium">GST INCLUDED</div>
  </td>
  <td className="px-8 py-6 text-right">
  <div className="flex justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
- <button className="p-2 hover:bg-white hover:text-blue-600 rounded-lg transition-all shadow-sm" title="View Details"><FiEye /></button>
- <button className="p-2 hover:bg-white hover:text-emerald-600 rounded-lg transition-all shadow-sm" title="Download PDF"><FiDownload /></button>
- <button className="p-2 hover:bg-white hover:text-black rounded-lg transition-all shadow-sm" title="Email to Client"><FiMail /></button>
- <button className="p-2 hover:bg-red-50 hover:text-red-600 rounded-lg transition-all" title="Delete"><FiTrash2 /></button>
+ <button className="p-1.5 rounded-md text-sm transition-colors hover:bg-white hover:text-blue-600 shadow-sm" title="View Details"><FiEye /></button>
+ <button className="p-1.5 rounded-md text-sm transition-colors hover:bg-white hover:text-emerald-600 shadow-sm" title="Download PDF"><FiDownload /></button>
+ <button className="p-1.5 rounded-md text-sm transition-colors hover:bg-white hover:text-black shadow-sm" title="Email to Client"><FiMail /></button>
+ <button className="p-1.5 rounded-md text-sm transition-colors hover:bg-red-50 hover:text-red-600" title="Delete"><FiTrash2 /></button>
  </div>
  </td>
  </motion.tr>
@@ -252,9 +252,9 @@ const Invoices = () => {
  <div className="col-span-6"><Input label="Description" placeholder="Web Development Services" /></div>
  <div className="col-span-2"><Input label="Qty" type="number" defaultValue="1" /></div>
  <div className="col-span-3"><Input label="Unit Price" type="number" placeholder="0.00" /></div>
- <div className="col-span-1 pb-3"><button className="p-2 bg-white rounded-xl text-gray-400 hover:text-red-500 shadow-sm"><MdDelete /></button></div>
+ <div className="col-span-1 pb-3"><button className="p-1.5 rounded-md text-sm transition-colors bg-white text-gray-400 hover:text-red-500 shadow-sm"><MdDelete /></button></div>
  </div>
- <button className="flex items-center gap-2 text-xs font-medium text-black border-2 border-dashed border-slate-200 w-full py-3 justify-center rounded-xl hover:bg-white hover:border-black transition-all">
+ <button className="transition-colors flex items-center gap-2 text-black border-2 border-dashed border-slate-200 w-full justify-center hover:bg-white hover:border-black px-4 py-3 text-sm rounded-xl font-medium">
  <MdAdd /> Add Another Item
  </button>
  </div>
@@ -266,8 +266,8 @@ const Invoices = () => {
  </div>
 
  <div className="flex justify-end gap-4 pt-6">
-   <button onClick={() => setShowInvoiceModal(false)} className="px-4 py-3 text-sm font-medium text-gray-600 hover:text-black transition">Discard</button>
-  <button className="px-4 py-3 text-sm bg-black text-white rounded-xl font-medium shadow-xl shadow-black/10 hover:bg-gray-100 hover:text-black transition-all">Generate & Send</button>
+   <button onClick={() => setShowInvoiceModal(false)} className="text-gray-600 hover:text-black transition px-4 py-3 text-sm rounded-xl font-medium">Discard</button>
+  <button className="transition-colors bg-black text-white shadow-xl shadow-black/10 hover:bg-gray-100 hover:text-black px-4 py-3 text-sm rounded-xl font-medium">Generate & Send</button>
 
  </div>
  </div>

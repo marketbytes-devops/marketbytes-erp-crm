@@ -32,11 +32,11 @@ const LayoutComponents = ({
  {toaster}
  <div >
  <div className="bg-white rounded-3xl border border-gray-100 shadow-xl shadow-gray-200/50 overflow-hidden">
- <div className="p-8 border-b border-gray-50 bg-linear-to-r from-white to-gray-50/50">
+ <div className="px-8 pt-8 pb-5 border-b border-gray-50 bg-linear-to-r from-white to-gray-50/50">
  <h2 className="text-3xl font-medium text-black tracking-tight font-syne mb-1">{title}</h2>
  {subtitle && <p className="text-gray-600 text-sm font-medium">{subtitle}</p>}
  </div>
- <div className="p-8">{children}</div>
+ <div className="p-8 pt-6">{children}</div>
  </div>
  </div>
  </>
@@ -73,7 +73,7 @@ const LayoutComponents = ({
  <h3 className="text-2xl font-medium text-black">{title}</h3>
  <button
  onClick={onCloseModal}
- className="p-3 hover:bg-gray-100 rounded-xl transition-all duration-200"
+ className="p-1.5 rounded-md text-sm transition-colors hover:bg-gray-100"
  >
  <MdClose className="w-6 h-6 text-gray-600" />
  </button>

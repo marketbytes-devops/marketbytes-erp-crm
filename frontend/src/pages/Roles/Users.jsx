@@ -348,7 +348,7 @@ const Users = () => {
  </div>
 
  <div className="space-y-4">
- <h4 className=" font-medium text-gray-900 flex items-center gap-2">
+ <h4 className="font-medium text-gray-900 flex items-center gap-2">
  <Shield className="w-5 h-5" />
  Direct Permissions
  </h4>
@@ -357,7 +357,7 @@ const Users = () => {
  <div className="bg-gray-50/80 rounded-3xl p-6 border border-gray-100 shadow-sm">
  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
  <div>
- <h4 className="font-medium text-gray-900 uppercase tracking-tighter ">Select All Permissions</h4>
+ <h4 className="font-medium text-gray-900 uppercase tracking-tighter">Select All Permissions</h4>
  <p className="text-xs text-gray-500">Quickly enable or disable all access rights</p>
  </div>
  <div className="flex gap-2">
@@ -365,7 +365,7 @@ const Users = () => {
    <button
   type="button"
   onClick={() => handleBulkAction('create', 'deselectAll')}
-  className="px-4 py-3 text-sm rounded-xl font-medium text-gray-700 bg-white border border-gray-200 hover:bg-gray-100 transition-colors shadow-sm w-40"
+  className="text-gray-700 bg-white border border-gray-200 hover:bg-gray-100 transition-colors shadow-sm w-40 px-4 py-3 text-sm rounded-xl font-medium"
   >
   Deselect All
   </button>
@@ -374,7 +374,7 @@ const Users = () => {
    <button
   type="button"
   onClick={() => handleBulkAction('create', 'selectAll')}
-  className="px-4 py-3 text-sm rounded-xl font-medium bg-[#50728c] text-white transition-opacity hover:opacity-90 shadow-sm w-40"
+  className="bg-[#50728c] text-white transition-opacity hover:opacity-90 shadow-sm w-40 px-4 py-3 text-sm rounded-xl font-medium"
   >
   Select All
   </button>
@@ -399,7 +399,7 @@ const Users = () => {
    <button
   type="submit"
   disabled={isCreating}
-  className="inline-flex items-center gap-4 px-4 py-3 text-sm bg-black text-white rounded-xl font-medium shadow-2xl hover:bg-gray-100 hover:text-black transition-all disabled:opacity-70"
+  className="inline-flex items-center gap-4 bg-black text-white shadow-2xl hover:bg-gray-100 hover:text-black transition-all disabled:opacity-70 px-4 py-3 text-sm rounded-xl font-medium"
   >
   {isCreating && <Loader2 className="w-5 h-5 animate-spin" />}
   {isCreating ? "Creating..." : "Create User"}
@@ -564,7 +564,7 @@ const Users = () => {
  <div className="bg-gray-50/80 rounded-3xl p-6 border border-gray-100 shadow-sm">
  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
  <div>
- <h4 className="font-medium text-gray-900 uppercase tracking-tighter ">Select All Permissions</h4>
+ <h4 className="font-medium text-gray-900 uppercase tracking-tighter">Select All Permissions</h4>
  <p className="text-xs text-gray-500">Quickly enable or disable all access rights</p>
  </div>
  <div className="flex gap-2">
@@ -572,7 +572,7 @@ const Users = () => {
    <button
   type="button"
   onClick={() => handleBulkAction('edit', 'deselectAll')}
-  className="px-4 py-3 text-sm rounded-xl font-medium text-gray-700 bg-white border border-gray-200 hover:bg-gray-100 transition-colors shadow-sm w-40"
+  className="text-gray-700 bg-white border border-gray-200 hover:bg-gray-100 transition-colors shadow-sm w-40 px-4 py-3 text-sm rounded-xl font-medium"
   >
   Deselect All
   </button>
@@ -581,7 +581,7 @@ const Users = () => {
    <button
   type="button"
   onClick={() => handleBulkAction('edit', 'selectAll')}
-  className="px-4 py-3 text-sm rounded-xl font-medium bg-[#50728c] text-white transition-opacity hover:opacity-90 shadow-sm w-40"
+  className="bg-[#50728c] text-white transition-opacity hover:opacity-90 shadow-sm w-40 px-4 py-3 text-sm rounded-xl font-medium"
   >
   Select All
   </button>
@@ -635,7 +635,7 @@ const Users = () => {
    <button
   type="button"
   onClick={() => setEditUser(null)}
-  className="px-4 py-3 text-sm bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 font-medium transition-colors"
+  className="bg-gray-100 text-gray-700 hover:bg-gray-200 transition-colors px-4 py-3 text-sm rounded-xl font-medium"
   >
   Cancel
   </button>
@@ -643,7 +643,7 @@ const Users = () => {
    <button
   type="submit"
   disabled={isEditing}
-  className="px-4 py-3 text-sm bg-black text-white rounded-xl font-medium shadow-xl hover:bg-gray-100 hover:text-black transition-all disabled:opacity-70 flex items-center gap-3"
+  className="bg-black text-white shadow-xl hover:bg-gray-100 hover:text-black transition-all disabled:opacity-70 flex items-center gap-3 px-4 py-3 text-sm rounded-xl font-medium"
   >
   {isEditing && <Loader2 className="w-5 h-5 animate-spin" />}
   {isEditing ? "Saving Changes..." : "Apply Permissions"}

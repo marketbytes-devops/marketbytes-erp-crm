@@ -143,7 +143,7 @@ const Pipeline = () => {
  className="bg-white p-6 rounded-4xl border border-gray-100 shadow-sm group hover:shadow-xl transition-all"
  >
  <div className="flex justify-between items-start mb-4">
- <div className={`p-4 rounded-xl ${stat.bg} ${stat.color} transition-transform group-hover:scale-110`}>
+ <div className={`p-4 rounded-xl ${stat.bg} ${stat.color} transition-transform`}>
  <stat.icon className="w-6 h-6" />
  </div>
  <div className="text-right">
@@ -189,7 +189,7 @@ const Pipeline = () => {
 
  <button
  onClick={fetchData}
- className="p-3.5 bg-white hover:bg-black hover:text-white rounded-xl transition-all text-gray-600 border border-gray-100 shadow-sm active:scale-95 group"
+ className="p-1.5 transition-colors bg-white hover:bg-black hover:text-white text-gray-600 border border-gray-100 shadow-sm group px-4 py-3 text-sm rounded-xl font-medium"
  title="Sync Records"
  >
  <MdRefresh className={`w-5 h-5 ${loading ? 'animate-spin' : ''} group-hover:rotate-180 transition-transform duration-500`} />
@@ -284,10 +284,10 @@ const Pipeline = () => {
  </div>
 
  <div className="flex gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
- <button className="p-2 hover:bg-slate-50 rounded-xl text-slate-400 hover:text-indigo-600 transition-colors">
+ <button className="p-1.5 rounded-md text-sm transition-colors hover:bg-slate-50 text-slate-400 hover:text-indigo-600">
  <MdEdit className="w-4 h-4" />
  </button>
- <button className="p-2 hover:bg-rose-50 rounded-xl text-slate-400 hover:text-rose-600 transition-colors">
+ <button className="p-1.5 rounded-md text-sm transition-colors hover:bg-rose-50 text-slate-400 hover:text-rose-600">
  <MdDelete className="w-4 h-4" />
  </button>
  </div>

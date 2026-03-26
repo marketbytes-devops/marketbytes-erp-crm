@@ -293,7 +293,7 @@ const Leaves = ({ leadScope, employeeScope }) => {
             <div className="flex gap-3 relative">
               <button
                 onClick={() => setShowExportMenu(!showExportMenu)}
-                className="flex items-center gap-2 px-5 py-4 border border-gray-300 rounded-xl hover:bg-gray-50 transition font-medium"
+                className="flex items-center gap-2 border border-gray-300 hover:bg-gray-50 transition px-4 py-3 text-sm rounded-xl font-medium"
               >
                 <MdDownload className="w-5 h-5" />
                 Export
@@ -301,7 +301,7 @@ const Leaves = ({ leadScope, employeeScope }) => {
               {hasPermission(permissionPage, "add") && (
                 <Link
                   to={leadScope ? "/lead/leaves/assign" : employeeScope ? "/employee/leaves/assign" : "/hr/leaves/assign"}
-                  className="flex items-center gap-3 px-6 py-3 bg-black text-white rounded-xl hover:bg-gray-900 transition font-medium"
+                  className="flex items-center gap-3 bg-black text-white hover:bg-gray-900 transition px-4 py-3 text-sm rounded-xl font-medium"
                 >
                   <MdAdd className="w-5 h-5" />
                   {employeeScope ? "Apply Leave" : "Assign Leave"}
@@ -320,19 +320,19 @@ const Leaves = ({ leadScope, employeeScope }) => {
                     <div className="py-1">
                       <button
                         onClick={handleExportCSV}
-                        className="w-full text-left px-5 py-3 hover:bg-gray-50 transition flex items-center gap-3 text-sm"
+                        className="w-full text-left hover:bg-gray-50 transition flex items-center gap-3 px-4 py-3 text-sm rounded-xl font-medium"
                       >
                         Export as CSV
                       </button>
                       <button
                         onClick={handleExportExcel}
-                        className="w-full text-left px-5 py-3 hover:bg-gray-50 transition flex items-center gap-3 text-sm"
+                        className="w-full text-left hover:bg-gray-50 transition flex items-center gap-3 px-4 py-3 text-sm rounded-xl font-medium"
                       >
                         Export as Excel
                       </button>
                       <button
                         onClick={handleExportPDF}
-                        className="w-full text-left px-5 py-3 hover:bg-gray-50 transition flex items-center gap-3 text-sm"
+                        className="w-full text-left hover:bg-gray-50 transition flex items-center gap-3 px-4 py-3 text-sm rounded-xl font-medium"
                       >
                         Export as PDF
                       </button>
@@ -517,7 +517,7 @@ const Leaves = ({ leadScope, employeeScope }) => {
                                     </button>
                                     <button
                                       onClick={() => handleStatusUpdate(leave.id, "rejected")}
-                                      className="flex-1 bg-red-600 text-white py-3 rounded-xl font-medium hover:bg-red-700 transition"
+                                      className="flex-1 bg-red-600 text-white hover:bg-red-700 transition px-4 py-3 text-sm rounded-xl font-medium"
                                     >
                                       Reject
                                     </button>

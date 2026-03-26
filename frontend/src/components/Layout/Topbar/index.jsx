@@ -128,7 +128,7 @@ const Topbar = ({
     >
       <div className="flex items-center justify-start">
         <button
-          className="p-3 rounded-full transition-all duration-300 hover:text-black bg-black border hover:bg-white text-white group relative overflow-hidden shadow-inner"
+          className="p-3 rounded-xl text-sm transition-colors hover:text-black bg-black border border-transparent hover:bg-white text-white group relative overflow-hidden shadow-inner"
           onClick={toggleSidebar}
         >
           <div
@@ -178,7 +178,7 @@ const Topbar = ({
         )}
         {isAuthenticated && <NotificationCenter />}
         <button
-          className="md:hidden p-3 rounded-full hover:bg-gray-100"
+          className="p-3 rounded-xl text-sm transition-colors md:hidden hover:bg-gray-100"
           onClick={() => searchInputRef.current?.focus()}
         >
           <Search size={22} className="text-gray-600" />

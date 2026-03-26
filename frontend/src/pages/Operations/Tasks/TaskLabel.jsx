@@ -18,7 +18,7 @@ const TaskLabelsPage = () => {
  <h2 className="text-xl font-medium text-gray-900 flex items-center gap-3">
  <span className="text-2xl">🏷️</span> Task Labels
  </h2>
- <button onClick={handleClick} className="bg-black hover:bg-teal-600 text-white px-5 py-2.5 rounded-lg font-medium flex items-center gap-2">
+ <button onClick={handleClick} className="transition-colors bg-black hover:bg-teal-600 text-white flex items-center gap-2 px-4 py-3 text-sm rounded-xl font-medium">
  Create Label
  <span className="">+</span>
  </button>

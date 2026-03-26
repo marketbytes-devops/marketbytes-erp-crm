@@ -142,7 +142,7 @@ const DepartmentView = () => {
  <div className="relative">
    <button
   onClick={() => setShowExportMenu(!showExportMenu)}
-  className="flex items-center gap-2 px-4 py-3 text-sm font-medium border border-gray-300 rounded-xl hover:bg-gray-100 transition-all"
+  className="flex items-center gap-2 border border-gray-300 hover:bg-gray-100 transition-all px-4 py-3 text-sm rounded-xl font-medium"
   >
   <MdDownload />
   <span className="hidden sm:inline">Export</span>
@@ -156,7 +156,7 @@ const DepartmentView = () => {
  exportPDF();
  setShowExportMenu(false);
  }}
- className="w-full text-left px-4 py-3 hover:bg-gray-50"
+ className="w-full text-left hover:bg-gray-50 px-4 py-3 text-sm rounded-xl font-medium"
  >
  Export PDF
  </button>
@@ -166,7 +166,7 @@ const DepartmentView = () => {
  exportCSV();
  setShowExportMenu(false);
  }}
- className="w-full text-left px-4 py-3 hover:bg-gray-50"
+ className="w-full text-left hover:bg-gray-50 px-4 py-3 text-sm rounded-xl font-medium"
  >
  Export CSV
  </button>
@@ -176,7 +176,7 @@ const DepartmentView = () => {
  exportExcel();
  setShowExportMenu(false);
  }}
- className="w-full text-left px-4 py-3 hover:bg-gray-50"
+ className="w-full text-left hover:bg-gray-50 px-4 py-3 text-sm rounded-xl font-medium"
  >
  Export Excel
  </button>
@@ -187,7 +187,7 @@ const DepartmentView = () => {
  {hasPermission("departments", "add") && (
    <Link
   to="/hr/departments/create"
-  className="flex items-center gap-3 px-4 py-3 text-sm font-medium bg-black text-white rounded-xl hover:bg-gray-100 hover:text-black transition-all shadow-md"
+  className="flex items-center gap-3 bg-black text-white hover:bg-gray-100 hover:text-black transition-all shadow-md px-4 py-3 text-sm rounded-xl font-medium"
   >
   <MdAdd className="w-5 h-5" />
   Add Department
@@ -297,11 +297,11 @@ const DepartmentView = () => {
  <div className="space-y-6">
  <div>
  <p className="text-sm text-gray-600">Department ID</p>
- <p className="font-medium ">{selectedDept.id}</p>
+ <p className="font-medium">{selectedDept.id}</p>
  </div>
  <div>
  <p className="text-sm text-gray-600">Department Name</p>
- <p className="font-medium ">{selectedDept.name}</p>
+ <p className="font-medium">{selectedDept.name}</p>
  </div>
  {selectedDept.worksheet_url && (
  <div>
@@ -323,7 +323,7 @@ const DepartmentView = () => {
  {selectedDept.services.split(",").map((s, i) => (
    <span
   key={i}
-  className="px-4 py-3 bg-black text-white text-sm rounded-full font-medium hover:bg-gray-100 hover:text-black transition-all"
+  className="bg-black text-white hover:bg-gray-100 hover:text-black transition-all px-4 py-3 text-sm rounded-xl font-medium"
   >
   {s.trim()}
   </span>
@@ -351,13 +351,13 @@ const DepartmentView = () => {
  <div className="flex justify-end gap-4">
    <button
   onClick={() => setShowDeleteConfirm(null)}
-  className="px-4 py-3 text-sm font-medium border border-gray-300 rounded-xl hover:bg-gray-100 transition-all"
+  className="border border-gray-300 hover:bg-gray-100 transition-all px-4 py-3 text-sm rounded-xl font-medium"
   >
   Cancel
   </button>
   <button
   onClick={() => handleDelete(showDeleteConfirm)}
-  className="px-4 py-3 text-sm font-medium bg-red-600 text-white rounded-xl hover:bg-red-700 transition-all"
+  className="bg-red-600 text-white hover:bg-red-700 transition-all px-4 py-3 text-sm rounded-xl font-medium"
   >
   Delete
   </button>

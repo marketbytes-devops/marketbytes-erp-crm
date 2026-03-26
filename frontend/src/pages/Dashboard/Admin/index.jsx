@@ -28,7 +28,7 @@ const StatCard = ({ title, value, subValue, icon, colorClass, bgClass, onClick }
  {React.cloneElement(icon, { className: "w-6 h-6" })}
  </div>
    {subValue && (
-  <span className="text-[10px] font-medium bg-black text-white px-3 py-1.5 rounded-full transition-all hover:bg-gray-100 hover:text-black cursor-pointer shadow-sm">
+  <span className="text-[10px] bg-black text-white transition-all hover:bg-gray-100 hover:text-black cursor-pointer shadow-sm px-4 py-3 text-sm rounded-xl font-medium">
   {subValue}
   </span>
   )}
@@ -164,12 +164,12 @@ const AdminDashboard = () => {
  <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
  <div className="px-5 py-2.5 text-sm border-b border-gray-100 flex items-center justify-between">
  <div>
- <h2 className=" font-medium text-gray-800">Sales Pipeline Overview</h2>
+ <h2 className="font-medium text-gray-800">Sales Pipeline Overview</h2>
  <p className="text-sm text-gray-500">Current status of all open leads</p>
  </div>
                              <button
                                 onClick={() => navigate('/sales/pipeline')}
-                                className="px-4 py-2 text-sm bg-black text-white hover:bg-gray-100 hover:text-black transition-all rounded-lg font-medium"
+                                className="bg-black text-white hover:bg-gray-100 hover:text-black transition-all px-4 py-3 text-sm rounded-xl font-medium"
                                 title="View Pipeline"
                             >
                                 View Pipeline
@@ -208,12 +208,12 @@ const AdminDashboard = () => {
  <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
  <div className="px-5 py-2.5 text-sm border-b border-gray-100 flex items-center justify-between">
  <div>
- <h2 className=" font-medium text-gray-800">Recent Tasks</h2>
+ <h2 className="font-medium text-gray-800">Recent Tasks</h2>
  <p className="text-sm text-gray-500">Your most recent assignments</p>
  </div>
                          <button
                             onClick={() => navigate('/operations/tasks')}
-                            className="px-4 py-2 text-sm bg-black text-white hover:bg-gray-100 hover:text-black transition-all rounded-lg font-medium flex items-center gap-1"
+                            className="bg-black text-white hover:bg-gray-100 hover:text-black transition-all flex items-center gap-1 px-4 py-3 text-sm rounded-xl font-medium"
                         >
                             View All <MdArrowForward />
                         </button>
@@ -247,7 +247,7 @@ const AdminDashboard = () => {
  </td>
  <td className="px-5 py-2.5 text-sm">
  <div className="flex items-center gap-2 text-sm text-gray-600">
- <MdCalendarMonth className="text-gray-400 " />
+ <MdCalendarMonth className="text-gray-400" />
  <span>
  {task.due_date ? new Date(task.due_date).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' }) : 'No exact date'}
  </span>
@@ -283,7 +283,7 @@ const AdminDashboard = () => {
 
  {/* Quick Links */}
  <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
- <h3 className=" font-medium text-gray-800 mb-4">Quick Navigation</h3>
+ <h3 className="font-medium text-gray-800 mb-4">Quick Navigation</h3>
  <div className="space-y-3">
  {[
  { label: 'Manage Projects', path: '/operations/projects', icon: <MdAssessment />, color: 'text-blue-600', bg: 'bg-blue-50' },
@@ -294,7 +294,7 @@ const AdminDashboard = () => {
                      <button
                         key={i}
                         onClick={() => navigate(action.path)}
-                        className="w-full flex items-center px-4 py-3 rounded-xl bg-black text-white hover:bg-gray-100 hover:text-black transition-all text-left group font-medium"
+                        className="w-full flex items-center bg-black text-white hover:bg-gray-100 hover:text-black transition-all text-left group px-4 py-3 text-sm rounded-xl font-medium"
                     >
                         <div className={`p-2 rounded-lg bg-white/10 text-white mr-3 transition-transform group-hover:text-black`}>
                             {action.icon}

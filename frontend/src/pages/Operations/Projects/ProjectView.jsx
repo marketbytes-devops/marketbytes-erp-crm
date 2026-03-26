@@ -352,7 +352,7 @@ const ProjectsView = ({ employeeScope = false, leadScope = false }) => {
               <div className="w-10 h-10 rounded-full bg-linear-to-br from-blue-500 to-purple-600 border-2 border-white flex items-center justify-center text-white text-sm font-medium shadow-md">
                 {initial}
               </div>
-              <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-black text-white text-xs rounded-lg whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
+              <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 bg-black text-white whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10 px-4 py-3 text-sm rounded-xl font-medium">
                 {name}
                 <div className="absolute top-full left-1/2 -translate-x-1/2 border-8 border-transparent border-t-black"></div>
               </div>
@@ -404,7 +404,7 @@ const ProjectsView = ({ employeeScope = false, leadScope = false }) => {
               {hasPermission(permissionPage, "add") && (
                 <Link
                   to="/operations/projects/projectcreate"
-                  className="flex items-center gap-3 px-6 py-3 bg-black text-white rounded-xl hover:bg-gray-900 transition text-sm font-medium"
+                  className="flex items-center gap-3 bg-black text-white hover:bg-gray-900 transition px-4 py-3 text-sm rounded-xl font-medium"
                 >
                   <MdAdd className="w-5 h-5" /> Add New Project
                 </Link>
@@ -429,7 +429,7 @@ const ProjectsView = ({ employeeScope = false, leadScope = false }) => {
 
                 <button
                   onClick={() => setFiltersOpen(!filtersOpen)}
-                  className="flex items-center gap-3 px-5 py-4 border border-gray-300 rounded-xl hover:bg-gray-50 transition text-sm font-medium whitespace-nowrap"
+                  className="flex items-center gap-3 border border-gray-300 hover:bg-gray-50 transition whitespace-nowrap px-4 py-3 text-sm rounded-xl font-medium"
                 >
                   <MdFilterList className="w-5 h-5" />
                   Filters
@@ -451,21 +451,21 @@ const ProjectsView = ({ employeeScope = false, leadScope = false }) => {
               <div className="flex gap-3">
                 <button
                   onClick={() => setIsPinnedModalOpen(true)}
-                  className="flex items-center gap-2 px-5 py-4 border border-gray-300 rounded-xl hover:bg-gray-50 transition text-sm font-medium"
+                  className="flex items-center gap-2 border border-gray-300 hover:bg-gray-50 transition px-4 py-3 text-sm rounded-xl font-medium"
                 >
                   <MdPushPin className="w-5 h-5" />
                   Pinned ({pinnedProjects.length})
                 </button>
                 <button
                   onClick={() => navigate("/operations/projects/project-archive")}
-                  className="px-5 py-4 border border-gray-300 rounded-xl hover:bg-gray-50 transition text-sm font-medium"
+                  className="border border-gray-300 hover:bg-gray-50 transition px-4 py-3 text-sm rounded-xl font-medium"
                 >
                   View Archive
                 </button>
                 <div className="relative">
                   <button
                     onClick={() => setIsExportOpen(!isExportOpen)}
-                    className="flex items-center gap-2 px-5 py-4 border border-gray-300 rounded-xl hover:bg-gray-50 transition text-sm font-medium"
+                    className="flex items-center gap-2 border border-gray-300 hover:bg-gray-50 transition px-4 py-3 text-sm rounded-xl font-medium"
                   >
                     <MdDownload className="w-5 h-5" /> Export
                     <MdKeyboardArrowDown className={`transition-transform duration-300 ${isExportOpen ? "rotate-180" : ""}`} />
@@ -487,7 +487,7 @@ const ProjectsView = ({ employeeScope = false, leadScope = false }) => {
                           <button
                             key={item.id}
                             onClick={item.action}
-                            className="w-full text-left px-4 py-3 text-sm font-medium text-gray-700 hover:bg-gray-50 rounded-xl transition-all flex items-center gap-3"
+                            className="transition-colors w-full text-left text-gray-700 hover:bg-gray-50 flex items-center gap-3 px-4 py-3 text-sm rounded-xl font-medium"
                           >
                             <div className={`w-2 h-2 rounded-full ${item.color}`}></div>
                             {item.label}
@@ -569,7 +569,7 @@ const ProjectsView = ({ employeeScope = false, leadScope = false }) => {
                   <div className="flex flex-col sm:flex-row gap-4 mt-8 pt-6 border-t border-gray-200">
                     <button
                       onClick={resetFilters}
-                      className="px-6 py-3.5 border-2 border-gray-300 text-gray-700 font-medium rounded-xl hover:bg-gray-50 transition"
+                      className="border-2 border-gray-300 text-gray-700 hover:bg-gray-50 transition px-4 py-3 text-sm rounded-xl font-medium"
                     >
                       Reset All Filters
                     </button>
@@ -689,7 +689,7 @@ const ProjectsView = ({ employeeScope = false, leadScope = false }) => {
                           {(search || activeFilterCount > 0) && (
                             <button
                               onClick={resetFilters}
-                              className="mt-5 px-6 py-3 bg-black text-white rounded-xl hover:bg-gray-900 transition font-medium"
+                              className="mt-5 bg-black text-white hover:bg-gray-900 transition px-4 py-3 text-sm rounded-xl font-medium"
                             >
                               Clear all filters
                             </button>
@@ -816,7 +816,7 @@ const ProjectsView = ({ employeeScope = false, leadScope = false }) => {
               <div className="px-6 py-3 bg-gray-50 border-t border-gray-200 flex flex-col sm:flex-row justify-between items-center gap-3 text-sm text-gray-600">
                 <span>Showing {filtered.length} of {projects.length} projects</span>
                 {activeFilterCount > 0 && (
-                  <button onClick={resetFilters} className="text-blue-600 hover:text-blue-800 font-medium">
+                  <button onClick={resetFilters} className="transition-colors text-blue-600 hover:text-blue-800 px-4 py-3 text-sm rounded-xl font-medium">
                     Clear all filters
                   </button>
                 )}

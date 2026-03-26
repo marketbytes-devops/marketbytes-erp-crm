@@ -50,10 +50,10 @@ const DesignationEdit = () => {
  <Input label="Designation Name" value={name} onChange={(e) => setName(e.target.value)} />
  <Input label="Designation Description" value={description} onChange={(e) => setDescription(e.target.value)} />
  <div className="flex gap-4 mt-6">
- <button onClick={handleSave} className="px-5 py-2.5 text-sm bg-black text-white rounded-xl">
+ <button onClick={handleSave} className="transition-colors bg-black text-white px-4 py-3 text-sm rounded-xl font-medium">
  Update
  </button>
- <Link to="/hr/designations" className="px-5 py-2.5 text-sm border rounded-xl hover:bg-gray-50">
+ <Link to="/hr/designations" className="border hover:bg-gray-50 px-4 py-3 text-sm rounded-xl font-medium">
  Cancel
  </Link>
  </div>

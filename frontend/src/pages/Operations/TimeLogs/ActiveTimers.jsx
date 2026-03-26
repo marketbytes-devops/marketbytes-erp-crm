@@ -335,7 +335,7 @@ const ActiveTimers = () => {
                             <div className="flex gap-3">
                                 <button
                                     onClick={fetchData}
-                                    className="p-3 bg-white border border-gray-300 rounded-xl hover:bg-gray-50 transition active:scale-95 text-gray-600"
+                                    className="p-1.5 bg-white border border-gray-300 hover:bg-gray-50 transition text-gray-600 px-4 py-3 text-sm rounded-xl font-medium"
                                     title="Refresh"
                                 >
                                     <MdRefresh className={`w-5 h-5 ${loading ? 'animate-spin' : ''}`} />
@@ -361,7 +361,7 @@ const ActiveTimers = () => {
 
                                 <button
                                     onClick={() => setFiltersOpen(!filtersOpen)}
-                                    className="flex items-center gap-3 px-5 py-3 border border-gray-300 rounded-xl hover:bg-gray-50 transition text-sm font-medium whitespace-nowrap"
+                                    className="flex items-center gap-3 border border-gray-300 hover:bg-gray-50 transition whitespace-nowrap px-4 py-3 text-sm rounded-xl font-medium"
                                 >
                                     <MdFilterList className="w-5 h-5" />
                                     Filters
@@ -383,7 +383,7 @@ const ActiveTimers = () => {
                             <div className="relative" ref={exportDropdownRef}>
                                 <button 
                                     onClick={() => setExportDropdownOpen(!exportDropdownOpen)}
-                                    className="flex items-center gap-2 px-5 py-3 border border-gray-300 rounded-xl hover:bg-gray-50 transition text-sm font-medium"
+                                    className="flex items-center gap-2 border border-gray-300 hover:bg-gray-50 transition px-4 py-3 text-sm rounded-xl font-medium"
                                 >
                                     <MdDownload className="w-5 h-5" /> Export
                                     <MdKeyboardArrowDown className={`w-4 h-4 transition-transform ${exportDropdownOpen ? 'rotate-180' : ''}`} />
@@ -392,21 +392,21 @@ const ActiveTimers = () => {
                                     <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg border border-gray-200 py-2 z-50">
                                         <button
                                             onClick={handleExportPDF}
-                                            className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 transition flex items-center gap-2"
+                                            className="w-full text-left text-gray-700 hover:bg-gray-50 transition flex items-center gap-2 px-4 py-3 text-sm rounded-xl font-medium"
                                         >
                                             <MdDownload className="w-4 h-4" />
                                             Export as PDF
                                         </button>
                                         <button
                                             onClick={handleExportExcel}
-                                            className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 transition flex items-center gap-2"
+                                            className="w-full text-left text-gray-700 hover:bg-gray-50 transition flex items-center gap-2 px-4 py-3 text-sm rounded-xl font-medium"
                                         >
                                             <MdDownload className="w-4 h-4" />
                                             Export as Excel
                                         </button>
                                         <button
                                             onClick={handleExportCSV}
-                                            className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 transition flex items-center gap-2"
+                                            className="w-full text-left text-gray-700 hover:bg-gray-50 transition flex items-center gap-2 px-4 py-3 text-sm rounded-xl font-medium"
                                         >
                                             <MdDownload className="w-4 h-4" />
                                             Export as CSV
@@ -485,7 +485,7 @@ const ActiveTimers = () => {
                                     <div className="flex justify-end mt-8 pt-6 border-t border-gray-200">
                                         <button
                                             onClick={resetFilters}
-                                            className="px-6 py-3.5 border-2 border-gray-300 text-gray-700 font-medium rounded-xl hover:bg-gray-50 transition"
+                                            className="border-2 border-gray-300 text-gray-700 hover:bg-gray-50 transition px-4 py-3 text-sm rounded-xl font-medium"
                                         >
                                             Reset Filters
                                         </button>

@@ -65,7 +65,7 @@ const Login = ({ setIsAuthenticated }) => {
  <button
  type="submit"
  disabled={isSubmitting}
- className="w-full bg-black text-white hover:text-black border font-medium py-3 rounded-lg hover:bg-white disabled:opacity-70 transition duration-300 shadow-md"
+ className="w-full bg-black text-white hover:text-black border hover:bg-white disabled:opacity-70 transition shadow-md px-4 py-3 text-sm rounded-xl font-medium"
  >
  {isSubmitting ? 'Signing in...' : 'Login'}
  </button>

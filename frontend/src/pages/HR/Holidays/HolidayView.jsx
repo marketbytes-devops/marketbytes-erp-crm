@@ -193,7 +193,7 @@ const HolidayView = ({ leadScope, employeeScope }) => {
  <div className="flex items-center justify-between mb-4">
  <button
  onClick={handlePrevMonth}
- className="p-2 rounded-lg hover:bg-gray-100 transition"
+ className="p-1.5 rounded-md text-sm hover:bg-gray-100 transition"
  >
  <MdChevronLeft className="w-5 h-5" />
  </button>
@@ -202,7 +202,7 @@ const HolidayView = ({ leadScope, employeeScope }) => {
  </h3>
  <button
  onClick={handleNextMonth}
- className="p-2 rounded-lg hover:bg-gray-100 transition"
+ className="p-1.5 rounded-md text-sm hover:bg-gray-100 transition"
  >
  <MdChevronRight className="w-5 h-5" />
  </button>
@@ -258,7 +258,7 @@ const HolidayView = ({ leadScope, employeeScope }) => {
 
  return (
  <div key={monthIndex} className="mb-12">
- <h3 className=" font-medium mb-4">
+ <h3 className="font-medium mb-4">
  {months[monthIndex]} {selectedYear}
  </h3>
  <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
@@ -372,7 +372,7 @@ const HolidayView = ({ leadScope, employeeScope }) => {
 
    <button
   onClick={() => setIsCalendarView(!isCalendarView)}
-  className="flex items-center gap-3 px-4 py-3 border border-gray-300 rounded-xl hover:bg-gray-100 transition font-medium"
+  className="flex items-center gap-3 border border-gray-300 hover:bg-gray-100 transition px-4 py-3 text-sm rounded-xl font-medium"
   >
   <MdCalendarToday className="w-5 h-5" />
   {isCalendarView ? "Table View" : "Calendar View"}
@@ -384,7 +384,7 @@ const HolidayView = ({ leadScope, employeeScope }) => {
  <div className="relative">
    <button
   onClick={() => setShowExportMenu(!showExportMenu)}
-  className="flex items-center gap-2 px-4 py-3 border border-gray-300 rounded-xl hover:bg-gray-100 transition font-medium"
+  className="flex items-center gap-2 border border-gray-300 hover:bg-gray-100 transition px-4 py-3 text-sm rounded-xl font-medium"
   >
   <MdDownload className="w-5 h-5" />
   Export
@@ -402,19 +402,19 @@ const HolidayView = ({ leadScope, employeeScope }) => {
  >
  <button
  onClick={() => handleExport("pdf")}
- className="w-full text-left px-4 py-2 hover:bg-gray-50 text-sm font-medium text-gray-700"
+ className="w-full text-left hover:bg-gray-50 text-gray-700 px-4 py-3 text-sm rounded-xl font-medium"
  >
  Export as PDF
  </button>
  <button
  onClick={() => handleExport("excel")}
- className="w-full text-left px-4 py-2 hover:bg-gray-50 text-sm font-medium text-gray-700"
+ className="w-full text-left hover:bg-gray-50 text-gray-700 px-4 py-3 text-sm rounded-xl font-medium"
  >
  Export as Excel
  </button>
  <button
  onClick={() => handleExport("csv")}
- className="w-full text-left px-4 py-2 hover:bg-gray-50 text-sm font-medium text-gray-700"
+ className="w-full text-left hover:bg-gray-50 text-gray-700 px-4 py-3 text-sm rounded-xl font-medium"
  >
  Export as CSV
  </button>
@@ -428,7 +428,7 @@ const HolidayView = ({ leadScope, employeeScope }) => {
   setNewHoliday({ date: "", occasion: "", is_default: false });
   setIsAddModalOpen(true);
   }}
-  className="flex items-center gap-3 px-4 py-3 text-sm bg-black text-white rounded-xl hover:bg-gray-100 hover:text-black transition font-medium"
+  className="flex items-center gap-3 bg-black text-white hover:bg-gray-100 hover:text-black transition px-4 py-3 text-sm rounded-xl font-medium"
   >
   <MdAdd className="w-5 h-5" />
   Add Holiday
@@ -488,7 +488,7 @@ const HolidayView = ({ leadScope, employeeScope }) => {
  type="date"
  value={newHoliday.date}
  onChange={(e) => setNewHoliday({ ...newHoliday, date: e.target.value })}
- className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-black outline-none transition"
+ className="w-full border border-gray-300 focus:ring-2 focus:ring-black outline-none transition px-4 py-3 text-sm rounded-xl font-medium"
  />
  </div>
  <div>
@@ -498,7 +498,7 @@ const HolidayView = ({ leadScope, employeeScope }) => {
  placeholder="e.g. Christmas Day"
  value={newHoliday.occasion}
  onChange={(e) => setNewHoliday({ ...newHoliday, occasion: e.target.value })}
- className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-black outline-none transition"
+ className="w-full border border-gray-300 focus:ring-2 focus:ring-black outline-none transition px-4 py-3 text-sm rounded-xl font-medium"
  />
  </div>
  <div className="flex items-center gap-3">
@@ -517,13 +517,13 @@ const HolidayView = ({ leadScope, employeeScope }) => {
  <div className="flex justify-end gap-3 mt-8">
    <button
   onClick={() => setIsAddModalOpen(false)}
-  className="px-4 py-3 text-sm border border-gray-300 text-gray-700 font-medium rounded-xl hover:bg-gray-100 transition"
+  className="border border-gray-300 text-gray-700 hover:bg-gray-100 transition px-4 py-3 text-sm rounded-xl font-medium"
   >
   Cancel
   </button>
   <button
   onClick={handleAddHoliday}
-  className="px-4 py-3 text-sm bg-black text-white font-medium rounded-xl hover:bg-gray-100 hover:text-black transition"
+  className="bg-black text-white hover:bg-gray-100 hover:text-black transition px-4 py-3 text-sm rounded-xl font-medium"
   >
   Save Holiday
   </button>
@@ -568,7 +568,7 @@ const HolidayView = ({ leadScope, employeeScope }) => {
  type="date"
  value={newHoliday.date}
  onChange={(e) => setNewHoliday({ ...newHoliday, date: e.target.value })}
- className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-black outline-none transition"
+ className="w-full border border-gray-300 focus:ring-2 focus:ring-black outline-none transition px-4 py-3 text-sm rounded-xl font-medium"
  />
  </div>
  <div>
@@ -577,7 +577,7 @@ const HolidayView = ({ leadScope, employeeScope }) => {
  type="text"
  value={newHoliday.occasion}
  onChange={(e) => setNewHoliday({ ...newHoliday, occasion: e.target.value })}
- className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-black outline-none transition"
+ className="w-full border border-gray-300 focus:ring-2 focus:ring-black outline-none transition px-4 py-3 text-sm rounded-xl font-medium"
  />
  </div>
  <div className="flex items-center gap-3">
@@ -599,13 +599,13 @@ const HolidayView = ({ leadScope, employeeScope }) => {
   setIsEditModalOpen(false);
   setEditingHoliday(null);
   }}
-  className="px-4 py-3 text-sm border border-gray-300 text-gray-700 font-medium rounded-xl hover:bg-gray-100 transition"
+  className="border border-gray-300 text-gray-700 hover:bg-gray-100 transition px-4 py-3 text-sm rounded-xl font-medium"
   >
   Cancel
   </button>
   <button
   onClick={handleEditHoliday}
-  className="px-4 py-3 text-sm bg-black text-white font-medium rounded-xl hover:bg-gray-100 hover:text-black transition"
+  className="bg-black text-white hover:bg-gray-100 hover:text-black transition px-4 py-3 text-sm rounded-xl font-medium"
   >
   Update Holiday
   </button>

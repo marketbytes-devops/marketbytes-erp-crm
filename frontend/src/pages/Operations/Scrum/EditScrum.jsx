@@ -112,7 +112,7 @@ const EditScrumPage = () => {
  <div className="mb-8">
  <button
  onClick={() => navigate("/operations/scrum")}
- className="inline-flex items-center gap-2 px-5 py-3 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 transition"
+ className="inline-flex items-center gap-2 border border-gray-300 text-gray-700 hover:bg-gray-50 transition px-4 py-3 text-sm rounded-xl font-medium"
  >
  <MdArrowBack className="w-5 h-5" />
  Back to Scrum Board
@@ -122,7 +122,7 @@ const EditScrumPage = () => {
  <form onSubmit={handleSubmit} className="space-y-8">
  {/* Information Section */}
  <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
- <h3 className=" font-medium text-gray-900 mb-6">Scrum Information</h3>
+ <h3 className="font-medium text-gray-900 mb-6">Scrum Information</h3>
  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
  <Input
  label="Project"
@@ -167,7 +167,7 @@ const EditScrumPage = () => {
 
  {/* Memos Section */}
  <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
- <h3 className=" font-medium text-gray-900 mb-6">Memos & Notes</h3>
+ <h3 className="font-medium text-gray-900 mb-6">Memos & Notes</h3>
  <div className="space-y-6">
  <div className="space-y-2">
  <label className="text-sm font-medium text-gray-700">Morning Memo</label>
@@ -193,8 +193,8 @@ const EditScrumPage = () => {
  </div>
 
  <div className="flex justify-end gap-5">
- <button type="button" onClick={() => navigate("/operations/scrum")} className="px-5 py-2.5 text-sm.5 border-2 border-gray-300 rounded-xl font-medium text-gray-700 hover:bg-gray-100 transition">Cancel</button>
- <button type="submit" disabled={submitting} className="px-5 py-2.5 text-sm.5 bg-black text-white rounded-xl font-medium hover:bg-gray-800 transition disabled:bg-gray-400">
+ <button type="button" onClick={() => navigate("/operations/scrum")} className=".5 border-2 border-gray-300 text-gray-700 hover:bg-gray-100 transition px-4 py-3 text-sm rounded-xl font-medium">Cancel</button>
+ <button type="submit" disabled={submitting} className=".5 bg-black text-white hover:bg-gray-800 transition disabled:bg-gray-400 px-4 py-3 text-sm rounded-xl font-medium">
  {submitting ? "Updating..." : "Update Scrum"}
  </button>
  </div>

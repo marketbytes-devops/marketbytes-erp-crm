@@ -204,13 +204,13 @@ const Profile = () => {
  </div>
  </div>
 
- <div className="bg-black rounded-4xl p-8 text-white relative overflow-hidden group">
+ <div className="bg-black p-8 text-white relative overflow-hidden group px-4 py-3 text-sm rounded-xl font-medium">
  <div className="absolute bottom-0 right-0 w-32 h-32 bg-white/5 rounded-full blur-2xl -mb-16 -mr-16"></div>
  <div className="relative z-10">
  <div className="w-12 h-12 rounded-xl bg-white/10 flex items-center justify-center mb-6">
  <ShieldCheck className="w-6 h-6" />
  </div>
- <h3 className=" font-medium mb-2">Verified Profile</h3>
+ <h3 className="font-medium mb-2">Verified Profile</h3>
  <p className="text-gray-400 text-xs leading-relaxed">Your account is secured with high-level encryption and internal role protocols.</p>
  </div>
  </div>
@@ -230,7 +230,7 @@ const Profile = () => {
  <UserCircle className="w-5 h-5 text-black" />
  </div>
  <div>
- <h2 className=" font-medium text-black leading-none mb-1">Personal Details</h2>
+ <h2 className="font-medium text-black leading-none mb-1">Personal Details</h2>
  <p className="text-[10px] font-medium text-gray-400 uppercase tracking-widest">Identification & Presence</p>
  </div>
  </div>
@@ -269,7 +269,7 @@ const Profile = () => {
    <button
   type="submit"
   disabled={isUpdatingProfile}
-  className="px-4 py-3 text-sm bg-black text-white rounded-xl font-medium shadow-xl shadow-black/10 hover:bg-gray-100 hover:text-black flex items-center justify-center gap-3 transition-all disabled:opacity-50"
+  className="transition-colors bg-black text-white shadow-xl shadow-black/10 hover:bg-gray-100 hover:text-black flex items-center justify-center gap-3 disabled:opacity-50 px-4 py-3 text-sm rounded-xl font-medium"
   >
   {isUpdatingProfile ? 'Processing...' : 'Apply Modifications'}
   </button>
@@ -286,7 +286,7 @@ const Profile = () => {
  <Settings className="w-5 h-5 text-black" />
  </div>
  <div>
- <h2 className=" font-medium text-black leading-none mb-1">Security Update</h2>
+ <h2 className="font-medium text-black leading-none mb-1">Security Update</h2>
  <p className="text-[10px] font-medium text-gray-400 uppercase tracking-widest">Authentication Keys</p>
  </div>
  </div>
@@ -318,7 +318,7 @@ const Profile = () => {
    <button
   type="submit"
   disabled={isChangingPassword}
-  className="px-4 py-3 text-sm bg-white text-black border-2 border-black rounded-xl font-medium hover:bg-black hover:text-white transition-all disabled:opacity-50"
+  className="transition-colors bg-white text-black border-2 border-black hover:bg-black hover:text-white disabled:opacity-50 px-4 py-3 text-sm rounded-xl font-medium"
   >
   {isChangingPassword ? 'Securing...' : 'Renew Password'}
   </button>

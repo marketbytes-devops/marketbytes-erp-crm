@@ -90,7 +90,7 @@ const ProjectsPage = () => {
  <div className="w-8 h-8 rounded-full bg-linear-to-br from-blue-500 to-purple-600 border-2 border-white flex items-center justify-center text-white text-xs font-medium shadow-md">
  {initial}
  </div>
- <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-black text-white text-xs rounded-lg whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
+ <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 bg-black text-white whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10 px-4 py-3 text-sm rounded-xl font-medium">
  {name}
  <div className="absolute top-full left-1/2 -translate-x-1/2 border-8 border-transparent border-t-black"></div>
  </div>
@@ -112,7 +112,7 @@ const ProjectsPage = () => {
  <div className="mb-8">
  <Link
  to="/operations/projects"
- className="inline-flex items-center gap-2 px-5 py-3 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 transition"
+ className="inline-flex items-center gap-2 border border-gray-300 text-gray-700 hover:bg-gray-50 transition px-4 py-3 text-sm rounded-xl font-medium"
  >
  <MdArrowBack className="w-5 h-5" />
  Back to Projects
@@ -139,7 +139,7 @@ const ProjectsPage = () => {
             <div className="flex gap-3">
               <button
                 onClick={handleExport}
-                className="flex items-center gap-2 px-5 py-4 border border-gray-300 rounded-xl hover:bg-gray-50 transition text-sm font-medium"
+                className="flex items-center gap-2 border border-gray-300 hover:bg-gray-50 transition px-4 py-3 text-sm rounded-xl font-medium"
               >
                 <MdDownload className="w-5 h-5" /> Export
               </button>
@@ -153,13 +153,13 @@ const ProjectsPage = () => {
  <table className="w-full min-w-[1000px]">
  <thead className="bg-gray-50 border-b border-gray-200">
  <tr>
- <th className="px-5 py-2.5 text-sm text-left text-xs font-medium text-gray-700 uppercase tracking-wider whitespace-nowrap">ID</th>
- <th className="px-5 py-2.5 text-sm text-left text-xs font-medium text-gray-700 uppercase tracking-wider whitespace-nowrap">Project</th>
- <th className="px-5 py-2.5 text-sm text-left text-xs font-medium text-gray-700 uppercase tracking-wider whitespace-nowrap">Members</th>
- <th className="px-5 py-2.5 text-sm text-left text-xs font-medium text-gray-700 uppercase tracking-wider whitespace-nowrap">Deadline</th>
- <th className="px-5 py-2.5 text-sm text-left text-xs font-medium text-gray-700 uppercase tracking-wider whitespace-nowrap">Client</th>
- <th className="px-5 py-2.5 text-sm text-left text-xs font-medium text-gray-700 uppercase tracking-wider whitespace-nowrap">Completion</th>
- <th className="px-5 py-2.5 text-sm text-left text-xs font-medium text-gray-700 uppercase tracking-wider whitespace-nowrap">Actions</th>
+ <th className="px-5 py-2.5 text-sm text-left font-medium text-gray-700 uppercase tracking-wider whitespace-nowrap">ID</th>
+ <th className="px-5 py-2.5 text-sm text-left font-medium text-gray-700 uppercase tracking-wider whitespace-nowrap">Project</th>
+ <th className="px-5 py-2.5 text-sm text-left font-medium text-gray-700 uppercase tracking-wider whitespace-nowrap">Members</th>
+ <th className="px-5 py-2.5 text-sm text-left font-medium text-gray-700 uppercase tracking-wider whitespace-nowrap">Deadline</th>
+ <th className="px-5 py-2.5 text-sm text-left font-medium text-gray-700 uppercase tracking-wider whitespace-nowrap">Client</th>
+ <th className="px-5 py-2.5 text-sm text-left font-medium text-gray-700 uppercase tracking-wider whitespace-nowrap">Completion</th>
+ <th className="px-5 py-2.5 text-sm text-left font-medium text-gray-700 uppercase tracking-wider whitespace-nowrap">Actions</th>
  </tr>
  </thead>
  <tbody className="divide-y divide-gray-200">
@@ -184,7 +184,7 @@ const ProjectsPage = () => {
  ) : (
  filtered.map((project, i) => (
  <tr key={project.id} className="hover:bg-gray-50 transition">
- <td className="px-5 py-2.5 text-sm text-sm font-medium text-gray-900 whitespace-nowrap">
+ <td className="px-5 py-2.5 text-sm font-medium text-gray-900 whitespace-nowrap">
  {project.id}
  </td>
  <td className="px-5 py-2.5 text-sm whitespace-nowrap">
@@ -194,21 +194,21 @@ const ProjectsPage = () => {
  </div>
  </td>
  <td className="px-5 py-2.5 text-sm">{renderAvatars(project.members || [])}</td>
- <td className="px-5 py-2.5 text-sm text-sm text-gray-700 whitespace-nowrap">
+ <td className="px-5 py-2.5 text-sm text-gray-700 whitespace-nowrap">
  {project.deadline
  ? new Date(project.deadline).toLocaleDateString("en-GB")
  : "No deadline"}
  </td>
- <td className="px-5 py-2.5 text-sm text-sm text-gray-700 whitespace-nowrap">
+ <td className="px-5 py-2.5 text-sm text-gray-700 whitespace-nowrap">
  {project.client?.name || "—"}
  </td>
- <td className="px-5 py-2.5 text-sm text-sm font-medium text-gray-900">
+ <td className="px-5 py-2.5 text-sm font-medium text-gray-900">
  0%
  </td>
  <td className="px-5 py-2.5 text-sm whitespace-nowrap">
  <button
  onClick={() => handleRestore(project.id)}
- className="inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition font-medium text-sm"
+ className="inline-flex items-center gap-2 bg-green-600 text-white hover:bg-green-700 transition px-4 py-3 text-sm rounded-xl font-medium"
  >
  <MdRestoreFromTrash className="w-4 h-4" />
  Restore
@@ -222,7 +222,7 @@ const ProjectsPage = () => {
  </div>
 
  {filtered.length > 0 && (
- <div className="px-5 py-2.5 text-sm bg-gray-50 border-t border-gray-200 flex flex-col sm:flex-row justify-between items-center gap-3 text-sm text-gray-600">
+ <div className="px-5 py-2.5 text-sm bg-gray-50 border-t border-gray-200 flex flex-col sm:flex-row justify-between items-center gap-3 text-gray-600">
  <span>Showing {filtered.length} archived {filtered.length === 1 ? "project" : "projects"}</span>
  </div>
  )}

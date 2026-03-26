@@ -80,7 +80,7 @@ const DesignationView = () => {
  {hasPermission("designations", "add") && (
    <Link
   to="/hr/designations/create"
-  className="flex items-center gap-3 px-4 py-3 text-sm font-medium bg-black text-white rounded-xl hover:bg-gray-100 hover:text-black transition-all shadow-md"
+  className="flex items-center gap-3 bg-black text-white hover:bg-gray-100 hover:text-black transition-all shadow-md px-4 py-3 text-sm rounded-xl font-medium"
   >
   <MdAdd className="w-5 h-5" />
   Add Designation
@@ -178,11 +178,11 @@ const DesignationView = () => {
  <div className="space-y-6">
  <div>
  <p className="text-sm text-gray-600">Designation ID</p>
- <p className="font-medium ">#{selectedDes.id}</p>
+ <p className="font-medium">#{selectedDes.id}</p>
  </div>
  <div>
  <p className="text-sm text-gray-600">Designation Name</p>
- <p className="font-medium ">{selectedDes.name}</p>
+ <p className="font-medium">{selectedDes.name}</p>
  </div>
  <div>
  <p className="text-sm text-gray-600">Total Members</p>
@@ -208,13 +208,13 @@ const DesignationView = () => {
  <div className="flex justify-end gap-4">
    <button
   onClick={() => setShowDeleteConfirm(null)}
-  className="px-4 py-3 text-sm font-medium border border-gray-300 rounded-xl hover:bg-gray-100 transition-all"
+  className="border border-gray-300 hover:bg-gray-100 transition-all px-4 py-3 text-sm rounded-xl font-medium"
   >
   Cancel
   </button>
   <button
   onClick={() => handleDelete(showDeleteConfirm)}
-  className="px-4 py-3 text-sm font-medium bg-red-600 text-white rounded-xl hover:bg-red-700 transition-all"
+  className="bg-red-600 text-white hover:bg-red-700 transition-all px-4 py-3 text-sm rounded-xl font-medium"
   >
   Delete Anyway
   </button>

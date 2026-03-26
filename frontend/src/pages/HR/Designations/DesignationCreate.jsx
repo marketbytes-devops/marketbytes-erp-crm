@@ -56,11 +56,11 @@ const DesignationCreate = () => {
  <button
  type="submit"
  disabled={loading || !name.trim()}
- className="px-5 py-2.5 text-sm.5 bg-black text-white font-medium rounded-xl hover:bg-gray-900 disabled:opacity-60 shadow-md"
+ className="transition-colors .5 bg-black text-white hover:bg-gray-900 disabled:opacity-60 shadow-md px-4 py-3 text-sm rounded-xl font-medium"
  >
  {loading ? "Creating..." : "Create Designation"}
  </button>
- <Link to="/hr/designations" className="px-5 py-2.5 text-sm.5 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50">
+ <Link to="/hr/designations" className=".5 border border-gray-300 text-gray-700 hover:bg-gray-50 px-4 py-3 text-sm rounded-xl font-medium">
  Cancel
  </Link>
  </div>

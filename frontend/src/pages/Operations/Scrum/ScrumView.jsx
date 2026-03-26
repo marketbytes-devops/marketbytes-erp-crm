@@ -441,7 +441,7 @@ const Scrum = ({ employeeScope = false, leadScope = false }) => {
                 {hasPermission(permissionPage, "add") && (
                   <button
                     onClick={prepareCreate}
-                    className="flex items-center gap-3 px-6 py-3 bg-black text-white rounded-xl hover:bg-gray-900 transition text-sm font-medium whitespace-nowrap"
+                    className="flex items-center gap-3 bg-black text-white hover:bg-gray-900 transition whitespace-nowrap px-4 py-3 text-sm rounded-xl font-medium"
                   >
                     <MdAdd className="w-5 h-5" /> New Scrum
                   </button>
@@ -467,7 +467,7 @@ const Scrum = ({ employeeScope = false, leadScope = false }) => {
 
                 <button
                   onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
-                  className="flex items-center gap-3 px-5 py-4 border border-gray-300 rounded-xl hover:bg-gray-50 transition text-sm font-medium whitespace-nowrap"
+                  className="flex items-center gap-3 border border-gray-300 hover:bg-gray-50 transition whitespace-nowrap px-4 py-3 text-sm rounded-xl font-medium"
                 >
                   <MdFilterList className="w-5 h-5" />
                   Filters
@@ -489,7 +489,7 @@ const Scrum = ({ employeeScope = false, leadScope = false }) => {
               <div className="flex gap-3">
                 <button
                   onClick={() => setPinnedModalOpen(true)}
-                  className="flex items-center gap-2 px-5 py-4 border border-gray-300 rounded-xl hover:bg-gray-50 transition text-sm font-medium"
+                  className="flex items-center gap-2 border border-gray-300 hover:bg-gray-50 transition px-4 py-3 text-sm rounded-xl font-medium"
                 >
                   <MdPushPin className="w-5 h-5 text-yellow-600" />
                   Pinned ({pinnedItems.length})
@@ -497,7 +497,7 @@ const Scrum = ({ employeeScope = false, leadScope = false }) => {
                 <div className="relative" ref={exportDropdownRef}>
                   <button
                     onClick={() => setExportDropdownOpen(!exportDropdownOpen)}
-                    className="flex items-center gap-2 px-5 py-4 border border-gray-300 rounded-xl hover:bg-gray-50 transition text-sm font-medium"
+                    className="flex items-center gap-2 border border-gray-300 hover:bg-gray-50 transition px-4 py-3 text-sm rounded-xl font-medium"
                   >
                     <MdDownload className="w-5 h-5" /> Export
                     <MdKeyboardArrowDown
@@ -508,21 +508,21 @@ const Scrum = ({ employeeScope = false, leadScope = false }) => {
                     <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg border border-gray-200 py-2 z-50">
                       <button
                         onClick={handleExportPDF}
-                        className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 transition flex items-center gap-2"
+                        className="w-full text-left text-gray-700 hover:bg-gray-50 transition flex items-center gap-2 px-4 py-3 text-sm rounded-xl font-medium"
                       >
                         <MdDownload className="w-4 h-4" />
                         Export as PDF
                       </button>
                       <button
                         onClick={handleExportExcel}
-                        className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 transition flex items-center gap-2"
+                        className="w-full text-left text-gray-700 hover:bg-gray-50 transition flex items-center gap-2 px-4 py-3 text-sm rounded-xl font-medium"
                       >
                         <MdDownload className="w-4 h-4" />
                         Export as Excel
                       </button>
                       <button
                         onClick={handleExportCSV}
-                        className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 transition flex items-center gap-2"
+                        className="w-full text-left text-gray-700 hover:bg-gray-50 transition flex items-center gap-2 px-4 py-3 text-sm rounded-xl font-medium"
                       >
                         <MdDownload className="w-4 h-4" />
                         Export as CSV
@@ -567,7 +567,7 @@ const Scrum = ({ employeeScope = false, leadScope = false }) => {
                   </div>
 
                   <div className="flex flex-col sm:flex-row gap-4 mt-8 pt-6 border-t border-gray-200">
-                    <button onClick={resetFilters} className="px-6 py-3.5 border-2 border-gray-300 text-gray-700 font-medium rounded-xl hover:bg-gray-50 transition">
+                    <button onClick={resetFilters} className="border-2 border-gray-300 text-gray-700 hover:bg-gray-50 transition px-4 py-3 text-sm rounded-xl font-medium">
                       Reset All Filters
                     </button>
                   </div>
@@ -602,7 +602,7 @@ const Scrum = ({ employeeScope = false, leadScope = false }) => {
                           <p className="text-xl font-medium text-gray-700">No scrums found</p>
                           <p className="text-gray-500 mt-2">Try adjusting your search or filters</p>
                           {(searchQuery || activeFilterCount > 0) && (
-                            <button onClick={resetFilters} className="mt-5 px-6 py-3 bg-black text-white rounded-xl hover:bg-gray-900 transition font-medium">
+                            <button onClick={resetFilters} className="mt-5 bg-black text-white hover:bg-gray-900 transition px-4 py-3 text-sm rounded-xl font-medium">
                               Clear all filters
                             </button>
                           )}
@@ -691,7 +691,7 @@ const Scrum = ({ employeeScope = false, leadScope = false }) => {
               <div className="px-6 py-3 bg-gray-50 border-t border-gray-200 flex flex-col sm:flex-row justify-between items-center gap-3 text-sm text-gray-600">
                 <span>Showing {filteredData.length} entries</span>
                 {activeFilterCount > 0 && (
-                  <button onClick={resetFilters} className="text-blue-600 hover:text-blue-800 font-medium">
+                  <button onClick={resetFilters} className="transition-colors text-blue-600 hover:text-blue-800 px-4 py-3 text-sm rounded-xl font-medium">
                     Clear all filters
                   </button>
                 )}
@@ -733,7 +733,7 @@ const Scrum = ({ employeeScope = false, leadScope = false }) => {
                         )}
                         <button
                           onClick={() => togglePin(item.id)}
-                          className="p-3 bg-white text-red-600 rounded-xl shadow-xs hover:bg-red-600 hover:text-white transition"
+                          className="p-3 bg-white text-red-600 shadow-xs hover:bg-red-600 hover:text-white transition px-4 py-3 text-sm rounded-xl font-medium"
                         >
                           <MdClose className="w-5 h-5" />
                         </button>
@@ -798,7 +798,7 @@ const Scrum = ({ employeeScope = false, leadScope = false }) => {
                   <label className="text-xs font-medium text-gray-700 uppercase tracking-wide ml-1">Morning Memo</label>
                   <textarea
                     rows={3}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-black outline-none text-sm transition resize-none"
+                    className="w-full border border-gray-300 focus:ring-2 focus:ring-black outline-none transition resize-none px-4 py-3 text-sm rounded-xl font-medium"
                     placeholder="Plan for the day..."
                     value={formData.morning_memo}
                     onChange={(e) => handleFormChange("morning_memo", e.target.value)}
@@ -807,10 +807,10 @@ const Scrum = ({ employeeScope = false, leadScope = false }) => {
               </div>
 
               <div className="px-6 py-5 bg-gray-50 border-t border-gray-100 flex justify-end gap-3">
-                <button onClick={() => setShowCreateModal(false)} className="px-5 py-2.5 border border-gray-300 text-gray-700 font-medium rounded-xl hover:bg-white transition">
+                <button onClick={() => setShowCreateModal(false)} className="border border-gray-300 text-gray-700 hover:bg-white transition px-4 py-3 text-sm rounded-xl font-medium">
                   Cancel
                 </button>
-                <button onClick={handleSubmit} className="px-6 py-2.5 bg-black text-white font-medium rounded-xl hover:bg-gray-900 transition shadow-lg">
+                <button onClick={handleSubmit} className="bg-black text-white hover:bg-gray-900 transition shadow-lg px-4 py-3 text-sm rounded-xl font-medium">
                   Create Scrum
                 </button>
               </div>

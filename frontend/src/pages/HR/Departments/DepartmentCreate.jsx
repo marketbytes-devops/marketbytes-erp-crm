@@ -103,7 +103,7 @@ const DepartmentCreate = () => {
  <button
  type="button"
  onClick={addServiceField}
- className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-black hover:bg-gray-100 rounded-lg transition-all"
+ className="transition-colors flex items-center gap-2 text-black hover:bg-gray-100 px-4 py-3 text-sm rounded-xl font-medium"
  >
  <MdAdd className="w-5 h-5" />
  Add Service
@@ -123,7 +123,7 @@ const DepartmentCreate = () => {
  value={service}
  onChange={(e) => updateService(index, e.target.value)}
  placeholder="e.g. Web Development"
- className="flex-1 px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-black transition-all"
+ className="flex-1 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-black transition-all px-4 py-3 text-sm rounded-xl font-medium"
  />
  <button
  type="button"
@@ -143,13 +143,13 @@ const DepartmentCreate = () => {
  <button
  type="submit"
  disabled={loading || !formData.name.trim()}
- className="px-5 py-2.5 text-sm.5 bg-black text-white font-medium rounded-xl hover:bg-gray-900 disabled:opacity-60 disabled:cursor-not-allowed transition-all shadow-md"
+ className="transition-colors .5 bg-black text-white hover:bg-gray-900 disabled:opacity-60 disabled:cursor-not-allowed shadow-md px-4 py-3 text-sm rounded-xl font-medium"
  >
  Create Department
  </button>
  <Link
  to="/hr/departments"
- className="px-5 py-2.5 text-sm.5 border border-gray-300 text-gray-700 font-medium rounded-xl hover:bg-gray-50 transition-all"
+ className=".5 border border-gray-300 text-gray-700 hover:bg-gray-50 transition-all px-4 py-3 text-sm rounded-xl font-medium"
  >
  Cancel
  </Link>

@@ -362,7 +362,7 @@ const EmployeeTimeLogs = () => {
               <div className="flex gap-3">
                 <button
                   onClick={fetchClockinCounts}
-                  className="p-3 bg-white border border-gray-300 rounded-xl hover:bg-gray-50 transition active:scale-95 text-gray-600"
+                  className="p-1.5 bg-white border border-gray-300 hover:bg-gray-50 transition text-gray-600 px-4 py-3 text-sm rounded-xl font-medium"
                   title="Refresh"
                 >
                   <MdRefresh className={`w-5 h-5 ${loading ? 'animate-spin' : ''}`} />
@@ -370,7 +370,7 @@ const EmployeeTimeLogs = () => {
                 <div className="relative" ref={exportDropdownRef}>
                   <button 
                     onClick={() => setExportDropdownOpen(!exportDropdownOpen)}
-                    className="flex items-center gap-2 px-6 py-3 bg-black text-white rounded-xl hover:bg-gray-900 transition text-sm font-medium whitespace-nowrap"
+                    className="flex items-center gap-2 bg-black text-white hover:bg-gray-900 transition whitespace-nowrap px-4 py-3 text-sm rounded-xl font-medium"
                   >
                     <MdDownload className="w-5 h-5" /> Export Report
                     <MdKeyboardArrowDown className={`w-4 h-4 transition-transform ${exportDropdownOpen ? 'rotate-180' : ''}`} />
@@ -379,21 +379,21 @@ const EmployeeTimeLogs = () => {
                     <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg border border-gray-200 py-2 z-50">
                       <button
                         onClick={handleExportPDF}
-                        className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 transition flex items-center gap-2"
+                        className="w-full text-left text-gray-700 hover:bg-gray-50 transition flex items-center gap-2 px-4 py-3 text-sm rounded-xl font-medium"
                       >
                         <MdDownload className="w-4 h-4" />
                         Export as PDF
                       </button>
                       <button
                         onClick={handleExportExcel}
-                        className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 transition flex items-center gap-2"
+                        className="w-full text-left text-gray-700 hover:bg-gray-50 transition flex items-center gap-2 px-4 py-3 text-sm rounded-xl font-medium"
                       >
                         <MdDownload className="w-4 h-4" />
                         Export as Excel
                       </button>
                       <button
                         onClick={handleExportCSV}
-                        className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 transition flex items-center gap-2"
+                        className="w-full text-left text-gray-700 hover:bg-gray-50 transition flex items-center gap-2 px-4 py-3 text-sm rounded-xl font-medium"
                       >
                         <MdDownload className="w-4 h-4" />
                         Export as CSV
@@ -423,7 +423,7 @@ const EmployeeTimeLogs = () => {
 
                 <button
                   onClick={() => setFiltersOpen(!filtersOpen)}
-                  className="flex items-center gap-3 px-5 py-3 border border-gray-300 rounded-xl hover:bg-gray-50 transition text-sm font-medium whitespace-nowrap"
+                  className="flex items-center gap-3 border border-gray-300 hover:bg-gray-50 transition whitespace-nowrap px-4 py-3 text-sm rounded-xl font-medium"
                 >
                   <MdFilterList className="w-5 h-5" />
                   Filters
@@ -469,14 +469,14 @@ const EmployeeTimeLogs = () => {
                           type="date"
                           value={filters.from}
                           onChange={(e) => handleFilterChange("from", e.target.value)}
-                          className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-black outline-none text-sm transition"
+                          className="w-full border border-gray-200 focus:ring-2 focus:ring-black outline-none transition px-4 py-3 text-sm rounded-xl font-medium"
                         />
                         <span className="text-gray-400">-</span>
                         <input
                           type="date"
                           value={filters.to}
                           onChange={(e) => handleFilterChange("to", e.target.value)}
-                          className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-black outline-none text-sm transition"
+                          className="w-full border border-gray-200 focus:ring-2 focus:ring-black outline-none transition px-4 py-3 text-sm rounded-xl font-medium"
                         />
                       </div>
                     </div>
@@ -519,7 +519,7 @@ const EmployeeTimeLogs = () => {
                   <div className="flex justify-end mt-8 pt-6 border-t border-gray-200">
                     <button
                       onClick={resetFilters}
-                      className="px-6 py-3.5 border-2 border-gray-300 text-gray-700 font-medium rounded-xl hover:bg-gray-50 transition"
+                      className="border-2 border-gray-300 text-gray-700 hover:bg-gray-50 transition px-4 py-3 text-sm rounded-xl font-medium"
                     >
                       Reset All Filters
                     </button>
@@ -669,7 +669,7 @@ const EmployeeTimeLogs = () => {
               <div className="px-6 py-3 bg-gray-50 border-t border-gray-200 flex flex-col sm:flex-row justify-between items-center gap-3 text-sm text-gray-600">
                 <span>Showing {filteredEmployees.length} records</span>
                 {activeFilterCount > 0 && (
-                  <button onClick={resetFilters} className="text-blue-600 hover:text-blue-800 font-medium">
+                  <button onClick={resetFilters} className="transition-colors text-blue-600 hover:text-blue-800 px-4 py-3 text-sm rounded-xl font-medium">
                     Clear all filters
                   </button>
                 )}
