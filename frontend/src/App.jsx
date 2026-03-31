@@ -62,6 +62,41 @@ import ContractsList from "./pages/Operations/Contracts/ContractsList";
 import ContractCreate from "./pages/Operations/Contracts/ContractCreate";
 import ContractEdit from "./pages/Operations/Contracts/ContractEdit";
 import CommonCalendar from "./pages/CommonCalendar";
+import { MdDesktopWindows } from "react-icons/md";
+
+const DesktopOnlyWrapper = ({ children }) => {
+  const [isDesktop, setIsDesktop] = useState(window.innerWidth >= 1024);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsDesktop(window.innerWidth >= 1024);
+    };
+
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  if (!isDesktop) {
+    return (
+      <div className="desktop-only-overlay">
+        <div className="desktop-only-icon">
+          <MdDesktopWindows size={48} />
+        </div>
+        <h1 className="desktop-only-title">Desktop Experience Only</h1>
+        <p className="desktop-only-text">
+          MarketBytes ERP is designed for professional desktop use. 
+          Please access the platform from a Laptop or Desktop computer 
+          for the full experience.
+        </p>
+        <div className="desktop-only-badge">
+          Optimized for Large Screens
+        </div>
+      </div>
+    );
+  }
+
+  return children;
+};
 
 
 
@@ -977,11 +1012,13 @@ function App() {
  },
  ]);
 
- return (
- <PermissionProvider isAuthenticated={isAuthenticated}>
- <RouterProvider router={router} />
- </PermissionProvider>
- );
+  return (
+    <DesktopOnlyWrapper>
+      <PermissionProvider isAuthenticated={isAuthenticated}>
+        <RouterProvider router={router} />
+      </PermissionProvider>
+    </DesktopOnlyWrapper>
+  );
 }
 
 export default App;
