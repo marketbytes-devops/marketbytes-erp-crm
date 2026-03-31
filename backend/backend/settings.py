@@ -198,7 +198,7 @@ EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
 EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 ADMIN_EMAIL = os.getenv('ADMIN_EMAIL')
-SERVER_EMAIL = os.getenv('COMPANY_FROM_EMAIL', 'no-reply@primearabiagroup.com')
+SERVER_EMAIL = os.getenv('COMPANY_FROM_EMAIL', 'marketbytesdevops@gmail.com')
 
 # Gmail Integration Configuration
 GMAIL_CLIENT_ID = os.getenv('GMAIL_CLIENT_ID')
