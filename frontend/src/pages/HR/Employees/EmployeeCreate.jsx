@@ -102,7 +102,7 @@ const EmployeeCreate = () => {
  .map(id => parseInt(id.replace("MB", "")) || 0);
 
  const maxId = usedIds.length > 0 ? Math.max(...usedIds) : 0;
- const nextId = `MB${String(maxId + 1).padStart(4, "0")}`;
+ const nextId = `MB${String(maxId + 1).padStart(2, "0")}`;
  setNextEmployeeId(nextId);
 
  } catch (err) {
@@ -422,7 +422,7 @@ const EmployeeCreate = () => {
  Employee ID <span className="text-red-500">*</span>
  </label>
  <div className="px-4 py-3 bg-gray-100 border border-gray-300 rounded-lg font-mono text-gray-800">
- {nextEmployeeId || "MB0001"}
+ {nextEmployeeId || "MB01"}
  </div>
  <p className="text-xs text-gray-500 mt-1">Auto-generated • Cannot be changed</p>
  </div>
