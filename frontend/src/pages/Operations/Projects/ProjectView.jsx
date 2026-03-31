@@ -403,7 +403,7 @@ const ProjectsView = ({ employeeScope = false, leadScope = false }) => {
               </div>
               {hasPermission(permissionPage, "add") && (
                 <Link
-                  to="/operations/projects/projectcreate"
+                  to="/operations/projects/project-create"
                   className="flex items-center gap-3 bg-black text-white hover:bg-gray-900 transition px-4 py-3 text-sm rounded-xl font-medium"
                 >
                   <MdAdd className="w-5 h-5" /> Add New Project
@@ -762,8 +762,18 @@ const ProjectsView = ({ employeeScope = false, leadScope = false }) => {
                               <Link
                                 to={`/operations/projects/${project.id}`}
                                 className="p-2 hover:bg-blue-50 rounded-lg transition group"
+                                title="View Project"
                               >
                                 <MdVisibility className="w-5 h-5 text-gray-600 group-hover:text-blue-600" />
+                              </Link>
+
+                              <Link
+                                to="/operations/tasks/new-task"
+                                state={{ projectId: project.id }}
+                                className="p-2 hover:bg-green-50 rounded-lg transition group"
+                                title="Add Task"
+                              >
+                                <MdAdd className="w-5 h-5 text-gray-600 group-hover:text-green-600" />
                               </Link>
 
                               {hasPermission(permissionPage, "edit") && (

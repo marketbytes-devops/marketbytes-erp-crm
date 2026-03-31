@@ -923,6 +923,20 @@ class TimerViewSet(viewsets.ViewSet):
         task_id = request.data.get('task')
         memo = request.data.get('memo', '')
         
+        if project_id:
+            try:
+                project = Project.objects.get(id=project_id)
+                if project.status and project.status.name == "On Hold":
+                    return Response({"error": "This project is currently On Hold and cannot be worked on."}, status=400)
+                
+                # Automatically transition status if it's To be Started
+                if project.status and project.status.name == "To be Started":
+                    in_progress_status, _ = ProjectStatus.objects.get_or_create(name="In Progress")
+                    project.status = in_progress_status
+                    project.save()
+            except Project.DoesNotExist:
+                pass
+
         WorkSession.objects.filter(employee=request.user, end_time__isnull=True).update(end_time=timezone.now())
         
         BreakSession.objects.filter(employee=request.user, end_time__isnull=True).update(end_time=timezone.now())
@@ -988,6 +1002,9 @@ class TimerViewSet(viewsets.ViewSet):
             if user.department_id:
                 query |= Q(department_id=user.department_id)
             projects = Project.objects.filter(query).distinct()
+
+        # Filter out Completed and Cancelled projects
+        projects = projects.exclude(status__name__in=["Completed", "Cancelled"])
 
         data = []
         for p in projects:

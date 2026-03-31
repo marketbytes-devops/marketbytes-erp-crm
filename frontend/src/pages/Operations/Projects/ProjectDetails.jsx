@@ -127,11 +127,11 @@ const ProjectDetails = () => {
  <span className="px-4 py-1.5 rounded-full text-xs font-medium bg-purple-50 text-purple-700 border border-purple-100 uppercase tracking-wider">
  {project.category?.name || "General"}
  </span>
- {project.department && (
- <span className="px-4 py-1.5 rounded-full text-xs font-medium bg-amber-50 text-amber-700 border border-amber-100 uppercase tracking-wider">
- {project.department.name}
- </span>
- )}
+  {project.involved_departments?.map((dept) => (
+  <span key={dept.id} className="px-4 py-1.5 rounded-full text-xs font-medium bg-amber-50 text-amber-700 border border-amber-100 uppercase tracking-wider">
+  {dept.name}
+  </span>
+  ))}
  {project.stage && (
  <span className="px-4 py-1.5 rounded-full text-xs font-medium bg-indigo-50 text-indigo-700 border border-indigo-100 uppercase tracking-wider">
  {project.stage?.name}
@@ -168,10 +168,17 @@ const ProjectDetails = () => {
  </div>
  <div className="space-y-1">
  <p className="text-xs font-medium text-gray-400 uppercase tracking-wider flex items-center gap-1">
- <MdWork className="w-4 h-4" /> Hours
+ <MdWork className="w-4 h-4" /> Hours {project.tenor === "monthly" ? "(This Month)" : ""}
  </p>
  <p className="text-sm font-medium text-gray-900">
- {project.hours_allocated || "Not Set"}
+ {project.hours_allocated ? (
+   <span>
+     {project.total_hours_spent || 0} / {project.hours_allocated} 
+     <span className="text-gray-500 text-xs ml-1 font-normal">
+       {project.tenor === "monthly" ? "hr/mo" : "hr(s)"}
+     </span>
+   </span>
+ ) : "Not Set"}
  </p>
  </div>
  </div>

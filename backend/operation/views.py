@@ -81,7 +81,18 @@ class ProjectStatusViewSet(viewsets.ModelViewSet):
     filterset_fields = ["name"]
 
     def get_queryset(self):
-        return ProjectStatus.objects.all()
+        required_statuses = [
+            "To be Started",
+            "In Progress",
+            "On Hold",
+            "Completed",
+            "Cancelled"
+        ]
+        # Ensure they exist
+        for status_name in required_statuses:
+            ProjectStatus.objects.get_or_create(name=status_name)
+        
+        return ProjectStatus.objects.filter(name__in=required_statuses).order_by('id')
 
 
 class ProjectStageViewSet(viewsets.ModelViewSet):
@@ -153,14 +164,14 @@ class ProjectViewSet(viewsets.ModelViewSet):
         "summary",
         "notes",
         "category__name",
-        "department__name",
+        "involved_departments__name",
         "status__name",
         "stage__name",
         "client__name",
     ]
     filterset_fields = {
         "category": ["exact"],
-        "department": ["exact"],
+        "involved_departments": ["exact"],
         "status": ["exact"],
         "stage": ["exact"],
         "client": ["exact"],
@@ -189,10 +200,9 @@ class ProjectViewSet(viewsets.ModelViewSet):
         if self.request.query_params.get("employee_scope"):
             queryset = queryset.filter(members=user).distinct()
         elif not user.is_superuser and not user.is_staff and not (user.role and user.role.name == 'HR'):
-            queryset = queryset.filter(members=user).distinct()
             query = Q(members=user)
             if user.department:
-                query |= Q(department=user.department)
+                query |= Q(involved_departments=user.department)
             
             # Lead visibility: projects of direct reports
             if 'lead_scope' in self.request.query_params:
@@ -524,7 +534,7 @@ class TaskViewSet(viewsets.ModelViewSet):
         if self.request.query_params.get('employee_scope'):
             queryset = queryset.filter(assignees=user).distinct()
         elif not user.is_superuser and not user.is_staff:
-            query = Q(project__members=user) | Q(project__department=user.department) | Q(assignees=user)
+            query = Q(project__members=user) | Q(project__involved_departments=user.department) | Q(assignees=user)
             
             # Lead visibility: tasks of direct reports
             if 'lead_scope' in self.request.query_params:
@@ -584,7 +594,7 @@ class ScrumViewSet(viewsets.ModelViewSet):
             queryset = queryset.filter(employee=user).distinct()
         elif not user.is_superuser and not user.is_staff:
             query = Q(task__project__members=user) | \
-                    Q(task__project__department=user.department) | \
+                    Q(task__project__involved_departments=user.department) | \
                     Q(task__assignees=user) | \
                     Q(employee=user) | \
                     Q(created_by=user)

@@ -139,26 +139,27 @@ const WorkTimerController = () => {
  }
  };
 
- const startWork = async ({ project, task, memo }) => {
- try {
- await apiClient.post("/hr/timer/start_work/", { project, task, memo });
- setModalOpen(false);
- fetchStatus();
- } catch (e) {
- console.error(e);
- }
- };
+  const startWork = async ({ project, task, memo }) => {
+    try {
+      await apiClient.post("/hr/timer/start_work/", { project, task, memo });
+      setModalOpen(false);
+      fetchStatus();
+    } catch (e) {
+      console.error(e);
+      toast.error(e.response?.data?.error || "Failed to start work timer");
+    }
+  };
 
- const stopWork = async () => {
- try {
- await apiClient.post("/hr/timer/stop_work/");
- // Backend automatically starts a break session, no need to call /hr/timer/start_break/ here
- setModalOpen(false);
- fetchStatus();
- } catch (e) {
- console.error(e);
- }
- };
+  const stopWork = async () => {
+    try {
+      await apiClient.post("/hr/timer/stop_work/");
+      setModalOpen(false);
+      fetchStatus();
+    } catch (e) {
+      console.error(e);
+      toast.error(e.response?.data?.error || "Failed to stop work timer");
+    }
+  };
 
  const startBreak = async (type) => {
  try {

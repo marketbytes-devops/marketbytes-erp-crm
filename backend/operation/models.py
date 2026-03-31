@@ -79,8 +79,8 @@ class Project(models.Model):
     name = models.CharField(max_length=255)
     category = models.ForeignKey(
         ProjectCategory, on_delete=models.SET_NULL, null=True, blank=True)
-    department = models.ForeignKey(
-        Department, on_delete=models.SET_NULL, null=True, blank=True)
+    involved_departments = models.ManyToManyField(
+        Department, blank=True, related_name='projects')
     start_date = models.DateField(null=True, blank=True)
     deadline = models.DateField(null=True, blank=True)
     no_deadline = models.BooleanField(default=False)
@@ -91,6 +91,14 @@ class Project(models.Model):
     allow_manual_timelogs = models.BooleanField(default=False)
     hours_allocated = models.DecimalField(
         max_digits=10, decimal_places=2, null=True, blank=True)
+    
+    TENOR_CHOICES = [
+        ('monthly', 'Monthly'),
+        ('one_time', 'One Time'),
+    ]
+    tenor = models.CharField(
+        max_length=20, choices=TENOR_CHOICES, default='one_time', null=True, blank=True)
+    
     members = models.ManyToManyField(
         CustomUser, blank=True, related_name='projects')
     summary = models.TextField(blank=True, null=True)

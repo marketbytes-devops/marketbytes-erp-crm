@@ -85,7 +85,7 @@ class CurrencySerializer(serializers.ModelSerializer):
 
 class ProjectSerializer(serializers.ModelSerializer):
     category = ProjectCategorySerializer(read_only=True)
-    department = DepartmentSerializer(read_only=True)
+    involved_departments = DepartmentSerializer(many=True, read_only=True)
     status = ProjectStatusSerializer(read_only=True)
     stage = ProjectStageSerializer(read_only=True)
     client = ClientSerializer(read_only=True)
@@ -104,11 +104,12 @@ class ProjectSerializer(serializers.ModelSerializer):
         allow_null=True,
     )
 
-    department_id = serializers.PrimaryKeyRelatedField(
+    involved_departments_ids = serializers.PrimaryKeyRelatedField(
         queryset=Department.objects.all(),
-        source="department",
+        source="involved_departments",
+        many=True,
         required=False,
-        allow_null=True,
+        allow_empty=True,
     )
 
     status_id = serializers.PrimaryKeyRelatedField(
@@ -176,8 +177,8 @@ class ProjectSerializer(serializers.ModelSerializer):
             "category",
             "category_name",
             "category_id",
-            "department",
-            "department_id",
+            "involved_departments",
+            "involved_departments_ids",
             "start_date",
             "deadline",
             "no_deadline",
@@ -187,6 +188,7 @@ class ProjectSerializer(serializers.ModelSerializer):
             "dm",
             "allow_manual_timelogs",
             "hours_allocated",
+            "tenor",
             "members",
             "members_ids",
             "summary",
@@ -217,17 +219,29 @@ class ProjectSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = ["id", "created_at", "updated_at", "project_files", "total_hours_spent", "total_actual_cost", "profit_loss", "progress_percentage", "member_contributions"]
 
-    def get_total_hours_spent(self, obj):
+    def _get_relevant_work_sessions(self, obj):
         from hr.models import WorkSession
+        from django.utils import timezone
+        
         sessions = WorkSession.objects.filter(project=obj, end_time__isnull=False)
+        
+        if getattr(obj, 'tenor', None) == 'monthly':
+            now = timezone.now()
+            sessions = sessions.filter(start_time__year=now.year, start_time__month=now.month)
+            
+        return sessions
+
+    def get_total_hours_spent(self, obj):
+        sessions = self._get_relevant_work_sessions(obj)
         total_seconds = sessions.aggregate(total=Sum('duration_seconds'))['total'] or 0
         return round(total_seconds / 3600, 2)
 
     def get_total_actual_cost(self, obj):
-        from hr.models import WorkSession
-        sessions = WorkSession.objects.filter(project=obj, end_time__isnull=False)
+        sessions = self._get_relevant_work_sessions(obj)
         total_cost = 0
         for session in sessions:
+            if not session.employee:
+                continue
             rate = session.employee.hourly_rate or 0
             duration = session.duration_seconds or 0
             hours = duration / 3600
@@ -247,8 +261,7 @@ class ProjectSerializer(serializers.ModelSerializer):
         return round((spent / allocated) * 100, 2)
 
     def get_member_contributions(self, obj):
-        from hr.models import WorkSession
-        sessions = WorkSession.objects.filter(project=obj, end_time__isnull=False)
+        sessions = self._get_relevant_work_sessions(obj)
         contributions = {}
         for session in sessions:
             emp = session.employee
