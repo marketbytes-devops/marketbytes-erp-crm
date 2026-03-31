@@ -224,7 +224,7 @@ class LeaveSerializer(serializers.ModelSerializer):
         required=True,       
         allow_null=False
     )
-    leave_type_name = serializers.CharField(source='leave_type.name', read_only=True)
+    leave_type_name = serializers.SerializerMethodField()
     total_days = serializers.SerializerMethodField()
 
     class Meta:
@@ -236,6 +236,9 @@ class LeaveSerializer(serializers.ModelSerializer):
             'approved_by', 'rejection_reason', 'created_at', 'updated_at', 'total_days'
         ]
         read_only_fields = ['approved_by', 'created_at', 'updated_at', 'total_days', 'leave_type_name']
+
+    def get_leave_type_name(self, obj):
+        return obj.leave_type.name if obj.leave_type else "N/A"
 
     def get_total_days(self, obj):
         return obj.total_days()

@@ -7,392 +7,406 @@ import apiClient from "../../../helpers/apiClient";
 import { usePermission } from "../../../context/PermissionContext";
 
 const AssignLeave = ({ leadScope, employeeScope }) => {
- const { hasPermission, user } = usePermission();
- const permissionPage = employeeScope ? "employee_leaves" : (leadScope ? "lead_leaves" : "leaves");
- const [employees, setEmployees] = useState([]);
- const [leaveTypes, setLeaveTypes] = useState([]);
- const [showAddTypeModal, setShowAddTypeModal] = useState(false);
- const [newTypeName, setNewTypeName] = useState("");
- const [loading, setLoading] = useState(false);
+    const { hasPermission, user } = usePermission();
+    const permissionPage = employeeScope ? "employee_leaves" : (leadScope ? "lead_leaves" : "leaves");
+    const [employees, setEmployees] = useState([]);
+    const [leaveTypes, setLeaveTypes] = useState([]);
+    const [showAddTypeModal, setShowAddTypeModal] = useState(false);
+    const [newTypeName, setNewTypeName] = useState("");
+    const [loading, setLoading] = useState(false);
 
- const [form, setForm] = useState({
- employee: "",
- leave_type: "",
- status: "approved",
- duration: "single",
- date: "",
- half_day_period: "first_half",
- start_date: "",
- end_date: "",
- reason: "",
- });
+    const [form, setForm] = useState({
+        employee: "",
+        leave_type: "",
+        status: "approved",
+        duration: "single",
+        date: "",
+        half_day_period: "first_half",
+        start_date: "",
+        end_date: "",
+        reason: "",
+    });
 
- useEffect(() => {
- fetchEmployees();
- fetchLeaveTypes();
- }, []);
+    useEffect(() => {
+        fetchEmployees();
+        fetchLeaveTypes();
+    }, []);
 
- useEffect(() => {
- if (employeeScope && user) {
- setForm((prev) => ({
- ...prev,
- employee: user.id,
- status: "pending",
- }));
- }
- }, [employeeScope, user]);
+    useEffect(() => {
+        if (employeeScope && user) {
+            setForm((prev) => ({
+                ...prev,
+                employee: user.id,
+                status: "pending",
+            }));
+        }
+    }, [employeeScope, user]);
 
- const fetchEmployees = async () => {
- try {
- const url = leadScope ? "/auth/users/?lead_scope=true" : "/auth/users/";
- const res = await apiClient.get(url);
- const data = res.data.results || res.data || [];
+    const fetchEmployees = async () => {
+        try {
+            const url = leadScope ? "/auth/users/?lead_scope=true" : "/auth/users/";
+            const res = await apiClient.get(url);
+            const data = res.data.results || res.data || [];
 
- const formatted = data.map(emp => ({
- ...emp,
- name: emp.name || `${emp.first_name || ""} ${emp.last_name || ""}`.trim()
- }));
+            const formatted = data.map(emp => ({
+                ...emp,
+                name: emp.name || `${emp.first_name || ""} ${emp.last_name || ""}`.trim()
+            }));
 
- formatted.sort((a, b) => a.name.localeCompare(b.name));
+            formatted.sort((a, b) => a.name.localeCompare(b.name));
 
- setEmployees(formatted);
- } catch (err) {
- console.error("Failed to load employees:", err);
- }
- };
+            setEmployees(formatted);
+        } catch (err) {
+            console.error("Failed to load employees:", err);
+        }
+    };
 
- const fetchLeaveTypes = async () => {
- try {
- const res = await apiClient.get("/hr/leave-types/");
- setLeaveTypes(res.data.results || res.data || []);
- } catch (err) {
- console.error("Failed to load leave types", err);
- }
- };
+    const fetchLeaveTypes = async () => {
+        try {
+            const res = await apiClient.get("/hr/leave-types/");
+            setLeaveTypes(res.data.results || res.data || []);
+        } catch (err) {
+            console.error("Failed to load leave types", err);
+        }
+    };
 
- const handleSubmit = async (e) => {
- e.preventDefault();
- setLoading(true);
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        setLoading(true);
 
- let payload = {
- employee_id: parseInt(form.employee),
- leave_type: parseInt(form.leave_type),
- status: form.status,
- reason: form.reason || "",
- };
+        let payload = {
+            employee_id: parseInt(form.employee),
+            leave_type: parseInt(form.leave_type),
+            status: form.status,
+            reason: form.reason || "",
+        };
 
- if (form.duration === "half_day") {
- payload.start_date = form.date;
- payload.duration = "half_day";
- payload.half_day_period = form.half_day_period;
- } else if (form.duration === "single") {
- payload.start_date = form.date;
- payload.end_date = form.date;
- } else if (form.duration === "multiple") {
- payload.start_date = form.start_date;
- payload.end_date = form.end_date;
- }
+        if (form.duration === "half_day") {
+            payload.start_date = form.date;
+            payload.duration = "half_day";
+            payload.half_day_period = form.half_day_period;
+        } else if (form.duration === "single") {
+            payload.start_date = form.date;
+            payload.end_date = form.date;
+        } else if (form.duration === "multiple") {
+            payload.start_date = form.start_date;
+            payload.end_date = form.end_date;
+        }
 
- try {
- await apiClient.post("/hr/leaves/", payload);
- alert(employeeScope ? "Leave application submitted successfully!" : "Leave assigned successfully!");
- window.history.back();
- } catch (err) {
- const msg = err.response?.data?.detail || (employeeScope ? "Failed to apply for leave" : "Failed to assign leave");
- alert(msg);
- console.error(err);
- } finally {
- setLoading(false);
- }
- };
+        try {
+            await apiClient.post("/hr/leaves/", payload);
+            alert(employeeScope ? "Leave application submitted successfully!" : "Leave assigned successfully!");
+            window.history.back();
+        } catch (err) {
+            const msg = err.response?.data?.detail || (employeeScope ? "Failed to apply for leave" : "Failed to assign leave");
+            alert(msg);
+            console.error(err);
+        } finally {
+            setLoading(false);
+        }
+    };
 
- const addLeaveType = async () => {
- if (!newTypeName.trim()) return;
- try {
- const res = await apiClient.post("/hr/leave-types/", { name: newTypeName.trim() });
- setLeaveTypes([...leaveTypes, res.data]);
- setNewTypeName("");
- setShowAddTypeModal(false);
- } catch (err) {
- alert("Failed to add leave type");
- }
- };
+    const addLeaveType = async () => {
+        if (!newTypeName.trim()) return;
+        try {
+            const res = await apiClient.post("/hr/leave-types/", { name: newTypeName.trim() });
+            setLeaveTypes([...leaveTypes, res.data]);
+            setNewTypeName("");
+            setShowAddTypeModal(false);
+        } catch (err) {
+            alert("Failed to add leave type");
+        }
+    };
 
- const employeeOptions = employees.map((emp) => ({
- value: emp.id,
- label: `${emp.name} (${emp.employee_id || "No ID"})`,
- }));
+    const deleteLeaveType = async (type) => {
+        if (!window.confirm(`Are you sure you want to delete the leave type "${type.label}"?`)) return;
+        try {
+            await apiClient.delete(`/hr/leave-types/${type.value}/`);
+            setLeaveTypes(leaveTypes.filter(t => t.id !== type.value));
+            if (form.leave_type === type.value) {
+                setForm({ ...form, leave_type: "" });
+            }
+        } catch (err) {
+            alert(err.response?.data?.detail || "Failed to delete leave type. It may be in use.");
+        }
+    };
 
- const leaveTypeOptions = leaveTypes.map((type) => ({
- value: type.id,
- label: type.name,
- }));
+    const employeeOptions = employees.map((emp) => ({
+        value: emp.id,
+        label: `${emp.name} (${emp.employee_id || "No ID"})`,
+    }));
 
- const statusOptions = [
- { value: "approved", label: "Approved" },
- { value: "pending", label: "Pending" },
- ];
+    const leaveTypeOptions = leaveTypes.map((type) => ({
+        value: type.id,
+        label: type.name,
+    }));
 
- return (
- <div className="p-4 md:p-6 max-w-full mx-auto">
- <LayoutComponents
- title={employeeScope ? "Apply Leave" : "Assign Leave"}
- subtitle={employeeScope ? "Submit a new leave request" : "Manually assign leave to an employee"}
- variant="card"
- >
- <div className="mb-8">
- <Link
- to={leadScope ? "/lead/leaves" : employeeScope ? "/employee/leaves" : "/hr/leaves"}
- className="inline-flex items-center gap-2 border border-gray-300 text-gray-700 hover:bg-gray-50 transition px-4 py-3 text-sm rounded-xl font-medium"
- >
- <MdArrowBack className="w-5 h-5" />
- Back to Leaves
- </Link>
- </div>
+    const statusOptions = [
+        { value: "approved", label: "Approved" },
+        { value: "pending", label: "Pending" },
+    ];
 
- <form onSubmit={handleSubmit} className="space-y-8">
- <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 md:p-8">
- <h3 className="font-medium text-gray-900 mb-6">Leave Details</h3>
+    return (
+        <div className="p-4 md:p-6 max-w-full mx-auto">
+            <LayoutComponents
+                title={employeeScope ? "Apply Leave" : "Assign Leave"}
+                subtitle={employeeScope ? "Submit a new leave request" : "Manually assign leave to an employee"}
+                variant="card"
+            >
+                <div className="mb-8">
+                    <Link
+                        to={leadScope ? "/lead/leaves" : employeeScope ? "/employee/leaves" : "/hr/leaves"}
+                        className="inline-flex items-center gap-2 border border-gray-300 text-gray-700 hover:bg-gray-50 transition px-4 py-3 text-sm rounded-xl font-medium"
+                    >
+                        <MdArrowBack className="w-5 h-5" />
+                        Back to Leaves
+                    </Link>
+                </div>
 
- <div className={`grid grid-cols-1 ${employeeScope ? "md:grid-cols-2" : "md:grid-cols-3"} gap-6`}>
- {/* Employee */}
- {!employeeScope ? (
- <Input
- label="Employee"
- type="select"
- required
- value={form.employee}
- onChange={(v) => setForm({ ...form, employee: v })}
- options={[{ value: "", label: "Select Employee" }, ...employeeOptions]}
- placeholder="Select Employee"
- />
- ) : (
- <div className="flex flex-col">
- <label className="text-sm font-medium text-black mb-2">Employee</label>
- <div className="px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-700 font-medium">
- {user?.name || user?.email}
- </div>
- </div>
- )}
+                <form onSubmit={handleSubmit} className="space-y-8">
+                    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 md:p-8">
+                        <h3 className="font-medium text-gray-900 mb-6">Leave Details</h3>
 
- {/* Leave Type */}
- <div>
- <div className="flex items-center justify-between mb-2">
- <label className="text-sm font-medium text-black">
- Leave Type <span className="text-red-500">*</span>
- </label>
- {hasPermission(permissionPage, "add") && (
- <button
- type="button"
- onClick={() => setShowAddTypeModal(true)}
- className="text-sm font-medium text-black hover:text-gray-700 underline"
- >
- + Add New Type
- </button>
- )}
- </div>
- <Input
- type="select"
- required
- value={form.leave_type}
- onChange={(v) => setForm({ ...form, leave_type: v })}
- options={[{ value: "", label: "Select Leave Type" }, ...leaveTypeOptions]}
- placeholder="Select Leave Type"
- />
- </div>
+                        <div className={`grid grid-cols-1 ${employeeScope ? "md:grid-cols-2" : "md:grid-cols-3"} gap-6`}>
+                            {/* Employee */}
+                            {!employeeScope ? (
+                                <Input
+                                    label="Employee"
+                                    type="select"
+                                    required
+                                    value={form.employee}
+                                    onChange={(v) => setForm({ ...form, employee: v })}
+                                    options={[{ value: "", label: "Select Employee" }, ...employeeOptions]}
+                                    placeholder="Select Employee"
+                                />
+                            ) : (
+                                <div className="flex flex-col">
+                                    <label className="text-sm font-medium text-black mb-2">Employee</label>
+                                    <div className="px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-700 font-medium">
+                                        {user?.name || user?.email}
+                                    </div>
+                                </div>
+                            )}
 
- {/* Status */}
- {!employeeScope && (
- <Input
- label="Status"
- type="select"
- value={form.status}
- onChange={(v) => setForm({ ...form, status: v })}
- options={statusOptions}
- />
- )}
- </div>
+                            {/* Leave Type */}
+                            <div>
+                                <div className="flex items-center justify-between mb-2">
+                                    <label className="text-sm font-medium text-black">
+                                        Leave Type <span className="text-red-500">*</span>
+                                    </label>
+                                    {hasPermission(permissionPage, "add") && (
+                                        <button
+                                            type="button"
+                                            onClick={() => setShowAddTypeModal(true)}
+                                            className="text-sm font-medium text-black hover:text-gray-700 underline"
+                                        >
+                                            + Add New Type
+                                        </button>
+                                    )}
+                                </div>
+                                <Input
+                                    type="select"
+                                    required
+                                    value={form.leave_type}
+                                    onChange={(v) => setForm({ ...form, leave_type: v })}
+                                    onDeleteOption={hasPermission(permissionPage, "delete") ? deleteLeaveType : null}
+                                    options={[{ value: "", label: "Select Leave Type" }, ...leaveTypeOptions]}
+                                    placeholder="Select Leave Type"
+                                />
+                            </div>
 
- {/* Duration Selection */}
- <div className="mt-8">
- <label className="block text-sm font-medium text-black mb-4">Duration</label>
- <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
- <label className="flex items-center gap-3 cursor-pointer">
- <input
- type="radio"
- name="duration"
- value="single"
- checked={form.duration === "single"}
- onChange={(e) => setForm({ ...form, duration: e.target.value })}
- className="w-5 h-5 text-black focus:ring-black"
- />
- <span className="font-medium">Single Day</span>
- </label>
- <label className="flex items-center gap-3 cursor-pointer">
- <input
- type="radio"
- name="duration"
- value="half_day"
- checked={form.duration === "half_day"}
- onChange={(e) => setForm({ ...form, duration: e.target.value })}
- className="w-5 h-5 text-black focus:ring-black"
- />
- <span className="font-medium">Half Day</span>
- </label>
- <label className="flex items-center gap-3 cursor-pointer">
- <input
- type="radio"
- name="duration"
- value="multiple"
- checked={form.duration === "multiple"}
- onChange={(e) => setForm({ ...form, duration: e.target.value })}
- className="w-5 h-5 text-black focus:ring-black"
- />
- <span className="font-medium">Multiple Days</span>
- </label>
- </div>
- </div>
+                            {/* Status */}
+                            {!employeeScope && (
+                                <Input
+                                    label="Status"
+                                    type="select"
+                                    value={form.status}
+                                    onChange={(v) => setForm({ ...form, status: v })}
+                                    options={statusOptions}
+                                />
+                            )}
+                        </div>
 
- {/* Conditional Date Fields */}
- {(form.duration === "single" || form.duration === "half_day") && (
- <div className="mt-8">
- <Input
- label="Date"
- type="date"
- required
- value={form.date}
- onChange={(e) => setForm({ ...form, date: e.target.value })}
- />
- {form.duration === "half_day" && (
- <div className="mt-6">
- <label className="block text-sm font-medium text-black mb-4">
- Half Day Period
- </label>
- <div className="flex gap-8">
- <label className="flex items-center gap-3">
- <input
- type="radio"
- name="period"
- value="first_half"
- checked={form.half_day_period === "first_half"}
- onChange={(e) => setForm({ ...form, half_day_period: e.target.value })}
- className="w-5 h-5 text-black focus:ring-black"
- />
- <span className="font-medium">First Half</span>
- </label>
- <label className="flex items-center gap-3">
- <input
- type="radio"
- name="period"
- value="second_half"
- checked={form.half_day_period === "second_half"}
- onChange={(e) => setForm({ ...form, half_day_period: e.target.value })}
- className="w-5 h-5 text-black focus:ring-black"
- />
- <span className="font-medium">Second Half</span>
- </label>
- </div>
- </div>
- )}
- </div>
- )}
+                        {/* Duration Selection */}
+                        <div className="mt-8">
+                            <label className="block text-sm font-medium text-black mb-4">Duration</label>
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                <label className="flex items-center gap-3 cursor-pointer">
+                                    <input
+                                        type="radio"
+                                        name="duration"
+                                        value="single"
+                                        checked={form.duration === "single"}
+                                        onChange={(e) => setForm({ ...form, duration: e.target.value })}
+                                        className="w-5 h-5 text-black focus:ring-black"
+                                    />
+                                    <span className="font-medium">Single Day</span>
+                                </label>
+                                <label className="flex items-center gap-3 cursor-pointer">
+                                    <input
+                                        type="radio"
+                                        name="duration"
+                                        value="half_day"
+                                        checked={form.duration === "half_day"}
+                                        onChange={(e) => setForm({ ...form, duration: e.target.value })}
+                                        className="w-5 h-5 text-black focus:ring-black"
+                                    />
+                                    <span className="font-medium">Half Day</span>
+                                </label>
+                                <label className="flex items-center gap-3 cursor-pointer">
+                                    <input
+                                        type="radio"
+                                        name="duration"
+                                        value="multiple"
+                                        checked={form.duration === "multiple"}
+                                        onChange={(e) => setForm({ ...form, duration: e.target.value })}
+                                        className="w-5 h-5 text-black focus:ring-black"
+                                    />
+                                    <span className="font-medium">Multiple Days</span>
+                                </label>
+                            </div>
+                        </div>
 
- {form.duration === "multiple" && (
- <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-6">
- <Input
- label="Start Date"
- type="date"
- required
- value={form.start_date}
- onChange={(e) => setForm({ ...form, start_date: e.target.value })}
- />
- <Input
- label="End Date"
- type="date"
- required
- value={form.end_date}
- onChange={(e) => setForm({ ...form, end_date: e.target.value })}
- />
- </div>
- )}
+                        {/* Conditional Date Fields */}
+                        {(form.duration === "single" || form.duration === "half_day") && (
+                            <div className="mt-8">
+                                <Input
+                                    label="Date"
+                                    type="date"
+                                    required
+                                    value={form.date}
+                                    onChange={(e) => setForm({ ...form, date: e.target.value })}
+                                />
+                                {form.duration === "half_day" && (
+                                    <div className="mt-6">
+                                        <label className="block text-sm font-medium text-black mb-4">
+                                            Half Day Period
+                                        </label>
+                                        <div className="flex gap-8">
+                                            <label className="flex items-center gap-3">
+                                                <input
+                                                    type="radio"
+                                                    name="period"
+                                                    value="first_half"
+                                                    checked={form.half_day_period === "first_half"}
+                                                    onChange={(e) => setForm({ ...form, half_day_period: e.target.value })}
+                                                    className="w-5 h-5 text-black focus:ring-black"
+                                                />
+                                                <span className="font-medium">First Half</span>
+                                            </label>
+                                            <label className="flex items-center gap-3">
+                                                <input
+                                                    type="radio"
+                                                    name="period"
+                                                    value="second_half"
+                                                    checked={form.half_day_period === "second_half"}
+                                                    onChange={(e) => setForm({ ...form, half_day_period: e.target.value })}
+                                                    className="w-5 h-5 text-black focus:ring-black"
+                                                />
+                                                <span className="font-medium">Second Half</span>
+                                            </label>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        )}
 
- {/* Reason */}
- <div className="mt-8">
- <Input
- label="Reason for Absence (Optional)"
- type="textarea"
- rows={4}
- placeholder="Provide a reason..."
- value={form.reason}
- onChange={(e) => setForm({ ...form, reason: e.target.value })}
- />
- </div>
- </div>
+                        {form.duration === "multiple" && (
+                            <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <Input
+                                    label="Start Date"
+                                    type="date"
+                                    required
+                                    value={form.start_date}
+                                    onChange={(e) => setForm({ ...form, start_date: e.target.value })}
+                                />
+                                <Input
+                                    label="End Date"
+                                    type="date"
+                                    required
+                                    value={form.end_date}
+                                    onChange={(e) => setForm({ ...form, end_date: e.target.value })}
+                                />
+                            </div>
+                        )}
 
- {/* Action Buttons */}
- <div className="flex justify-end gap-4">
- <button
- type="button"
- onClick={() => window.history.back()}
- className="border border-gray-300 text-gray-700 hover:bg-gray-50 transition px-4 py-3 text-sm rounded-xl font-medium"
- >
- Cancel
- </button>
- {hasPermission(permissionPage, "add") && (
- <button
- type="submit"
- disabled={loading}
- className="bg-black text-white hover:bg-gray-900 transition disabled:opacity-50 px-4 py-3 text-sm rounded-xl font-medium"
- >
- {loading ? (employeeScope ? "Submitting..." : "Assigning Leave...") : (employeeScope ? "Apply Leave" : "Assign Leave")}
- </button>
- )}
- </div>
- </form>
- </LayoutComponents>
+                        {/* Reason */}
+                        <div className="mt-8">
+                            <Input
+                                label="Reason for Absence (Optional)"
+                                type="textarea"
+                                rows={4}
+                                placeholder="Provide a reason..."
+                                value={form.reason}
+                                onChange={(e) => setForm({ ...form, reason: e.target.value })}
+                            />
+                        </div>
+                    </div>
 
- {/* Add Leave Type Modal */}
- {showAddTypeModal && (
- <div className="fixed inset-0 backdrop-brightness-50 flex items-center justify-center p-4 z-50">
- <div className="bg-white rounded-xl shadow-xl w-full max-w-md p-6">
- <div className="flex justify-between items-center mb-6">
- <h3 className="text-xl font-medium">Add New Leave Type</h3>
- <button
- onClick={() => setShowAddTypeModal(false)}
- className="p-2 hover:bg-gray-100 rounded-lg transition"
- >
- <MdClose className="w-5 h-5 text-gray-600" />
- </button>
- </div>
- <div className="space-y-5">
- <Input
- label="Leave Type Name"
- type="text"
- placeholder="e.g. Annual Leave, Sick Leave, Compassionate"
- value={newTypeName}
- onChange={(e) => setNewTypeName(e.target.value)}
- autoFocus
- />
- </div>
- <div className="flex justify-end gap-3 mt-8">
- <button
- onClick={() => setShowAddTypeModal(false)}
- className="border border-gray-300 text-gray-700 hover:bg-gray-50 transition px-4 py-3 text-sm rounded-xl font-medium"
- >
- Cancel
- </button>
- <button
- onClick={addLeaveType}
- className="bg-black text-white hover:bg-gray-900 transition px-4 py-3 text-sm rounded-xl font-medium"
- >
- Add Type
- </button>
- </div>
- </div>
- </div>
- )}
- </div>
- );
+                    {/* Action Buttons */}
+                    <div className="flex justify-end gap-4">
+                        <button
+                            type="button"
+                            onClick={() => window.history.back()}
+                            className="border border-gray-300 text-gray-700 hover:bg-gray-50 transition px-4 py-3 text-sm rounded-xl font-medium"
+                        >
+                            Cancel
+                        </button>
+                        {hasPermission(permissionPage, "add") && (
+                            <button
+                                type="submit"
+                                disabled={loading}
+                                className="bg-black text-white hover:bg-gray-900 transition disabled:opacity-50 px-4 py-3 text-sm rounded-xl font-medium"
+                            >
+                                {loading ? (employeeScope ? "Submitting..." : "Assigning Leave...") : (employeeScope ? "Apply Leave" : "Assign Leave")}
+                            </button>
+                        )}
+                    </div>
+                </form>
+            </LayoutComponents>
+
+            {/* Add Leave Type Modal */}
+            {showAddTypeModal && (
+                <div className="fixed inset-0 backdrop-brightness-50 flex items-center justify-center p-4 z-50">
+                    <div className="bg-white rounded-xl shadow-xl w-full max-w-md p-6">
+                        <div className="flex justify-between items-center mb-6">
+                            <h3 className="text-xl font-medium">Add New Leave Type</h3>
+                            <button
+                                onClick={() => setShowAddTypeModal(false)}
+                                className="p-2 hover:bg-gray-100 rounded-lg transition"
+                            >
+                                <MdClose className="w-5 h-5 text-gray-600" />
+                            </button>
+                        </div>
+                        <div className="space-y-5">
+                            <Input
+                                label="Leave Type Name"
+                                type="text"
+                                placeholder="e.g. Annual Leave, Sick Leave, Compassionate"
+                                value={newTypeName}
+                                onChange={(e) => setNewTypeName(e.target.value)}
+                                autoFocus
+                            />
+                        </div>
+                        <div className="flex justify-end gap-3 mt-8">
+                            <button
+                                onClick={() => setShowAddTypeModal(false)}
+                                className="border border-gray-300 text-gray-700 hover:bg-gray-50 transition px-4 py-3 text-sm rounded-xl font-medium"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={addLeaveType}
+                                className="bg-black text-white hover:bg-gray-900 transition px-4 py-3 text-sm rounded-xl font-medium"
+                            >
+                                Add Type
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+        </div>
+    );
 };
 
 export default AssignLeave;
