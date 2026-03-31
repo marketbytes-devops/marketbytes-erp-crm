@@ -123,7 +123,7 @@ class CustomUser(AbstractUser):
     def save(self, *args, **kwargs):
         if not self.employee_id and self.email:
             last = CustomUser.objects.exclude(employee_id__isnull=True).count() + 1
-            self.employee_id = f"MB{str(last).zfill(4)}"
+            self.employee_id = f"MB{str(last).zfill(2)}"
         super().save(*args, **kwargs)
 
 class UserPermission(models.Model):
