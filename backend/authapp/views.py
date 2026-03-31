@@ -51,7 +51,7 @@ class RequestOTPView(APIView):
                 user.otp = otp
                 user.otp_created_at = timezone.now()
                 user.save()
-                send_mail("Your OTP", f"Your OTP is {otp}. Valid for 10 minutes.", settings.EMAIL_HOST_USER, [email])
+                send_mail("Your OTP", f"Your OTP is {otp}. Valid for 10 minutes.\n\nLogin Link: https://erp.marketbytes.in/login", settings.EMAIL_HOST_USER, [email])
                 return Response({"message": "OTP sent"})
             except CustomUser.DoesNotExist:
                 return Response({"error": "User not found"}, status=status.HTTP_404_NOT_FOUND)

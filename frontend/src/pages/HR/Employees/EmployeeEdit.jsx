@@ -76,7 +76,8 @@ const EmployeeEdit = () => {
  setEmployeeName(empData.name || "Employee");
 
  setFormData({
- name: empData.name || "",
+  name: empData.name || "",
+  email: empData.email || "",
  mobile: empData.mobile || "",
  country_code: empData.country_code || "+91",
  address: empData.address || "",
@@ -184,6 +185,7 @@ const EmployeeEdit = () => {
  toast.success("Strong password generated & copied!");
  };
 
+ /*
  useEffect(() => {
  if (isInitialLoad) {
  setIsInitialLoad(false);
@@ -192,6 +194,7 @@ const EmployeeEdit = () => {
  // Clear Reports To if Department changes
  setFormData(prev => (prev ? { ...prev, reports_to: "" } : null));
  }, [formData?.department_id]);
+ */
 
  const handleSubmit = async (e) => {
  e.preventDefault();
@@ -267,9 +270,7 @@ const EmployeeEdit = () => {
  const designationOptions = designations.map(d => ({ value: d.id, label: d.name }));
  const roleOptions = roles.map(r => ({ value: r.id, label: r.name }));
 
- const filteredEmployees = formData.department_id
- ? employees.filter(e => e.department && e.department.id === parseInt(formData.department_id))
- : employees;
+ const filteredEmployees = employees;
 
  const reportsToOptions = filteredEmployees.map(e => ({
  value: e.id,
@@ -383,6 +384,7 @@ const EmployeeEdit = () => {
  <h3 className="font-medium text-gray-900 mb-6">Personal Information</h3>
  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
  <Input label="Full Name" required value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} />
+ <Input label="Email" required type="email" value={formData.email} onChange={e => setFormData({ ...formData, email: e.target.value })} />
  <Input label="Mobile Number" value={formData.mobile} onChange={e => setFormData({ ...formData, mobile: e.target.value })} />
  <Input
  label="Country Code"

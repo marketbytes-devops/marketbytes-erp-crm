@@ -185,7 +185,7 @@ class ProfileSerializer(serializers.ModelSerializer):
             'login_enabled', 'email_notifications', 'created_at',
             'updated_at', 'direct_permissions', 'effective_permissions'
         ]
-        read_only_fields = ['id', 'email', 'employee_id', 'created_at', 'updated_at', 'image_url']
+        read_only_fields = ['id', 'employee_id', 'created_at', 'updated_at', 'image_url']
 
 class UserCreateSerializer(serializers.ModelSerializer):
     role_id = serializers.PrimaryKeyRelatedField(
@@ -277,6 +277,8 @@ Password: {password}
 
 Please change your password after your first login.
 
+Login Link: https://erp.marketbytes.in/login
+
 Best regards,
 HR Team"""
             _send_email_async(subject, message, [user.email])
@@ -314,7 +316,7 @@ class UserUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomUser
         fields = [
-            'name', 'address', 'phone_number', 'mobile', 
+            'email', 'name', 'address', 'phone_number', 'mobile', 
             'country_code', 'image', 'role_id', 'department_id', 'designation_id',
             'reports_to_id', 'joining_date', 'dob', 'probation_period',
             'exit_date', 'gender', 'skills', 'hourly_rate', 'status',
@@ -323,6 +325,12 @@ class UserUpdateSerializer(serializers.ModelSerializer):
         ]
 
     user_permissions = serializers.JSONField(write_only=True, required=False)
+
+    def validate_email(self, value):
+        user_id = self.instance.id if self.instance else None
+        if CustomUser.objects.filter(email=value).exclude(id=user_id).exists():
+            raise serializers.ValidationError("A user with this email already exists.")
+        return value
     
     def validate_dob(self, value):
         if value:
@@ -396,6 +404,8 @@ Email: {instance.email}
 Password: {password}
 
 Please change your password after logging in.
+
+Login Link: https://erp.marketbytes.in/login
 
 Best regards,
 HR Team"""

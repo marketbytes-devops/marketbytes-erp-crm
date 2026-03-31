@@ -199,10 +199,12 @@ const EmployeeCreate = () => {
  }
  }, [formData.designation_id, designations]);
 
+ /*
  useEffect(() => {
  // Clear Reports To if Department changes
  setFormData(prev => ({ ...prev, reports_to: "" }));
  }, [formData.department_id]);
+ */
 
  const [selectedRole, setSelectedRole] = useState(null);
  useEffect(() => {
@@ -315,9 +317,7 @@ const EmployeeCreate = () => {
  label: r.name
  }));
 
- const filteredEmployees = formData.department_id
- ? employees.filter(e => e.department && (e.department.id === parseInt(formData.department_id) || String(e.department.id) === String(formData.department_id)))
- : employees;
+ const filteredEmployees = employees;
 
  const reportsToOptions = filteredEmployees.map(e => ({
  value: e.id,

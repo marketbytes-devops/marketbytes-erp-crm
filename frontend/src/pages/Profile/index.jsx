@@ -10,9 +10,13 @@ import LayoutComponents from '../../components/LayoutComponents';
 import Input from '../../components/Input';
 
 const profileSchema = z.object({
- name: z.string().min(1, 'Full name is required'),
- address: z.string().optional(),
- mobile: z.string().optional(),
+  name: z.string().min(1, 'Full name is required'),
+  email: z.string().email('Invalid email address'),
+  address: z.string().optional(),
+  mobile: z.string().optional(),
+  dob: z.string().optional(),
+  gender: z.string().optional(),
+  skills: z.string().optional(),
 });
 
 const passwordSchema = z.object({
@@ -24,13 +28,21 @@ const passwordSchema = z.object({
 });
 
 const Profile = () => {
- const [profile, setProfile] = useState({
- email: '',
- name: '',
- address: '',
- mobile: '',
- image: null,
- });
+  const [profile, setProfile] = useState({
+    email: '',
+    name: '',
+    address: '',
+    mobile: '',
+    image: null,
+    employee_id: '',
+    joining_date: '',
+    department: '',
+    designation: '',
+    role: '',
+    dob: '',
+    gender: '',
+    skills: '',
+  });
  const [imagePreview, setImagePreview] = useState(null);
 
  const {
@@ -54,22 +66,34 @@ const Profile = () => {
  try {
  const { data } = await apiClient.get('/auth/profile/');
 
- const profileData = {
- email: data.email || '',
- name: data.name || '',
- address: data.address || '',
- mobile: data.mobile || data.phone_number || '',
- image: data.image || null,
- };
+      const profileData = {
+        email: data.email || '',
+        name: data.name || '',
+        address: data.address || '',
+        mobile: data.mobile || data.phone_number || '',
+        image: data.image || null,
+        employee_id: data.employee_id || '',
+        joining_date: data.joining_date || '',
+        department: data.department?.name || '',
+        designation: data.designation?.name || '',
+        role: data.role?.name || '',
+        dob: data.dob || '',
+        gender: data.gender || '',
+        skills: data.skills || '',
+      };
 
- setProfile(profileData);
- setImagePreview(data.image || null);
+      setProfile(profileData);
+      setImagePreview(data.image || null);
 
- resetProfileForm({
- name: profileData.name,
- address: profileData.address,
- mobile: profileData.mobile,
- });
+      resetProfileForm({
+        name: profileData.name,
+        email: profileData.email,
+        address: profileData.address,
+        mobile: profileData.mobile,
+        dob: profileData.dob,
+        gender: profileData.gender,
+        skills: profileData.skills,
+      });
  } catch (err) {
  toast.error('Failed to load profile');
  }
@@ -106,23 +130,28 @@ const Profile = () => {
 
  const updatedData = res.data;
 
- setProfile(prev => ({
- ...prev,
- name: updatedData.name || prev.name,
- address: updatedData.address || prev.address,
- mobile: updatedData.mobile || prev.mobile,
- image: updatedData.image || prev.image,
- }));
+      setProfile(prev => ({
+        ...prev,
+        ...updatedData,
+        email: updatedData.email || prev.email,
+        department: updatedData.department?.name || prev.department,
+        designation: updatedData.designation?.name || prev.designation,
+        role: updatedData.role?.name || prev.role,
+      }));
 
  if (updatedData.image) {
  setImagePreview(updatedData.image);
  }
 
- resetProfileForm({
- name: updatedData.name || '',
- address: updatedData.address || '',
- mobile: updatedData.mobile || '',
- });
+      resetProfileForm({
+        name: updatedData.name || '',
+        email: updatedData.email || '',
+        address: updatedData.address || '',
+        mobile: updatedData.mobile || '',
+        dob: updatedData.dob || '',
+        gender: updatedData.gender || '',
+        skills: updatedData.skills || '',
+      });
 
  toast.success('Identity updated successfully.');
  } catch (err) {
@@ -237,33 +266,108 @@ const Profile = () => {
  </div>
 
  <form onSubmit={handleProfileSubmit(onProfileUpdate)} className="p-8 grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
- <Input
- label="Legal Name"
- id="name"
- placeholder="e.g. Alexander Pierce"
- {...registerProfile('name')}
- error={profileErrors.name?.message}
- className="font-medium"
- />
- <div className="md:col-span">
- <Input
- label="Physical Address"
- id="address"
- placeholder="e.g. 742 Evergreen Terrace, Springfield"
- {...registerProfile('address')}
- error={profileErrors.address?.message}
- className="font-medium"
- />
- </div>
- <Input
- label="Contact Number"
- id="mobile"
- type="tel"
- placeholder="+91 00000 00000"
- {...registerProfile('mobile')}
- error={profileErrors.mobile?.message}
- className="font-medium"
- />
+      <Input
+        label="Legal Name"
+        id="name"
+        placeholder="e.g. Alexander Pierce"
+        {...registerProfile('name')}
+        error={profileErrors.name?.message}
+      />
+      <Input
+        label="Email Address"
+        id="email"
+        type="email"
+        placeholder="e.g. alex@company.com"
+        {...registerProfile('email')}
+        error={profileErrors.email?.message}
+      />
+      <Input
+        label="Employee ID (Read Only)"
+        id="employee_id"
+        value={profile.employee_id}
+        readOnly
+        disabled
+        className="bg-gray-50 opacity-70"
+      />
+      <Input
+        label="Joining Date (Read Only)"
+        id="joining_date"
+        value={profile.joining_date}
+        readOnly
+        disabled
+        className="bg-gray-50 opacity-70"
+      />
+      <Input
+        label="Department (Read Only)"
+        id="department"
+        value={profile.department}
+        readOnly
+        disabled
+        className="bg-gray-50 opacity-70"
+      />
+      <Input
+        label="Designation (Read Only)"
+        id="designation"
+        value={profile.designation}
+        readOnly
+        disabled
+        className="bg-gray-50 opacity-70"
+      />
+      <Input
+        label="User Role (Read Only)"
+        id="role"
+        value={profile.role}
+        readOnly
+        disabled
+        className="bg-gray-50 opacity-70"
+      />
+      <Input
+        label="Gender"
+        id="gender"
+        type="select"
+        options={[
+          { value: '', label: 'Select Gender' },
+          { value: 'male', label: 'Male' },
+          { value: 'female', label: 'Female' },
+          { value: 'other', label: 'Other' },
+        ]}
+        {...registerProfile('gender')}
+        error={profileErrors.gender?.message}
+      />
+      <Input
+        label="Date of Birth"
+        id="dob"
+        type="date"
+        {...registerProfile('dob')}
+        error={profileErrors.dob?.message}
+      />
+      <Input
+        label="Contact Number"
+        id="mobile"
+        type="tel"
+        placeholder="+91 00000 00000"
+        {...registerProfile('mobile')}
+        error={profileErrors.mobile?.message}
+      />
+      <div className="md:col-span-2">
+        <Input
+          label="Physical Address"
+          id="address"
+          type="textarea"
+          placeholder="e.g. 742 Evergreen Terrace, Springfield"
+          {...registerProfile('address')}
+          error={profileErrors.address?.message}
+        />
+      </div>
+      <div className="md:col-span-2">
+        <Input
+          label="Skills (Comma separated)"
+          id="skills"
+          placeholder="e.g. React, Python, Management"
+          {...registerProfile('skills')}
+          error={profileErrors.skills?.message}
+        />
+      </div>
 
  <div className="md:col-span-2">
    <button
