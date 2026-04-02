@@ -3,8 +3,10 @@ import apiClient from "../../helpers/apiClient";
 import WorkTimerButton from "../Ui/WorkTimerButton";
 import TimerModal from "../Ui/TimerModal";
 import toast from "react-hot-toast";
+import { useNavigate } from "react-router-dom";
 
 const WorkTimerController = () => {
+ const navigate = useNavigate();
  const [checkedIn, setCheckedIn] = useState(false);
  const [clockIn, setClockIn] = useState(null);
  const [status, setStatus] = useState(null);
@@ -54,13 +56,20 @@ const WorkTimerController = () => {
  fetchStatus();
  }, [fetchStatus]);
 
- useEffect(() => {
- const handleUpdate = () => {
- fetchStatus();
- };
- window.addEventListener('timer-status-updated', handleUpdate);
- return () => window.removeEventListener('timer-status-updated', handleUpdate);
- }, [fetchStatus]);
+  useEffect(() => {
+    const handleUpdate = () => {
+      fetchStatus();
+    };
+    const handleOpenModal = () => {
+      setModalOpen(true);
+    };
+    window.addEventListener('timer-status-updated', handleUpdate);
+    window.addEventListener('open-timer-modal', handleOpenModal);
+    return () => {
+      window.removeEventListener('timer-status-updated', handleUpdate);
+      window.removeEventListener('open-timer-modal', handleOpenModal);
+    };
+  }, [fetchStatus]);
 
  useEffect(() => {
  if (!status) return;
@@ -144,6 +153,8 @@ const WorkTimerController = () => {
       await apiClient.post("/hr/timer/start_work/", { project, task, memo });
       setModalOpen(false);
       fetchStatus();
+      toast.success("Work started!", { icon: "🏃" });
+      navigate("/dashboard");
     } catch (e) {
       console.error(e);
       toast.error(e.response?.data?.error || "Failed to start work timer");
@@ -182,14 +193,20 @@ const WorkTimerController = () => {
  }
  };
 
- const handleStartStopClick = () => {
- if (status?.is_on_break) {
- // Instead of stopping break, open modal to allow project selection
- setModalOpen(true);
- return;
- }
- setModalOpen(true);
- };
+  const handleStartStopClick = () => {
+    if (!status?.scrum_updated_today && !status?.is_working) {
+      toast.error("Daily scrum required: add at least 1 scrum update today to unlock the timer.", { icon: "📝" });
+      navigate("/operations/scrum");
+      return;
+    }
+    
+    if (status?.is_on_break) {
+      // Instead of stopping break, open modal to allow project selection
+      setModalOpen(true);
+      return;
+    }
+    setModalOpen(true);
+  };
 
  if (loading) return null;
 

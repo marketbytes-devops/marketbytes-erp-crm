@@ -7,6 +7,7 @@ from django.utils import timezone
 from datetime import timedelta, datetime, time, timezone as dt_timezone
 from django.db.models import Q, Count, Exists, OuterRef
 from .models import Attendance, Holiday, LeaveType, Leave, Overtime, Candidate, Performance, Project, Task, WorkSession, BreakSession
+from operation.models import Scrum
 from authapp.models import CustomUser, has_user_permission
 from notifications.models import Notification
 from .serializers import *
@@ -914,7 +915,8 @@ class TimerViewSet(viewsets.ViewSet):
             "today_total_break_seconds": int(total_break_seconds),
             "today_total_support_seconds": int(total_support_seconds),
             "target_hours": "08:00:00",
-            "remaining_hours": format_seconds(max(0, 28800 - int(total_work_seconds)))
+            "remaining_hours": format_seconds(max(0, 28800 - int(total_work_seconds))),
+            "scrum_updated_today": Scrum.objects.filter(employee=user, date=local_now.date()).exists()
         })
     
     @action(detail=False, methods=['post'])

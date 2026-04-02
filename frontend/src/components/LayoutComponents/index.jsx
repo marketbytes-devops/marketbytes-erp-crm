@@ -13,6 +13,7 @@ const LayoutComponents = ({
  const toaster = (
  <Toaster
  position="top-right"
+ containerStyle={{ top: 72 }}
  toastOptions={{
  duration: 3000,
  style: {

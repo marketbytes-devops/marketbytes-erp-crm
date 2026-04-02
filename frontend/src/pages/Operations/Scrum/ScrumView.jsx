@@ -183,7 +183,7 @@ const Scrum = ({ employeeScope = false, leadScope = false }) => {
     setFormData({
       project: "",
       task: "",
-      employeeName: employeeScope ? (user?.id ? String(user.id) : "") : "",
+      employeeName: user?.id ? String(user.id) : "",
       status: "todo",
       morning_memo: "",
       evening_memo: "",
@@ -194,7 +194,7 @@ const Scrum = ({ employeeScope = false, leadScope = false }) => {
   };
 
   const handleSubmit = async () => {
-    if (!formData.project || !formData.task || !formData.employeeName) {
+    if (!formData.project || !formData.task) {
       toast.error("Please fill required fields");
       return;
     }
@@ -202,7 +202,6 @@ const Scrum = ({ employeeScope = false, leadScope = false }) => {
     try {
       const payload = {
         task: formData.task,
-        employee_id: formData.employeeName,
         reported_status: formData.status,
         morning_memo: formData.morning_memo,
         evening_memo: formData.evening_memo,
@@ -218,11 +217,21 @@ const Scrum = ({ employeeScope = false, leadScope = false }) => {
         ...response.data,
         project_name: formData.project_name,
         task_name: formData.task_name,
-        employee_name: employees.find(e => String(e.id) === String(formData.employeeName))?.name || "User"
+        employee_name: response.data?.employee_name || user?.name || user?.email || "You"
       });
 
       setScrumData(prev => [newItem, ...prev]);
       setShowCreateModal(false);
+      
+      // Notify parent/toast and trigger timer modal
+      toast.success("Scrum created! Opening Timer...", { icon: "⏲️" });
+      
+      // Dispatch event to open timer modal in Topbar/WorkTimerController
+      window.dispatchEvent(new CustomEvent('open-timer-modal'));
+      window.dispatchEvent(new CustomEvent('timer-status-updated')); // Refresh status to unlock timer
+      
+      // Redirect to dashboard as requested
+      navigate("/dashboard");
     } catch (err) {
       console.error(err);
       toast.error("Creation failed");
@@ -778,21 +787,6 @@ const Scrum = ({ employeeScope = false, leadScope = false }) => {
                     options={statusOptions}
                   />
                 </div>
-
-                <Input 
-                  label="Employee" 
-                  type="select" 
-                  value={formData.employeeName} 
-                  onChange={(v) => handleFormChange("employeeName", v)}
-                  disabled={employeeScope}
-                  options={[
-                    { label: "Select Employee", value: "" },
-                    ...employees.map(e => ({
-                      label: e.name || e.email || "Unknown",
-                      value: String(e.id),
-                    }))
-                  ]}
-                />
 
                 <div className="space-y-1">
                   <label className="text-xs font-medium text-gray-700 uppercase tracking-wide ml-1">Morning Memo</label>

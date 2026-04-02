@@ -73,6 +73,8 @@ const TimerModal = ({ open, onClose, onStartWork, onStopWork, onBreak, onSupport
  const activeBreak = status?.active_type === "break";
  const activeSupport = status?.active_type === "support";
 
+ const scrumRequired = status?.scrum_updated_today === false;
+
  return (
  <LayoutComponents
  variant="modal"
@@ -80,6 +82,23 @@ const TimerModal = ({ open, onClose, onStartWork, onStopWork, onBreak, onSupport
  onCloseModal={onClose}
  modal={
  <div className="space-y-6 min-w-[320px]">
+
+ {/* SCRUM REQUIREMENT WARNING */}
+ {scrumRequired && !isWorking && (
+   <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 flex items-start gap-3">
+     <div className="mt-0.5">
+       <svg className="w-5 h-5 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+       </svg>
+     </div>
+     <div className="space-y-1">
+       <p className="text-sm font-bold text-amber-900">Scrum Update Needed</p>
+       <p className="text-xs text-amber-700 leading-relaxed">
+         Minimum 1 scrum update is required every day to enable the timer. Please add today’s scrum first.
+       </p>
+     </div>
+   </div>
+ )}
 
  {/* ───────────── WORKING STATE ───────────── */}
  {isWorking && (
@@ -191,11 +210,12 @@ const TimerModal = ({ open, onClose, onStartWork, onStopWork, onBreak, onSupport
  <div className="space-y-3 pt-1">
  {/* Start/Resume work */}
  <button
- onClick={() => setShowWorkForm(true)}
- className="w-full bg-black text-white font-medium py-4 rounded-xl hover:bg-gray-900 transition-all duration-200 shadow-lg active:scale-95 flex items-center justify-center gap-2"
+ onClick={() => !scrumRequired && setShowWorkForm(true)}
+ disabled={scrumRequired}
+ className={`w-full font-medium py-4 rounded-xl transition-all duration-200 shadow-lg active:scale-95 flex items-center justify-center gap-2 ${scrumRequired ? "bg-gray-200 text-gray-400 cursor-not-allowed" : "bg-black text-white hover:bg-gray-900"}`}
  >
  <MdPlayArrow className="w-5 h-5" />
- {status?.workSeconds > 0 ? "Resume / Start New Task" : "Start Work Timer"}
+ {scrumRequired ? "Scrum Required to Unlock" : (status?.workSeconds > 0 ? "Resume / Start New Task" : "Start Work Timer")}
  </button>
 
  {/* Break / Support toggles */}

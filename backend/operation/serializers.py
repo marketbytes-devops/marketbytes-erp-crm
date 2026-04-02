@@ -529,6 +529,9 @@ class ScrumSerializer(serializers.ModelSerializer):
         request = self.context.get('request')
         if request and request.user.is_authenticated:
             validated_data['created_by'] = request.user
+            # Default employee to the logged-in user if not explicitly provided
+            if 'employee' not in validated_data:
+                validated_data['employee'] = request.user
 
         # Make sure date is always a date object
         if 'date' in validated_data:
