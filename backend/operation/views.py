@@ -53,7 +53,8 @@ class ProjectCategoryViewSet(viewsets.ModelViewSet):
 
     queryset = ProjectCategory.objects.all()
     serializer_class = ProjectCategorySerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [HasPermission]
+    page_name = 'projects'
     filter_backends = [
         DjangoFilterBackend,
         filters.SearchFilter,
@@ -75,7 +76,8 @@ class ProjectStatusViewSet(viewsets.ModelViewSet):
 
     queryset = ProjectStatus.objects.all()
     serializer_class = ProjectStatusSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [HasPermission]
+    page_name = 'projects'
     filter_backends = [DjangoFilterBackend, filters.SearchFilter]
     search_fields = ["name", "description"]
     filterset_fields = ["name"]
@@ -102,7 +104,8 @@ class ProjectStageViewSet(viewsets.ModelViewSet):
 
     queryset = ProjectStage.objects.all()
     serializer_class = ProjectStageSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [HasPermission]
+    page_name = 'projects'
     filter_backends = [DjangoFilterBackend, filters.SearchFilter]
     search_fields = ["name", "description"]
     filterset_fields = ["name"]
@@ -118,7 +121,8 @@ class ClientViewSet(viewsets.ModelViewSet):
 
     queryset = Client.objects.all()
     serializer_class = ClientSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [HasPermission]
+    page_name = 'projects'
     filter_backends = [
         DjangoFilterBackend,
         filters.SearchFilter,
@@ -140,7 +144,8 @@ class CurrencyViewSet(viewsets.ModelViewSet):
 
     queryset = Currency.objects.filter(is_active=True).order_by("code")
     serializer_class = CurrencySerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [HasPermission]
+    page_name = 'projects'
     filter_backends = [filters.SearchFilter]
     search_fields = ["code", "name"]
 
@@ -153,7 +158,8 @@ class ProjectViewSet(viewsets.ModelViewSet):
     serializer_class = ProjectSerializer
     queryset = Project.objects.all()
     serializer_class = ProjectSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [HasPermission]
+    page_name = 'projects'
     filter_backends = [
         DjangoFilterBackend,
         filters.SearchFilter,
@@ -486,7 +492,8 @@ class TaskViewSet(viewsets.ModelViewSet):
     queryset = Task.objects.all().select_related(
         'project').prefetch_related('assignees')
     serializer_class = TaskSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [HasPermission]
+    page_name = 'tasks'
     filter_backends = [DjangoFilterBackend,
                        filters.SearchFilter, filters.OrderingFilter]
     search_fields = ['title', 'description', 'project__name']
@@ -554,7 +561,7 @@ class ScrumViewSet(viewsets.ModelViewSet):
     ).prefetch_related('task__assignees')
     
     serializer_class = ScrumSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [HasPermission]
     page_names = ['scrum', 'employee_scrum', 'lead_scrum']
     
     filter_backends = [
@@ -643,7 +650,8 @@ class ScrumViewSet(viewsets.ModelViewSet):
 class ContractTypeViewSet(viewsets.ModelViewSet):
     queryset = ContractType.objects.all()
     serializer_class = ContractTypeSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [HasPermission]
+    page_name = 'contracts'
     filter_backends = [filters.SearchFilter]
     search_fields = ['name']
 
@@ -651,7 +659,8 @@ class ContractTypeViewSet(viewsets.ModelViewSet):
 class ContractViewSet(viewsets.ModelViewSet):
     queryset = Contract.objects.all()
     serializer_class = ContractSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [HasPermission]
+    page_name = 'contracts'
     filter_backends = [DjangoFilterBackend,
                        filters.SearchFilter, filters.OrderingFilter]
     search_fields = ['subject', 'client__name', 'contract_name']

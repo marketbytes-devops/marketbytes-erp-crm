@@ -230,12 +230,9 @@ def get_user_effective_permissions(user):
         grant_proxy('departments', 'employees')
         grant_proxy('designations', 'employees')
 
-    # leads view -> customer/client/company info
+    # leads view -> customers info
     if effective.get('leads', {}).get('can_view'):
-        grant_proxy('customer', 'leads')
-        grant_proxy('clients', 'leads')
-        grant_proxy('client', 'leads')
-        grant_proxy('companies', 'leads')
+        grant_proxy('customers', 'leads')
         grant_proxy('reports', 'leads')
         grant_proxy('communication_tools', 'leads')
 
@@ -257,7 +254,7 @@ def has_user_permission(user, page, action):
     """
     Quick permission check for a specific user action
     """
-    if user.role and user.role.name == "Superadmin":
+    if (user.is_superuser) or (user.role and user.role.name == "Superadmin"):
         return True
 
     effective = get_user_effective_permissions(user)

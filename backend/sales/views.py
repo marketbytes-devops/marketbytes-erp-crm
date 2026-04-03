@@ -29,7 +29,7 @@ class CompanyViewSet(viewsets.ModelViewSet):
     queryset = Company.objects.all()
     serializer_class = CompanySerializer
     permission_classes = [HasPermission]
-    page_name = 'customer'
+    page_name = 'customers'
     filter_backends = [DjangoFilterBackend, filters.SearchFilter]
     search_fields = ["name", "website", "mobile"]
 
@@ -38,7 +38,7 @@ class ClientViewSet(viewsets.ModelViewSet):
     queryset = Client.objects.select_related("company").all()
     serializer_class = ClientSerializer
     permission_classes = [HasPermission]
-    page_name = 'customer'
+    page_name = 'customers'
     filter_backends = [DjangoFilterBackend, filters.SearchFilter]
     search_fields = ["name", "email", "company__name"]
 

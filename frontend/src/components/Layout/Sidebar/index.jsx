@@ -51,11 +51,12 @@ const Sidebar = ({ toggleSidebar }) => {
   useEffect(() => {
     const dropdownGroups = [
       { label: "HR Management", paths: ["/hr/"] },
-      { label: "Operations", paths: ["/operations/"] },
-      { label: "Sales", paths: ["/sales/"] },
-      { label: "User Roles", paths: ["/user-roles/"] },
-      { label: "Leading Members", paths: ["/team/", "/lead/"] },
+      { label: "Lead Management", paths: ["/team/", "/lead/"] },
+      { label: "Sales Management", paths: ["/sales/"] },
       { label: "Self Management", paths: ["/employee/"] },
+      { label: "Operations", paths: ["/operations/"] },
+      { label: "User Roles", paths: ["/user-roles/"] },
+
     ];
     for (const group of dropdownGroups) {
       if (group.paths.some((p) => location.pathname.startsWith(p))) {
@@ -68,7 +69,7 @@ const Sidebar = ({ toggleSidebar }) => {
   const menuItems = [
     {
       to: "/",
-      label: "Dashboard",
+      label: "Admin Dashboard",
       icon: <MdAdminPanelSettings className="w-6 h-6" />,
       page: "admin",
       action: "view",
@@ -152,75 +153,17 @@ const Sidebar = ({ toggleSidebar }) => {
       ].filter((item) => hasPermission(item.page, item.action)),
     },
     {
-      label: "Operations",
-      icon: <MdSettings className="w-6 h-6" />,
-      isOpen: openDropdown === "Operations",
-      toggle: () => handleToggle("Operations"),
-      subItems: [
-        {
-          to: "/operations/projects",
-          label: "Projects",
-          icon: <MdDashboard className="w-6 h-6" />,
-          page: "projects",
-          action: "view",
-        },
-        {
-          to: "/operations/tasks",
-          label: "Tasks",
-          icon: <MdAssignment className="w-5 h-5" />,
-          page: "tasks",
-          action: "view",
-        },
-        {
-          to: "/operations/task-board",
-          label: "Task Board",
-          icon: <MdViewKanban className="w-5 h-5" />,
-          page: "task_board",
-          action: "view",
-        },
-        {
-          to: "/operations/time-logs",
-          label: "Timelogs",
-          icon: <MdAssignment className="w-5 h-5" />,
-          page: "timelogs",
-          action: "view",
-        },
-        {
-          to: "/operations/task-calendar",
-          label: "Task Calendar",
-          icon: <MdCalendarToday className="w-5 h-5" />,
-          page: "task_calendar",
-          action: "view",
-        },
-        {
-          to: "/operations/common-calendar",
-          label: "Events",
-          icon: <MdCalendarToday className="w-5 h-5" />,
-          page: "common_calendar",
-          action: "view",
-        },
-        {
-          to: "/operations/scrum",
-          label: "Scrum",
-          icon: <MdPendingActions className="w-5 h-5" />,
-          page: "scrum",
-          action: "view",
-        },
-        {
-          to: "/operations/contracts",
-          label: "Contracts",
-          icon: <MdDescription className="w-5 h-5" />,
-          page: "contracts",
-          action: "view",
-        },
-      ].filter((item) => hasPermission(item.page, item.action)),
+      to: "/sales-dashboard",
+      label: "Sales Dashboard",
+      icon: <MdDashboard className="w-6 h-6" />,
+      page: "sales_dashboard",
+      action: "view",
     },
-
     {
-      label: "Sales",
+      label: "Sales Management",
       icon: <MdAttachMoney className="w-6 h-6" />,
-      isOpen: openDropdown === "Sales",
-      toggle: () => handleToggle("Sales"),
+      isOpen: openDropdown === "Sales Management",
+      toggle: () => handleToggle("Sales Management"),
       subItems: [
         {
           to: "/sales/leads",
@@ -261,37 +204,7 @@ const Sidebar = ({ toggleSidebar }) => {
           to: "/sales/customer",
           label: "Customer",
           icon: <MdGroup className="w-6 h-6" />,
-          page: "customer",
-          action: "view",
-        },
-      ].filter((item) => hasPermission(item.page, item.action)),
-    },
-
-    {
-      label: "User Roles",
-      icon: <MdShield className="w-6 h-6" />,
-      isOpen: openDropdown === "User Roles",
-      toggle: () => handleToggle("User Roles"),
-      subItems: [
-        {
-          to: "/user-roles/roles",
-          label: "Roles",
-          icon: <MdVerifiedUser className="w-6 h-6" />,
-          page: "roles",
-          action: "view",
-        },
-        {
-          to: "/user-roles/users",
-          label: "Users",
-          icon: <MdGroup className="w-6 h-6" />,
-          page: "users",
-          action: "view",
-        },
-        {
-          to: "/user-roles/permissions",
-          label: "Permissions",
-          icon: <MdLock className="w-6 h-6" />,
-          page: "permissions",
+          page: "customers",
           action: "view",
         },
       ].filter((item) => hasPermission(item.page, item.action)),
@@ -304,18 +217,18 @@ const Sidebar = ({ toggleSidebar }) => {
       action: "view",
     },
     {
-      label: "Leading Members",
+      label: "Lead Management",
       icon: <MdGroup className="w-6 h-6" />,
-      page: "team_listing",
+      page: "lead_management",
       action: "view",
-      isOpen: openDropdown === "Leading Members",
-      toggle: () => handleToggle("Leading Members"),
+      isOpen: openDropdown === "Lead Management",
+      toggle: () => handleToggle("Lead Management"),
       subItems: [
         {
           to: "/team/employees",
           label: "Team Members",
           icon: <MdGroup className="w-6 h-6" />,
-          page: "team_listing",
+          page: "lead_management",
           action: "view",
         },
         {
@@ -329,7 +242,7 @@ const Sidebar = ({ toggleSidebar }) => {
           to: "/lead/time-logs",
           label: "Team Timelogs",
           icon: <MdAssignment className="w-6 h-6" />,
-          page: "lead_timelogs",
+          page: "lead_time_logs",
           action: "view",
         },
         {
@@ -402,7 +315,7 @@ const Sidebar = ({ toggleSidebar }) => {
           to: "/employee/time-logs",
           label: "My Time Logs",
           icon: <MdAccessTime className="w-6 h-6" />,
-          page: "employee_timelogs",
+          page: "employee_time_logs",
           action: "view",
         },
         {
@@ -416,7 +329,100 @@ const Sidebar = ({ toggleSidebar }) => {
           to: "/employee/task-calendar",
           label: "Task Calendar",
           icon: <MdCalendarToday className="w-6 h-6" />,
-          page: "employee_taskcalendar",
+          page: "employee_task_calendar",
+          action: "view",
+        },
+      ].filter((item) => hasPermission(item.page, item.action)),
+    },
+    {
+      label: "Operations",
+      icon: <MdSettings className="w-6 h-6" />,
+      isOpen: openDropdown === "Operations",
+      toggle: () => handleToggle("Operations"),
+      subItems: [
+        {
+          to: "/operations/projects",
+          label: "Projects",
+          icon: <MdDashboard className="w-6 h-6" />,
+          page: "projects",
+          action: "view",
+        },
+        {
+          to: "/operations/tasks",
+          label: "Tasks",
+          icon: <MdAssignment className="w-5 h-5" />,
+          page: "tasks",
+          action: "view",
+        },
+        {
+          to: "/operations/task-board",
+          label: "Task Board",
+          icon: <MdViewKanban className="w-5 h-5" />,
+          page: "task_board",
+          action: "view",
+        },
+        {
+          to: "/operations/time-logs",
+          label: "Timelogs",
+          icon: <MdAssignment className="w-5 h-5" />,
+          page: "time_logs",
+          action: "view",
+        },
+        {
+          to: "/operations/task-calendar",
+          label: "Task Calendar",
+          icon: <MdCalendarToday className="w-5 h-5" />,
+          page: "task_calendar",
+          action: "view",
+        },
+        {
+          to: "/operations/common-calendar",
+          label: "Events",
+          icon: <MdCalendarToday className="w-5 h-5" />,
+          page: "common_calendar",
+          action: "view",
+        },
+        {
+          to: "/operations/scrum",
+          label: "Scrum",
+          icon: <MdPendingActions className="w-5 h-5" />,
+          page: "scrum",
+          action: "view",
+        },
+        {
+          to: "/operations/contracts",
+          label: "Contracts",
+          icon: <MdDescription className="w-5 h-5" />,
+          page: "contracts",
+          action: "view",
+        },
+      ].filter((item) => hasPermission(item.page, item.action)),
+    },
+    {
+      label: "User Roles",
+      icon: <MdShield className="w-6 h-6" />,
+      isOpen: openDropdown === "User Roles",
+      toggle: () => handleToggle("User Roles"),
+      subItems: [
+        {
+          to: "/user-roles/roles",
+          label: "Roles",
+          icon: <MdVerifiedUser className="w-6 h-6" />,
+          page: "roles",
+          action: "view",
+        },
+        {
+          to: "/user-roles/users",
+          label: "Users",
+          icon: <MdGroup className="w-6 h-6" />,
+          page: "users",
+          action: "view",
+        },
+        {
+          to: "/user-roles/permissions",
+          label: "Permissions",
+          icon: <MdLock className="w-6 h-6" />,
+          page: "permissions",
           action: "view",
         },
       ].filter((item) => hasPermission(item.page, item.action)),
@@ -430,15 +436,17 @@ const Sidebar = ({ toggleSidebar }) => {
     },
   ].filter((item) => {
     const isCEO = user?.role?.name?.toLowerCase() === 'ceo';
-    const isLead = hasPermission("lead_dashboard", "view");
+    const isLead = hasPermission("lead_dashboard", "view") && !isSuperadmin && !isCEO;
     const isHR = hasPermission("hr_dashboard", "view") && !isSuperadmin && !isCEO;
-    const isRegularEmployee = hasPermission("employee_dashboard", "view") && !isLead && !isSuperadmin && !isCEO;
+    const isSales = hasPermission("sales_dashboard", "view") && !isSuperadmin && !isCEO;
+    const isRegularEmployee = hasPermission("employee_dashboard", "view") && !isLead && !isHR && !isSales && !isSuperadmin && !isCEO;
 
-    // For leads, hide "Dashboard" (Admin) and "My Dashboard" (Employee) to avoid dual dashboards
-    if (isLead && !isSuperadmin && (item.label === "My Dashboard" || item.label === "Dashboard")) return false;
+    const dashboards = ["Admin Dashboard", "HR Dashboard", "Sales Dashboard", "Lead Dashboard", "My Dashboard"];
 
-    // For HR users, hide other dashboards to avoid dual dashboards
-    if (isHR && (item.label === "My Dashboard" || item.label === "Lead Dashboard" || item.label === "Dashboard")) return false;
+    // Ensure users only see their primary dashboard if they aren't Superadmin/CEO
+    if (isLead && dashboards.includes(item.label) && item.label !== "Lead Dashboard") return false;
+    if (isHR && dashboards.includes(item.label) && item.label !== "HR Dashboard") return false;
+    if (isSales && dashboards.includes(item.label) && item.label !== "Sales Dashboard") return false;
 
     // For employees, show ONLY My Dashboard, Self Management, and Profile
     if (isRegularEmployee) {

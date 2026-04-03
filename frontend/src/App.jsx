@@ -7,6 +7,7 @@ import Admin from "./pages/Dashboard/Admin";
 import LeadDashboard from "./pages/Dashboard/Lead";
 import EmployeeDashboard from "./pages/Dashboard/Employee";
 import HRDashboard from "./pages/Dashboard/HR";
+import SalesDashboard from "./pages/Dashboard/Sales";
 import Login from "./pages/Auth/Login";
 import ResetPassword from "./pages/Auth/ResetPassword";
 import Profile from "./pages/Profile";
@@ -150,6 +151,9 @@ const RootDashboardRedirect = () => {
     if (hasPermission("hr_dashboard", "view")) {
       return <HRDashboard />;
     }
+    if (hasPermission("sales_dashboard", "view")) {
+      return <SalesDashboard />;
+    }
     if (hasPermission("lead_dashboard", "view")) {
       return <LeadDashboard />;
     }
@@ -163,6 +167,9 @@ const RootDashboardRedirect = () => {
   }
   if (hasPermission("hr_dashboard", "view")) {
     return <HRDashboard />;
+  }
+  if (hasPermission("sales_dashboard", "view")) {
+    return <SalesDashboard />;
   }
   if (hasPermission("lead_dashboard", "view")) {
     return <LeadDashboard />;
@@ -210,6 +217,14 @@ function App() {
           element: (
             <ProtectedRoute requiredPage="hr_dashboard">
               <HRDashboard />
+            </ProtectedRoute>
+          )
+        },
+        {
+          path: "/sales-dashboard",
+          element: (
+            <ProtectedRoute requiredPage="sales_dashboard">
+              <SalesDashboard />
             </ProtectedRoute>
           )
         },
@@ -490,7 +505,7 @@ function App() {
           element: (
             <ProtectedRoute
               isAuthenticated={isAuthenticated}
-              requiredPage="customer"
+              requiredPage="customers"
             >
               <Customers />
             </ProtectedRoute>
@@ -668,7 +683,7 @@ function App() {
           element: (
             <ProtectedRoute
               isAuthenticated={isAuthenticated}
-              requiredPage={["timelogs", "lead_timelogs"]}
+              requiredPage={["time_logs", "lead_time_logs"]}
               requiredAction="view"
             >
               <TimeLogs />
@@ -680,7 +695,7 @@ function App() {
           element: (
             <ProtectedRoute
               isAuthenticated={isAuthenticated}
-              requiredPage={["timelogs", "lead_timelogs"]}
+              requiredPage={["time_logs", "lead_time_logs"]}
               requiredAction="view"
             >
               <ActiveTimers />
@@ -692,7 +707,7 @@ function App() {
           element: (
             <ProtectedRoute
               isAuthenticated={isAuthenticated}
-              requiredPage={["timelogs", "lead_timelogs"]}
+              requiredPage={["time_logs", "lead_time_logs"]}
               requiredAction="view"
             >
               <CalendarView />
@@ -704,7 +719,7 @@ function App() {
           element: (
             <ProtectedRoute
               isAuthenticated={isAuthenticated}
-              requiredPage={["timelogs", "lead_timelogs"]}
+              requiredPage={["time_logs", "lead_time_logs"]}
               requiredAction="view"
             >
               <EmployeeTimeLogs />
@@ -864,7 +879,7 @@ function App() {
         {
           path: "/team/employees",
           element: (
-            <ProtectedRoute requiredPage="team_listing">
+            <ProtectedRoute requiredPage="lead_management">
               <EmployeeView leadScope={true} />
             </ProtectedRoute>
           ),
@@ -896,7 +911,7 @@ function App() {
         {
           path: "/lead/time-logs",
           element: (
-            <ProtectedRoute requiredPage="lead_timelogs">
+            <ProtectedRoute requiredPage="lead_time_logs">
               <TimeLogs leadScope={true} />
             </ProtectedRoute>
           ),
@@ -974,7 +989,7 @@ function App() {
         {
           path: "/employee/time-logs",
           element: (
-            <ProtectedRoute requiredPage="employee_timelogs">
+            <ProtectedRoute requiredPage="employee_time_logs">
               <TimeLogs employeeScope={true} />
             </ProtectedRoute>
           ),
@@ -1006,7 +1021,7 @@ function App() {
         {
           path: "/employee/task-calendar",
           element: (
-            <ProtectedRoute requiredPage="employee_taskcalendar">
+            <ProtectedRoute requiredPage="employee_task_calendar">
               <TaskCalendarPage employeeScope={true} />
             </ProtectedRoute>
           ),
