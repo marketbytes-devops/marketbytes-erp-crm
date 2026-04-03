@@ -14,6 +14,7 @@ import {
 } from "react-icons/md";
 import apiClient from "../../../helpers/apiClient";
 import Loading from "../../../components/Loading";
+import NoticesEventsWidget from "../../../components/Dashboard/NoticesEventsWidget";
 
 const StatCard = ({ title, value, subValue, icon, colorClass, bgClass, onClick }) => (
  <div
@@ -113,12 +114,12 @@ const EmployeeDashboard = () => {
  }
 
  return (
- <div className="p-6 md:p-8 space-y-8 bg-slate-50 min-h-screen font-syne">
+ <div className="p-6 md:p-8 space-y-8 min-h-screen font-syne">
  {/* Header Section */}
  <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 bg-white p-6 rounded-xl shadow-sm border border-gray-100">
  <div>
  <h1 className="text-2xl md:text-3xl font-bold text-gray-800">
- Work Workspace: {profile?.first_name || 'Associate'} 👋
+ Workspace: {profile?.first_name || 'Associate'} 
  </h1>
  <p className="text-gray-500 mt-1">Focus on your goals and track your progress.</p>
  </div>
@@ -301,18 +302,7 @@ const EmployeeDashboard = () => {
  </div>
 
  {/* Events & Notice */}
- <div className="bg-emerald-600 rounded-xl shadow-md p-6 text-white group overflow-hidden relative">
- <div className="absolute -right-8 -top-8 w-24 h-24 bg-white/10 rounded-full blur-2xl transition-transform" />
- <div className="relative z-10">
- <h3 className="font-bold mb-4">Upcoming Events</h3>
- <div className="space-y-4">
- <div className="bg-white/10 p-3 rounded-lg">
- <p className="text-xs font-bold text-emerald-200 uppercase">March 15</p>
- <p className="text-sm">Team Outing & Celebration</p>
- </div>
- </div>
- </div>
- </div>
+ <NoticesEventsWidget />
 
  </div>
  </div>

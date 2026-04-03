@@ -6,6 +6,7 @@ import Layout from "./components/Layout";
 import Admin from "./pages/Dashboard/Admin";
 import LeadDashboard from "./pages/Dashboard/Lead";
 import EmployeeDashboard from "./pages/Dashboard/Employee";
+import HRDashboard from "./pages/Dashboard/HR";
 import Login from "./pages/Auth/Login";
 import ResetPassword from "./pages/Auth/ResetPassword";
 import Profile from "./pages/Profile";
@@ -146,6 +147,9 @@ const RootDashboardRedirect = () => {
 
   const isCEO = user?.role?.name?.toLowerCase() === 'ceo';
   if (!isSuperadmin && !isCEO) {
+    if (hasPermission("hr_dashboard", "view")) {
+      return <HRDashboard />;
+    }
     if (hasPermission("lead_dashboard", "view")) {
       return <LeadDashboard />;
     }
@@ -156,6 +160,9 @@ const RootDashboardRedirect = () => {
 
   if (isSuperadmin || hasPermission("admin", "view")) {
     return <Admin />;
+  }
+  if (hasPermission("hr_dashboard", "view")) {
+    return <HRDashboard />;
   }
   if (hasPermission("lead_dashboard", "view")) {
     return <LeadDashboard />;
@@ -198,6 +205,14 @@ function App() {
       ),
       children: [
         { index: true, element: <RootDashboardRedirect /> },
+        {
+          path: "/hr-dashboard",
+          element: (
+            <ProtectedRoute requiredPage="hr_dashboard">
+              <HRDashboard />
+            </ProtectedRoute>
+          )
+        },
         {
           path: "/lead-dashboard",
           element: (

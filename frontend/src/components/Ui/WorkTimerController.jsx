@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { createPortal } from "react-dom";
 import apiClient from "../../helpers/apiClient";
 import WorkTimerButton from "../Ui/WorkTimerButton";
@@ -23,6 +23,10 @@ const WorkTimerController = () => {
  const [modalOpen, setModalOpen] = useState(false);
  const [loading, setLoading] = useState(true);
 
+  // New FY productivity summaries
+  const [weeklyProductivity, setWeeklyProductivity] = useState(null);
+  const [monthlyProductivity, setMonthlyProductivity] = useState(null);
+
  // Daily totals (ticking)
  const [workSeconds, setWorkSeconds] = useState(0);
  const [breakSeconds, setBreakSeconds] = useState(0);
@@ -31,16 +35,23 @@ const WorkTimerController = () => {
  // Current session timer (for Break/Support only, starts at 0 each time)
  const [sessionSeconds, setSessionSeconds] = useState(0);
 
+  // Ensure UI refreshes when local date flips (policy: timer resets at 12:00 AM)
+  const localDateKeyRef = useRef(new Date().toDateString());
+
  const fetchStatus = useCallback(async () => {
  try {
- const [attRes, timerRes] = await Promise.all([
- apiClient.get("/hr/attendance/status/"),
- apiClient.get("/hr/timer/status/"),
+ const [attRes, timerRes, weeklyRes, monthlyRes] = await Promise.all([
+   apiClient.get("/hr/attendance/status/"),
+   apiClient.get("/hr/timer/status/"),
+   apiClient.get("/hr/timer/weekly_productivity/"),
+   apiClient.get("/hr/timer/monthly_productivity/"),
  ]);
  const s = timerRes.data;
  setCheckedIn(attRes.data.checked_in);
  setClockIn(attRes.data.clock_in);
  setStatus(s);
+  setWeeklyProductivity(weeklyRes?.data || null);
+  setMonthlyProductivity(monthlyRes?.data || null);
 
  // Sync local timers with backend daily totals
  setWorkSeconds(s.today_total_work_seconds || 0);
@@ -96,6 +107,13 @@ const WorkTimerController = () => {
  setSupportSeconds((prev) => prev + 1);
  }
  }
+
+  // When the day changes, refresh backend totals/status immediately.
+  const nowKey = new Date().toDateString();
+  if (nowKey !== localDateKeyRef.current) {
+    localDateKeyRef.current = nowKey;
+    fetchStatus();
+  }
  }, 1000);
  return () => clearInterval(id);
  }, [status]);
@@ -167,7 +185,8 @@ const WorkTimerController = () => {
       navigate("/dashboard");
     } catch (e) {
       console.error(e);
-      toast.error(e.response?.data?.error || "Failed to start work timer");
+      const errMsg = e?.response?.data?.error;
+      toast.error(errMsg || "Failed to start work timer");
     }
   };
 
@@ -260,6 +279,8 @@ const WorkTimerController = () => {
  onSupport={() => status?.active_type === "support" ? stopBreak() : startBreak("support")}
  onCheckOut={handleCheckOut}
  checkedIn={checkedIn}
+  weeklyProductivity={weeklyProductivity}
+  monthlyProductivity={monthlyProductivity}
  status={{
  ...status,
  workSeconds,

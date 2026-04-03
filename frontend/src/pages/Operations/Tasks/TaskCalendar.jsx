@@ -8,10 +8,11 @@ import toast from "react-hot-toast";
 import { CalendarIcon, ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/24/outline";
 
 import * as XLSX from "xlsx";
+import Loading from "../../../components/Loading";
 
 const months = [
- "January", "February", "March", "April", "May", "June",
- "July", "August", "September", "October", "November", "December"
+  "January", "February", "March", "April", "May", "June",
+  "July", "August", "September", "October", "November", "December"
 ];
 
 const TaskCalendarPage = ({ employeeScope = false, leadScope = false }) => {
@@ -238,8 +239,8 @@ const TaskCalendarPage = ({ employeeScope = false, leadScope = false }) => {
 
 
       {loading && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30">
-          <div className="h-12 w-12 animate-spin rounded-full border-4 border-blue-500 border-t-transparent"></div>
+        <div className="min-h-screen flex items-center justify-center bg-transparent">
+          <Loading />
         </div>
       )}
 

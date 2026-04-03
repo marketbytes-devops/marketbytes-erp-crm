@@ -4,8 +4,10 @@ import moment from 'moment';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 import apiClient from "../../helpers/apiClient";
 import { usePermission } from "../../context/PermissionContext";
-import { PlusIcon } from '@heroicons/react/24/outline';
 import toast from 'react-hot-toast';
+import LayoutComponents from "../../components/LayoutComponents";
+import Loading from "../../components/Loading";
+import { MdAdd, MdClose } from "react-icons/md";
 
 const localizer = momentLocalizer(moment);
 
@@ -24,6 +26,10 @@ const CommonCalendar = () => {
 
  const { hasPermission } = usePermission();
  const canAddEvent = hasPermission('common_calendar', 'add');
+
+  const eventCount = events.filter((e) => e?.type === 'event').length;
+  const holidayCount = events.filter((e) => e?.type === 'holiday').length;
+  const totalCount = eventCount + holidayCount;
 
  useEffect(() => {
  fetchCalendarData();
@@ -84,7 +90,7 @@ const CommonCalendar = () => {
  };
 
  const eventStyleGetter = (event) => {
- let backgroundColor = '#4f46e5'; // Indigo 600
+ let backgroundColor = '#111827'; // Gray-900
  if (event.type === 'holiday') backgroundColor = '#ef4444'; // Red 500
 
  return {
@@ -104,146 +110,207 @@ const CommonCalendar = () => {
  };
 
     return (
-        <div className="p-8 h-[calc(100vh-100px)] flex flex-col bg-gray-50/50">
-            <div className="flex justify-between items-center mb-8">
-                <div>
-                    <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight">Events</h1>
-                    <p className="text-gray-500 mt-1">Manage and view all company events and holidays</p>
+        <div className="p-6 min-h-screen">
+          <LayoutComponents
+            title="Events"
+            subtitle="Manage and view all company events and holidays"
+            variant="table"
+          >
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-6">
+              <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 flex-1">
+                  <div className="text-center">
+                    <div className="text-3xl font-medium text-gray-900 mb-1">{totalCount}</div>
+                    <p className="text-xs text-gray-500 font-medium uppercase tracking-widest">Total</p>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-3xl font-medium text-black mb-1">{eventCount}</div>
+                    <p className="text-xs text-gray-500 font-medium uppercase tracking-widest">Events</p>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-3xl font-medium text-red-600 mb-1">{holidayCount}</div>
+                    <p className="text-xs text-gray-500 font-medium uppercase tracking-widest">Holidays</p>
+                  </div>
                 </div>
+
                 {canAddEvent && (
-                    <button
-                        onClick={() => setShowModal(true)}
-                        className="flex items-center gap-2 bg-indigo-600 text-white shadow-lg shadow-indigo-200 hover:bg-indigo-700 hover:shadow-indigo-300 transition-all px-4 py-3 text-sm rounded-xl font-medium"
-                    >
-                        <PlusIcon className="w-5 h-5 stroke-2" />
-                        Add Event
-                    </button>
+                  <button
+                    onClick={() => setShowModal(true)}
+                    className="flex items-center justify-center gap-2 bg-black text-white hover:bg-gray-900 transition whitespace-nowrap px-4 py-3 text-sm rounded-xl font-medium"
+                  >
+                    <MdAdd className="w-5 h-5" />
+                    Add Event
+                  </button>
                 )}
+              </div>
             </div>
 
- <div className="flex-1 bg-white rounded-xl shadow-sm border border-gray-100 p-6 overflow-hidden">
- {loading ? (
- <div className="h-full flex items-center justify-center">
- <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
- </div>
- ) : (
- <Calendar
- localizer={localizer}
- events={events}
- startAccessor="start"
- endAccessor="end"
- style={{ height: '100%' }}
- eventPropGetter={eventStyleGetter}
- onSelectEvent={event => {
- if (event.resource) {
- toast(
- `Event: ${event.resource.title}\n` +
- `Type: ${event.resource.event_type}\n` +
- `Location: ${event.resource.location || 'N/A'}\n` +
- `Description: ${event.resource.description || 'N/A'}`,
- { duration: 4000 }
- );
- }
- }}
- />
- )}
- </div>
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 overflow-hidden h-[calc(100vh-210px)]">
+              {loading ? (
+                <div className="h-full flex items-center justify-center">
+                  <Loading />
+                </div>
+              ) : (
+                <Calendar
+                  localizer={localizer}
+                  events={events}
+                  startAccessor="start"
+                  endAccessor="end"
+                  style={{ height: '100%' }}
+                  eventPropGetter={eventStyleGetter}
+                  onSelectEvent={(event) => {
+                    if (event.resource) {
+                      toast(
+                        `Event: ${event.resource.title}\n` +
+                          `Type: ${event.resource.event_type}\n` +
+                          `Location: ${event.resource.location || "N/A"}\n` +
+                          `Description: ${event.resource.description || "N/A"}`,
+                        { duration: 4000 }
+                      );
+                    }
+                  }}
+                />
+              )}
+            </div>
 
- {showModal && (
- <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-900/40 backdrop-blur-sm p-4">
- <div className="bg-white rounded-xl shadow-2xl w-full max-w-md overflow-hidden transform transition-all">
- <div className="px-5 py-2.5 text-sm border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
- <h2 className="text-xl font-bold text-gray-800">Add New Event</h2>
- <button onClick={() => setShowModal(false)} className="text-gray-400 hover:text-gray-600">
- <PlusIcon className="w-6 h-6 rotate-45" />
- </button>
- </div>
- <form onSubmit={handleAddEvent} className="p-6 space-y-5">
- <div>
- <label className="block text-sm font-semibold text-gray-700 mb-1.5">Title</label>
- <input
- type="text"
- required
- placeholder="e.g. Quarterly Review"
- className="block w-full rounded-xl border-gray-200 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-3 border transition-all"
- value={newEvent.title}
- onChange={e => setNewEvent({ ...newEvent, title: e.target.value })}
- />
- </div>
- <div>
- <label className="block text-sm font-semibold text-gray-700 mb-1.5">Event Type</label>
- <select
- className="block w-full rounded-xl border-gray-200 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-3 border transition-all appearance-none bg-no-repeat bg-position-[right_1rem_center]"
- value={newEvent.event_type}
- onChange={e => setNewEvent({ ...newEvent, event_type: e.target.value })}
- >
- <option value="meeting">Meeting</option>
- <option value="event">Company Event</option>
- <option value="other">Other</option>
- </select>
- </div>
- <div className="grid grid-cols-2 gap-4">
- <div>
- <label className="block text-sm font-semibold text-gray-700 mb-1.5">Start Date & Time</label>
- <input
- type="datetime-local"
- required
- className="block w-full rounded-xl border-gray-200 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-3 border transition-all"
- value={newEvent.start_datetime}
- onChange={e => setNewEvent({ ...newEvent, start_datetime: e.target.value })}
- />
- </div>
- <div>
- <label className="block text-sm font-semibold text-gray-700 mb-1.5">End Date & Time</label>
- <input
- type="datetime-local"
- required
- className="block w-full rounded-xl border-gray-200 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-3 border transition-all"
- value={newEvent.end_datetime}
- onChange={e => setNewEvent({ ...newEvent, end_datetime: e.target.value })}
- />
- </div>
- </div>
- <div>
- <label className="block text-sm font-semibold text-gray-700 mb-1.5">Location</label>
- <input
- type="text"
- placeholder="Conference Room A / Zoom"
- className="block w-full rounded-xl border-gray-200 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-3 border transition-all"
- value={newEvent.location}
- onChange={e => setNewEvent({ ...newEvent, location: e.target.value })}
- />
- </div>
- <div>
- <label className="block text-sm font-semibold text-gray-700 mb-1.5">Description</label>
- <textarea
- className="block w-full rounded-xl border-gray-200 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-3 border transition-all resize-none"
- rows="3"
- placeholder="Add more details about this event..."
- value={newEvent.description}
- onChange={e => setNewEvent({ ...newEvent, description: e.target.value })}
- ></textarea>
- </div>
- <div className="flex justify-end gap-3 pt-4">
- <button
- type="button"
- onClick={() => setShowModal(false)}
- className=".5 text-gray-600 bg-gray-50 hover:bg-gray-100 transition-all px-4 py-3 text-sm rounded-xl font-medium"
- >
- Cancel
- </button>
- <button
- type="submit"
- className="transition-colors .5 text-white bg-indigo-600 hover:bg-indigo-700 shadow-lg shadow-indigo-100 px-4 py-3 text-sm rounded-xl font-medium"
- >
- Create Event
- </button>
- </div>
- </form>
- </div>
- </div>
- )}
- </div>
+            {showModal && (
+              <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+                <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg overflow-hidden">
+                  <div className="px-6 py-5 border-b border-gray-100 flex justify-between items-center">
+                    <h2 className="text-xl font-medium text-gray-900">Add New Event</h2>
+                    <button
+                      onClick={() => setShowModal(false)}
+                      className="p-2 hover:bg-gray-100 rounded-lg"
+                    >
+                      <MdClose className="w-5 h-5 text-gray-500" />
+                    </button>
+                  </div>
+
+                  <form onSubmit={handleAddEvent} className="p-6 space-y-5">
+                    <div>
+                      <label className="block text-xs font-medium text-gray-700 uppercase tracking-wide ml-1 mb-2">
+                        Title
+                      </label>
+                      <input
+                        type="text"
+                        required
+                        placeholder="e.g. Quarterly Review"
+                        className="w-full border border-gray-300 focus:ring-2 focus:ring-black outline-none transition px-4 py-3 text-sm rounded-xl font-medium"
+                        value={newEvent.title}
+                        onChange={(e) =>
+                          setNewEvent({ ...newEvent, title: e.target.value })
+                        }
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-medium text-gray-700 uppercase tracking-wide ml-1 mb-2">
+                        Event Type
+                      </label>
+                      <select
+                        className="w-full border border-gray-300 focus:ring-2 focus:ring-black outline-none transition px-4 py-3 text-sm rounded-xl font-medium bg-white"
+                        value={newEvent.event_type}
+                        onChange={(e) =>
+                          setNewEvent({ ...newEvent, event_type: e.target.value })
+                        }
+                      >
+                        <option value="meeting">Meeting</option>
+                        <option value="event">Company Event</option>
+                        <option value="other">Other</option>
+                      </select>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-xs font-medium text-gray-700 uppercase tracking-wide ml-1 mb-2">
+                          Start Date & Time
+                        </label>
+                        <input
+                          type="datetime-local"
+                          required
+                          className="w-full border border-gray-300 focus:ring-2 focus:ring-black outline-none transition px-4 py-3 text-sm rounded-xl font-medium"
+                          value={newEvent.start_datetime}
+                          onChange={(e) =>
+                            setNewEvent({
+                              ...newEvent,
+                              start_datetime: e.target.value,
+                            })
+                          }
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-medium text-gray-700 uppercase tracking-wide ml-1 mb-2">
+                          End Date & Time
+                        </label>
+                        <input
+                          type="datetime-local"
+                          required
+                          className="w-full border border-gray-300 focus:ring-2 focus:ring-black outline-none transition px-4 py-3 text-sm rounded-xl font-medium"
+                          value={newEvent.end_datetime}
+                          onChange={(e) =>
+                            setNewEvent({
+                              ...newEvent,
+                              end_datetime: e.target.value,
+                            })
+                          }
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-medium text-gray-700 uppercase tracking-wide ml-1 mb-2">
+                        Location
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="Conference Room A / Zoom"
+                        className="w-full border border-gray-300 focus:ring-2 focus:ring-black outline-none transition px-4 py-3 text-sm rounded-xl font-medium"
+                        value={newEvent.location}
+                        onChange={(e) =>
+                          setNewEvent({ ...newEvent, location: e.target.value })
+                        }
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-medium text-gray-700 uppercase tracking-wide ml-1 mb-2">
+                        Description
+                      </label>
+                      <textarea
+                        rows={3}
+                        placeholder="Add more details about this event..."
+                        className="w-full border border-gray-300 focus:ring-2 focus:ring-black outline-none transition resize-none px-4 py-3 text-sm rounded-xl font-medium"
+                        value={newEvent.description}
+                        onChange={(e) =>
+                          setNewEvent({
+                            ...newEvent,
+                            description: e.target.value,
+                          })
+                        }
+                      />
+                    </div>
+
+                    <div className="pt-2 flex justify-end gap-3">
+                      <button
+                        type="button"
+                        onClick={() => setShowModal(false)}
+                        className="border border-gray-300 text-gray-700 hover:bg-gray-50 transition px-4 py-3 text-sm rounded-xl font-medium"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        type="submit"
+                        className="bg-black text-white hover:bg-gray-900 transition px-4 py-3 text-sm rounded-xl font-medium"
+                      >
+                        Create Event
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            )}
+          </LayoutComponents>
+        </div>
  );
 };
 

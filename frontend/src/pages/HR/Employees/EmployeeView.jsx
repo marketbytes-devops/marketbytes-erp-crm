@@ -226,7 +226,7 @@ const EmployeeView = ({ leadScope, employeeScope }) => {
  };
  const activeCount = Object.values(filters).filter(v => v !== "").length;
 
- if (loading) return <div className="min-h-screen flex items-center justify-center bg-gray-50"><Loading /></div>;
+ if (loading) return <div className="min-h-screen flex items-center justify-center bg-transparent"><Loading /></div>;
 
  return (
  <div className="p-6">

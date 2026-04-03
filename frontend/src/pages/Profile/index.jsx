@@ -154,6 +154,9 @@ const Profile = () => {
       });
 
  toast.success('Identity updated successfully.');
+
+ // Let layout/topbar refresh user avatar & name without a full page reload
+ window.dispatchEvent(new CustomEvent('profile-updated'));
  } catch (err) {
  toast.error(err.response?.data?.detail || 'Update failure');
  }

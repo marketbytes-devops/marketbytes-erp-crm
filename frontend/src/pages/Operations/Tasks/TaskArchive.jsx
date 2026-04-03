@@ -252,7 +252,7 @@ const TaskArchive = () => {
  </div>
  );
 
- if (loading) return <div className="min-h-screen flex items-center justify-center bg-gray-50"><Loading /></div>;
+ if (loading) return <div className="min-h-screen flex items-center justify-center bg-transparent"><Loading /></div>;
 
  return (
  <div className="p-6">

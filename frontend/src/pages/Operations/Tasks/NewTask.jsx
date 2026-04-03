@@ -3,10 +3,9 @@ import { Link, useNavigate, useLocation } from "react-router-dom";
 import LayoutComponents from "../../../components/LayoutComponents";
 import apiClient from "../../../helpers/apiClient";
 import toast from "react-hot-toast";
-import { MdArrowBack, MdAdd } from "react-icons/md";
+import { MdArrowBack, MdAdd, MdOutlineAccessTime, MdTrendingUp, MdPerson } from "react-icons/md";
 import Loading from "../../../components/Loading";
 import Input from "../../../components/Input";
-import { MdPerson } from "react-icons/md";
 
 const NewTaskPage = () => {
  const navigate = useNavigate();
@@ -18,6 +17,11 @@ const NewTaskPage = () => {
 
  const [projects, setProjects] = useState([]);
  const [users, setUsers] = useState([]);
+
+  // Monthly productive hours policy (FY)
+  const MONTHLY_EXPECTED_PRODUCTIVE_HOURS = 176;
+  const [existingMonthAllocatedByEmp, setExistingMonthAllocatedByEmp] = useState({});
+  const [existingMonthLoading, setExistingMonthLoading] = useState(false);
 
  const [formData, setFormData] = useState({
     project: location.state?.projectId || "",
@@ -90,6 +94,89 @@ const NewTaskPage = () => {
     };
     fetchProjectContext();
   }, [formData.project, projects]);
+
+  // Monthly 176 hours remaining / overtime calculation for task allocation
+  const pad2 = (n) => String(n).padStart(2, "0");
+  const toYMD = (d) => `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`;
+  const now = new Date();
+  const monthStartStr = toYMD(new Date(now.getFullYear(), now.getMonth(), 1));
+  const monthEndStr = toYMD(new Date(now.getFullYear(), now.getMonth() + 1, 0));
+
+  const selectedAssigneeIds = Array.from(
+    new Set(formData.tasks.flatMap((t) => (t.assignees || []).map(String)))
+  ).filter(Boolean);
+
+  const selectedAssigneeKey = selectedAssigneeIds.slice().sort().join(",");
+
+  useEffect(() => {
+    const fetchExistingMonthAllocated = async () => {
+      if (!selectedAssigneeIds.length) {
+        setExistingMonthAllocatedByEmp({});
+        return;
+      }
+
+      setExistingMonthLoading(true);
+      try {
+        const results = await Promise.all(
+          selectedAssigneeIds.map(async (empId) => {
+            const url = `/operation/tasks/?assignees=${empId}&is_active=true&start_date__gte=${monthStartStr}&start_date__lte=${monthEndStr}`;
+            const res = await apiClient.get(url);
+            const data = Array.isArray(res.data)
+              ? res.data
+              : res.data?.results || [];
+            const totalAllocated = data.reduce(
+              (sum, t) => sum + parseFloat(t.allocated_hours || 0),
+              0
+            );
+            return [String(empId), totalAllocated];
+          })
+        );
+
+        const map = {};
+        results.forEach(([empId, hours]) => {
+          map[empId] = Number.isFinite(hours) ? hours : 0;
+        });
+        setExistingMonthAllocatedByEmp(map);
+      } catch (err) {
+        console.error("Failed to fetch existing month allocated hours:", err);
+        setExistingMonthAllocatedByEmp({});
+      } finally {
+        setExistingMonthLoading(false);
+      }
+    };
+
+    fetchExistingMonthAllocated();
+  }, [selectedAssigneeKey]);
+
+  const monthlySummaryByEmp = selectedAssigneeIds.map((empId) => {
+    const existing = existingMonthAllocatedByEmp[empId] || 0;
+    let batch = 0;
+    formData.tasks.forEach((task) => {
+      const taskHours = parseFloat(task.allocated_hours || 0);
+      if (!task.assignees || !task.assignees.length) return;
+      if (task.assignees.map(String).includes(String(empId))) {
+        batch += Number.isFinite(taskHours) ? taskHours : 0;
+      }
+    });
+
+    const total = existing + batch;
+    const remaining = Math.max(
+      0,
+      MONTHLY_EXPECTED_PRODUCTIVE_HOURS - total
+    );
+    const overtime = Math.max(0, total - MONTHLY_EXPECTED_PRODUCTIVE_HOURS);
+
+    const u = users.find((x) => String(x.id) === String(empId));
+    return {
+      empId,
+      name: u?.name || u?.username || u?.email || `Employee ${empId}`,
+      existingHours: existing,
+      batchHours: batch,
+      totalHours: total,
+      remainingHours: remaining,
+      overtimeHours: overtime,
+    };
+  });
 
   const dateWarnings = (() => {
     if (!projectDetails) return [];
@@ -204,7 +291,7 @@ const NewTaskPage = () => {
 
  if (formLoading) {
  return (
- <div className="min-h-screen flex items-center justify-center bg-gray-50">
+ <div className="min-h-screen flex items-center justify-center bg-transparent">
  <Loading />
  </div>
  );
@@ -273,6 +360,74 @@ const NewTaskPage = () => {
             ))}
         </div>
     )}
+
+    {/* Monthly productive hours remaining / overtime (no blocking) */}
+    <div className="mb-8 p-6 bg-gray-50 rounded-2xl border border-gray-100">
+      <div className="flex items-start justify-between gap-4">
+        <div className="flex flex-col gap-1">
+          <div className="flex items-center gap-2">
+            <MdOutlineAccessTime className="w-5 h-5 text-black" />
+            <p className="text-sm font-bold text-black">
+              Monthly Productivity (176 hrs)
+            </p>
+          </div>
+          <p className="text-xs text-gray-600 font-medium">
+            Remaining / overtime is calculated for selected assignees using existing month allocations + this batch allocations.
+          </p>
+        </div>
+        {existingMonthLoading && (
+          <p className="text-xs text-gray-500 font-medium">Calculating...</p>
+        )}
+      </div>
+
+      {monthlySummaryByEmp.length > 0 && (
+        <div className="mt-4 space-y-3">
+          {monthlySummaryByEmp.map((row) => (
+            <div
+              key={row.empId}
+              className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 p-4 bg-white rounded-xl border border-gray-100"
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-xl bg-black text-white flex items-center justify-center text-sm font-bold">
+                  {row.name?.[0]?.toUpperCase() || "E"}
+                </div>
+                <div>
+                  <p className="text-sm font-semibold text-gray-900">
+                    {row.name}
+                  </p>
+                  <p className="text-xs text-gray-500">
+                    Month total: {row.totalHours.toFixed(2)} hrs
+                  </p>
+                </div>
+              </div>
+
+              {row.totalHours < MONTHLY_EXPECTED_PRODUCTIVE_HOURS ? (
+                <div className="text-right">
+                  <p className="text-xs text-gray-500 font-medium">
+                    Remaining
+                  </p>
+                  <p className="text-sm font-bold text-black">
+                    {row.remainingHours.toFixed(2)} hrs
+                  </p>
+                </div>
+              ) : (
+                <div className="text-right">
+                  <div className="flex items-center justify-end gap-2">
+                    <MdTrendingUp className="w-4 h-4 text-emerald-600" />
+                    <p className="text-xs text-emerald-700 font-bold">
+                      176 hrs completed
+                    </p>
+                  </div>
+                  <p className="text-xs text-emerald-700 font-medium">
+                    Overtime: {row.overtimeHours.toFixed(2)} hrs
+                  </p>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
 
     {/* Repeating Task Sections */}
     <div className="space-y-12">

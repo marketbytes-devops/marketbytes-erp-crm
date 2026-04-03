@@ -418,7 +418,7 @@ const Scrum = ({ employeeScope = false, leadScope = false }) => {
   }), [filteredData]);
 
   if (isLoading) {
-    return <div className="min-h-screen flex items-center justify-center bg-gray-50"><Loading /></div>;
+    return <div className="min-h-screen flex items-center justify-center bg-transparent"><Loading /></div>;
   }
 
   const statusOptions = [

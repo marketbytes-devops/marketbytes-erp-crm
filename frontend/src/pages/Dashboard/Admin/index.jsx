@@ -17,6 +17,7 @@ import {
 } from "react-icons/md";
 import apiClient from "../../../helpers/apiClient";
 import Loading from "../../../components/Loading";
+import NoticesEventsWidget from "../../../components/Dashboard/NoticesEventsWidget";
 
 const StatCard = ({ title, value, subValue, icon, colorClass, bgClass, onClick }) => (
  <div
@@ -280,6 +281,8 @@ const AdminDashboard = () => {
 
  {/* Right Column (Spans 1/3) */}
  <div className="lg:col-span-1 space-y-6">
+
+ <NoticesEventsWidget />
 
  {/* Quick Links */}
  <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">

@@ -28,7 +28,12 @@ const Layout = ({ isAuthenticated, setIsAuthenticated }) => {
   }, []);
 
   useEffect(() => {
-    if (isAuthenticated) {
+    const loadUser = () => {
+      if (!isAuthenticated) {
+        setUser(null);
+        setLoading(false);
+        return;
+      }
       setLoading(true);
       apiClient
         .get("/auth/profile/")
@@ -41,10 +46,17 @@ const Layout = ({ isAuthenticated, setIsAuthenticated }) => {
           setUser(null);
         })
         .finally(() => setLoading(false));
-    } else {
-      setUser(null);
-      setLoading(false);
-    }
+    };
+
+    loadUser();
+
+    // React to profile updates triggered from the Profile page
+    const handleProfileUpdated = () => {
+      loadUser();
+    };
+
+    window.addEventListener("profile-updated", handleProfileUpdated);
+    return () => window.removeEventListener("profile-updated", handleProfileUpdated);
   }, [isAuthenticated]);
 
   const toggleSidebar = () => {

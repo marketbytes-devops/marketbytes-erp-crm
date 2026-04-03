@@ -21,7 +21,19 @@ const StatCard = ({ label, value, active, icon: Icon, colorClass }) => (
  </div>
 );
 
-const TimerModal = ({ open, onClose, onStartWork, onStopWork, onBreak, onSupport, onCheckOut, checkedIn, status }) => {
+const TimerModal = ({
+  open,
+  onClose,
+  onStartWork,
+  onStopWork,
+  onBreak,
+  onSupport,
+  onCheckOut,
+  checkedIn,
+  status,
+  weeklyProductivity,
+  monthlyProductivity,
+}) => {
  const [projects, setProjects] = useState([]);
  const [showWorkForm, setShowWorkForm] = useState(false);
  const [showCheckoutConfirm, setShowCheckoutConfirm] = useState(false);
@@ -74,6 +86,12 @@ const TimerModal = ({ open, onClose, onStartWork, onStopWork, onBreak, onSupport
  const activeSupport = status?.active_type === "support";
 
  const scrumRequired = status?.scrum_updated_today === false;
+
+  const formatHours = (h) => {
+    const n = Number(h);
+    if (Number.isNaN(n)) return "0";
+    return n.toFixed(2);
+  };
 
  return (
  <LayoutComponents
@@ -168,6 +186,49 @@ const TimerModal = ({ open, onClose, onStartWork, onStopWork, onBreak, onSupport
  <p className="text-gray-400 text-[10px] font-medium uppercase tracking-wider mb-1">Productive Hours Today</p>
  <p className="text-3xl font-mono font-semibold text-black">{formatTime(status?.workSeconds || 0)}</p>
  </div>
+
+      {/* Weekly Productivity (Policy FY) */}
+      <div className="bg-white rounded-xl p-5 border border-gray-100 shadow-sm">
+        <div className="flex justify-between items-end mb-3">
+          <div>
+            <p className="text-gray-400 text-[10px] font-medium uppercase tracking-wider mb-1">
+              This Week (Expected 40 hrs)
+            </p>
+            <p className="text-2xl font-mono font-semibold text-black">
+              {formatHours(weeklyProductivity?.total_hours || 0)} hrs
+            </p>
+          </div>
+          <div className="text-right">
+            <p className="text-sm font-semibold text-gray-900">
+              {formatHours(Math.min(40, weeklyProductivity?.total_hours || 0))} / 40
+            </p>
+            <p className="text-xs text-gray-500">
+              {weeklyProductivity?.deficit_hours > 0
+                ? `Deficit policy: ${weeklyProductivity?.deficit_label || ""}`
+                : "On target"}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Monthly Productivity (Expected 176 hrs) */}
+      <div className="bg-white rounded-xl p-5 border border-gray-100 shadow-sm">
+        <div className="flex justify-between items-end mb-1">
+          <div>
+            <p className="text-gray-400 text-[10px] font-medium uppercase tracking-wider mb-1">
+              This Month (Expected 176 hrs)
+            </p>
+            <p className="text-2xl font-mono font-semibold text-black">
+              {formatHours(monthlyProductivity?.total_hours || 0)} hrs
+            </p>
+          </div>
+          <div className="text-right">
+            <p className="text-xs text-gray-500">
+              Deficit: {formatHours(monthlyProductivity?.deficit_hours || 0)} hrs
+            </p>
+          </div>
+        </div>
+      </div>
  <div className="text-right">
  <p className="text-sm font-semibold text-gray-900">{Math.round(progress)}%</p>
  <p className="text-xs text-gray-400">of 8h target</p>

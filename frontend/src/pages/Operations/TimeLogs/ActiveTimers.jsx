@@ -162,6 +162,8 @@ const ActiveTimers = () => {
                 end_time: new Date().toISOString()
             });
             fetchData();
+            // Notify global timer controller / topbar to refresh immediately
+            window.dispatchEvent(new CustomEvent("timer-status-updated"));
         } catch (error) {
             console.error("Failed to stop timer", error);
         }
@@ -287,7 +289,7 @@ const ActiveTimers = () => {
 
     if (loading && !timers.length) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-gray-50">
+            <div className="min-h-screen flex items-center justify-center bg-transparent">
                 <Loading />
             </div>
         );

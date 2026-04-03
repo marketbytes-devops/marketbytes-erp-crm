@@ -878,6 +878,27 @@ class TimerViewSet(viewsets.ViewSet):
             open_attendance.clock_out = time(23, 59, 59)
             open_attendance.save()
         start_of_day = local_now.replace(hour=0, minute=0, second=0, microsecond=0)
+
+        # Monthly allocated productivity (based on distinct tasks started this month)
+        month_start_local = local_now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+        import calendar
+        last_day = calendar.monthrange(local_now.year, local_now.month)[1]
+        month_end_local = month_start_local + timedelta(days=last_day) - timedelta(microseconds=1)
+
+        month_task_ids_qs = WorkSession.objects.filter(
+            employee=user,
+            start_time__gte=month_start_local,
+            start_time__lte=month_end_local,
+        ).values_list("task_id", flat=True).distinct()
+
+        month_task_ids = [tid for tid in month_task_ids_qs if tid is not None]
+        month_tasks = Task.objects.filter(id__in=month_task_ids)
+        monthly_allocated_hours = float(
+            sum([(t.allocated_hours or 0) for t in month_tasks])
+        )
+        monthly_expected_hours = 176.0
+        monthly_allocated_deficit_hours = max(0.0, round(monthly_expected_hours - monthly_allocated_hours, 2))
+        monthly_allocated_completed = monthly_allocated_hours >= monthly_expected_hours
         
         # Calculate total work
         work_sessions = WorkSession.objects.filter(employee=user, start_time__gte=start_of_day)
@@ -916,7 +937,12 @@ class TimerViewSet(viewsets.ViewSet):
             "today_total_support_seconds": int(total_support_seconds),
             "target_hours": "08:00:00",
             "remaining_hours": format_seconds(max(0, 28800 - int(total_work_seconds))),
-            "scrum_updated_today": Scrum.objects.filter(employee=user, date=local_now.date()).exists()
+            "scrum_updated_today": Scrum.objects.filter(employee=user, date=local_now.date()).exists(),
+            # New FY rule for timer: prevent starting new tasks after monthly allocated hours completion
+            "monthly_allocated_hours": round(monthly_allocated_hours, 2),
+            "monthly_expected_hours": monthly_expected_hours,
+            "monthly_allocated_deficit_hours": monthly_allocated_deficit_hours,
+            "monthly_allocated_completed": monthly_allocated_completed,
         })
     
     @action(detail=False, methods=['post'])
@@ -1033,7 +1059,126 @@ class TimerViewSet(viewsets.ViewSet):
                 })
         
         return Response(data)
-    
+
+    @action(detail=False, methods=['get'], permission_classes=[IsAuthenticated])
+    def weekly_productivity(self, request):
+        """
+        Weekly productivity summary for the logged‑in user, based on work sessions.
+
+        Policy (new FY):
+        - Expected: 40 productive hours per week (Mon–Sun)
+        - Deficit mapping (hours short of 40):
+            0               → on_target
+            (0, 1]          → late
+            (1, 4]          → half_day
+            (4, 8]          → full_day
+            > 8             → full_day_plus  (more than 1 full‑day shortfall)
+        """
+        user = request.user
+        now = timezone.localtime(timezone.now())
+
+        # Determine current week range in local timezone (Monday → Sunday)
+        weekday = now.weekday()  # Monday = 0
+        start_of_week_local = (now - timedelta(days=weekday)).replace(
+            hour=0, minute=0, second=0, microsecond=0
+        )
+        end_of_week_local = start_of_week_local + timedelta(days=7) - timedelta(microseconds=1)
+
+        # Make aware bounds for querying WorkSession (already timezone‑aware datetimes)
+        start_of_week = start_of_week_local
+        end_of_week = end_of_week_local
+
+        sessions = WorkSession.objects.filter(
+            employee=user,
+            start_time__gte=start_of_week,
+            start_time__lte=end_of_week,
+        )
+
+        total_seconds = 0
+        for s in sessions:
+            if s.end_time:
+                total_seconds += (s.end_time - s.start_time).total_seconds()
+            else:
+                # If a session is still running, cap at "now" but only within the current week
+                session_start = max(s.start_time, start_of_week)
+                total_seconds += max(0, (now - session_start).total_seconds())
+
+        total_hours = round(total_seconds / 3600, 2)
+        expected_hours = 40.0
+        deficit = max(0.0, round(expected_hours - total_hours, 2))
+
+        if deficit == 0:
+            deficit_code = "on_target"
+            deficit_label = "On target"
+        elif deficit <= 1:
+            deficit_code = "late"
+            deficit_label = "Late (≤ 1 hr short)"
+        elif deficit <= 4:
+            deficit_code = "half_day"
+            deficit_label = "Half‑day equivalent (≤ 4 hrs short)"
+        elif deficit <= 8:
+            deficit_code = "full_day"
+            deficit_label = "Full‑day equivalent (≤ 8 hrs short)"
+        else:
+            deficit_code = "full_day_plus"
+            deficit_label = "More than 1 full‑day shortfall (> 8 hrs)"
+
+        return Response(
+            {
+                "week_start": start_of_week_local.date(),
+                "week_end": end_of_week_local.date(),
+                "total_hours": total_hours,
+                "expected_hours": expected_hours,
+                "deficit_hours": deficit,
+                "deficit_code": deficit_code,
+                "deficit_label": deficit_label,
+            }
+        )
+
+    @action(detail=False, methods=['get'], permission_classes=[IsAuthenticated])
+    def monthly_productivity(self, request):
+        """
+        Monthly productivity summary for the logged‑in user.
+
+        Policy (new FY):
+        - Expected: 176 productive hours per month
+        """
+        user = request.user
+        now = timezone.localtime(timezone.now())
+
+        month_start_local = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+        import calendar
+        last_day = calendar.monthrange(now.year, now.month)[1]
+        month_end_local = month_start_local + timedelta(days=last_day) - timedelta(microseconds=1)
+
+        sessions = WorkSession.objects.filter(
+            employee=user,
+            start_time__gte=month_start_local,
+            start_time__lte=month_end_local,
+        )
+
+        total_seconds = 0
+        for s in sessions:
+            if s.end_time:
+                total_seconds += (s.end_time - s.start_time).total_seconds()
+            else:
+                session_start = max(s.start_time, month_start_local)
+                total_seconds += max(0, (now - session_start).total_seconds())
+
+        total_hours = round(total_seconds / 3600, 2)
+        expected_hours = 176.0
+        deficit = max(0.0, round(expected_hours - total_hours, 2))
+
+        return Response(
+            {
+                "month_start": month_start_local.date(),
+                "month_end": month_end_local.date(),
+                "total_hours": total_hours,
+                "expected_hours": expected_hours,
+                "deficit_hours": deficit,
+            }
+        )
+
     @action(detail=False, methods=['get'], permission_classes=[HasPermission])
     def active_sessions(self, request):
         sessions = WorkSession.objects.filter(end_time__isnull=True)\

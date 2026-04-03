@@ -1,7 +1,7 @@
 export const PAGE_GROUPS = [
   {
     name: "Dashboard",
-    pages: ["admin", "lead_dashboard", "employee_dashboard"]
+    pages: ["admin", "hr_dashboard", "lead_dashboard", "employee_dashboard"]
   },
   {
     name: "Profile",
@@ -36,6 +36,7 @@ export const PAGE_GROUPS = [
 export const PAGE_NAME_MAP = {
   // Common / Home
   admin: { apiName: "admin", displayName: "Dashboard", route: "/dashboard", module: "Dashboard" },
+  hr_dashboard: { apiName: "hr_dashboard", displayName: "HR Dashboard", route: "/hr-dashboard", module: "Dashboard" },
 
   // HR Management
   employees: { apiName: "employees", displayName: "Employees", route: "/hr/employees", module: "HR Management" },

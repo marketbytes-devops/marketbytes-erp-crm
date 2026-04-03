@@ -74,6 +74,13 @@ const Sidebar = ({ toggleSidebar }) => {
       action: "view",
     },
     {
+      to: "/hr-dashboard",
+      label: "HR Dashboard",
+      icon: <MdDashboard className="w-6 h-6" />,
+      page: "hr_dashboard",
+      action: "view",
+    },
+    {
       label: "HR Management",
       icon: <MdWork className="w-6 h-6" />,
       isOpen: openDropdown === "HR Management",
@@ -183,6 +190,13 @@ const Sidebar = ({ toggleSidebar }) => {
           label: "Task Calendar",
           icon: <MdCalendarToday className="w-5 h-5" />,
           page: "task_calendar",
+          action: "view",
+        },
+        {
+          to: "/operations/common-calendar",
+          label: "Events",
+          icon: <MdCalendarToday className="w-5 h-5" />,
+          page: "common_calendar",
           action: "view",
         },
         {
@@ -405,13 +419,6 @@ const Sidebar = ({ toggleSidebar }) => {
           page: "employee_taskcalendar",
           action: "view",
         },
-        {
-          to: "/operations/common-calendar",
-          label: "Events",
-          icon: <MdCalendarToday className="w-5 h-5" />,
-          page: "common_calendar",
-          action: "view",
-        },
       ].filter((item) => hasPermission(item.page, item.action)),
     },
     {
@@ -424,10 +431,14 @@ const Sidebar = ({ toggleSidebar }) => {
   ].filter((item) => {
     const isCEO = user?.role?.name?.toLowerCase() === 'ceo';
     const isLead = hasPermission("lead_dashboard", "view");
+    const isHR = hasPermission("hr_dashboard", "view") && !isSuperadmin && !isCEO;
     const isRegularEmployee = hasPermission("employee_dashboard", "view") && !isLead && !isSuperadmin && !isCEO;
 
     // For leads, hide "Dashboard" (Admin) and "My Dashboard" (Employee) to avoid dual dashboards
     if (isLead && !isSuperadmin && (item.label === "My Dashboard" || item.label === "Dashboard")) return false;
+
+    // For HR users, hide other dashboards to avoid dual dashboards
+    if (isHR && (item.label === "My Dashboard" || item.label === "Lead Dashboard" || item.label === "Dashboard")) return false;
 
     // For employees, show ONLY My Dashboard, Self Management, and Profile
     if (isRegularEmployee) {

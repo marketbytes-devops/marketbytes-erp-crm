@@ -18,6 +18,7 @@ import {
 } from "react-icons/md";
 import apiClient from "../../../helpers/apiClient";
 import Loading from "../../../components/Loading";
+import NoticesEventsWidget from "../../../components/Dashboard/NoticesEventsWidget";
 
 const StatCard = ({ title, value, subValue, icon, colorClass, bgClass, onClick }) => (
  <div
@@ -356,25 +357,7 @@ const LeadDashboard = () => {
  </div>
 
  {/* Events & Notice */}
- <div className="bg-indigo-600 rounded-xl shadow-md p-6 text-white overflow-hidden relative group">
- <div className="absolute -right-8 -top-8 w-24 h-24 bg-white/10 rounded-full blur-2xl transition-transform" />
- <div className="relative z-10">
- <div className="flex items-center gap-3 mb-4">
- <MdFeedback className="text-2xl" />
- <h3 className="font-bold">Notices & Events</h3>
- </div>
- <div className="space-y-4">
- <div className="bg-white/10 p-3 rounded-lg border border-white/20">
- <p className="text-xs font-bold uppercase tracking-wider text-indigo-200">Monday, March 9</p>
- <p className="text-sm mt-1">Weekly Strategic Sync @ 10:00 AM</p>
- </div>
- <div className="bg-white/10 p-3 rounded-lg border border-white/20">
- <p className="text-xs font-bold uppercase tracking-wider text-indigo-200">Announcement</p>
- <p className="text-sm mt-1">New Performance Metrics Released.</p>
- </div>
- </div>
- </div>
- </div>
+ <NoticesEventsWidget />
 
  </div>
  </div>
