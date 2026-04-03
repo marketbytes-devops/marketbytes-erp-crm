@@ -4,6 +4,7 @@ import Sidebar from "./Sidebar";
 import Topbar from "./Topbar";
 import apiClient from "../../helpers/apiClient";
 import Loading from "../Loading";
+import AppToaster from "../AppToaster";
 
 const Layout = ({ isAuthenticated, setIsAuthenticated }) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -56,6 +57,7 @@ const Layout = ({ isAuthenticated, setIsAuthenticated }) => {
 
   return (
     <div className="flex min-h-screen bg-linear-to-br from-blue-50 via-gray-200 to-indigo-100">
+      <AppToaster />
       <aside
         className={`fixed inset-y-0 left-0 z-40 w-72 bg-transparent text-white shadow-inner transition-transform duration-300 ${isSidebarOpen ? "translate-x-0" : "-translate-x-full"
           }`}

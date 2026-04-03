@@ -1,12 +1,22 @@
 import { useState, useEffect, useCallback } from "react";
+import { createPortal } from "react-dom";
 import apiClient from "../../helpers/apiClient";
 import WorkTimerButton from "../Ui/WorkTimerButton";
 import TimerModal from "../Ui/TimerModal";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
+import { usePermission } from "../../context/PermissionContext";
 
 const WorkTimerController = () => {
  const navigate = useNavigate();
+ const { hasPermission } = usePermission();
+
+ const scrumListPath = () => {
+   if (hasPermission("scrum", "view")) return "/operations/scrum";
+   if (hasPermission("lead_scrum", "view")) return "/lead/scrum";
+   if (hasPermission("employee_scrum", "view")) return "/employee/scrum";
+   return "/operations/scrum";
+ };
  const [checkedIn, setCheckedIn] = useState(false);
  const [clockIn, setClockIn] = useState(null);
  const [status, setStatus] = useState(null);
@@ -153,7 +163,7 @@ const WorkTimerController = () => {
       await apiClient.post("/hr/timer/start_work/", { project, task, memo });
       setModalOpen(false);
       fetchStatus();
-      toast.success("Work started!", { icon: "🏃" });
+      toast.success("Work started!", { icon: null });
       navigate("/dashboard");
     } catch (e) {
       console.error(e);
@@ -195,8 +205,22 @@ const WorkTimerController = () => {
 
   const handleStartStopClick = () => {
     if (!status?.scrum_updated_today && !status?.is_working) {
-      toast.error("Daily scrum required: add at least 1 scrum update today to unlock the timer.", { icon: "📝" });
-      navigate("/operations/scrum");
+      // Fixed viewport position (20/20) — only this flow; avoids react-hot-toast stack transforms
+      toast.custom(
+        () =>
+          createPortal(
+            <div
+              role="status"
+              className="max-w-[min(420px,calc(100vw-40px))] rounded-xl bg-black px-4 py-3 text-sm font-medium text-white shadow-lg"
+              style={{ position: "fixed", top: 20, right: 25, zIndex: 999999 }}
+            >
+              Daily scrum required: add at least 1 scrum update today to unlock the timer.
+            </div>,
+            document.body
+          ),
+        { duration: 2000 }
+      );
+      navigate(`${scrumListPath()}?create=1`);
       return;
     }
     

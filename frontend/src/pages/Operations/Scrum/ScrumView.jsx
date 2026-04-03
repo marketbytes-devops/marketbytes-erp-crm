@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useRef, useCallback } from "react";
 import {
  MdClose,
  MdFilterList,
@@ -11,24 +11,24 @@ import {
  MdVisibility
 } from "react-icons/md";
 import { FiSearch } from "react-icons/fi";
-import { Toaster, toast } from "react-hot-toast";
+import { toast } from "react-hot-toast";
 import apiClient from "../../../helpers/apiClient";
 import LayoutComponents from "../../../components/LayoutComponents";
 import Input from "../../../components/Input";
 import Loading from "../../../components/Loading";
 import { motion, AnimatePresence } from "framer-motion";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { usePermission } from "../../../context/PermissionContext";
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
 import * as XLSX from "xlsx";
-import { useRef } from "react";
 
 const Scrum = ({ employeeScope = false, leadScope = false }) => {
   const { hasPermission, user } = usePermission();
   const permissionPage = employeeScope ? "employee_scrum" : (leadScope ? "lead_scrum" : "scrum");
   const editBasePath = employeeScope ? "/employee/scrum/edit" : (leadScope ? "/lead/scrum/edit" : "/operations/scrum/edit");
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [pinnedModalOpen, setPinnedModalOpen] = useState(false);
@@ -179,7 +179,7 @@ const Scrum = ({ employeeScope = false, leadScope = false }) => {
 
   // --- Actions ---
 
-  const prepareCreate = () => {
+  const prepareCreate = useCallback(() => {
     setFormData({
       project: "",
       task: "",
@@ -191,7 +191,17 @@ const Scrum = ({ employeeScope = false, leadScope = false }) => {
       task_name: "",
     });
     setShowCreateModal(true);
-  };
+  }, [user?.id]);
+
+  /** Auto-open New Scrum when redirected from timer (e.g. /operations/scrum?create=1). */
+  useEffect(() => {
+    if (isLoading) return;
+    if (searchParams.get("create") !== "1") return;
+    if (hasPermission(permissionPage, "add")) {
+      prepareCreate();
+    }
+    setSearchParams({}, { replace: true });
+  }, [isLoading, searchParams, permissionPage, hasPermission, prepareCreate, setSearchParams]);
 
   const handleSubmit = async () => {
     if (!formData.project || !formData.task) {
@@ -210,7 +220,6 @@ const Scrum = ({ employeeScope = false, leadScope = false }) => {
       };
 
       const response = await apiClient.post("/operation/scrum/", payload);
-      toast.success("Scrum created");
 
       // Optimistic update
       const newItem = formatScrumItem({
@@ -223,8 +232,9 @@ const Scrum = ({ employeeScope = false, leadScope = false }) => {
       setScrumData(prev => [newItem, ...prev]);
       setShowCreateModal(false);
       
+      toast.success("Scrum created. Opening timer…", { icon: null });
+      
       // Notify parent/toast and trigger timer modal
-      toast.success("Scrum created! Opening Timer...", { icon: "⏲️" });
       
       // Dispatch event to open timer modal in Topbar/WorkTimerController
       window.dispatchEvent(new CustomEvent('open-timer-modal'));
@@ -420,7 +430,6 @@ const Scrum = ({ employeeScope = false, leadScope = false }) => {
 
   return (
     <div className="p-6">
-      <Toaster position="top-right" />
       <LayoutComponents title={leadScope ? "Team Scrum Board" : "Scrum Board"} subtitle="Manage daily standups and sprint progress" variant="table">
         <div className="max-w-full mx-auto">
 

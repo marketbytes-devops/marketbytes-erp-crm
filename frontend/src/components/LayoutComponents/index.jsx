@@ -1,4 +1,3 @@
-import { Toaster } from 'react-hot-toast';
 import { MdClose } from 'react-icons/md';
 import { createPortal } from 'react-dom';
 
@@ -10,27 +9,9 @@ const LayoutComponents = ({
  modal,
  onCloseModal,
 }) => {
- const toaster = (
- <Toaster
- position="top-right"
- containerStyle={{ top: 72 }}
- toastOptions={{
- duration: 3000,
- style: {
- background: '#000',
- color: '#fff',
- fontSize: '14px',
- },
- success: { iconTheme: { primary: '#10b981', secondary: '#fff' } },
- error: { iconTheme: { primary: '#ef4444', secondary: '#fff' } },
- }}
- />
- );
-
  if (variant === 'card') {
  return (
  <>
- {toaster}
  <div >
  <div className="bg-white rounded-3xl border border-gray-100 shadow-xl shadow-gray-200/50 overflow-hidden">
  <div className="px-8 pt-8 pb-5 border-b border-gray-50 bg-linear-to-r from-white to-gray-50/50">
@@ -47,7 +28,6 @@ const LayoutComponents = ({
  if (variant === 'table') {
  return (
  <>
- {toaster}
  <div className="max-w-full mx-auto">
  <div className="mb-6 text-center lg:text-left">
  <h2 className="text-2xl font-medium text-black mb-2">{title}</h2>
@@ -64,7 +44,6 @@ const LayoutComponents = ({
  if (variant === 'modal') {
  return createPortal(
  <>
- {toaster}
  <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
  <div
  className="bg-white rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto"
