@@ -59,6 +59,7 @@ const pageNameMap = {
   lead_projects: { apiName: "lead_projects", displayName: "Team Projects", route: "/lead/projects" },
   lead_tasks: { apiName: "lead_tasks", displayName: "Team Tasks", route: "/lead/tasks" },
   lead_scrum: { apiName: "lead_scrum", displayName: "Team Scrum", route: "/lead/scrum" },
+  lead_overtime: { apiName: "lead_overtime", displayName: "Team Overtime", route: "/lead/overtime" },
 
   // Self Management (Scoped)
   employee_projects: { apiName: "employee_projects", displayName: "My Projects", route: "/employee/projects" },

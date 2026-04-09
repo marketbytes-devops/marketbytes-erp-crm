@@ -22,13 +22,9 @@ const CreateProjectPage = () => {
         startDate: "",
         deadline: "",
         noDeadline: false,
-        amc: false,
-        amcDate: "",
         allowManualTimeLogs: true,
         allocatedHours: "",
         tenor: "one_time",
-        renewalOnly: false,
-        dm: false,
         projectMembers: [],
         client: "",
         clientCanManageTasks: true,
@@ -116,12 +112,6 @@ const CreateProjectPage = () => {
             if (formData.currency)
                 formDataToSend.append('currency_id', formData.currency);
 
-            formDataToSend.append('amc', formData.amc);
-            if (formData.amc && formData.amcDate)
-                formDataToSend.append('amc_date', formData.amcDate);
-
-            formDataToSend.append('renewal_only', formData.renewalOnly);
-            formDataToSend.append('dm', formData.dm);
             formDataToSend.append('allow_manual_timelogs', formData.allowManualTimeLogs);
 
             if (formData.allowManualTimeLogs && formData.allocatedHours) {
@@ -165,12 +155,8 @@ const CreateProjectPage = () => {
             startDate: "",
             deadline: "",
             noDeadline: false,
-            amc: false,
-            amcDate: "",
             allowManualTimeLogs: true,
             allocatedHours: "",
-            renewalOnly: false,
-            dm: false,
             projectMembers: [],
             client: "",
             clientCanManageTasks: false,
@@ -520,37 +506,18 @@ const CreateProjectPage = () => {
 
                         <div className="mt-6 flex flex-wrap gap-8 items-center bg-gray-50/50 p-4 rounded-xl border border-gray-100">
                             <label className="flex items-center gap-3 cursor-pointer">
-                                <input type="checkbox" checked={formData.amc} onChange={e => setFormData(prev => ({ ...prev, amc: e.target.checked }))} className="w-5 h-5 rounded" />
-                                <span className="font-medium text-sm">AMC</span>
-                            </label>
-                            <label className="flex items-center gap-3 cursor-pointer">
                                 <input type="checkbox" checked={formData.allowManualTimeLogs} onChange={e => setFormData(prev => ({ ...prev, allowManualTimeLogs: e.target.checked }))} className="w-5 h-5 rounded" />
                                 <span className="font-medium text-sm">Memo/Note</span>
                             </label>
-                            <label className="flex items-center gap-3 cursor-pointer">
-                                <input type="checkbox" checked={formData.renewalOnly} onChange={e => setFormData(prev => ({ ...prev, renewalOnly: e.target.checked }))} className="w-5 h-5 rounded" />
-                                <span className="font-medium text-sm">Renewal only</span>
-                            </label>
-                            <label className="flex items-center gap-3 cursor-pointer">
-                                <input type="checkbox" checked={formData.dm} onChange={e => setFormData(prev => ({ ...prev, dm: e.target.checked }))} className="w-5 h-5 rounded" />
-                                <span className="font-medium text-sm">DM</span>
-                            </label>
                         </div>
-
-                        {formData.amc && (
-                            <div className="mt-6">
-                                <Input label="AMC Date" type="date" value={formData.amcDate} onChange={e => setFormData(prev => ({ ...prev, amcDate: e.target.value }))} />
-                            </div>
-                        )}
 
                         <div className="mt-6">
                             <label className="text-sm font-medium text-black mb-2 block">Project Members</label>
                             <Input
                                 type="select"
                                 multiple
-                                disabled={formData.involvedDepartments.length === 0}
                                 options={users
-                                    .filter(u => formData.involvedDepartments.some(deptId => u.department?.id?.toString() === deptId.toString()))
+                                    .filter(u => (u.status === "active" || formData.projectMembers.includes(u.id.toString())) && formData.involvedDepartments.some(deptId => u.department?.id?.toString() === deptId.toString()))
                                     .map(u => ({ value: u.id.toString(), label: u.name || u.email }))
                                 }
                                 value={formData.projectMembers}

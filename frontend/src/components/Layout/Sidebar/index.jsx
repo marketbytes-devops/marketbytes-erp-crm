@@ -253,6 +253,20 @@ const Sidebar = ({ toggleSidebar }) => {
           action: "view",
         },
         {
+          to: "/lead/projects",
+          label: "Team Projects",
+          icon: <MdAccountTree className="w-6 h-6" />,
+          page: "lead_projects",
+          action: "view",
+        },
+        {
+          to: "/lead/tasks",
+          label: "Team Tasks",
+          icon: <MdAssignment className="w-6 h-6" />,
+          page: "lead_tasks",
+          action: "view",
+        },
+        {
           to: "/lead/scrum",
           label: "Team Scrum",
           icon: <MdPendingActions className="w-6 h-6" />,

@@ -26,13 +26,9 @@ const EditProjectPage = () => {
     startDate: "",
     deadline: "",
     noDeadline: false,
-    amc: false,
-    amcDate: "",
     allowManualTimeLogs: true,
     allocatedHours: "",
     tenor: "one_time",
-    renewalOnly: false,
-    dm: false,
     projectMembers: [],
     client: "",
     clientCanManageTasks: true,
@@ -118,13 +114,9 @@ const EditProjectPage = () => {
           startDate: project.start_date || "",
           deadline: project.deadline || "",
           noDeadline: project.no_deadline || false,
-          amc: project.amc || false,
-          amcDate: project.amc_date || "",
           allowManualTimeLogs: project.allow_manual_timelogs || false,
           allocatedHours: project.hours_allocated || "",
           tenor: project.tenor || "one_time",
-          renewalOnly: project.renewal_only || false,
-          dm: project.dm || false,
           projectMembers: project.members?.map((m) => m.id.toString()) || [],
           client: project.client?.id?.toString() || project.client_id?.toString() || "",
           clientCanManageTasks: project.client_can_manage_tasks || false,
@@ -171,10 +163,6 @@ const EditProjectPage = () => {
       formDataToSend.append("stage_id", formData.stage);
       formDataToSend.append("client_id", formData.client);
       formDataToSend.append("currency_id", formData.currency);
-      formDataToSend.append("amc", formData.amc);
-      formDataToSend.append("amc_date", formData.amc && formData.amcDate ? formData.amcDate : "");
-      formDataToSend.append("renewal_only", formData.renewalOnly);
-      formDataToSend.append("dm", formData.dm);
       formDataToSend.append("allow_manual_timelogs", formData.allowManualTimeLogs);
       formDataToSend.append("hours_allocated", formData.allocatedHours || "");
       formDataToSend.append("tenor", formData.tenor);
@@ -363,7 +351,7 @@ const EditProjectPage = () => {
                   multiple
                   disabled={formData.involvedDepartments.length === 0}
                   options={users
-                    .filter(u => formData.involvedDepartments.some(deptId => u.department?.id?.toString() === deptId.toString()))
+                    .filter(u => (u.status === "active" || formData.projectMembers.includes(u.id.toString())) && formData.involvedDepartments.some(deptId => u.department?.id?.toString() === deptId.toString()))
                     .map(u => ({ value: u.id.toString(), label: u.name || u.email }))
                   }
                   value={formData.projectMembers}
@@ -407,35 +395,6 @@ const EditProjectPage = () => {
                   ]}
                   value={formData.tenor}
                   onChange={v => setFormData({ ...formData, tenor: v })}
-              />
-            </div>
-
-            <div className="mt-6 grid grid-cols-2 md:grid-cols-4 gap-4 bg-gray-50/50 p-4 rounded-xl border border-gray-100">
-              {[
-                { label: 'AMC', key: 'amc' },
-                { label: 'Memo/Note', key: 'allowManualTimeLogs' },
-                { label: 'Renewal Only', key: 'renewalOnly' },
-                { label: 'DM', key: 'dm' }
-              ].map(item => (
-                <label key={item.key} className="flex items-center gap-2 cursor-pointer hover:bg-white p-2 rounded-lg transition">
-                  <input type="checkbox" checked={formData[item.key]} onChange={e => setFormData({ ...formData, [item.key]: e.target.checked })} />
-                  <span className="text-sm font-medium">{item.label}</span>
-                </label>
-              ))}
-            </div>
-
-            <div className="mt-6 grid grid-cols-1 gap-6">
-              {formData.amc && <Input label="AMC Date" type="date" value={formData.amcDate} onChange={e => setFormData({ ...formData, amcDate: e.target.value })} />}
-            </div>
-
-            <div className="mt-6">
-              <label className="text-sm font-medium text-black mb-2 block">Project Members</label>
-              <Input
-                type="select"
-                multiple
-                options={users.map(u => ({ value: u.id.toString(), label: u.name || u.email }))}
-                value={formData.projectMembers}
-                onChange={v => setFormData({ ...formData, projectMembers: v })}
               />
             </div>
           </div>

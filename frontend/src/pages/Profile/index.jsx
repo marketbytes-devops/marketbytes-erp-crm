@@ -45,14 +45,16 @@ const Profile = () => {
   });
  const [imagePreview, setImagePreview] = useState(null);
 
- const {
- register: registerProfile,
- handleSubmit: handleProfileSubmit,
- formState: { errors: profileErrors, isSubmitting: isUpdatingProfile },
- reset: resetProfileForm,
- } = useForm({
- resolver: zodResolver(profileSchema),
- });
+  const {
+    register: registerProfile,
+    handleSubmit: handleProfileSubmit,
+    formState: { errors: profileErrors, isSubmitting: isUpdatingProfile },
+    reset: resetProfileForm,
+    setValue: setValueProfile,
+    watch: watchProfile,
+  } = useForm({
+    resolver: zodResolver(profileSchema),
+  });
 
  const {
  register: registerPassword,
@@ -162,17 +164,22 @@ const Profile = () => {
  }
  };
 
- const onPasswordChange = async (data) => {
- try {
- await apiClient.put('/auth/profile/', {
- new_password: data.new_password,
- });
- toast.success('Security credentials updated.');
- resetPasswordForm();
- } catch (err) {
- toast.error(err.response?.data?.detail || 'Password change failed');
- }
- };
+  const onPasswordChange = async (data) => {
+    try {
+      await apiClient.put('/auth/profile/', {
+        password: data.new_password,
+      });
+      toast.success('Security credentials updated. Please login with your new password.');
+      
+      // Clear storage and redirect to login
+      setTimeout(() => {
+        localStorage.clear();
+        window.location.href = '/login';
+      }, 2000);
+    } catch (err) {
+      toast.error(err.response?.data?.detail || 'Password change failed');
+    }
+  };
 
  return (
  <div className="p-6 min-h-screen">
@@ -334,7 +341,8 @@ const Profile = () => {
           { value: 'female', label: 'Female' },
           { value: 'other', label: 'Other' },
         ]}
-        {...registerProfile('gender')}
+        value={watchProfile('gender')}
+        onChange={v => setValueProfile('gender', v)}
         error={profileErrors.gender?.message}
       />
       <Input

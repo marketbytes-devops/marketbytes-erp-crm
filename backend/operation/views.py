@@ -13,6 +13,7 @@ from reportlab.lib.pagesizes import letter, landscape
 from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph
 from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.lib import colors
+from django.utils import timezone
 from .models import Scrum
 from .models import (
     Project,
@@ -49,7 +50,7 @@ class ProjectCategoryViewSet(viewsets.ModelViewSet):
     queryset = ProjectCategory.objects.all()
     serializer_class = ProjectCategorySerializer
     permission_classes = [HasPermission]
-    page_name = 'projects'
+    page_names = ['projects', 'lead_projects', 'employee_projects']
     filter_backends = [
         DjangoFilterBackend,
         filters.SearchFilter,
@@ -72,7 +73,7 @@ class ProjectStatusViewSet(viewsets.ModelViewSet):
     queryset = ProjectStatus.objects.all()
     serializer_class = ProjectStatusSerializer
     permission_classes = [HasPermission]
-    page_name = 'projects'
+    page_names = ['projects', 'lead_projects', 'employee_projects']
     filter_backends = [DjangoFilterBackend, filters.SearchFilter]
     search_fields = ["name", "description"]
     filterset_fields = ["name"]
@@ -100,7 +101,7 @@ class ProjectStageViewSet(viewsets.ModelViewSet):
     queryset = ProjectStage.objects.all()
     serializer_class = ProjectStageSerializer
     permission_classes = [HasPermission]
-    page_name = 'projects'
+    page_names = ['projects', 'lead_projects', 'employee_projects']
     filter_backends = [DjangoFilterBackend, filters.SearchFilter]
     search_fields = ["name", "description"]
     filterset_fields = ["name"]
@@ -117,7 +118,7 @@ class ClientViewSet(viewsets.ModelViewSet):
     queryset = Client.objects.all()
     serializer_class = ClientSerializer
     permission_classes = [HasPermission]
-    page_name = 'projects'
+    page_names = ['projects', 'lead_projects', 'employee_projects']
     filter_backends = [
         DjangoFilterBackend,
         filters.SearchFilter,
@@ -140,7 +141,7 @@ class CurrencyViewSet(viewsets.ModelViewSet):
     queryset = Currency.objects.filter(is_active=True).order_by("code")
     serializer_class = CurrencySerializer
     permission_classes = [HasPermission]
-    page_name = 'projects'
+    page_names = ['projects', 'lead_projects', 'employee_projects']
     filter_backends = [filters.SearchFilter]
     search_fields = ["code", "name"]
 
@@ -154,7 +155,7 @@ class ProjectViewSet(viewsets.ModelViewSet):
     queryset = Project.objects.all()
     serializer_class = ProjectSerializer
     permission_classes = [HasPermission]
-    page_name = 'projects'
+    page_names = ['projects', 'lead_projects', 'employee_projects']
     filter_backends = [
         DjangoFilterBackend,
         filters.SearchFilter,
@@ -488,7 +489,7 @@ class TaskViewSet(viewsets.ModelViewSet):
         'project').prefetch_related('assignees')
     serializer_class = TaskSerializer
     permission_classes = [HasPermission]
-    page_name = 'tasks'
+    page_names = ['tasks', 'lead_tasks', 'employee_tasks']
     filter_backends = [DjangoFilterBackend,
                        filters.SearchFilter, filters.OrderingFilter]
     search_fields = ['title', 'description', 'project__name']

@@ -25,6 +25,8 @@ const Select = forwardRef(
   ) => {
     const [isOpen, setIsOpen] = useState(false);
     const [selectedLabel, setSelectedLabel] = useState("");
+    const [searchTerm, setSearchTerm] = useState("");
+    const searchInputRef = useRef(null);
     const triggerRef = useRef(null);
     const ulRef = useRef(null);
     const [triggerRect, setTriggerRect] = useState(null);
@@ -39,27 +41,51 @@ const Select = forwardRef(
     }, [value, options, multiple]);
 
     useEffect(() => {
-      if (isOpen && triggerRef.current) {
-        setTriggerRect(triggerRef.current.getBoundingClientRect());
+      const updateRect = () => {
+        if (isOpen && triggerRef.current) {
+          setTriggerRect(triggerRef.current.getBoundingClientRect());
+        }
+      };
+
+      updateRect();
+      if (isOpen) {
+        window.addEventListener("scroll", updateRect, true);
+        window.addEventListener("resize", updateRect);
+        document.addEventListener("mousedown", handleClickOutside);
+      } else {
+        setSearchTerm("");
+      }
+
+      return () => {
+        window.removeEventListener("scroll", updateRect, true);
+        window.removeEventListener("resize", updateRect);
+        document.removeEventListener("mousedown", handleClickOutside);
+      };
+    }, [isOpen]);
+
+    const handleClickOutside = (e) => {
+      if (
+        triggerRef.current &&
+        !triggerRef.current.contains(e.target) &&
+        (!ulRef.current || !ulRef.current.contains(e.target))
+      ) {
+        setIsOpen(false);
+      }
+    };
+
+    useEffect(() => {
+      if (isOpen && searchInputRef.current) {
+        searchInputRef.current.focus();
       }
     }, [isOpen]);
 
-    useEffect(() => {
-      const handleClickOutside = (e) => {
-        if (
-          triggerRef.current &&
-          !triggerRef.current.contains(e.target) &&
-          (!ulRef.current || !ulRef.current.contains(e.target))
-        ) {
-          setIsOpen(false);
-        }
-      };
-      if (isOpen) {
-        document.addEventListener("mousedown", handleClickOutside);
-      }
-      return () =>
-        document.removeEventListener("mousedown", handleClickOutside);
-    }, [isOpen]);
+    const filteredOptions = options.filter((opt) =>
+      opt.label.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+
+    const finalOptions = multiple && Array.isArray(value)
+      ? filteredOptions.filter(opt => !value.includes(String(opt.value)))
+      : filteredOptions;
 
     const handleSelect = (option) => {
       if (multiple) {
@@ -78,48 +104,62 @@ const Select = forwardRef(
       onChange(value.filter((v) => v !== val));
     };
 
-
-    const dropdownContent = isOpen && (
+    const dropdownContent = isOpen && triggerRect && (
       <motion.ul
         ref={ulRef}
         initial={{ opacity: 0, y: -8, scale: 0.95 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
         exit={{ opacity: 0, y: -8, scale: 0.95 }}
         transition={{ duration: 0.15 }}
-        className="absolute bg-white border border-gray-300 rounded-xl shadow-2xl max-h-64 overflow-y-auto py-1 z-1001"
+        className="fixed bg-white border border-gray-300 rounded-xl shadow-2xl max-h-64 overflow-y-auto z-10"
         style={{
-          top: triggerRect ? triggerRect.bottom + window.pageYOffset + 8 : 0,
-          left: triggerRect ? triggerRect.left + window.pageXOffset : 0,
-          minWidth: triggerRect ? triggerRect.width : "100%",
+          top: triggerRect.bottom + 8 + 256 > window.innerHeight 
+            ? triggerRect.top - 8 - Math.min(256, (finalOptions.length * 40 + 60)) // Flip up if not enough space
+            : triggerRect.bottom + 8,
+          left: triggerRect.left,
+          width: triggerRect.width,
         }}
       >
-        {options.length === 0 ? (
-          <li className="px-4 py-3 text-gray-500 text-center text-sm">
-            No options available
-          </li>
-        ) : (
-          options.map((option) => (
-            <motion.li
-              key={option.value}
-              onClick={() => handleSelect(option)}
-              className="px-4 py-2.5 cursor-pointer text-sm text-gray-900 hover:bg-gray-100 transition-colors duration-100 flex items-center justify-between group"
-            >
-              <span>{option.label}</span>
-              {onDeleteOption && (
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onDeleteOption(option);
-                  }}
-                  className="p-1 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all opacity-0 group-hover:opacity-100"
-                >
-                  <MdDelete size={16} />
-                </button>
-              )}
-            </motion.li>
-          ))
-        )}
+        <div className="sticky top-0 bg-white p-2 border-b border-gray-100 z-10">
+          <input
+            ref={searchInputRef}
+            type="text"
+            placeholder="Search..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-1 focus:ring-black outline-none"
+            onClick={(e) => e.stopPropagation()}
+          />
+        </div>
+        <div className="py-1">
+          {finalOptions.length === 0 ? (
+            <li className="px-4 py-3 text-gray-500 text-center text-sm">
+              {options.length === 0 ? "No options available" : "No results found"}
+            </li>
+          ) : (
+            finalOptions.map((option) => (
+              <motion.li
+                key={option.value}
+                onClick={() => handleSelect(option)}
+                className="px-4 py-2.5 cursor-pointer text-sm text-gray-900 hover:bg-gray-100 transition-colors duration-100 flex items-center justify-between group"
+              >
+                <span>{option.label}</span>
+                {onDeleteOption && (
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onDeleteOption(option);
+                    }}
+                    className="p-1 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all opacity-0 group-hover:opacity-100"
+                  >
+                    <MdDelete size={16} />
+                  </button>
+                )}
+              </motion.li>
+            ))
+          )}
+        </div>
       </motion.ul>
     );
 
