@@ -158,6 +158,36 @@ const CommonCalendar = () => {
                   endAccessor="end"
                   style={{ height: '100%' }}
                   eventPropGetter={eventStyleGetter}
+                  components={{
+                    dateHeader: ({ label, date }) => {
+                      const day = date.getDay();
+                      const isWeekend = day === 0 || day === 6;
+                      return (
+                        <div className="flex flex-col items-center justify-center p-1">
+                          <span className={isWeekend ? 'text-red-600 font-bold text-base' : 'text-gray-900'}>
+                            {label}
+                          </span>
+                          {isWeekend && (
+                            <span className="text-[10px] text-red-600 font-bold leading-none mt-0.5 tracking-tighter">
+                              (H)
+                            </span>
+                          )}
+                        </div>
+                      );
+                    }
+                  }}
+                  dayPropGetter={(date) => {
+                    const day = date.getDay();
+                    if (day === 0 || day === 6) {
+                      return {
+                        style: {
+                          backgroundColor: '#fef2f2', // Red-50
+                          cursor: 'pointer'
+                        },
+                      };
+                    }
+                    return {};
+                  }}
                   onSelectEvent={(event) => {
                     if (event.resource) {
                       toast(

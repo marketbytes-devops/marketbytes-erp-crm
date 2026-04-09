@@ -111,7 +111,7 @@ const Select = forwardRef(
         animate={{ opacity: 1, y: 0, scale: 1 }}
         exit={{ opacity: 0, y: -8, scale: 0.95 }}
         transition={{ duration: 0.15 }}
-        className="fixed bg-white border border-gray-300 rounded-xl shadow-2xl max-h-64 overflow-y-auto z-10"
+        className="fixed bg-white border border-gray-300 rounded-xl shadow-2xl max-h-64 overflow-y-auto z-[9999]"
         style={{
           top: triggerRect.bottom + 8 + 256 > window.innerHeight 
             ? triggerRect.top - 8 - Math.min(256, (finalOptions.length * 40 + 60)) // Flip up if not enough space

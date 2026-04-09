@@ -317,17 +317,30 @@ const Attendance = ({ leadScope, employeeScope }) => {
       present: { label: "P", bg: "bg-black text-white", border: "" },
       late: { label: "L", bg: "bg-white text-black", border: "border-2 border-black" },
       absent: { label: "A", bg: "bg-white text-black", border: "border-2 border-black" },
-      half_day: { label: "H", bg: "bg-white text-black", border: "border-2 border-black" },
+      half_day: { label: "HD", bg: "bg-white text-black", border: "border-2 border-black" },
       leave: { label: "LV", bg: "bg-white text-black", border: "border-2 border-black" },
-      half_day_late: { label: "HL", bg: "bg-white text-black", border: "border-2 border-black" },
-      holiday: { label: "HD", bg: "bg-gray-200 text-black", border: "" },
+      holiday: { label: "H", bg: "bg-red-500 text-white", border: "shadow-sm shadow-red-200" },
     };
     return badges[status] || { label: "-", bg: "bg-gray-100 text-gray-500", border: "" };
   };
 
+  const getERPToday = () => {
+    const now = new Date();
+    const hour = now.getHours();
+    if (hour < 6) {
+      const yesterday = new Date(now);
+      yesterday.setDate(now.getDate() - 1);
+      yesterday.setHours(0, 0, 0, 0);
+      return yesterday;
+    }
+    const today = new Date(now);
+    today.setHours(0, 0, 0, 0);
+    return today;
+  };
+
   const calculateTotals = (records) => {
     const monthDays = eachDayOfInterval({ start: startOfMonth(selectedDate), end: endOfMonth(selectedDate) });
-    const today = startOfToday();
+    const today = getERPToday();
 
     const counts = {
       present: 0,
@@ -342,7 +355,7 @@ const Attendance = ({ leadScope, employeeScope }) => {
       if (r.status === 'half_day_late') counts.half_day_late++;
 
       // Total is any working status
-      if (['present', 'late', 'half_day', 'half_day_late'].includes(r.status)) {
+      if (['present', 'late', 'half_day'].includes(r.status)) {
         counts.total++;
       }
     });
@@ -635,7 +648,7 @@ const Attendance = ({ leadScope, employeeScope }) => {
         <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
           {loading ? (
             <div className="min-h-screen flex items-center justify-center bg-transparent">
-            <Loading />
+              <Loading />
             </div>
           ) : employeeList.length === 0 ? (
             <div className="p-16 text-center text-gray-500">
@@ -720,12 +733,16 @@ const Attendance = ({ leadScope, employeeScope }) => {
                                 const isCurrentMonth = date.getMonth() === selectedDate.getMonth();
                                 const record = isCurrentMonth ? getRecordForDate(emp.records, date) : null;
                                 const badge = getStatusBadge(record?.status);
-                                const isPresentOrPast = isBefore(date, startOfToday()) || isToday(date);
+                                const isPresentOrPast = isBefore(date, getERPToday()) || isToday(date);
                                 const isWeekend = isSunday(date) || isSaturday(date);
 
                                 let displayBadge = badge;
-                                if (!record && isCurrentMonth && isPresentOrPast && !isWeekend) {
-                                  displayBadge = getStatusBadge('absent');
+                                if (!record && isCurrentMonth) {
+                                  if (isWeekend) {
+                                    displayBadge = getStatusBadge('holiday');
+                                  } else if (isPresentOrPast) {
+                                    displayBadge = getStatusBadge('absent');
+                                  }
                                 }
 
                                 return (

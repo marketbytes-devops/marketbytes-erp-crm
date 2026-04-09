@@ -309,10 +309,13 @@ const NewTaskPage = () => {
  { value: "done", label: "Done" },
  ];
 
- const assigneeOptions = users.map((user) => ({
- value: user.id,
- label: user.name || user.username || user.email,
- }));
+  const selectedProject = projects.find((p) => String(p.id) === String(formData.project));
+  const projectMembers = selectedProject?.members || [];
+
+  const assigneeOptions = projectMembers.map((user) => ({
+    value: user.id,
+    label: user.name || user.username || user.email,
+  }));
 
  return (
  <div className="p-6 mx-auto">

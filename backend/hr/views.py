@@ -6,11 +6,16 @@ from authapp.permissions import HasPermission
 from django.utils import timezone
 from datetime import timedelta, datetime, time, timezone as dt_timezone
 from django.db.models import Q, Count, Exists, OuterRef
-from .models import Attendance, Holiday, LeaveType, Leave, Overtime, Candidate, Performance, Project, Task, WorkSession, BreakSession
-from operation.models import Scrum
+from hr.models import Attendance, Holiday, LeaveType, Leave, Overtime, Candidate, Performance, Project, Task, WorkSession, BreakSession
+from operation.models import Scrum, ProjectStatus
 from authapp.models import CustomUser, has_user_permission
 from notifications.models import Notification
-from .serializers import *
+from hr.serializers import (
+    AttendanceSerializer, AttendanceCheckInOutSerializer, AttendanceStatusSerializer,
+    HolidaySerializer, LeaveTypeSerializer, LeaveSerializer, OvertimeSerializer,
+    CandidateSerializer, PerformanceSerializer, ProjectSerializer, TaskSerializer,
+    WorkSessionSerializer, BreakSessionSerializer, ActiveWorkSessionSerializer
+)
 import csv
 from django.http import HttpResponse
 from openpyxl import Workbook
@@ -132,27 +137,32 @@ class AttendanceViewSet(viewsets.ModelViewSet):
         serializer = AttendanceCheckInOutSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         
-        today = timezone.now().date()
+        now = timezone.now()
+        local_now = timezone.localtime(now)
+        current_time = local_now.time()
+        
+        # 6:00 AM IST daily reset logic
+        boundary = time(6, 0, 0)
+        if current_time < boundary:
+             attendance_date = (local_now - timedelta(days=1)).date()
+        else:
+             attendance_date = local_now.date()
+             
         action = serializer.validated_data['action']
         ip = request.META.get('REMOTE_ADDR', '0.0.0.0')
-        
-        now = timezone.now()
         current_time_utc = now.time()
-        current_time_local = timezone.localtime(now).time()
         
-        current_time = current_time_local 
-        
-        # Close any open attendance from previous days
+        # Close any open attendance from previous reset cycles
         Attendance.objects.filter(
             employee=request.user,
-            date__lt=today,
+            date__lt=attendance_date,
             clock_in__isnull=False,
             clock_out__isnull=True
         ).update(clock_out=time(23, 59, 59))
 
         attendance, created = Attendance.objects.get_or_create(
             employee=request.user,
-            date=today,
+            date=attendance_date,
             defaults={
                 'status': 'present',
                 'working_from': serializer.validated_data.get('working_from', 'Office')
@@ -160,7 +170,7 @@ class AttendanceViewSet(viewsets.ModelViewSet):
         )
         
         if action == 'in':
-            if request.user.joining_date and today < request.user.joining_date:
+            if request.user.joining_date and attendance_date < request.user.joining_date:
                 return Response({
                     "error": f"You cannot clock in before your joining date ({request.user.joining_date})"
                 }, status=400)
@@ -194,30 +204,31 @@ class AttendanceViewSet(viewsets.ModelViewSet):
                 })
                 
             else:
-                check_in_limit = time(9, 30)
-                half_day_start = time(14, 0)
+                p_boundary = time(6, 0)
+                l_boundary = time(9, 50)
+                hd_boundary = time(14, 0)
                 
                 attendance.clock_in = current_time_utc 
                 attendance.clock_in_ip = ip
                 attendance.working_from = serializer.validated_data.get('working_from', 'Office')
                 
-                if current_time <= check_in_limit:
+                # Status categorization logic (IST)
+                if current_time < p_boundary:
+                    # Early morning check-in for the previous day record
+                    attendance.status = 'present'
+                    attendance.is_late = False
+                elif current_time <= l_boundary:
                     attendance.status = 'present'
                     attendance.is_late = False
                     attendance.is_half_day = False
-                elif current_time < half_day_start:
+                elif current_time < hd_boundary:
                     attendance.status = 'late'
                     attendance.is_late = True
                     attendance.is_half_day = False
                 else:
+                    attendance.status = 'half_day'
+                    attendance.is_late = False # HD is a distinct category normally
                     attendance.is_half_day = True
-                    
-                    if current_time > half_day_start:
-                         attendance.status = 'half_day_late'
-                         attendance.is_late = True
-                    else:
-                         attendance.status = 'half_day'
-                         attendance.is_late = False
 
                 attendance.save()
 
@@ -302,12 +313,17 @@ class AttendanceViewSet(viewsets.ModelViewSet):
     
     
     def _calculate_status(self, check_in_time):
-        """Calculate attendance status based on check-in time"""
-        if check_in_time > time(14, 0):
-             return 'half_day_late'
-        elif check_in_time >= time(14, 0):
-             return 'half_day'
-        elif check_in_time > time(9, 30):
+        """Calculate attendance status based on check-in time (6 AM reset IST)"""
+        p_boundary = time(6, 0)
+        l_boundary = time(9, 50)
+        hd_boundary = time(14, 0)
+
+        if check_in_time < p_boundary:
+             return 'present' 
+        
+        if check_in_time >= hd_boundary:
+            return 'half_day'
+        elif check_in_time > l_boundary:
             return 'late'
         else:
             return 'present'
@@ -316,7 +332,11 @@ class AttendanceViewSet(viewsets.ModelViewSet):
     def status(self, request):
         now = timezone.now()
         local_now = timezone.localtime(now)
-        local_date = local_now.date()
+        boundary = time(6, 0, 0)
+        if local_now.time() < boundary:
+             local_date = (local_now - timedelta(days=1)).date()
+        else:
+             local_date = local_now.date()
         
         # Check if today is before joining date
         if request.user.joining_date and local_date < request.user.joining_date:
@@ -329,13 +349,20 @@ class AttendanceViewSet(viewsets.ModelViewSet):
                 "message": f"Your attendance will start on your joining date: {request.user.joining_date}"
             })
 
-        start_of_day = local_now.replace(hour=0, minute=0, second=0, microsecond=0)
+        # Boundary for work sessions (6 AM start)
+        current_tz = timezone.get_current_timezone()
+        start_of_day_unaware = datetime.combine(local_date, time(6, 0))
+        end_of_day_unaware = datetime.combine(local_date + timedelta(days=1), time(5, 59, 59))
+        
+        start_of_day = timezone.make_aware(start_of_day_unaware, current_tz)
+        end_of_day = timezone.make_aware(end_of_day_unaware, current_tz)
         
         att = Attendance.objects.filter(employee=request.user, date=local_date).first()
         
         work_sessions = WorkSession.objects.filter(
             employee=request.user,
             start_time__gte=start_of_day,
+            start_time__lte=end_of_day
         )
         total_seconds = 0
         for session in work_sessions:
@@ -344,6 +371,7 @@ class AttendanceViewSet(viewsets.ModelViewSet):
             else:
                 total_seconds += (now - session.start_time).total_seconds()
         
+        productive_hours_val = total_seconds / 3600
         productive_hours = str(timedelta(seconds=int(total_seconds)))
         
         first_session_time = None
@@ -379,7 +407,7 @@ class AttendanceViewSet(viewsets.ModelViewSet):
                 "message": "You are checked in"
             })
         
-        message = "Checked out today" if att and att.clock_out else "Not checked in today"
+        message = "Checked out for this attendance date" if att and att.clock_out else "Not checked in for this attendance date"
         return Response({
             "checked_in": False,
             "clock_in": first_session_time,

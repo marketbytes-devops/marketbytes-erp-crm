@@ -1,9 +1,9 @@
 from rest_framework import serializers
-from .models import Attendance, Holiday, LeaveType, Leave, Overtime, Candidate, Performance, Project, Task, WorkSession, BreakSession
+from hr.models import Attendance, Holiday, LeaveType, Leave, Overtime, Candidate, Performance, Project, Task, WorkSession, BreakSession
 from authapp.serializers import UserSerializer, DepartmentSerializer
 from authapp.models import CustomUser
 from django.utils import timezone
-from datetime import datetime, timezone as dt_timezone
+from datetime import datetime, timezone as dt_timezone, time, timedelta
 
 class AttendanceSerializer(serializers.ModelSerializer):
     employee = UserSerializer(read_only=True)
@@ -145,16 +145,18 @@ class AttendanceSerializer(serializers.ModelSerializer):
         
         total_seconds = 0
         now = timezone.now()
+        local_now = timezone.localtime(now)
         for session in work_sessions:
             if session.end_time:
                 total_seconds += (session.end_time - session.start_time).total_seconds()
-            elif obj.date == now.date():
+            elif obj.date == local_now.date():
                 total_seconds += (now - session.start_time).total_seconds()
-            elif obj.date < now.date():
-                # For past dates with no end time, cap at the end of that day
+            elif obj.date < local_now.date():
+                # For past dates with no end time, cap at the end of that day (5:59:59 AM next day in reset logic)
                 local_start = timezone.localtime(session.start_time)
-                end_of_day = datetime.combine(local_start.date(), datetime.max.time().replace(microsecond=0))
-                end_time = timezone.make_aware(end_of_day, timezone.get_current_timezone())
+                # Next day 5:59:59 AM is the boundary
+                boundary_end = datetime.combine(obj.date + timedelta(days=1), time(5, 59, 59))
+                end_time = timezone.make_aware(boundary_end, timezone.get_current_timezone())
                 total_seconds += (end_time - session.start_time).total_seconds()
                 
         return round(max(0, total_seconds / 3600), 2)

@@ -425,59 +425,66 @@ const EmployeeCreate = () => {
               </div>
               <h3 className="text-lg font-semibold text-gray-900">Personal Information</h3>
             </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-6">
               <div>
                 <label className="block text-sm font-medium text-black mb-2">
                   Employee ID <span className="text-red-500">*</span>
                 </label>
-                <div className="px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl font-mono text-gray-800 text-lg font-semibold">
+                <div className="px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl font-mono text-gray-800 text-lg font-semibold h-[50px] flex items-center">
                   {nextEmployeeId || "MB01"}
                 </div>
-                <p className="text-xs text-gray-500 mt-2 flex items-center gap-1">
-                  <span className="w-1 h-1 rounded-full bg-gray-400"></span>
-                  Auto-generated • Cannot be changed
+                <p className="text-[10px] text-gray-500 mt-1.5 flex items-center gap-1 uppercase tracking-wider font-bold">
+                  <span className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse"></span>
+                  Auto-generated
                 </p>
               </div>
-              <Input 
-                label="Full Name" 
-                required 
-                placeholder="John Doe" 
-                value={formData.name} 
-                onChange={e => setFormData({ ...formData, name: e.target.value })} 
-              />
-              <Input 
-                label="Email Address" 
-                required 
-                type="email" 
-                placeholder="john@company.com" 
-                value={formData.email} 
-                onChange={e => setFormData({ ...formData, email: e.target.value })} 
-              />
-              
               <Input
-                label="Country Code"
-                type="select"
-                options={countryCodes}
-                value={formData.country_code}
-                onChange={v => setFormData({ ...formData, country_code: v })}
+                label="Full Name"
                 required
+                placeholder="John Doe"
+                value={formData.name}
+                onChange={e => setFormData({ ...formData, name: e.target.value })}
               />
-              <Input 
-                label="Mobile Number" 
-                placeholder="9876543210" 
-                value={formData.mobile} 
-                onChange={e => setFormData({ ...formData, mobile: e.target.value })} 
+              <Input
+                label="Email Address"
                 required
+                type="email"
+                placeholder="john@company.com"
+                value={formData.email}
+                onChange={e => setFormData({ ...formData, email: e.target.value })}
               />
-              <Input 
-                label="Date of Birth" 
-                type="date" 
-                value={formData.dob} 
-                onChange={e => setFormData({ ...formData, dob: e.target.value })} 
-                required
-              />
-              
+
+              <div className="grid grid-cols-2 gap-3">
+                <div className="col-span-1">
+                  <Input
+                    label="Code"
+                    type="select"
+                    options={countryCodes}
+                    value={formData.country_code}
+                    onChange={v => setFormData({ ...formData, country_code: v })}
+                    required
+                  />
+                </div>
+                <div className="col-span-1">
+                  <Input
+                    label="Mobile Number"
+                    placeholder="9876543210"
+                    value={formData.mobile}
+                    onChange={e => setFormData({ ...formData, mobile: e.target.value })}
+                    required
+                  />
+                </div>
+              </div>
+              <div className="col-span-1">
+                <Input
+                  label="Date of Birth"
+                  type="date"
+                  value={formData.dob}
+                  onChange={e => setFormData({ ...formData, dob: e.target.value })}
+                  required
+                />
+              </div>
               <Input
                 label="Gender"
                 type="select"
@@ -492,12 +499,13 @@ const EmployeeCreate = () => {
                 required
               />
 
-              <div className="lg:col-span-2">
-                 <Input 
-                    label="Profile Picture" 
-                    type="file" 
-                    onChange={e => setFormData({ ...formData, profile_picture: e.target.files[0] })} 
-                 />
+              <div className="lg:col-span-3">
+                <Input
+                  label="Profile Picture"
+                  type="file"
+                  className="bg-gray-50 border-dashed border-2 hover:border-black transition-colors"
+                  onChange={e => setFormData({ ...formData, profile_picture: e.target.files[0] })}
+                />
               </div>
             </div>
 
@@ -562,8 +570,8 @@ const EmployeeCreate = () => {
               </div>
               <h3 className="text-lg font-semibold text-gray-900">Employment Details</h3>
             </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-6">
               <div>
                 <div className="flex items-center justify-between mb-2">
                   <label className="block text-sm font-medium text-black">
@@ -572,14 +580,14 @@ const EmployeeCreate = () => {
                   <button
                     type="button"
                     onClick={() => setShowRoleModal(true)}
-                    className="flex items-center gap-1.5 text-xs font-bold text-black bg-gray-100 px-2 py-1 rounded-md hover:bg-gray-200 transition-all uppercase tracking-tight"
+                    className="flex items-center gap-1.5 text-[10px] font-bold text-blue-600 bg-blue-50 px-2 py-1 rounded hover:bg-blue-100 transition-all uppercase tracking-tight"
                   >
-                    <MdAdd className="w-4 h-4" /> Add New
+                    <MdAdd className="w-3.5 h-3.5" /> New
                   </button>
                 </div>
                 <Input
                   type="select"
-                  options={[{ value: "", label: "None (Direct Permissions Only)" }, ...roleOptions]}
+                  options={[{ value: "", label: "None" }, ...roleOptions]}
                   value={formData.role_id}
                   onChange={v => setFormData({ ...formData, role_id: v })}
                 />
@@ -593,9 +601,9 @@ const EmployeeCreate = () => {
                   <button
                     type="button"
                     onClick={() => setShowDesigModal(true)}
-                    className="flex items-center gap-1.5 text-xs font-bold text-black bg-gray-100 px-2 py-1 rounded-md hover:bg-gray-200 transition-all uppercase tracking-tight"
+                    className="flex items-center gap-1.5 text-[10px] font-bold text-blue-600 bg-blue-50 px-2 py-1 rounded hover:bg-blue-100 transition-all uppercase tracking-tight"
                   >
-                    <MdAdd className="w-4 h-4" /> Add New
+                    <MdAdd className="w-3.5 h-3.5" /> New
                   </button>
                 </div>
                 <Input
@@ -615,9 +623,9 @@ const EmployeeCreate = () => {
                   <button
                     type="button"
                     onClick={() => setShowDeptModal(true)}
-                    className="flex items-center gap-1.5 text-xs font-bold text-black bg-gray-100 px-2 py-1 rounded-md hover:bg-gray-200 transition-all uppercase tracking-tight"
+                    className="flex items-center gap-1.5 text-[10px] font-bold text-blue-600 bg-blue-50 px-2 py-1 rounded hover:bg-blue-100 transition-all uppercase tracking-tight"
                   >
-                    <MdAdd className="w-4 h-4" /> Add New
+                    <MdAdd className="w-3.5 h-3.5" /> New
                   </button>
                 </div>
                 <Input
@@ -629,41 +637,41 @@ const EmployeeCreate = () => {
                 />
               </div>
 
-              <Input 
-                label="Reports To" 
-                type="select" 
-                options={[{ value: "", label: "None (Top Level)" }, ...reportsToOptions]} 
-                value={formData.reports_to || ""} 
-                onChange={v => setFormData({ ...formData, reports_to: v || null })} 
+              <Input
+                label="Reports To"
+                type="select"
+                options={[{ value: "", label: "None (Top Level)" }, ...reportsToOptions]}
+                value={formData.reports_to || ""}
+                onChange={v => setFormData({ ...formData, reports_to: v || null })}
               />
-              <Input 
-                label="Joining Date" 
-                required 
-                type="date" 
-                value={formData.joining_date} 
-                onChange={e => setFormData({ ...formData, joining_date: e.target.value })} 
+              <Input
+                label="Joining Date"
+                required
+                type="date"
+                value={formData.joining_date}
+                onChange={e => setFormData({ ...formData, joining_date: e.target.value })}
               />
-              <Input 
-                label="Probation Period (months)" 
-                type="number" 
-                placeholder="3" 
-                value={formData.probation_period} 
-                onChange={e => setFormData({ ...formData, probation_period: e.target.value })} 
+              <Input
+                label="Probation Period"
+                type="number"
+                placeholder="Months (e.g. 3)"
+                value={formData.probation_period}
+                onChange={e => setFormData({ ...formData, probation_period: e.target.value })}
               />
-              <Input 
-                label="Hourly Rate ($)" 
-                type="number" 
-                step="0.01" 
-                placeholder="45.00" 
-                value={formData.hourly_rate} 
-                onChange={e => setFormData({ ...formData, hourly_rate: e.target.value })} 
+              <Input
+                label="Hourly Rate ($)"
+                type="number"
+                step="0.01"
+                placeholder="45.00"
+                value={formData.hourly_rate}
+                onChange={e => setFormData({ ...formData, hourly_rate: e.target.value })}
               />
-              <div className="md:col-span-2">
-                <Input 
-                  label="Skills (comma separated)" 
-                  placeholder="React, Node.js, Leadership" 
-                  value={formData.skills} 
-                  onChange={e => setFormData({ ...formData, skills: e.target.value })} 
+              <div className="lg:col-span-2">
+                <Input
+                  label="Skills"
+                  placeholder="e.g. React, Node.js, Leadership (comma separated)"
+                  value={formData.skills}
+                  onChange={e => setFormData({ ...formData, skills: e.target.value })}
                 />
               </div>
             </div>
@@ -676,7 +684,7 @@ const EmployeeCreate = () => {
               </div>
               <h3 className="text-lg font-semibold text-gray-900">Account & Access Control</h3>
             </div>
-            
+
             <div className="space-y-8">
               <div className="flex flex-wrap items-center gap-12">
                 <label className="flex items-center gap-3 cursor-pointer group">
@@ -690,27 +698,27 @@ const EmployeeCreate = () => {
                   </div>
                   <span className="font-semibold text-gray-800 group-hover:text-black transition-colors">Enable Login Access</span>
                 </label>
-                
+
                 <div className="flex items-center gap-8 bg-gray-50 px-6 py-3 rounded-2xl border border-gray-100">
                   <span className="font-bold text-xs uppercase tracking-widest text-gray-500">Email Notifications</span>
                   <div className="flex items-center gap-6">
                     <label className="flex items-center gap-2.5 cursor-pointer">
-                      <input 
-                        type="radio" 
-                        name="notify" 
-                        checked={formData.email_notifications} 
-                        onChange={() => setFormData({ ...formData, email_notifications: true })} 
-                        className="w-4 h-4 text-black focus:ring-black" 
+                      <input
+                        type="radio"
+                        name="notify"
+                        checked={formData.email_notifications}
+                        onChange={() => setFormData({ ...formData, email_notifications: true })}
+                        className="w-4 h-4 text-black focus:ring-black"
                       />
                       <span className="text-sm font-medium">Yes</span>
                     </label>
                     <label className="flex items-center gap-2.5 cursor-pointer">
-                      <input 
-                        type="radio" 
-                        name="notify" 
-                        checked={!formData.email_notifications} 
-                        onChange={() => setFormData({ ...formData, email_notifications: false })} 
-                        className="w-4 h-4 text-black focus:ring-black" 
+                      <input
+                        type="radio"
+                        name="notify"
+                        checked={!formData.email_notifications}
+                        onChange={() => setFormData({ ...formData, email_notifications: false })}
+                        className="w-4 h-4 text-black focus:ring-black"
                       />
                       <span className="text-sm font-medium">No</span>
                     </label>

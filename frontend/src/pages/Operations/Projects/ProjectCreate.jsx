@@ -193,7 +193,8 @@ const CreateProjectPage = () => {
                 setLoading(true);
 
                 const catRes = await apiClient.get("/operation/categories/");
-                setCategories(Array.isArray(catRes.data) ? catRes.data : catRes.data?.results || []);
+                const catData = Array.isArray(catRes.data) ? catRes.data : catRes.data?.results || [];
+                setCategories(catData.filter(c => !['AMC', 'RENEWAL', 'DM'].includes(c.name.toUpperCase())));
 
                 const clientRes = await apiClient.get("/operation/clients/");
                 setClients(Array.isArray(clientRes.data) ? clientRes.data : clientRes.data?.results || []);
@@ -517,7 +518,7 @@ const CreateProjectPage = () => {
                                 type="select"
                                 multiple
                                 options={users
-                                    .filter(u => (u.status === "active" || formData.projectMembers.includes(u.id.toString())) && formData.involvedDepartments.some(deptId => u.department?.id?.toString() === deptId.toString()))
+                                    .filter(u => u.status === "active" && formData.involvedDepartments.some(deptId => u.department?.id?.toString() === deptId.toString()))
                                     .map(u => ({ value: u.id.toString(), label: u.name || u.email }))
                                 }
                                 value={formData.projectMembers}

@@ -113,7 +113,7 @@ const ProjectsView = ({ employeeScope = false, leadScope = false }) => {
         const catSet = new Set(projData.map((p) => p.category?.name).filter(Boolean));
 
         setClients(Array.from(clientSet).sort());
-        setCategories(Array.from(catSet).sort());
+        setCategories(Array.from(catSet).filter(name => !['AMC', 'RENEWAL', 'DM'].includes(name.toUpperCase())).sort());
 
         const memberSet = new Set();
         projData.forEach((p) =>

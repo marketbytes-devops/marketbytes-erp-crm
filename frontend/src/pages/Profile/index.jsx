@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { motion } from 'framer-motion';
@@ -52,6 +52,7 @@ const Profile = () => {
     reset: resetProfileForm,
     setValue: setValueProfile,
     watch: watchProfile,
+    control: controlProfile,
   } = useForm({
     resolver: zodResolver(profileSchema),
   });
@@ -169,9 +170,9 @@ const Profile = () => {
       await apiClient.put('/auth/profile/', {
         password: data.new_password,
       });
-      toast.success('Security credentials updated. Please login with your new password.');
+      toast.success('Password updated successfully! Please login with your new password.');
       
-      // Clear storage and redirect to login
+      // Auto logout
       setTimeout(() => {
         localStorage.clear();
         window.location.href = '/login';
@@ -331,19 +332,25 @@ const Profile = () => {
         disabled
         className="bg-gray-50 opacity-70"
       />
-      <Input
-        label="Gender"
-        id="gender"
-        type="select"
-        options={[
-          { value: '', label: 'Select Gender' },
-          { value: 'male', label: 'Male' },
-          { value: 'female', label: 'Female' },
-          { value: 'other', label: 'Other' },
-        ]}
-        value={watchProfile('gender')}
-        onChange={v => setValueProfile('gender', v)}
-        error={profileErrors.gender?.message}
+      <Controller
+        name="gender"
+        control={controlProfile}
+        render={({ field }) => (
+          <Input
+            label="Gender"
+            id="gender"
+            type="select"
+            options={[
+              { value: '', label: 'Select Gender' },
+              { value: 'male', label: 'Male' },
+              { value: 'female', label: 'Female' },
+              { value: 'other', label: 'Other' },
+            ]}
+            value={field.value}
+            onChange={field.onChange}
+            error={profileErrors.gender?.message}
+          />
+        )}
       />
       <Input
         label="Date of Birth"

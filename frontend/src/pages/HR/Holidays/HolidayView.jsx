@@ -230,15 +230,19 @@ const HolidayView = ({ leadScope, employeeScope }) => {
  <div
  key={d}
  className={`min-h-20 p-2 rounded-lg border border-transparent transition ${isCurrentMonth ? "" : "text-gray-400"
- } ${isTodayDate ? "bg-blue-50" : ""} ${isWeekend(day) ? "bg-gray-50" : ""
+ } ${isTodayDate ? "bg-blue-50" : ""} ${isWeekend(day) ? "bg-red-50" : ""
  } hover:bg-gray-100`}
  >
  <div className="text-sm font-medium text-right">{format(day, "d")}</div>
- {holiday && (
+ {holiday ? (
  <div className="mt-1 text-xs text-red-700 font-medium truncate">
  {holiday.occasion}
  </div>
- )}
+ ) : isWeekend(day) && isCurrentMonth ? (
+ <div className="mt-1 text-xs text-red-500 font-bold">
+ (H) Holiday
+ </div>
+ ) : null}
  </div>
  );
  })}

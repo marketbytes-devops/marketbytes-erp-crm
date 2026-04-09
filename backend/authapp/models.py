@@ -232,11 +232,13 @@ def get_user_effective_permissions(user):
         grant_proxy('departments', 'employees')
         grant_proxy('designations', 'employees')
 
-    # leads view -> customers info
+    # leads view -> customers info and lead scope projects/tasks
     if effective.get('leads', {}).get('can_view'):
         grant_proxy('customers', 'leads')
         grant_proxy('reports', 'leads')
         grant_proxy('communication_tools', 'leads')
+        grant_proxy('lead_projects', 'leads')
+        grant_proxy('lead_tasks', 'leads')
 
     # user management -> role/permissions view
     if effective.get('users', {}).get('can_view'):

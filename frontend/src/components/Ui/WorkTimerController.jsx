@@ -8,6 +8,19 @@ import { useNavigate } from "react-router-dom";
 import { usePermission } from "../../context/PermissionContext";
 
 const WorkTimerController = () => {
+  const getERPToday = () => {
+    const now = new Date();
+    const hour = now.getHours();
+    if (hour < 6) {
+      const yesterday = new Date(now);
+      yesterday.setDate(now.getDate() - 1);
+      yesterday.setHours(0, 0, 0, 0);
+      return yesterday;
+    }
+    const today = new Date(now);
+    today.setHours(0, 0, 0, 0);
+    return today;
+  };
  const navigate = useNavigate();
  const { hasPermission } = usePermission();
 
@@ -35,8 +48,8 @@ const WorkTimerController = () => {
  // Current session timer (for Break/Support only, starts at 0 each time)
  const [sessionSeconds, setSessionSeconds] = useState(0);
 
-  // Ensure UI refreshes when local date flips (policy: timer resets at 12:00 AM)
-  const localDateKeyRef = useRef(new Date().toDateString());
+   // Ensure UI refreshes when local date flips (policy: timer resets at 6:00 AM IST)
+   const localDateKeyRef = useRef(getERPToday().toDateString());
 
  const fetchStatus = useCallback(async () => {
  try {
@@ -108,12 +121,12 @@ const WorkTimerController = () => {
  }
  }
 
-  // When the day changes, refresh backend totals/status immediately.
-  const nowKey = new Date().toDateString();
-  if (nowKey !== localDateKeyRef.current) {
-    localDateKeyRef.current = nowKey;
-    fetchStatus();
-  }
+   // When the day changes (6 AM boundary), refresh backend totals/status immediately.
+   const nowKey = getERPToday().toDateString();
+   if (nowKey !== localDateKeyRef.current) {
+     localDateKeyRef.current = nowKey;
+     fetchStatus();
+   }
  }, 1000);
  return () => clearInterval(id);
  }, [status]);

@@ -99,7 +99,8 @@ const EditProjectPage = () => {
         const project = projRes.data;
         const extract = (d) => (Array.isArray(d) ? d : d.results || []);
 
-        setCategories(extract(catRes.data));
+        const catData = extract(catRes.data);
+        setCategories(catData.filter(c => !['AMC', 'RENEWAL', 'DM'].includes(c.name.toUpperCase())));
         setClients(extract(clientRes.data));
         setStatuses(extract(statusRes.data));
         setStages(extract(stageRes.data));
@@ -195,7 +196,9 @@ const EditProjectPage = () => {
     if (!newCategoryName.trim()) return;
     try {
       const res = await apiClient.post("/operation/categories/", { name: newCategoryName });
-      setCategories([...categories, res.data]);
+      const catRes = await apiClient.get("/operation/categories/");
+      const catData = Array.isArray(catRes.data) ? catRes.data : catRes.data?.results || [];
+      setCategories(catData.filter(c => !['AMC', 'RENEWAL', 'DM'].includes(c.name.toUpperCase())));
       setFormData({ ...formData, projectCategory: res.data.id.toString() });
       setNewCategoryName("");
       setShowCategoryModal(false);
@@ -351,7 +354,7 @@ const EditProjectPage = () => {
                   multiple
                   disabled={formData.involvedDepartments.length === 0}
                   options={users
-                    .filter(u => (u.status === "active" || formData.projectMembers.includes(u.id.toString())) && formData.involvedDepartments.some(deptId => u.department?.id?.toString() === deptId.toString()))
+                    .filter(u => u.status === "active" && formData.involvedDepartments.some(deptId => u.department?.id?.toString() === deptId.toString()))
                     .map(u => ({ value: u.id.toString(), label: u.name || u.email }))
                   }
                   value={formData.projectMembers}
