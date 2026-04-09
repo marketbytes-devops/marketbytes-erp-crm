@@ -1,12 +1,12 @@
 from django.urls import path
 from rest_framework.routers import DefaultRouter
-from .views import (
+from authapp.views import (
     LoginView, RequestOTPView, ResetPasswordView, ProfileView,
     ChangePasswordView, RoleView, RoleDetailView, PermissionView,
     PermissionListView, PermissionDetailView, UserManagementView,
-    UserDetailView, CustomTokenObtainPairView, DepartmentViewSet, DesignationViewSet
+    UserDetailView, CustomTokenObtainPairView, DepartmentViewSet, 
+    DesignationViewSet, CustomTokenRefreshView
 )
-from rest_framework_simplejwt.views import TokenRefreshView
 
 router = DefaultRouter()
 router.register(r'departments', DepartmentViewSet)
@@ -19,7 +19,7 @@ urlpatterns = [
     path("profile/", ProfileView.as_view(), name="profile"),
     path("change-password/", ChangePasswordView.as_view(), name="change_password"),
     path("token/", CustomTokenObtainPairView.as_view(), name="token_obtain_pair"),
-    path("token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
+    path("token/refresh/", CustomTokenRefreshView.as_view(), name="token_refresh"),
     path("roles/", RoleView.as_view(), name="role_list"),
     path("roles/<int:pk>/", RoleDetailView.as_view(), name="role_detail"),
     path("permissions/", PermissionView.as_view(), name="permission_create"),

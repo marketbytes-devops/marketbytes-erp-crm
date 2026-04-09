@@ -11,9 +11,23 @@ import random
 import string
 from django.core.mail import send_mail
 from django.conf import settings
+from rest_framework_simplejwt.views import TokenRefreshView
+from rest_framework_simplejwt.exceptions import TokenError, InvalidToken
+
+def get_next_6am_exp():
+    from django.utils import timezone
+    import datetime
+    now = timezone.localtime(timezone.now())
+    if now.hour < 6:
+        next_expire = now.replace(hour=6, minute=0, second=0, microsecond=0)
+    else:
+        next_expire = (now + datetime.timedelta(days=1)).replace(hour=6, minute=0, second=0, microsecond=0)
+    return int(next_expire.timestamp())
+from django.core.mail import send_mail
+from django.conf import settings
 from django.db.models import Count, Q
-from .models import CustomUser, Role, Permission, Department, UserPermission, PermissionOverride, has_user_permission, get_user_effective_permissions, Designation
-from .serializers import (
+from authapp.models import CustomUser, Role, Permission, Department, UserPermission, PermissionOverride, has_user_permission, get_user_effective_permissions, Designation
+from authapp.serializers import (
     LoginSerializer, RequestOTPSerializer, ResetPasswordSerializer,
     ProfileSerializer, ChangePasswordSerializer, RoleSerializer,
     RoleCreateSerializer, PermissionSerializer, UserUpdateSerializer,
@@ -21,7 +35,7 @@ from .serializers import (
     UserPermissionSerializer, PermissionOverrideSerializer, DesignationSerializer
 )
 
-from .permissions import HasPermission, has_permission
+from authapp.permissions import HasPermission, has_permission
 
 class CustomTokenObtainPairView(TokenObtainPairView):
     serializer_class = CustomTokenObtainPairSerializer
@@ -35,9 +49,37 @@ class LoginView(APIView):
                                 password=serializer.validated_data['password'])
             if user:
                 refresh = RefreshToken.for_user(user)
-                return Response({'access': str(refresh.access_token), 'refresh': str(refresh)})
+                exp = get_next_6am_exp()
+                refresh.payload['exp'] = exp
+                access = refresh.access_token
+                access.payload['exp'] = exp
+                return Response({'access': str(access), 'refresh': str(refresh)})
             return Response({'error': 'Invalid credentials'}, status=status.HTTP_400_BAD_REQUEST)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class CustomTokenRefreshView(TokenRefreshView):
+    def post(self, request, *args, **kwargs):
+        try:
+            response = super().post(request, *args, **kwargs)
+            # The default refresh response returns an access token, and possibly a refresh token
+            exp = get_next_6am_exp()
+            
+            # Since Tokens returned by super().post are strings, we can't easily alter their payload.
+            # It's better to manually re-issue them from the refresh token submitted.
+            from rest_framework_simplejwt.tokens import RefreshToken
+            refresh = RefreshToken(request.data['refresh'])
+            refresh.payload['exp'] = exp
+            access = refresh.access_token
+            access.payload['exp'] = exp
+            
+            # Update the response keys
+            response.data['access'] = str(access)
+            if 'refresh' in response.data:
+                response.data['refresh'] = str(refresh)
+            
+            return response
+        except TokenError as e:
+            raise InvalidToken(e.args[0])
 
 class RequestOTPView(APIView):
     permission_classes = [AllowAny]

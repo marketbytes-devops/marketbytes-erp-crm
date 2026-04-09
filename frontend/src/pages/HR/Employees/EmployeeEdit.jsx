@@ -396,7 +396,7 @@ const EmployeeEdit = () => {
                   Employee ID
                 </label>
                 <div className="px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl font-mono text-gray-800 text-lg font-semibold h-[50px] flex items-center">
-                  {formData.employee_id}
+                  {employeeId}
                 </div>
                 <p className="text-[10px] text-gray-500 mt-1.5 flex items-center gap-1 uppercase tracking-wider font-bold">
                   <span className="w-1.5 h-1.5 rounded-full bg-blue-500"></span>
@@ -419,27 +419,21 @@ const EmployeeEdit = () => {
                 onChange={e => setFormData({ ...formData, email: e.target.value })} 
               />
               
-              <div className="grid grid-cols-3 gap-3">
-                <div className="col-span-1">
-                  <Input
-                    label="Code"
-                    type="select"
-                    options={countryCodes}
-                    value={formData.country_code}
-                    onChange={v => setFormData({ ...formData, country_code: v })}
-                    required
-                  />
-                </div>
-                <div className="col-span-1">
-                  <Input 
-                    label="Mobile Number" 
-                    placeholder="9876543210" 
-                    value={formData.mobile} 
-                    onChange={e => setFormData({ ...formData, mobile: e.target.value })} 
-                    required
-                  />
-                </div>
-              </div>
+              <Input
+                label="Code"
+                type="select"
+                options={countryCodes}
+                value={formData.country_code}
+                onChange={v => setFormData({ ...formData, country_code: v })}
+                required
+              />
+              <Input 
+                label="Mobile Number" 
+                placeholder="9876543210" 
+                value={formData.mobile} 
+                onChange={e => setFormData({ ...formData, mobile: e.target.value })} 
+                required
+              />
 
               <Input 
                 label="Date of Birth" 
@@ -463,7 +457,7 @@ const EmployeeEdit = () => {
                 required
               />
 
-              <div className="lg:col-span-3">
+              <div className="lg:col-span-2">
                  <Input 
                     label="Profile Picture" 
                     type="file" 
@@ -663,7 +657,7 @@ const EmployeeEdit = () => {
                           onChange={e => setCustomPassword(e.target.value)}
                         />
                       </div>
-                      <div className="pb-2">
+                      <div>
                         <button
                           type="button"
                           onClick={handleGeneratePassword}

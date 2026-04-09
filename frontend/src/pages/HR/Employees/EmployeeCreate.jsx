@@ -455,36 +455,28 @@ const EmployeeCreate = () => {
                 onChange={e => setFormData({ ...formData, email: e.target.value })}
               />
 
-              <div className="grid grid-cols-2 gap-3">
-                <div className="col-span-1">
-                  <Input
-                    label="Code"
-                    type="select"
-                    options={countryCodes}
-                    value={formData.country_code}
-                    onChange={v => setFormData({ ...formData, country_code: v })}
-                    required
-                  />
-                </div>
-                <div className="col-span-1">
-                  <Input
-                    label="Mobile Number"
-                    placeholder="9876543210"
-                    value={formData.mobile}
-                    onChange={e => setFormData({ ...formData, mobile: e.target.value })}
-                    required
-                  />
-                </div>
-              </div>
-              <div className="col-span-1">
-                <Input
-                  label="Date of Birth"
-                  type="date"
-                  value={formData.dob}
-                  onChange={e => setFormData({ ...formData, dob: e.target.value })}
-                  required
-                />
-              </div>
+              <Input
+                label="Code"
+                type="select"
+                options={countryCodes}
+                value={formData.country_code}
+                onChange={v => setFormData({ ...formData, country_code: v })}
+                required
+              />
+              <Input
+                label="Mobile Number"
+                placeholder="9876543210"
+                value={formData.mobile}
+                onChange={e => setFormData({ ...formData, mobile: e.target.value })}
+                required
+              />
+              <Input
+                label="Date of Birth"
+                type="date"
+                value={formData.dob}
+                onChange={e => setFormData({ ...formData, dob: e.target.value })}
+                required
+              />
               <Input
                 label="Gender"
                 type="select"
@@ -499,13 +491,17 @@ const EmployeeCreate = () => {
                 required
               />
 
-              <div className="lg:col-span-3">
-                <Input
-                  label="Profile Picture"
-                  type="file"
-                  className="bg-gray-50 border-dashed border-2 hover:border-black transition-colors"
-                  onChange={e => setFormData({ ...formData, profile_picture: e.target.files[0] })}
-                />
+              <div className="lg:col-span-2">
+                 <Input 
+                    label="Profile Picture" 
+                    type="file" 
+                    className="bg-gray-50 border-dashed border-2 hover:border-black transition-colors"
+                    onChange={e => {
+                      if (e.target.files[0]) {
+                        setFormData({ ...formData, profile_picture: e.target.files[0] });
+                      }
+                    }} 
+                 />
               </div>
             </div>
 
@@ -756,7 +752,7 @@ const EmployeeCreate = () => {
                           helperText="The password will be securely emailed to the employee."
                         />
                       </div>
-                      <div className="pb-2">
+                      <div>
                         <button
                           type="button"
                           onClick={handleGeneratePassword}

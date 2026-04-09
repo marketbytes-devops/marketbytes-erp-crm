@@ -268,29 +268,68 @@ def has_user_permission(user, page, action):
 @receiver(post_save, sender=Role)
 def set_default_permissions(sender, instance, created, **kwargs):
     if created:
+        is_super = instance.name.strip().lower() == "superadmin"
         default_pages = [
-            {"page": "admin", "can_view": True, "can_add": False, "can_edit": False, "can_delete": False},
-            {"page": "profile", "can_view": True, "can_add": False, "can_edit": False, "can_delete": False},
+            {
+                "page": "admin", 
+                "can_view": is_super, 
+                "can_add": is_super, 
+                "can_edit": is_super, 
+                "can_delete": is_super
+            },
+            {
+                "page": "profile", 
+                "can_view": True, 
+                "can_add": True, 
+                "can_edit": True, 
+                "can_delete": True
+            },
         ]
-        for page in default_pages:
-            Permission.objects.get_or_create(
-                role=instance,
-                page=page["page"],
-                defaults={
-                    "can_view": page["can_view"],
-                    "can_add": page["can_add"],
-                    "can_edit": page["can_edit"],
-                    "can_delete": page["can_delete"]
-                }
-            )
+        for page_data in default_pages:
+            # Create permissions if it's the profile page OR if it's granted (superadmin)
+            if page_data["page"] == "profile" or page_data["can_view"]:
+                Permission.objects.get_or_create(
+                    role=instance,
+                    page=page_data["page"],
+                    defaults={
+                        "can_view": page_data["can_view"],
+                        "can_add": page_data["can_add"],
+                        "can_edit": page_data["can_edit"],
+                        "can_delete": page_data["can_delete"]
+                    }
+                )
 
 @receiver(post_save, sender=CustomUser)
 def set_default_user_permissions(sender, instance, created, **kwargs):
     if created:
-        default_pages = ["admin", "profile"]
-        for page in default_pages:
-            UserPermission.objects.get_or_create(
-                user=instance,
-                page=page,
-                defaults={"can_view": True}
-            )
+        is_super_or_role = instance.is_superuser or (instance.role and instance.role.name.strip().lower() == "superadmin")
+        
+        pages = [
+            {
+                "page": "admin",
+                "can_view": is_super_or_role,
+                "can_add": is_super_or_role,
+                "can_edit": is_super_or_role,
+                "can_delete": is_super_or_role
+            },
+            {
+                "page": "profile",
+                "can_view": True,
+                "can_add": True,
+                "can_edit": True,
+                "can_delete": True
+            }
+        ]
+        
+        for p in pages:
+            if p["page"] == "profile" or p["can_view"]:
+                UserPermission.objects.get_or_create(
+                    user=instance,
+                    page=p["page"],
+                    defaults={
+                        "can_view": p["can_view"],
+                        "can_add": p["can_add"],
+                        "can_edit": p["can_edit"],
+                        "can_delete": p["can_delete"]
+                    }
+                )

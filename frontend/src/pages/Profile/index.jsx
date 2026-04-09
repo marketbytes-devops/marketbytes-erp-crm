@@ -55,6 +55,9 @@ const Profile = () => {
     control: controlProfile,
   } = useForm({
     resolver: zodResolver(profileSchema),
+    defaultValues: {
+      name: '', email: '', address: '', mobile: '', dob: '', gender: '', skills: ''
+    }
   });
 
  const {
@@ -346,8 +349,8 @@ const Profile = () => {
               { value: 'female', label: 'Female' },
               { value: 'other', label: 'Other' },
             ]}
-            value={field.value}
-            onChange={field.onChange}
+            value={field.value || ''}
+            onChange={(val) => field.onChange(val)}
             error={profileErrors.gender?.message}
           />
         )}
