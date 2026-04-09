@@ -62,7 +62,8 @@ const EmployeeProfile = () => {
       ["Phone", employee.mobile || "—"],
       ["DOB", employee.dob ? new Date(employee.dob).toLocaleDateString() : "—"],
       ["Gender", employee.gender || "—"],
-      ["Address", employee.address || "—"]
+      ["Permanent Address", employee.address || "—"],
+      ["Residential Address", employee.is_residential_same ? "Same as Permanent" : (employee.residential_address || "—")]
     ];
 
     doc.autoTable({
@@ -400,8 +401,20 @@ const EmployeeProfile = () => {
                             <MdLocationOn className="w-5 h-5 text-gray-600" />
                           </div>
                           <div className="flex-1">
-                            <p className="text-sm text-gray-500 mb-1">Address</p>
+                            <p className="text-sm text-gray-500 mb-1">Permanent Address</p>
                             <p className="font-medium">{employee.address || "—"}</p>
+                          </div>
+                        </div>
+
+                        <div className="flex items-start gap-4 p-4 bg-gray-50 rounded-xl">
+                          <div className="p-2 bg-white rounded-lg shadow-sm">
+                            <MdLocationOn className="w-5 h-5 text-gray-600" />
+                          </div>
+                          <div className="flex-1">
+                            <p className="text-sm text-gray-500 mb-1">Residential Address</p>
+                            <p className="font-medium">
+                              {employee.is_residential_same ? "Same as Permanent Address" : (employee.residential_address || "—")}
+                            </p>
                           </div>
                         </div>
 

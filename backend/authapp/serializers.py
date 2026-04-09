@@ -177,7 +177,7 @@ class ProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomUser
         fields = [
-            'id', 'email', 'name', 'employee_id', 'address',
+            'id', 'email', 'name', 'employee_id', 'address', 'residential_address', 'is_residential_same',
             'phone_number', 'mobile', 'country_code', 'image', 'image_url',
             'role', 'role_id', 'department', 'department_id', 'designation', 'designation_id', 'reports_to',
             'reports_to_id', 'joining_date', 'dob', 'probation_period',
@@ -219,7 +219,7 @@ class UserCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomUser
         fields = [
-            'id', 'email', 'name', 'employee_id', 'address', 
+            'id', 'email', 'name', 'employee_id', 'address', 'residential_address', 'is_residential_same',
             'phone_number', 'mobile', 'country_code', 'image', 'role_id',
             'department_id', 'designation_id', 'reports_to_id', 'joining_date', 'dob',
             'probation_period', 'exit_date', 'gender', 'skills', 'hourly_rate',
