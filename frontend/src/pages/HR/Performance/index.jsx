@@ -27,7 +27,7 @@ import toast from "react-hot-toast";
 import { usePermission } from "../../../context/PermissionContext";
 
 const Performance = () => {
- const { hasPermission } = usePermission();
+ const { hasPermission, isSuperadmin } = usePermission();
  const [reviews, setReviews] = useState([]);
  const [loading, setLoading] = useState(true);
  const [searchTerm, setSearchTerm] = useState("");
@@ -220,9 +220,11 @@ const Performance = () => {
  </div>
  <div className="flex flex-col items-end">
  <span className="text-[11px] font-syne font-medium text-indigo-600">Performance: {data.avg} / 5.0</span>
+ {isSuperadmin && (
  <span className={`text-[10px] font-bold ${data.profit >= 0 ? 'text-emerald-500' : 'text-rose-500'}`}>
  Profit Contribution: ₹{data.profit.toLocaleString()}
  </span>
+ )}
  </div>
  </div>
  <div className="h-2 w-full bg-gray-50 rounded-full overflow-hidden relative">
@@ -338,12 +340,14 @@ const Performance = () => {
 
  <div className="p-8 overflow-y-auto max-h-[calc(90vh-140px)] space-y-8">
  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+ {isSuperadmin && (
  <div className="bg-indigo-50 rounded-3xl p-6 border border-indigo-100">
  <p className="text-indigo-600 text-[9px] font-bold uppercase tracking-widest mb-1">Financial Impact</p>
  <p className={`text-2xl font-medium font-syne ${chartData.find(d => d.name === selectedDept)?.profit >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
  ₹{chartData.find(d => d.name === selectedDept)?.profit?.toLocaleString()}
  </p>
  </div>
+ )}
  <div className="bg-gray-50 rounded-3xl p-6 border border-gray-100">
  <p className="text-gray-500 text-[9px] font-bold uppercase tracking-widest mb-1">Active Projects</p>
  <p className="text-2xl font-medium font-syne text-black">
@@ -384,12 +388,14 @@ const Performance = () => {
  <p className="text-[9px] text-gray-400 font-bold uppercase tracking-widest mb-1">Actual Cost</p>
  <p className="text-sm font-syne font-medium text-rose-500">{project.currency?.symbol || '₹'}{parseFloat(project.total_actual_cost || 0).toLocaleString()}</p>
  </div>
+ {isSuperadmin && (
  <div className="col-span-2 lg:col-span-1 border-t lg:border-t-0 lg:border-l border-gray-100 pt-3 lg:pt-0 lg:pl-6">
  <p className="text-[9px] text-gray-400 font-bold uppercase tracking-widest mb-1">Impact</p>
  <p className={`text-sm font-syne font-bold ${project.profit_loss >= 0 ? 'text-emerald-500' : 'text-rose-500'}`}>
  {project.profit_loss >= 0 ? '+' : ''}₹{project.profit_loss?.toLocaleString()}
  </p>
  </div>
+ )}
  </div>
  </div>
 

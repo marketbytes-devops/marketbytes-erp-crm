@@ -27,7 +27,7 @@ import * as XLSX from "xlsx";
 
 const ProjectsView = ({ employeeScope = false, leadScope = false }) => {
   const navigate = useNavigate();
-  const { hasPermission } = usePermission();
+  const { hasPermission, isSuperadmin } = usePermission();
   const permissionPage = employeeScope ? "employee_projects" : (leadScope ? "lead_projects" : "projects");
 
   const [projects, setProjects] = useState([]);
@@ -732,9 +732,11 @@ const ProjectsView = ({ employeeScope = false, leadScope = false }) => {
                           <td className="px-6 py-5">
                             <div className="flex flex-col gap-1">
                               <div className="text-sm font-medium text-gray-900">{project.progress_percentage || 0}%</div>
-                              <div className={`text-[10px] font-medium uppercase ${project.profit_loss >= 0 ? 'text-green-500' : 'text-red-500'}`}>
-                                {project.profit_loss >= 0 ? 'Profit' : 'Loss'}: {project.currency?.symbol || '₹'}{Math.abs(project.profit_loss || 0).toLocaleString()}
-                              </div>
+                              {isSuperadmin && (
+                                <div className={`text-[10px] font-medium uppercase ${project.profit_loss >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+                                  {project.profit_loss >= 0 ? 'Profit' : 'Loss'}: {project.currency?.symbol || '₹'}{Math.abs(project.profit_loss || 0).toLocaleString()}
+                                </div>
+                              )}
                             </div>
                           </td>
                           <td className="px-6 py-5 whitespace-nowrap min-w-[180px]">
