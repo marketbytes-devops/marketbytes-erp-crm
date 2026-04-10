@@ -433,11 +433,6 @@ class TaskSerializer(serializers.ModelSerializer):
         assignee_ids = validated_data.pop('assignee_ids', [])
         task = Task.objects.create(**validated_data)
         
-        if self.context.get("request"):
-            user = self.context["request"].user
-            if user not in assignee_ids:
-                assignee_ids.append(user)
-
         if assignee_ids:
             task.assignees.set(assignee_ids)
         return task
